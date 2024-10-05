@@ -1,0 +1,51 @@
+@import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: purple;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.hide-scroll-bar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scroll-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.plus-jakarta {
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+}
+
+.raleway {
+  font-family: "Raleway", sans-serif !important;
+}
+
+.label {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.label.label-warning {
+  background-color: rgba(230, 43, 43, .81);
+  padding: 2px 5px;
+  color: #fff;
+  font-size: 12px;
+}
