@@ -139,7 +139,7 @@ const Signin = () => {
         handleError("Network error. Please check your internet connection.");
       } else {
         // Some other error occurred
-        handleError("An error occurred while signing in.");
+        console.error("Unexpected error during sign-in:", error);
       }
     } finally {
       setLoading(false);

@@ -24,8 +24,9 @@ const Signup = () => {
     entered_otp: "",
     password: "",
     phone_number: "",
+    country_code: "",
   });
-  const { email, password, first_name, entered_otp, last_name, phone_number } =
+  const { email, password, first_name, entered_otp, last_name, phone_number,country_code } =
     inputValue;
   const pinInputRef = useRef(null);
   const [timer, setTimer] = useState(0);
@@ -126,6 +127,7 @@ const Signup = () => {
         last_name: inputValue.last_name,
         phone_number: fullPhoneNumber,
         entered_otp: entered_otp,
+        countries: inputValue.country_code
       });
 
       const createResult = await CustomerCreate({
@@ -160,6 +162,7 @@ const Signup = () => {
           last_name: inputValue.last_name,
           entered_otp: inputValue.entered_otp,
           phone_number: inputValue.phone_number,
+          country_code: inputValue.country_code,
         },
         {
           headers: {
@@ -167,26 +170,65 @@ const Signup = () => {
           },
         }
       );
-
+  
       if (response.status === 200) {
         console.log("Signup successful:", response.data);
         localStorage.setItem("phone_number", inputValue.phone_number);
         return { success: true };
       } else {
-        console.error("Signup failed with status:", response.status);
+        console.error("Unexpected status:", response.status);
+  
+        // Handle error from response if available in 'status' or 'error'
+        let errorMessage = "Signup failed. Please try again later.";
+        if (response.data) {
+          if (response.data.error) {
+            try {
+              const errorData = JSON.parse(response.data.error);
+              if (errorData && errorData.message) {
+                errorMessage = errorData.message;
+              }
+            } catch (parseError) {
+              console.error("Error parsing error message:", parseError);
+            }
+          } else if (response.data.status) {
+            errorMessage = response.data.status;
+          }
+        }
+  
         return {
           success: false,
-          message: "Signup failed. Please try again later.",
+          message: errorMessage,
         };
       }
     } catch (err) {
       console.error("Signup request failed:", err);
+  
+      // Default error message
+      let errorMessage = "Signup failed. Please try again later.";
+  
+      // Handle error from catch block response if available in 'status' or 'error'
+      if (err.response && err.response.data) {
+        if (err.response.data.error) {
+          try {
+            const errorData = JSON.parse(err.response.data.error);
+            if (errorData && errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } catch (parseError) {
+            console.error("Error parsing error message:", parseError);
+          }
+        } else if (err.response.data.status) {
+          errorMessage = err.response.data.status;
+        }
+      }
       return {
         success: false,
-        message: "Signup request failed. Please try again later.",
+        message: errorMessage,
       };
     }
   };
+  
+  
 
   const sendOtp = async () => {
     console.log(email);

@@ -25,7 +25,8 @@ export const DataProvider = ({ children }) => {
   });
   // toast functions ------------------------------------------------------------
 
-  const handleError = (err) =>
+  const handleError = (err) => {
+    console.error("Error occurred",err);
     toast.error(err, {
       position: "top-right",
       autoClose: 3000,
@@ -36,7 +37,9 @@ export const DataProvider = ({ children }) => {
       progress: undefined,
       theme: "light",
     });
-  const handleSuccess = (msg) =>
+  }
+  const handleSuccess = (msg) => {
+    console.log("success",msg);
     toast.success(msg, {
       position: "top-right",
       autoClose: 3000,
@@ -47,6 +50,7 @@ export const DataProvider = ({ children }) => {
       progress: undefined,
       theme: "light",
     });
+  }
 
 
     

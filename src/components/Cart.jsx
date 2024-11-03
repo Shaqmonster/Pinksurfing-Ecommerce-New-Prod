@@ -35,6 +35,10 @@ export default function Cart() {
       })
       .catch((error) => {
         console.error(error);
+        toast.error("Unable to load cart", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       });
   };
   useEffect(() => {
@@ -64,7 +68,7 @@ export default function Cart() {
       })
       .catch((error) => {
         // console.error(error);
-        toast.error("An error occurred", {
+        toast.error("An error occurred while removing product from cart", {
           position: "top-center",
           autoClose: 3000,
         });
