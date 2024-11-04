@@ -107,7 +107,7 @@ export default function SingleOrderForm() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
+        toast.error(error.response.data.Status || error.response.data.error || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
         });

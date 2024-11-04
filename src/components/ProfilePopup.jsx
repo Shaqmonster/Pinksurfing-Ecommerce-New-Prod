@@ -138,7 +138,7 @@ export default function ProfilePopup() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error("Failed to update profile", {
+        toast.error("Failed to update profile,Plesae fil the details Correctly", {
           position: "top-center",
         });
       });

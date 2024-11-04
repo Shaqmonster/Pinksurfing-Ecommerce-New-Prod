@@ -9,7 +9,7 @@ const ProfilePage = () => {
   const [isEditingPicture, setIsEditingPicture] = useState(false); // State to control edit mode for profile picture
   const [isEditingAddresses, setIsEditingAddresses] = useState([]); // State to control edit mode for each address
   const [editedUser, setEditedUser] = useState({ ...user }); // State to hold edited user data
-  const [editedAddresses, setEditedAddresses] = useState([...user.addresses]); // State to hold edited addresses
+  const [editedAddresses, setEditedAddresses] = useState( user?.addresses ? [...user.addresses] : []); // State to hold edited addresses
 
   const toggleEditUser = () => {
     setIsEditingUser((prevState) => !prevState); // Toggle edit mode for user information

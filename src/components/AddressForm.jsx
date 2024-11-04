@@ -7,6 +7,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { IoCloseOutline } from "react-icons/io5";
 import { Country, State, City } from "country-state-city";
+import { dataContext } from "../context/dataContext";
 
 export default function AddressForm() {
   const [countries, setCountries] = useState([]);
@@ -15,6 +16,8 @@ export default function AddressForm() {
   const { isAddressFormOpen, setIsAddressFormOpen, user } =
     useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
+  const {handleError , handleSuccess} = useContext(dataContext);
+
   const navigate = useNavigate();
   const cancelButtonRef = useRef();
   function closeModal() {
@@ -119,6 +122,7 @@ export default function AddressForm() {
         }, 1000);
       })
       .catch((error) => {
+        handleError(error.response.data.msg || error.response.data.error || "Error adding address");
         console.error(error);
       });
   };
@@ -155,6 +159,7 @@ export default function AddressForm() {
     if (response.ok) {
       console.log("Address verified successfully:", data);
     } else {
+      handleError('Error verifying address')
       console.error("Error verifying address:", data);
     }
   };

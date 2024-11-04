@@ -17,7 +17,7 @@ import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLi
 import { Helmet } from "react-helmet";
 import ImageZoom from "../components/ProductPageComponents/ZoomImage";
 import parse from "html-react-parser";
-
+import { data } from "autoprefixer";
 const ProductDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,6 +37,7 @@ const ProductDetailPage = () => {
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
   const productId = searchParams.get("productId");
+  const {handleError , handleSuccess} = useContext(dataContext);
   const {
     setCartProducts,
     cartProducts,
@@ -87,6 +88,7 @@ const ProductDetailPage = () => {
           setCartProducts(response.data);
         })
         .catch((error) => {
+          handleError("Unable to retrieve Cart Products")
           console.error(error);
         });
     }
@@ -104,6 +106,7 @@ const ProductDetailPage = () => {
           setWishlistProducts(response.data.items);
         })
         .catch((error) => {
+          handleError("Unable to retrieve Wishlist")
           console.error(error);
         });
     }
@@ -136,7 +139,7 @@ const ProductDetailPage = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
+        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
           position: "top-right",
         });
       });
@@ -166,7 +169,11 @@ const ProductDetailPage = () => {
       console.error(error);
       heartElement.classList.add("text-red-500");
       heartElement.classList.remove("text-gray-400");
-      toast.error("An error occurred", {
+      toast.error(error.response.data.message || 
+        error.response.data.Status || 
+        error.response.data.Err || 
+        error.response.data.detail || 
+        "An error occurred", {
         position: "top-right",
       });
     }
@@ -192,7 +199,7 @@ const ProductDetailPage = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
+        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
           position: "top-right",
         });
       });
