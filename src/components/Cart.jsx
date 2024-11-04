@@ -35,6 +35,10 @@ export default function Cart() {
       })
       .catch((error) => {
         console.error(error);
+        toast.error("Unable to load cart", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       });
   };
   useEffect(() => {
@@ -64,7 +68,7 @@ export default function Cart() {
       })
       .catch((error) => {
         // console.error(error);
-        toast.error("An error occurred", {
+        toast.error(error.response.data.detail || "An error occurred while removing product from cart", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -91,7 +95,7 @@ export default function Cart() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error("An error occurred", {
+        toast.error(error.response.data.message || error.response.data.Status || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -118,7 +122,7 @@ export default function Cart() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error("An error occurred", {
+        toast.error(error.response.data.message || error.response.data.Status || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
         });

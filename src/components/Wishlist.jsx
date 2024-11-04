@@ -89,7 +89,7 @@ export default function Wishlist() {
       .catch((error) => {
         console.error(error);
         // Handle the error here
-        toast.error(error.message || "An error occurred", {
+        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
           position: "top-right",
         });
       });
@@ -120,9 +120,13 @@ export default function Wishlist() {
       .catch((error) => {
         console.error(error);
         // Handle the error here
-        toast.error("An error occurred", {
-          position: "top-center",
-          autoClose: 3000,
+        toast.error(error.response.data.message || 
+          error.response.data.Status || 
+          error.response.data.Err || 
+          error.response.data.detail || 
+          "An error occurred", {
+          position: "top-right",
+          autoClose:3000
         });
       });
   };

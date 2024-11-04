@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import { CountriesISO } from "../utils/CountriesISO";
 import { Country, State, City } from "country-state-city";
+import { dataContext } from "../context/dataContext";
 
 export default function VendorDetailsForm() {
   const { isVendorFormOpen, isDarkMode, user, setUser, setIsVendorFormOpen } =
@@ -18,6 +19,7 @@ export default function VendorDetailsForm() {
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
+  const { handleError } = useContext(dataContext);
 
   function closeModal() {
     setIsVendorFormOpen(false);
@@ -181,6 +183,7 @@ export default function VendorDetailsForm() {
         window.location.href = "https://vendors.pinksurfing.com/";
       })
       .catch((error) => {
+        handleError(error.response.data.message || error.response.data.status || "Unable to Register as Vendor");
         console.error(error);
       });
   };

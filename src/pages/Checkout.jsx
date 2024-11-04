@@ -65,7 +65,7 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
+        toast.error(error.response.data.error || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -97,7 +97,7 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
+        toast.error(error.response.data.error || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -140,7 +140,7 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
+      toast.error("Unable to load cart", {
           position: "top-center",
           autoClose: 3000,
         });

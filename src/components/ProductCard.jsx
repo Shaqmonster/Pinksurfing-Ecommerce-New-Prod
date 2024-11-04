@@ -86,7 +86,7 @@ const ProductCard = ({ product, isCard }) => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
+        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
           position: "top-right",
         });
       });
@@ -135,7 +135,10 @@ const ProductCard = ({ product, isCard }) => {
       console.error(error);
       heartElement.classList.add("text-red-500");
       heartElement.classList.remove("text-gray-400");
-      toast.error("An error occurred", {
+      toast.error(error.response.data.message ||
+        error.response.data.Status ||
+        error.response.data.Err ||
+        error.response.data.detail || "unable to remove product from wishlist", {
         position: "top-right",
       });
     }
@@ -198,8 +201,8 @@ const ProductCard = ({ product, isCard }) => {
         id={`heart-${product.id}`}
         onClick={handleWishlistClick}
         className={`absolute top-4 right-4 cursor-pointer ${wishlistProducts.find((i) => i.id === product.id)
-            ? "text-red-500"
-            : "text-gray-400"
+          ? "text-red-500"
+          : "text-gray-400"
           } text-[20px]`}
       />
 
@@ -208,8 +211,8 @@ const ProductCard = ({ product, isCard }) => {
           to={`/product/productDetail/${product.slug}?productId=${product.id}`}
         >
           <img
-                      className="w-full min-h-[200px] max-h-[200px] sm:h-[87%] object-contain  cursor-pointer border border-black"
-                      src={`${product.image1}` || "/emptyCart.png"}
+            className="w-full min-h-[200px] max-h-[200px] sm:h-[87%] object-contain  cursor-pointer border border-black"
+            src={`${product.image1}` || "/emptyCart.png"}
             alt="Product Image"
           />
         </Link>
