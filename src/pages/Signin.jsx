@@ -66,7 +66,7 @@ const Signin = () => {
       );
   
       if (response.status !== 200) {
-        handleError(response.data.detail || "Failed to sign in");
+        handleError(response.data.message || "Failed to sign in");
         return;
       }
   
@@ -78,7 +78,6 @@ const Signin = () => {
         {},
         { headers: { Authorization: `Bearer ${data.access}` } }
       );
-  
       if (customerResponse.status === 200 || customerResponse.status === 201) {
         const expirationDateAccessToken = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
         const expirationDateRefreshToken = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -101,50 +100,18 @@ const Signin = () => {
         setTimeout(() => {
           navigate("/");
         }, 1000);
-      } else if (customerResponse.status === 400) {
-        handleError("Phone number exists");
       } else {
-        handleError("Failed to create customer");
+        handleError("Login Failed");
       }
     } catch (error) {
-      // Enhanced error handling here
-      if (error.response) {
-        // API responded with a status code outside of the 2xx range
-        if (error.response.status === 400) {
-          const errorData = error.response.data;
-          if (errorData.non_field_errors) {
-            // Handle specific error for invalid credentials
-            handleError("Invalid email or password.");
-          } else if (errorData.email) {
-            // Handle specific error for invalid email
-            setEmailError(errorData.email[0]);
-          } else if (errorData.password) {
-            // Handle specific error for invalid password
-            setPasswordError(errorData.password[0]);
-          } else {
-            // Generic error handling for other cases
-            handleError("An error occurred. Please check your details and try again.");
-          }
-        } else if (error.response.status === 404) {
-          // Handle not found error (e.g., email not found)
-          handleError("Email does not exist.");
-        } else if (error.response.status === 401) {
-          // Unauthorized (incorrect credentials)
-          handleError("Incorrect password. Please try again.");
-        } else if (error.response.status === 403) {
-          handleError("Email does not exist or password is incorrect.");
-        }
-      } else if (error.request) {
-        // Network error or no response was received
-        handleError("Network error. Please check your internet connection.");
-      } else {
-        // Some other error occurred
-        console.error("Unexpected error during sign-in:", error);
-      }
+      console.log(error)
+      // Use error.response.data.message if available, otherwise use a default message
+      handleError(error.response?.data?.detail || "An error occurred during login");
     } finally {
       setLoading(false);
     }
   };
+  
   
   return (
     <>
