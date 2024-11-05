@@ -41,8 +41,8 @@ const PaymentOptionsModal = ({
       const paymentLink = response.data.payment_link.url;
       console.log("Payment link created:", paymentLink);
 
-      window.location.href = paymentLink;
-
+      // window.location.href = paymentLink;
+      window.open(paymentLink, "_blank");
       onClose();
     } catch (error) {
       console.error("Error creating payment link:", error);
@@ -77,7 +77,7 @@ const PaymentOptionsModal = ({
           </h2>
           <button
             className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg flex items-center justify-center"
-            onClick={createPaymentLink}
+            onClick={createPaymentLink} target="_blank"
           >
             <FaCreditCard className="mr-2" /> Pay with Credit/Debit Card
           </button>

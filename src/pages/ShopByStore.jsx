@@ -55,6 +55,7 @@ export default function ShopByStore() {
           headers: { "Content-Type": "application/json" },
         })
         .then((response) => {
+          console.log(response.data.stores);
           setStores(response.data.stores);
           setLoading(false);
         })
