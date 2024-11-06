@@ -35,6 +35,7 @@ export default function Orders() {
           },
         }
       );
+      console.log(response.data);
       setOrders(response.data);
       setLoading(false);
     } catch (error) {
@@ -100,7 +101,15 @@ export default function Orders() {
                         Date of Order:{" "}
                         {new Date(
                           groupOrdersByOrderId(orders)[orderId][0].date_of_order
-                        ).toDateString()}
+                        ).toLocaleString("en-US", {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true
+                        })}
                       </p>
                       <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
                         Total Price: {currency}{" "}
@@ -137,7 +146,15 @@ export default function Orders() {
                           </p>
                           <p className="text-[13.5px] sm:text-[14.5px] font-medium mb-1 text-gray-700 dark:text-[#f5f5f5]">
                             Status:{" "}
-                            <span className="text-green-600">
+                            <span className={
+                                    order.order_status === "DELIVERED"
+                                    ? "text-green-600"
+                                    : order.order_status === "PENDING"
+                                    ? "text-yellow-600"
+                                    : order.order_status === "CANCELED"
+                                    ? "text-red-600"
+                                    : "black" // default color if status is unknown                            
+                            }>
                               {order.order_status}
                             </span>
                           </p>
@@ -154,10 +171,10 @@ export default function Orders() {
                             disabled={
                               order.order_status.toUpperCase() === "SHIPPED" ||
                               order.order_status.toUpperCase() ===
-                                "DELIVERED" ||
+                              "DELIVERED" ||
                               order.order_status.toUpperCase() === "RETURNED" ||
                               order.order_status.toUpperCase() ===
-                                "RETURN-REQUESTED" ||
+                              "RETURN-REQUESTED" ||
                               order.order_status.toUpperCase() === "CANCELED"
                             }
                             onClick={() => {

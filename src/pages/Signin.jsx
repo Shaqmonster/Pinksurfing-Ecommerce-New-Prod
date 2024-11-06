@@ -97,8 +97,16 @@ const Signin = () => {
         handleSuccess("Signed In Successfully");
         setInputValue({ email: "", password: "" });
   
+        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
         setTimeout(() => {
-          navigate("/");
+          if (redirectPath) {
+            // Navigate to the stored path
+            window.location.href = redirectPath;
+            console.log(redirectPath);
+            sessionStorage.removeItem("redirectAfterLogin");
+          } else {
+            navigate("/");
+          }
         }, 1000);
       } else {
         handleError("Login Failed");

@@ -68,8 +68,7 @@ export default function Wishlist() {
     // console.log(cookies.token);
     axios
       .post(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/customer/cart/add/${productId}/`,
         {},
         {
@@ -100,8 +99,7 @@ export default function Wishlist() {
     // console.log(cookies.token);
     axios
       .post(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/customer/wishlist/remove/${productId}`,
         {},
         {
@@ -120,13 +118,13 @@ export default function Wishlist() {
       .catch((error) => {
         console.error(error);
         // Handle the error here
-        toast.error(error.response.data.message || 
-          error.response.data.Status || 
-          error.response.data.Err || 
-          error.response.data.detail || 
+        toast.error(error.response.data.message ||
+          error.response.data.Status ||
+          error.response.data.Err ||
+          error.response.data.detail ||
           "An error occurred", {
           position: "top-right",
-          autoClose:3000
+          autoClose: 3000
         });
       });
   };
@@ -201,21 +199,25 @@ export default function Wishlist() {
                                       <img
                                         className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200"
                                         src={`${product.image1}`}
-                                        // src="https://images.unsplash.com/photo-1494726161322-5360d4d0eeae?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
+                                      // src="https://images.unsplash.com/photo-1494726161322-5360d4d0eeae?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
                                       />
                                       <div className="w-2/3 p-2 pt-0">
-                                  <h1 className="text-gray-900 dark:text-[#f5f5f5] font-bold text-base sm:text-sm">
-                                    {product.name.length > 17 ? `${product.name.slice(0, 17)}...` : product.name}
-                                  </h1>
-
-                                        <p className=" text-ellipsis h-[20px] dark:text-[#f5f5f5] text-[13px] sm:text-sm overflow-hidden text-gray-600">
-                                          {htmlToText(
-                                            product.short_description
-                                          ).slice(0, 10)}
-                                          {product.short_description.length > 10
-                                            ? "..."
-                                            : ""}
-                                        </p>
+                                      <Link
+                                          to={`/product/productDetail/${product.slug}?productId=${product.id}`}
+                                          onClick={() => setIsWishlistOpen(false)}
+                                        >
+                                        <h1 className="text-gray-900 dark:text-[#f5f5f5] font-bold text-base sm:text-sm">
+                                          {product.name.length > 17 ? `${product.name.slice(0, 17)}...` : product.name}
+                                        </h1>
+                                          <p className=" text-ellipsis h-[20px] dark:text-[#f5f5f5] text-[13px] sm:text-sm overflow-hidden text-gray-600">
+                                            {htmlToText(
+                                              product.short_description
+                                            ).slice(0, 10)}
+                                            {product.short_description.length > 10
+                                              ? "..."
+                                              : ""}
+                                          </p>
+                                        </Link>
                                         <div className="flex item-center sm:mt-2">
                                           <svg
                                             className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-700 dark:text-[#f5f5f5]"
@@ -279,9 +281,8 @@ export default function Wishlist() {
                                     </div>
                                   </div>
                                   <p
-                                    className={` ${
-                                      !wishlistProducts ? "block" : "hidden"
-                                    } w-full h-full flex items-center justify-center pt-5 top-3 left-3 z-50 text-black/80`}
+                                    className={` ${!wishlistProducts ? "block" : "hidden"
+                                      } w-full h-full flex items-center justify-center pt-5 top-3 left-3 z-50 text-black/80`}
                                   >
                                     your wishlist is empty
                                   </p>

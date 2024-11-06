@@ -116,9 +116,9 @@ const Summary = () => {
   };
   return (
     <>
-      <div className=" px-4 py-4 md:px-6 2xl:px-20 w-full min-h-screen dark:bg-black pb-10">
+      <div className=" px-4 py-4 md:px-6 2xl:px-20 w-full min-h-screen dark:bg-black bg-white pb-10">
         <div className="flex justify-start item-start space-y-2 flex-col">
-          <h1 className="text-xl flex items-center gap-1 dark:text-white lg:text-4xl font-semibold  text-gray-800">
+          <h1 className="text-xl flex items-center gap-1 dark:text-white lg:text-4xl font-semibold  text-black">
             <ArrowLeftCircleIcon
               onClick={() => {
                 navigate(-1);
@@ -167,9 +167,19 @@ const Summary = () => {
                   <p className="  text-[13.5px] sm:text-[14.5px] font-medium mb-1">
                     {" "}
                     status :{" "}
-                    <span className=" text-green-500 bg-black/50 rounded-md px-2 py-1">
+                    <span
+                      className={`${order.order_status === "DELIVERED"
+                          ? "text-green-500 bg-green-100"
+                          : order.order_status === "PENDING"
+                            ? "text-yellow-500 bg-yellow-100"
+                            : order.order_status === "CANCELED"
+                              ? "text-red-500 bg-red-100"
+                              : "text-gray-500 bg-gray-100" // default styling for unknown status
+                        } bg-black/50 rounded-md px-2 py-1`}
+                    >
                       {order.order_status}
                     </span>
+
                   </p>
                 </div>
                 <RatingForm order={order} />
@@ -286,7 +296,7 @@ const Summary = () => {
             <div className="col-span-7 hidden sm:block">
               {order.paid_with_escrow ? (
                 <div className="col-span-7">
-                  <h2 className="text-lg font-semibold dark:text-gray-300 mb-4">
+                  <h2 className="text-lg font-semibold dark:text-gray-300 text-black mb-4">
                     Your Escrow Process Status
                   </h2>
                   <div className="flex items-center space-x-4">
@@ -294,48 +304,48 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-green-500 dark:bg-green-400">
                         <span className="text-white">1</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Order Confirmed</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Order Confirmed</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">2</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Packaged for delivery</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Packaged for delivery</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">3</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Delivered to Post Office</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Delivered to Post Office</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">4</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Product Delivered</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Product Delivered</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">5</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Product in Possession</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Product in Possession</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">6</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Product Satisfaction</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Product Satisfaction</p>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="col-span-7 mt-2">
-                  <h2 className="text-lg font-semibold dark:text-gray-300 mb-4">
+                  <h2 className="text-lg font-semibold dark:text-gray-300 text-black mb-4">
                     Your Delivery Status
                   </h2>
                   <div className="flex items-center space-x-4">
@@ -343,28 +353,28 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-green-500 dark:bg-green-400">
                         <span className="text-white">1</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Order Confirmed</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Order Confirmed</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">2</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Shipped</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Shipped</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">3</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Out for Delivery</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Out for Delivery</p>
                     </div>
                     <div className="flex-1 h-1 bg-gray-300 dark:bg-gray-700"></div>
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">4</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Delivered</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Delivered</p>
                     </div>
                   </div>
                 </div>
@@ -374,7 +384,7 @@ const Summary = () => {
             <div className="col-span-7 block sm:hidden">
               {order.paid_with_escrow ? (
                 <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 space-y-4">
-                  <h2 className="text-lg font-semibold dark:text-gray-300 mb-4">
+                  <h2 className="text-lg font-semibold dark:text-gray-300 text-black mb-4">
                     Your Escrow Process Status
                   </h2>
                   <div className="flex flex-col space-y-4">
@@ -382,7 +392,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-green-500 dark:bg-green-400">
                         <span className="text-white">1</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Order Confirmed
                       </p>
                     </div>
@@ -390,7 +400,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">2</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Packaged for delivery
                       </p>
                     </div>
@@ -398,7 +408,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">3</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Delivered to Post Office
                       </p>
                     </div>
@@ -406,7 +416,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">4</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Product Delivered
                       </p>
                     </div>
@@ -414,7 +424,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">5</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Product in Possession
                       </p>
                     </div>
@@ -422,7 +432,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">6</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Product Satisfaction
                       </p>
                     </div>
@@ -438,7 +448,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-green-500 dark:bg-green-400">
                         <span className="text-white">1</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Order Confirmed
                       </p>
                     </div>
@@ -446,13 +456,13 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">2</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Shipped</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Shipped</p>
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">3</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">
+                      <p className="text-sm dark:text-gray-300 text-black">
                         Out for Delivery
                       </p>
                     </div>
@@ -460,7 +470,7 @@ const Summary = () => {
                       <div className="w-12 h-12 flex justify-center items-center rounded-full bg-gray-300 dark:bg-gray-700">
                         <span className="text-white">4</span>
                       </div>
-                      <p className="text-sm dark:text-gray-300">Delivered</p>
+                      <p className="text-sm dark:text-gray-300 text-black">Delivered</p>
                     </div>
                   </div>
                 </div>
