@@ -35,6 +35,7 @@ const ForgotPassword = () => {
         },
         body: JSON.stringify({ email }),
       });
+      console.log(response)
       if (response.ok) {
         handleSuccess("Email Sent Successfully");
         setOtpHidden(false);
@@ -42,6 +43,7 @@ const ForgotPassword = () => {
         handleError("Failed to send OTP");
       }
     } catch (error) {
+      console.log(error)
       handleError("Error sending OTP");
     }
   };

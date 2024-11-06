@@ -24,8 +24,10 @@ export const AuthProvider = ({ children }) => {
   const [shopHeading, setShopHeading] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [isRatingFormOpen, setIsRatingFormOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("theme") === "dark" || !localStorage.getItem("theme")
+  );
+    const [isRatingFormOpen, setIsRatingFormOpen] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFirstSearch, setIsFirstSearch] = useState(true);
@@ -72,8 +74,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
-  const getRefreshToken = async () => {
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
+    const getRefreshToken = async () => {
     let refresh = localStorage.getItem("refresh") || cookies.refresh;
 
     if (refresh) {

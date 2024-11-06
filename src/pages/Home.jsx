@@ -31,33 +31,40 @@ const Home = () => {
     "https://pinksurfing.s3.eu-central-1.amazonaws.com/pinksurfing/";
 
   useEffect(() => {
-    const fetchCategoriesAndProducts = async () => {
+    const fetchStores = async () => {
       try {
         setStoreLoading(true);
-        const [storesResponse, productsResponse] = await Promise.all([
-          axios.get(
-            `${import.meta.env.VITE_SERVER_URL}/api/vendor/all-stores/`,
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          ),
-          axios.get(
-            `${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`,
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          ),
-        ]);
-        setStoreLoading(false);
-        console.log(productsResponse.data.Products);
+        const storesResponse = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/vendor/all-stores/`,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
         setStores(storesResponse.data.stores);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setStoreLoading(false);
+      }
+    };
+
+    const fetchProducts = async () => {
+      try {
+        const productsResponse = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        console.log(productsResponse.data.Products);
         setProducts(productsResponse.data.Products);
       } catch (error) {
         console.error(error);
       }
     };
 
-    fetchCategoriesAndProducts();
+    fetchStores();
+    fetchProducts();
   }, []);
 
   const searchProducts = async (subLink, address) => {

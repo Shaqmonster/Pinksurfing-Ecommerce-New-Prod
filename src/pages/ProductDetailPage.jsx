@@ -36,7 +36,9 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(false);
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
-  const productId = searchParams.get("productId");
+  const rawProductId = searchParams.get("productId");
+  // Remove trailing slash from productId, if any
+  const productId = rawProductId ? rawProductId.replace(/\/$/, "") : rawProductId;
   const {handleError , handleSuccess} = useContext(dataContext);
   const {
     setCartProducts,
@@ -64,6 +66,13 @@ const ProductDetailPage = () => {
       });
     });
   };
+  useEffect(() => {
+    // Remove trailing slash from URL if present
+    if (location.pathname.endsWith("/")) {
+      const newPath = location.pathname.slice(0, -1) + location.search;
+      navigate(newPath, { replace: true });
+    }
+  }, [location, navigate]);
 
   const handleMouseMove = (e) => {
     setViewMainImg(true);
@@ -332,6 +341,7 @@ const ProductDetailPage = () => {
       toast.error("You are not Signed In", {
         position: "top-right",
       });
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       setTimeout(() => {
         setIsProfileOpen(false);
@@ -629,6 +639,7 @@ const ProductDetailPage = () => {
                             toast.error("You are not Signed In ", {
                               position: "top-right",
                             });
+                            sessionStorage.setItem("redirectAfterLogin", window.location.href);
                             setIsProfileOpen(true);
                             setTimeout(() => {
                               setIsProfileOpen(false);
@@ -655,6 +666,7 @@ const ProductDetailPage = () => {
                             toast.error("You are not Signed In", {
                               position: "top-right",
                             });
+                            sessionStorage.setItem("redirectAfterLogin", window.location.href);
                             setIsProfileOpen(true);
                             setTimeout(() => {
                               setIsProfileOpen(false);
