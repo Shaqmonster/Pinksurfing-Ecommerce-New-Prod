@@ -126,7 +126,10 @@ export default function CategoryProducts() {
                 })
                 allProducts = res.data;
                 console.log("allProducts", allProducts);
-                setShoppingProducts(allProducts);
+                const sortedProducts = allProducts.sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                );
+                setShoppingProducts(sortedProducts);
                 setLoading(false);
 
 
