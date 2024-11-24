@@ -237,6 +237,7 @@ const Signup = () => {
         "https://auth.pinksurfing.com/api/send-otp/",
         {
           email: email,
+          new_register:"yes"
         }
       );
       console.log(response.data);
