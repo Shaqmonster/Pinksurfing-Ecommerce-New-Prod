@@ -78,20 +78,20 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
                   </p>
                   <p>
                     Review:
-                    <span className="ml-1 font-semibold">{item.comment}</span>
+                    <span className="ml-1 font-semibold">{item.body}</span>
                   </p>
                 </div>
                 <div>
                   <p>
                     By:
                     <span className="ml-1 font-semibold">
-                      {item?.userId?.name}
+                      {item?.customer}
                     </span>
                   </p>
                   <p>
                     Date:
                     <span className="ml-1 font-semibold">
-                      {item.createdAt.split("T")[0]}
+                      {item.created_at?.split("T")[0]}
                     </span>
                   </p>
                 </div>

@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect,useState } from "react";
 import { FaHeart, FaStar } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -11,6 +11,8 @@ import { IoStarOutline } from "react-icons/io5";
 const ProductCard = ({ product, isCard }) => {
   const [cookies] = useCookies([]);
   const navigate = useNavigate();
+  const [averageRating, setAverageRating] = useState(0);
+
   const { user, currency, setIsProfileOpen } = useContext(authContext);
   const {
     setCartProducts,
@@ -178,7 +180,7 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   const Stars = ({ stars }) => {
-    const ratingStars = Array.from({ length: 5 }, (elem, index) => {
+    const ratingStars = Array.from({ length: 7 }, (elem, index) => {
       return (
         <div key={index}>
           {stars >= index + 1 ? (
@@ -191,6 +193,39 @@ const ProductCard = ({ product, isCard }) => {
     });
     return <div className=" flex items-center gap-0.5">{ratingStars}</div>;
   };
+
+
+  useEffect(() => {
+    const getProductRatings = async (productId) => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/ratings/get-ratings/${productId}/`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const ratingsReviews = response.data.ratings_reviews;
+
+        if (ratingsReviews.length > 0) {
+          const totalRating = ratingsReviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          );
+          const avgRating = totalRating / ratingsReviews.length;
+          setAverageRating(avgRating);
+        } else {
+          setAverageRating(0);
+        }
+      } catch (error) {
+        console.error("Error fetching ratings:", error);
+      }
+    };
+    getProductRatings(product.id);
+  }, [product.id])
+
 
   return (
     <div
@@ -254,9 +289,7 @@ const ProductCard = ({ product, isCard }) => {
             </div>
             <Stars
               stars={
-                product?.avgRating
-                  ? product?.avgRating
-                  : Math.floor(Math.random() * 6)
+                  averageRating
               }
             />
           </div>

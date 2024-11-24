@@ -71,7 +71,7 @@ const Signin = () => {
       }
   
       const data = response.data;
-  
+      console.log(data);
       // Second API request to create a customer
       const customerResponse = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/create-customer-from-sso/`,
@@ -114,7 +114,7 @@ const Signin = () => {
     } catch (error) {
       console.log(error)
       // Use error.response.data.message if available, otherwise use a default message
-      handleError(error.response?.data?.detail || "An error occurred during login");
+      handleError("Invalid email or password");
     } finally {
       setLoading(false);
     }
