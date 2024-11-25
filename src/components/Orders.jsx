@@ -87,112 +87,119 @@ export default function Orders() {
         {!loading ? (
           <>
             <div className="flex flex-col items-center gap-2">
-              {Object.keys(groupOrdersByOrderId(orders)).map((orderId) => (
-                <div
-                  key={orderId}
-                  className="w-full lg:w-[80%] bg-purple-50 dark:bg-white/20 dark:border dark:border-white/30 dark:text-[#f5f5f5] mt-4 shadow-md border border-black/20 rounded-md"
-                >
-                  <div className="flex justify-between items-center p-4 border-b dark:border-white/30">
-                    <div>
-                      <p className="font-bold text-[18px] sm:text-[20px]">
-                        Order ID: {orderId}
-                      </p>
-                      <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
-                        Date of Order:{" "}
-                        {new Date(
-                          groupOrdersByOrderId(orders)[orderId][0].date_of_order
-                        ).toLocaleString("en-US", {
-                          weekday: "short",
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true
-                        })}
-                      </p>
-                      <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
-                        Total Price: {currency}{" "}
-                        {calculateTotalPrice(
-                          groupOrdersByOrderId(orders)[orderId]
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  {groupOrdersByOrderId(orders)[orderId].map((order, index) => (
-                    <div
-                      key={index}
-                      className="flex p-4 border-b dark:border-white/30"
-                    >
-                      <div className="w-full sm:flex items-center">
-                        <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden">
-                          <img
-                            className="w-full h-full object-cover"
-                            alt="img"
-                            src={`${order.product.image1}`}
-                          />
-                        </div>
-                        <div className="flex flex-col ml-4 sm:flex-grow">
-                          <p className="font-bold mb-1 text-[18px] sm:text-[20px] capitalize">
-                            {order.product.name}
-                          </p>
-                          <p className="font-medium mb-2 text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
-                            Price: {currency} {order.total_price}
-                          </p>
-                        </div>
-                        <div className="flex flex-col ml-4 sm:flex-grow">
-                          <p className="text-[13.5px] sm:text-[14.5px] font-medium mb-1 text-gray-700 dark:text-[#f5f5f5]">
-                            Quantity: {order.quantity}
-                          </p>
-                          <p className="text-[13.5px] sm:text-[14.5px] font-medium mb-1 text-gray-700 dark:text-[#f5f5f5]">
-                            Status:{" "}
-                            <span className={
-                                    order.order_status === "DELIVERED"
-                                    ? "text-green-600"
-                                    : order.order_status === "PENDING"
-                                    ? "text-yellow-600"
-                                    : order.order_status === "CANCELED"
-                                    ? "text-red-600"
-                                    : "black" // default color if status is unknown                            
-                            }>
-                              {order.order_status}
-                            </span>
-                          </p>
-                        </div>
-                        <div className="flex flex-col mt-2 sm:mt-0 ml-4">
-                          <button
-                            className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                            onClick={() => navigate(`/summary/${order.id}`)}
-                          >
-                            Track Order{" "}
-                            <ArrowRightIcon className="inline-block w-4" />
-                          </button>
-                          <button
-                            disabled={
-                              order.order_status.toUpperCase() === "SHIPPED" ||
-                              order.order_status.toUpperCase() ===
-                              "DELIVERED" ||
-                              order.order_status.toUpperCase() === "RETURNED" ||
-                              order.order_status.toUpperCase() ===
-                              "RETURN-REQUESTED" ||
-                              order.order_status.toUpperCase() === "CANCELED"
-                            }
-                            onClick={() => {
-                              openModal();
-                              setDeleteOrderId(order.id);
-                            }}
-                            className="disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-300 text-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-red-100 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 w-full max-w-[300px]"
-                          >
-                            {order.order_status === "shipped"
-                              ? "Shipped"
-                              : "Cancel Order"}
-                          </button>
-                        </div>
+              {Object.keys(groupOrdersByOrderId(orders))
+                .filter(
+                  (orderId) =>
+                    !groupOrdersByOrderId(orders)[orderId].some(
+                      (order) => order.order_status.toUpperCase() === "PENDING"
+                    )
+                )
+                .map((orderId) => (
+                  <div
+                    key={orderId}
+                    className="w-full lg:w-[80%] bg-purple-50 dark:bg-white/20 dark:border dark:border-white/30 dark:text-[#f5f5f5] mt-4 shadow-md border border-black/20 rounded-md"
+                  >
+                    <div className="flex justify-between items-center p-4 border-b dark:border-white/30">
+                      <div>
+                        <p className="font-bold text-[18px] sm:text-[20px]">
+                          Order ID: {orderId}
+                        </p>
+                        <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
+                          Date of Order:{" "}
+                          {new Date(
+                            groupOrdersByOrderId(orders)[orderId][0].date_of_order
+                          ).toLocaleString("en-US", {
+                            weekday: "short",
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true
+                          })}
+                        </p>
+                        <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
+                          Total Price: {currency}{" "}
+                          {calculateTotalPrice(
+                            groupOrdersByOrderId(orders)[orderId]
+                          )}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ))}
+                    {groupOrdersByOrderId(orders)[orderId].map((order, index) => (
+                      <div
+                        key={index}
+                        className="flex p-4 border-b dark:border-white/30"
+                      >
+                        <div className="w-full sm:flex items-center">
+                          <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden">
+                            <img
+                              className="w-full h-full object-cover"
+                              alt="img"
+                              src={`${order.product.image1}`}
+                            />
+                          </div>
+                          <div className="flex flex-col ml-4 sm:flex-grow">
+                            <p className="font-bold mb-1 text-[18px] sm:text-[20px] capitalize">
+                              {order.product.name}
+                            </p>
+                            <p className="font-medium mb-2 text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
+                              Price: {currency} {order.total_price}
+                            </p>
+                          </div>
+                          <div className="flex flex-col ml-4 sm:flex-grow">
+                            <p className="text-[13.5px] sm:text-[14.5px] font-medium mb-1 text-gray-700 dark:text-[#f5f5f5]">
+                              Quantity: {order.quantity}
+                            </p>
+                            <p className="text-[13.5px] sm:text-[14.5px] font-medium mb-1 text-gray-700 dark:text-[#f5f5f5]">
+                              Status:{" "}
+                              <span className={
+                                order.order_status === "DELIVERED"
+                                  ? "text-green-600"
+                                  : order.order_status === "PENDING"
+                                    ? "text-yellow-600"
+                                    : order.order_status === "CANCELED"
+                                      ? "text-red-600"
+                                      : "black" // default color if status is unknown                            
+                              }>
+                                {order.order_status}
+                              </span>
+                            </p>
+                          </div>
+                          <div className="flex flex-col mt-2 sm:mt-0 ml-4">
+                            <button
+                              className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                              onClick={() => navigate(`/summary/${order.id}`)}
+                            >
+                              Track Order{" "}
+                              <ArrowRightIcon className="inline-block w-4" />
+                            </button>
+                            <button
+                              disabled={
+                                order.order_status.toUpperCase() === "SHIPPED" ||
+                                order.order_status.toUpperCase() ===
+                                "DELIVERED" ||
+                                order.order_status.toUpperCase() === "RETURNED" ||
+                                order.order_status.toUpperCase() ===
+                                "RETURN-REQUESTED" ||
+                                order.order_status.toUpperCase() === "CANCELED"
+                              }
+                              onClick={() => {
+                                openModal();
+                                setDeleteOrderId(order.id);
+                              }}
+                              className="disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-300 text-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-red-100 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 w-full max-w-[300px]"
+                            >
+                              {order.order_status === "shipped"
+                                ? "Shipped"
+                                : "Cancel Order"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
               {orders.length === 0 && (
                 <div className="w-full text-center mt-4">
                   <p className="dark:text-[#f5f5f5]">
@@ -219,7 +226,7 @@ export default function Orders() {
             />
           </div>
         )}
-      </div>
+      </div >
     </>
   );
 }
