@@ -9,6 +9,7 @@ import { IoCloseOutline, IoStar, IoStarOutline } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 
 export default function RatingForm({ order }) {
+  console.log(order);
   const { isRatingFormOpen, setIsRatingFormOpen } = useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
   const navigate = useNavigate();
@@ -21,7 +22,12 @@ export default function RatingForm({ order }) {
     title: "",
     body: "",
     order_item: order.id,
-    customer: order.customer,
+    customer: {
+      id: order.customer, 
+      customer_phone: order.address.phone_number,
+      email: order.address.email_address,
+      addresses:order.address
+    },
   });
 
   const { title, body } = review;
@@ -34,12 +40,15 @@ export default function RatingForm({ order }) {
   };
   const handleReview = async (e) => {
     e.preventDefault();
+  
+    // Redirect to signin if no token
     if (!cookies.token) {
       navigate("/signin");
+      return;
     }
-    // console.log(order);
-    // console.log(review);
+  
     try {
+      // Attempt to post the review
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/ratings/rate-order/${order.id}/`,
         review,
@@ -50,40 +59,49 @@ export default function RatingForm({ order }) {
           },
         }
       );
-      // .then((response) => {
-      // console.log(response);
+      console.log(response.data)
+      // If successful, notify the user
       toast.success("Review Posted", { position: "top-center" });
       closeModal();
-      // })
-      // .catch((error) => {
-      //   toast.error(error, { position: "top-center" });
-      //   console.log(order);
-      //   console.error(error);
-      // });
     } catch (error) {
-      try {
-        const fallbackResponse = await axios.put(
-          `${import.meta.env.VITE_SERVER_URL}/api/ratings/rate-order/${order.id}/`,
-          review,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${cookies.token}`,
-            },
-          }
-        );
-        // .then((response) => {
-        // console.log(fallbackResponse);
-        toast.success("Review Updated", { position: "top-center" });
-        closeModal();
-        // });
-      } catch (fallbackError) {
-        // Log the fallback error
-        console.error(fallbackError);
-        toast.error("Fallback Review Failed", { position: "top-center" });
+      // Handle error when review already exists
+      if (
+        error.response &&
+        error.response.data.error === "You have already reviewed this order"
+      ) {
+        try {
+          // Attempt to update the review using PUT
+          const fallbackResponse = await axios.put(
+            `${import.meta.env.VITE_SERVER_URL}/api/ratings/rate-order/${order.id}/`,
+            review,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${cookies.token}`,
+              },
+            }
+          );
+  
+          // If successful, notify the user
+          toast.success("Review Updated", { position: "top-center" });
+          closeModal();
+        } catch (fallbackError) {
+          // Log and notify user of fallback error
+          console.error("Error updating review:", fallbackError);
+          toast.error("Failed to update review. Please try again.", {
+            position: "top-center",
+          });
+        }
+      } else {
+        // Handle other errors
+        console.error("Error posting review:", error);
+        toast.error("Failed to post review. Please try again.", {
+          position: "top-center",
+        });
       }
     }
   };
+  
 
   const Stars = ({ stars }) => {
     const ratingStars = Array.from({ length: 7 }, (elem, index) => {
@@ -134,7 +152,7 @@ export default function RatingForm({ order }) {
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg mb-4 flex items-center justify-between font-medium leading-6 text-gray-900"
+                    className="text-lg mb-4 flex items-center justify-between font-medium leading-6 text-gray-900n dark:text-white"
                   >
                     Ratings and Review
                     <IoCloseOutline
@@ -262,13 +280,13 @@ export default function RatingForm({ order }) {
                     <div className="flex flex-wrap -mx-3 mb-2">
                       <div className="w-full px-3">
                         <label
-                          className="block capitalize tracking-wide text-black text-sm  font-semibold mb-2"
+                          className="block capitalize tracking-wide text-black text-sm  font-semibold mb-2 dark:text-white"
                           htmlFor="title"
                         >
                           Title
                         </label>
                         <input
-                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white bg-transparent focus:border-gray-500"
+                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-gray-800 dark:text-white bg-transparent focus:border-gray-500"
                           id="title"
                           name="title"
                           type="text"
@@ -286,7 +304,7 @@ export default function RatingForm({ order }) {
                           Share Your Review
                         </label>
                         <textarea
-                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white bg-transparent focus:border-gray-500"
+                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-gray-800 dark:text-white bg-transparent focus:border-gray-500"
                           id="body"
                           rows={5}
                           name="body"

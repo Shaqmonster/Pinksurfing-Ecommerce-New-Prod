@@ -170,7 +170,7 @@ export default function AddressForm() {
         <Dialog
           as="div"
           className="relative z-10"
-          onClose={() => {}}
+          onClose={closeModal}
           open={isAddressFormOpen}
           initialFocus={cancelButtonRef}
           static
@@ -201,7 +201,7 @@ export default function AddressForm() {
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900"
+                    className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900 dark:text-white"
                   >
                     Add New Address
                     <button
@@ -216,13 +216,13 @@ export default function AddressForm() {
                     <div className="flex flex-wrap -mx-3 mb-6">
                       <div className="w-full px-3">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2 dark:text-white"
                           htmlFor="name"
                         >
                           Name
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 text-black dark:text-white border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
                           id="name"
                           name="name"
                           type="text"
@@ -235,13 +235,13 @@ export default function AddressForm() {
                       </div>
                       <div className="w-full px-3">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
                           htmlFor="phone"
                         >
                           Phone
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
                           id="phone"
                           name="phone"
                           type="text"
@@ -255,13 +255,13 @@ export default function AddressForm() {
                     <div className="flex flex-wrap -mx-3 mb-6">
                       <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
                           htmlFor="street1"
                         >
                           Steet 1
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black"
                           id="street1"
                           name="street1"
                           type="text"
@@ -273,13 +273,13 @@ export default function AddressForm() {
                       </div>
                       <div className="w-full md:w-1/2 px-3">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
                           htmlFor="street2"
                         >
                           Street 2
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
                           name="street2"
                           id="street2"
                           type="text"
@@ -292,14 +292,14 @@ export default function AddressForm() {
                     <div className="flex  -mx-3 mb-6">
                       <div className="w-full px-3">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
                           htmlFor="country"
                         >
                           Country
                         </label>
                         <div className="relative">
                           <select
-                            className="block appearance-none w-full bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                            className="block appearance-none w-full bg-gray-200 dark:text-white border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
                             id="country"
                             name="country"
                             value={country}
@@ -320,13 +320,13 @@ export default function AddressForm() {
                       </div>
                       <div className="w-full px-3">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide dark:text-white   text-black text-xs font-bold mb-2"
                           htmlFor="state"
                         >
                           State
                         </label>
                         <select
-                          className="block appearance-none w-full bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
                           id="state"
                           name="state"
                           value={state}
@@ -345,13 +345,13 @@ export default function AddressForm() {
                     <div className="flex -mx-3 mb-2">
                       <div className="w-full px-3">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide dark:text-white  text-black text-xs font-bold mb-2"
                           htmlFor="city"
                         >
                           City
                         </label>
                         <select
-                          className="block appearance-none w-full bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
                           id="city"
                           name="city"
                           value={city}
@@ -368,13 +368,13 @@ export default function AddressForm() {
                       </div>
                       <div className="w-full px-3">
                         <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2"
+                          className="block uppercase tracking-wide dark:text-white text-black text-xs font-bold mb-2"
                           htmlFor="zip_code"
                         >
                           Zip
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
                           id="zip_code"
                           name="zip_code"
                           type="number"

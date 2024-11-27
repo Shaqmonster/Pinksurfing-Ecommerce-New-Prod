@@ -161,7 +161,7 @@ export default function SingleOrderForm() {
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
                 >
-                  <Dialog.Panel className="w-full sm:max-w-md transform overflow-hidden bg-white rounded-2xl p-4 sm:p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Panel className="w-full sm:max-w-md transform overflow-hidden bg-white dark:bg-black rounded-2xl p-4 sm:p-6 text-left align-middle shadow-xl transition-all">
                     {clientSecret && stripePromise ? (
                       <div className=" min-h-[200px] w-full  ">
                         <Elements
@@ -178,7 +178,7 @@ export default function SingleOrderForm() {
                       <>
                         <Dialog.Title
                           as="h3"
-                          className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900 "
+                          className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900 dark:text-white "
                         >
                           Select Address of Delivery
                           <IoClose
@@ -188,8 +188,8 @@ export default function SingleOrderForm() {
                             }}
                           />
                         </Dialog.Title>
-                        <div className="mt-8 space-y-3 rounded-lg border text-black bg-white px-2 py-4 sm:px-6">
-                          <div className="flex flex-row items-center rounded-lg bg-white sm:flex-row">
+                        <div className="mt-8 space-y-3 rounded-lg border text-black dark:text-white dark:bg-black bg-white px-2 py-4 sm:px-6">
+                          <div className="flex flex-row items-center rounded-lg bg-white dark:bg-black sm:flex-row">
                             <img
                               className="m-2 h-24 w-28 rounded-md border object-cover object-center"
                               src={`${singleOrderProduct.image1}`}
@@ -200,7 +200,7 @@ export default function SingleOrderForm() {
                               <span className="font-semibold">
                                 {singleOrderProduct.name}
                               </span>
-                              <span className="float-right text-black ">
+                              <span className="float-right text-black dark:text-white">
                                 {/* Quantity : {singleOrderProduct.quantity} */}
                               </span>
                               <p className="mt-auto text-md font-semibold">
@@ -223,7 +223,7 @@ export default function SingleOrderForm() {
                             </div>
                           </div>
                         </div>
-                        <p className="mt-2 text-lg flex text-gray-900  items-center font-medium">
+                        <p className="mt-2 text-lg flex text-gray-900  dark:text-white items-center font-medium">
                           Shipping Address{" "}
                           <PencilIcon
                             onClick={() => {
@@ -258,12 +258,12 @@ export default function SingleOrderForm() {
                                   className=" border-gray-700  w-full flex cursor-pointer select-none rounded-md border p-4"
                                   htmlFor="radio_2"
                                 >
-                                  <div className=" sm:ml-5 flex items-center text-black justify-between w-[80%] overflow-hidden sm:w-[83%]">
+                                  <div className=" sm:ml-5 flex items-center text-black dark:text-white justify-between w-[80%] overflow-hidden sm:w-[83%]">
                                     <div className=" flex flex-col">
                                       <span className="mt-2 font-semibold">
                                         Address - {index + 1}{" "}
                                       </span>
-                                      <p className="text-slate-900 overflow-hidden overflow-ellipsis text-sm leading-6">
+                                      <p className="text-slate-900 dark:text-white overflow-hidden overflow-ellipsis text-sm leading-6">
                                         {address.street1},{address.street2},
                                         <span className=" block">
                                           {address.city},{address.state},

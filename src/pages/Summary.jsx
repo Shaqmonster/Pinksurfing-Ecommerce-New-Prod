@@ -169,12 +169,12 @@ const Summary = () => {
                     status :{" "}
                     <span
                       className={`${order.order_status === "DELIVERED"
-                          ? "text-green-500 bg-green-100"
-                          : order.order_status === "PENDING"
-                            ? "text-yellow-500 bg-yellow-100"
-                            : order.order_status === "CANCELED"
-                              ? "text-red-500 bg-red-100"
-                              : "text-gray-500 bg-gray-100" // default styling for unknown status
+                        ? "text-green-500 bg-green-100"
+                        : order.order_status === "PENDING"
+                          ? "text-yellow-500 bg-yellow-100"
+                          : order.order_status === "CANCELED"
+                            ? "text-red-500 bg-red-100"
+                            : "text-gray-500 bg-gray-100" // default styling for unknown status
                         } bg-black/50 rounded-md px-2 py-1`}
                     >
                       {order.order_status}
@@ -184,24 +184,28 @@ const Summary = () => {
                 </div>
                 <RatingForm order={order} />
                 <div className=" grid grid-cols-2 col-span-3 sm:col-span-1 sm:flex flex-col justify-evenly sm:justify-center gap-4  w-full h-full sm:p-4 px-2 ">
-                  <button
-                    disabled={
-                      order.order_status.toUpperCase() === "SHIPPED" ||
-                      order.order_status.toUpperCase() === "DELIVERED" ||
-                      order.order_status.toUpperCase() === "RETURNED" ||
-                      order.order_status.toUpperCase() === "RETURN-REQUESTED" ||
-                      order.order_status.toUpperCase() === "CANCELED"
-                    }
-                    onClick={() => {
-                      openModal();
-                      setDeleteOrderId(order.id);
-                    }}
-                    className=" disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-400 disabled:bg-transparent bg-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 hover:bg-red-100 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 "
-                  >
-                    {order.order_status === "shipped"
-                      ? "Shipped"
-                      : "Cancel Order"}
-                  </button>
+                  {
+                    !order.order_status === "DELIVERED" && (
+                      <button
+                        disabled={
+                          order.order_status.toUpperCase() === "SHIPPED" ||
+                          order.order_status.toUpperCase() === "DELIVERED" ||
+                          order.order_status.toUpperCase() === "RETURNED" ||
+                          order.order_status.toUpperCase() === "RETURN-REQUESTED" ||
+                          order.order_status.toUpperCase() === "CANCELED"
+                        }
+                        onClick={() => {
+                          openModal();
+                          setDeleteOrderId(order.id);
+                        }}
+                        className=" disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-400 disabled:bg-transparent bg-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 hover:bg-red-100 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 "
+                      >
+                        {order.order_status === "shipped"
+                          ? "Shipped"
+                          : "Cancel Order"}
+                      </button>
+                    )
+                  }
                   <button
                     onClick={() => {
                       navigate(

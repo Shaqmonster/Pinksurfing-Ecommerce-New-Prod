@@ -19,6 +19,14 @@ export default function Orders() {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState("");
 
+  const {
+    user,
+    setSingleOrderProduct,
+    setIsSingleOrderFormOpen,
+    setIsProfileOpen,
+  } = useContext(authContext);
+
+
   const GetOrders = async () => {
     if (!cookies.token) {
       navigate("/signin");
@@ -167,33 +175,62 @@ export default function Orders() {
                             </p>
                           </div>
                           <div className="flex flex-col mt-2 sm:mt-0 ml-4">
-                            <button
-                              className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                              onClick={() => navigate(`/summary/${order.id}`)}
-                            >
-                              Track Order{" "}
-                              <ArrowRightIcon className="inline-block w-4" />
-                            </button>
-                            <button
-                              disabled={
-                                order.order_status.toUpperCase() === "SHIPPED" ||
-                                order.order_status.toUpperCase() ===
-                                "DELIVERED" ||
-                                order.order_status.toUpperCase() === "RETURNED" ||
-                                order.order_status.toUpperCase() ===
-                                "RETURN-REQUESTED" ||
-                                order.order_status.toUpperCase() === "CANCELED"
-                              }
-                              onClick={() => {
-                                openModal();
-                                setDeleteOrderId(order.id);
-                              }}
-                              className="disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-300 text-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-red-100 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 w-full max-w-[300px]"
-                            >
-                              {order.order_status === "shipped"
-                                ? "Shipped"
-                                : "Cancel Order"}
-                            </button>
+                            {
+                              order.order_status !== "CANCELED" ? (
+                                <>
+                                  <button
+                                    className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                    onClick={() => navigate(`/summary/${order.id}`)}
+                                  >
+                                    {
+                                      order.order_status === "DELIVERED"
+                                        ? "View Order"
+                                        : "Track Order"
+                                    }
+                                    
+                                    <ArrowRightIcon className="inline-block w-4" />
+                                  </button>
+                                  {
+                                    order.order_status !== "DELIVERED" && (
+                                      <button
+                                        disabled={
+                                          order.order_status.toUpperCase() === "SHIPPED" ||
+                                          order.order_status.toUpperCase() ===
+                                          "DELIVERED" ||
+                                          order.order_status.toUpperCase() === "RETURNED" ||
+                                          order.order_status.toUpperCase() ===
+                                          "RETURN-REQUESTED" ||
+                                          order.order_status.toUpperCase() === "CANCELED"
+                                        }
+                                        onClick={() => {
+                                          openModal();
+                                          setDeleteOrderId(order.id);
+                                        }}
+                                        className="disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-300 text-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-red-100 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 w-full max-w-[300px]"
+                                      >
+                                        {order.order_status === "shipped"
+                                          ? "Shipped"
+                                          : "Cancel Order"}
+                                      </button>
+                                    )
+                                  }
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => 
+                                  {
+                                    setIsSingleOrderFormOpen(true);
+                                    setSingleOrderProduct(order.product);
+                                    setIsProfileOpen(false);          
+                                  }
+                                  }
+                                  className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                >
+                                  Buy Again
+                                  <ArrowRightIcon className="inline-block w-4" />
+                                </button>
+                              )
+                            }
                           </div>
                         </div>
                       </div>
