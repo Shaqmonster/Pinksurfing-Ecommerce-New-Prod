@@ -10,7 +10,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
   const displayReviews =
     reviews.length > 0
       ? reviews
-      : ProductDetailReviewSection.defaultProps.reviews;
+      : null;
 
   const Stars = ({ stars }) => {
     const ratingStars = Array.from({ length: 7 }, (elem, index) => (
@@ -47,7 +47,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
               activeTab === 2 && "bg-white dark:text-black"
             }`}
           >
-            Reviews ({displayReviews.length})
+            Reviews ({displayReviews? displayReviews.length:0})
           </p>
         </div>
       </div>
@@ -61,7 +61,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center text-xs sm:text-sm lg:p-7 py-3 lg:py-10 font-[400]">
-          {displayReviews.length > 0 ? (
+          {displayReviews &&displayReviews.length > 0 ? (
             displayReviews.map((item, index) => (
               <div
                 key={index}

@@ -187,7 +187,7 @@ export default function Orders() {
                                         ? "View Order"
                                         : "Track Order"
                                     }
-                                    
+
                                     <ArrowRightIcon className="inline-block w-4" />
                                   </button>
                                   {
@@ -216,19 +216,31 @@ export default function Orders() {
                                   }
                                 </>
                               ) : (
-                                <button
-                                  onClick={() => 
-                                  {
-                                    setIsSingleOrderFormOpen(true);
-                                    setSingleOrderProduct(order.product);
-                                    setIsProfileOpen(false);          
-                                  }
-                                  }
-                                  className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                                >
-                                  Buy Again
-                                  <ArrowRightIcon className="inline-block w-4" />
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setIsSingleOrderFormOpen(true);
+                                      setSingleOrderProduct(order.product);
+                                      setIsProfileOpen(false);
+                                    }
+                                    }
+                                    className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                  >
+                                    Buy Again
+                                    <ArrowRightIcon className="inline-block w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      navigate(
+                                        `/product/productDetail/${order.product.slug}?productId=${order.product.id}`
+                                      );
+                                    }}
+                                    className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                  >
+                                    View Product
+                                    <ArrowRightIcon className="inline-block w-4" />
+                                  </button>
+                                </>
                               )
                             }
                           </div>
