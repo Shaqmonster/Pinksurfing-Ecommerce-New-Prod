@@ -297,7 +297,7 @@ const Summary = () => {
               )}
             </div>
 
-            <div className="col-span-7 hidden sm:block">
+            {/* <div className="col-span-7 hidden sm:block">
               {order.paid_with_escrow ? (
                 <div className="col-span-7">
                   <h2 className="text-lg font-semibold dark:text-gray-300 text-black mb-4">
@@ -479,7 +479,7 @@ const Summary = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

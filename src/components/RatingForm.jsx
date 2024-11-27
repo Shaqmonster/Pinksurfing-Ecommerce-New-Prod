@@ -121,7 +121,6 @@ export default function RatingForm({ order }) {
       </div>
     );
   };
-
   return (
     <>
       <Transition appear show={isRatingFormOpen} as={Fragment}>

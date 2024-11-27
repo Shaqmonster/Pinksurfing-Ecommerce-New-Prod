@@ -123,7 +123,7 @@ export default function ProfilePopup() {
           customer_profile_picture,
           first_name,
           last_name,
-          addresses,
+          // addresses,
         },
         {
           headers: {
@@ -136,7 +136,7 @@ export default function ProfilePopup() {
         toast.success("Profile updated successfully", {
           position: "top-center",
         });
-        // GetProfile();
+        GetProfile();
       }
       else{
         console.error(error);

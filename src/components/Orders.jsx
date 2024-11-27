@@ -11,15 +11,16 @@ import Header from "./Header";
 import CancelDialog from "./CancelDialog";
 
 export default function Orders() {
-  const { currency } = useContext(authContext);
+  const { currency ,setIsRatingFormOpen,isRatingFormOpen} = useContext(authContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const [isOpen, setIsOpen] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState("");
+  
 
-  const {
+  const { 
     user,
     setSingleOrderProduct,
     setIsSingleOrderFormOpen,
@@ -135,18 +136,24 @@ export default function Orders() {
                       </div>
                     </div>
                     {groupOrdersByOrderId(orders)[orderId].map((order, index) => (
+
                       <div
                         key={index}
                         className="flex p-4 border-b dark:border-white/30"
                       >
-                        <div className="w-full sm:flex items-center">
-                          <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden">
+
+                        <div className="w-full sm:flex items-center"
+                        >
+                          <button onClick={() => navigate(`/summary/${order.id}`)}>
+
+                          <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden "                           >
                             <img
                               className="w-full h-full object-cover"
                               alt="img"
                               src={`${order.product.image1}`}
-                            />
+                              />
                           </div>
+                              </button>
                           <div className="flex flex-col ml-4 sm:flex-grow">
                             <p className="font-bold mb-1 text-[18px] sm:text-[20px] capitalize">
                               {order.product.name}
@@ -180,18 +187,26 @@ export default function Orders() {
                                 <>
                                   <button
                                     className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                                    onClick={() => navigate(`/summary/${order.id}`)}
-                                  >
+                                    onClick={() => {
+                                      if (order.order_status === "DELIVERED") {
+                                        setIsSingleOrderFormOpen(true);
+                                        setSingleOrderProduct(order.product);
+                                        setIsProfileOpen(false);
+                                      } else {
+                                        navigate(`/summary/${order.id}`);
+                                      }
+                                    }}
+                                                                    >
                                     {
                                       order.order_status === "DELIVERED"
-                                        ? "View Order"
+                                        ? "Re Order"
                                         : "Track Order"
                                     }
 
                                     <ArrowRightIcon className="inline-block w-4" />
                                   </button>
                                   {
-                                    order.order_status !== "DELIVERED" && (
+                                    order.order_status !== "DELIVERED" ? (
                                       <button
                                         disabled={
                                           order.order_status.toUpperCase() === "SHIPPED" ||
@@ -212,6 +227,15 @@ export default function Orders() {
                                           ? "Shipped"
                                           : "Cancel Order"}
                                       </button>
+                                    ) : (
+                                      <button
+                                      onClick={() => {
+                                        setIsRatingFormOpen(true);
+                                      }}
+                                      className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                    >
+                                      Rate Product
+                                    </button>
                                     )
                                   }
                                 </>
