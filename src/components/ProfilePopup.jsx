@@ -112,8 +112,10 @@ export default function ProfilePopup() {
     e.preventDefault();
     if (!cookies.token) {
       navigate("/signin");
+      return;
     }
-    axios
+    console.log(profile);
+    const response = await axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/update-profile/`,
         {
@@ -130,18 +132,18 @@ export default function ProfilePopup() {
           },
         }
       )
-      .then((response) => {
+      if(response.status === 200){
         toast.success("Profile updated successfully", {
           position: "top-center",
         });
-        GetProfile(); // Refresh profile data
-      })
-      .catch((error) => {
+        // GetProfile();
+      }
+      else{
         console.error(error);
-        toast.error("Failed to update profile,Plesae fil the details Correctly", {
+        toast.error("Failed to update profile,Please fill the details correctly", {
           position: "top-center",
         });
-      });
+      };
   };
 
   return (

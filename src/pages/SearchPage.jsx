@@ -9,25 +9,26 @@ import { toast } from "react-toastify";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import SearchForm from "../components/Search";
 
-const SearchPage = ({}) => {
+const SearchPage = ({ }) => {
   const navigate = useNavigate();
   const { search } = useContext(authContext);
   const { products, setProducts } = useContext(dataContext);
   const [loading, setLoading] = useState(false);
-
+  console.log(search);
   useEffect(() => {
     const getAllProducts = async () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`,
+          `${import.meta.env.VITE_SERVER_URL}/api/product/filter-products/?search=${search}`,
           {
             headers: {
               "Content-Type": "application/json",
             }
           }
         );
-        setProducts(response.data.Products);
+        console.log(response.data);
+        setProducts(response.data);
       } catch (error) {
         console.error(error);
       } finally {
@@ -52,26 +53,11 @@ const SearchPage = ({}) => {
           <div className="w-full sm:py-0 sm:pb-10 lg:px-0">
             {!loading ? (
               <div className="grid grid-cols-2 pb-6 sm:grid-cols-3 lg:grid-cols-4 gap-y-2.5 gap-x-0.5 lg:gap-x-2 lg:items-center lg:justify-start flex-wrap">
-                {products
-                  ?.filter((product) => {
-                    const lowerCaseSearch = search?.toLowerCase() || "";
-                    return (
-                      product.name?.toLowerCase().includes(lowerCaseSearch) ||
-                      product.category.name?.toLowerCase().includes(lowerCaseSearch) ||
-                      product.subcategory.name?.toLowerCase().includes(lowerCaseSearch)
-                    );
-                  })
-                  .map((product) => (
-                    <ProductCard product={product} isCard={true}/>
-                  ))}
-                {products?.filter((product) => {
-                  const lowerCaseSearch = search?.toLowerCase() || "";
-                  return (
-                    product.name?.toLowerCase().includes(lowerCaseSearch) ||
-                    product.category.name?.toLowerCase().includes(lowerCaseSearch) ||
-                    product.subcategory.name?.toLowerCase().includes(lowerCaseSearch)
-                  );
-                }).length === 0 && (
+                {products.length > 0 ? (
+                  products.map((product) => (
+                    <ProductCard key={product.id} product={product} isCard={true} />
+                  ))
+                ) : (
                   <p className="w-full text-center mt-[10%] text-[15px] dark:text-[#f5f5f5]">
                     No Products Found
                   </p>
