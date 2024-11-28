@@ -262,7 +262,7 @@ const Home = () => {
                                 : "https://media-cldnry.s-nbcnews.com/image/upload/t_nbcnews-fp-1024-512,f_auto,q_auto:best/newscms/2017_26/2053956/170627-better-grocery-store-main-se-539p.jpg"
                             }
                             alt={store.store_name}
-                            className="w-full h-[180px] object-contain"
+                            className="w-full h-[180px] object-cover"
                           />
                         </Link>
                         <h3 className="mt-2 text-lg font-medium text-center">
@@ -287,7 +287,7 @@ const Home = () => {
                         <img
                           src={product.image1}
                           alt={product.title}
-                          className="w-full h-[180px] object-contain"
+                          className="w-full h-[180px] object-cover"
                         />
                       </Link>
                       <div className="p-2 text-center">

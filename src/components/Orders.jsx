@@ -9,7 +9,8 @@ import axios from "axios";
 import { authContext } from "../context/authContext";
 import Header from "./Header";
 import CancelDialog from "./CancelDialog";
-
+import { useElements } from "@stripe/react-stripe-js";
+import RatingForm from '../components/RatingForm'
 export default function Orders() {
   const { currency ,setIsRatingFormOpen,isRatingFormOpen} = useContext(authContext);
   const [orders, setOrders] = useState([]);
@@ -22,12 +23,15 @@ export default function Orders() {
 
   const { 
     user,
+    singleOrderProduct,
     setSingleOrderProduct,
     setIsSingleOrderFormOpen,
     setIsProfileOpen,
   } = useContext(authContext);
 
-
+  useEffect(()=>{
+    console.log(singleOrderProduct)
+  },[setSingleOrderProduct])
   const GetOrders = async () => {
     if (!cookies.token) {
       navigate("/signin");
@@ -181,6 +185,7 @@ export default function Orders() {
                               </span>
                             </p>
                           </div>
+                          <RatingForm order={order} />
                           <div className="flex flex-col mt-2 sm:mt-0 ml-4">
                             {
                               order.order_status !== "CANCELED" ? (
@@ -189,17 +194,16 @@ export default function Orders() {
                                     className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
                                     onClick={() => {
                                       if (order.order_status === "DELIVERED") {
-                                        setIsSingleOrderFormOpen(true);
                                         setSingleOrderProduct(order.product);
+                                        setIsSingleOrderFormOpen(true);
                                         setIsProfileOpen(false);
                                       } else {
                                         navigate(`/summary/${order.id}`);
                                       }
-                                    }}
-                                                                    >
+                                    }}>
                                     {
                                       order.order_status === "DELIVERED"
-                                        ? "Re Order"
+                                        ? "Buy again"
                                         : "Track Order"
                                     }
 
@@ -230,7 +234,9 @@ export default function Orders() {
                                     ) : (
                                       <button
                                       onClick={() => {
+                                        console.log('clicked')
                                         setIsRatingFormOpen(true);
+                                        console.log(isRatingFormOpen)
                                       }}
                                       className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
                                     >

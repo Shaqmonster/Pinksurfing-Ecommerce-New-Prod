@@ -134,7 +134,7 @@ export default function RatingForm({ order }) {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/60" />
+            <div className="fixed inset-0 bg-black/10" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -285,7 +285,7 @@ export default function RatingForm({ order }) {
                           Title
                         </label>
                         <input
-                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-gray-800 dark:text-white bg-transparent focus:border-gray-500"
+                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none  dark:focus:bg-gray-800  dark:text-white bg-transparent focus:border-gray-500"
                           id="title"
                           name="title"
                           type="text"
@@ -303,7 +303,7 @@ export default function RatingForm({ order }) {
                           Share Your Review
                         </label>
                         <textarea
-                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-gray-800 dark:text-white bg-transparent focus:border-gray-500"
+                          className="appearance-none block w-full text-black border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none dark:focus:bg-gray-800 dark:text-white bg-transparent focus:border-gray-500"
                           id="body"
                           rows={5}
                           name="body"
