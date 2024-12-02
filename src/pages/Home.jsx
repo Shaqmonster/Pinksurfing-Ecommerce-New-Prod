@@ -172,6 +172,7 @@ const Home = () => {
                           ? item.extraclass
                           : "w-[45%] object-contain"
                       }`}
+                      loading="lazy"
                     />
                   </div>
                   <p className="font-medium text-[18px]">{item.name}</p>
