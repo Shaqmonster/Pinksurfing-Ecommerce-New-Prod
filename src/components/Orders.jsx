@@ -49,7 +49,11 @@ export default function Orders() {
         }
       );
       console.log(response.data);
-      setOrders(response.data);
+      const sortedOrders = response.data.sort(
+        (a, b) => new Date(b.date_of_order) - new Date(a.date_of_order)
+      );
+  
+      setOrders(sortedOrders);
       setLoading(false);
     } catch (error) {
       console.error(error);
