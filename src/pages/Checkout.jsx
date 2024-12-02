@@ -91,8 +91,17 @@ const Checkout = () => {
         const addressesArray = Array.isArray(response.data.addresses)
           ? response.data.addresses
           : Object.values(response.data.addresses).filter(
-              (value) => value !== null && value !== undefined
-            );
+            (value) => value !== null && value !== undefined
+          );
+
+        const sortedAddresses = addressesArray.sort((a, b) => {
+          return new Date(b.updated) - new Date(a.updated);
+        });
+
+        // Set the latest updated address as the default
+        const defaultAddress = sortedAddresses[0];
+
+        setAddressesId(defaultAddress?.id);
         setAddresses(addressesArray);
       })
       .catch((error) => {
@@ -132,7 +141,7 @@ const Checkout = () => {
         },
       })
       .then((response) => {
-        if(response.data.length==0){
+        if (response.data.length == 0) {
           navigate("/");
         }
         setCartProducts(response.data);
@@ -140,7 +149,7 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-      toast.error("Unable to load cart", {
+        toast.error("Unable to load cart", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -225,7 +234,7 @@ const Checkout = () => {
         </div>
       </div>
       {clientSecret && stripePromise && (
-        <div className=" fixed z-50 inset-0 bg-black/80 w-full h-screen flex items-center justify-center">
+        <div className=" fixed z-50 inset-0 dark:bg-black/80 w-full h-screen flex items-center justify-center">
           <div className=" z-50 bg-white min-h-[200px] w-fit p-4 rounded-md  ">
             <Elements stripe={stripePromise} options={{ clientSecret }}>
               <CheckoutForm />
@@ -241,7 +250,7 @@ const Checkout = () => {
           </div>
         </div>
       )}
-      <div className="grid sm:px-10 h-min min-h-screen pb-8 dark:bg-black dark:text-[#f5f5f5] lg:grid-cols-2 lg:px-20 xl:px-32">
+      <div className="grid sm:px-10 h-min min-h-screen pb-8 bg-white dark:bg-black dark:text-[#f5f5f5] text-black lg:grid-cols-2 lg:px-20 xl:px-32">
         <div className=" px-2 sm:px-4 pt-8">
           <p className="text-xl font-medium">Order Summary</p>
           <p className="text-gray-400">
@@ -268,7 +277,7 @@ const Checkout = () => {
                       {currency}
                       {product.additional_price > 0
                         ? Number(product.product.unit_price) +
-                          Number(product.additional_price)
+                        Number(product.additional_price)
                         : product.product.unit_price}
                     </p>
                     {product.additional_price > 0 && (
@@ -295,21 +304,19 @@ const Checkout = () => {
             {addresses?.slice().map((address, index) => (
               <div
                 key={address.id || index + address.zip_code}
-                className={`relative ${
-                  addressesId === address.id
+                className={`relative ${addressesId === address.id
                     ? "border-2 border-blue-400 rounded-md"
                     : "border border-gray-300 rounded-md"
-                }`}
+                  }`}
                 onClick={() => {
                   setAddressesId(address.id);
                 }}
               >
                 <span
-                  className={`absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 ${
-                    addressesId === address.id
+                  className={`absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 ${addressesId === address.id
                       ? "border-blue-400"
                       : "border-gray-300 hidden"
-                  } bg-white dark:bg-black`}
+                    } bg-white dark:bg-black`}
                 ></span>
                 <label
                   className="dark:text-[#f5f5f5] dark:bg-gray-800 flex cursor-pointer select-none rounded-md p-4"
@@ -337,7 +344,7 @@ const Checkout = () => {
             ))}
           </form>
         </div>
-        <div className="sm:mt-10 h-fit w-[98vw] sm:w-full  bg-gray-200 dark:bg-black dark:text-[#f5f5f5] px-4 pt-4 sm:pt-8 lg:mt-0">
+        <div className="sm:mt-10 h-fit w-[98vw] sm:w-full   bg-white dark:bg-black dark:text-[#f5f5f5] px-4 pt-4 sm:pt-8 lg:mt-0">
           <p className="text-xl font-medium">Payment Details</p>
           <p className="text-gray-400">
             Complete your order by providing your payment details.

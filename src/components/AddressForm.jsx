@@ -16,7 +16,7 @@ export default function AddressForm() {
   const { isAddressFormOpen, setIsAddressFormOpen, user } =
     useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
-  const {handleError , handleSuccess} = useContext(dataContext);
+  const { handleError, handleSuccess } = useContext(dataContext);
 
   const navigate = useNavigate();
   const cancelButtonRef = useRef();
@@ -219,7 +219,9 @@ export default function AddressForm() {
                           className="block uppercase tracking-wide text-black text-xs font-bold mb-2 dark:text-white"
                           htmlFor="name"
                         >
-                          Name
+                          <label className="text-gray-800 dark:text-white font-medium">
+                            Name <span className="text-red-500">*</span>
+                          </label>
                         </label>
                         <input
                           className="appearance-none block w-full bg-gray-200 text-black dark:text-white border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
@@ -238,7 +240,9 @@ export default function AddressForm() {
                           className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
                           htmlFor="phone"
                         >
-                          Phone
+                          <label className="text-gray-800 dark:text-white font-medium">
+                            Phone <span className="text-red-500">*</span>
+                          </label>
                         </label>
                         <input
                           className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
@@ -295,7 +299,9 @@ export default function AddressForm() {
                           className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
                           htmlFor="country"
                         >
-                          Country
+                          <label className="text-gray-800 dark:text-white font-medium">
+                            Country <span className="text-red-500">*</span>
+                          </label>
                         </label>
                         <div className="relative">
                           <select
@@ -323,7 +329,9 @@ export default function AddressForm() {
                           className="block uppercase tracking-wide dark:text-white   text-black text-xs font-bold mb-2"
                           htmlFor="state"
                         >
-                          State
+                          <label className="text-gray-800 dark:text-white font-medium">
+                            State <span className="text-red-500">*</span>
+                          </label>
                         </label>
                         <select
                           className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
@@ -348,7 +356,9 @@ export default function AddressForm() {
                           className="block uppercase tracking-wide dark:text-white  text-black text-xs font-bold mb-2"
                           htmlFor="city"
                         >
-                          City
+                          <label className="text-gray-800 dark:text-white font-medium">
+                            City <span className="text-red-500">*</span>
+                          </label>
                         </label>
                         <select
                           className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
@@ -371,7 +381,9 @@ export default function AddressForm() {
                           className="block uppercase tracking-wide dark:text-white text-black text-xs font-bold mb-2"
                           htmlFor="zip_code"
                         >
-                          Zip
+                          <label className="text-gray-800 dark:text-white font-medium">
+                            ZIP <span className="text-red-500">*</span>
+                          </label>
                         </label>
                         <input
                           className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"

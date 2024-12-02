@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useContext, useEffect,useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FaHeart, FaStar } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -229,35 +229,33 @@ const ProductCard = ({ product, isCard }) => {
 
   return (
     <div
-      className={`mx-auto mt-2 rounded-lg relative w-[100%] lg:w-70 flex ${isCard ? "flex-col" : "flex-row items-end"
-        } transform overflow-hidden bg-[#ffffff] dark:bg-[#08060f] shadow-md duration-300 hover:scale-[1.005] hover:shadow-lg`}
+      className={`mx-auto mt-4 rounded-xl relative w-full lg:w-[100%] flex ${isCard ? "flex-col" : "flex-row items-center"
+        } transform overflow-hidden bg-white dark:bg-[#1E1E2A] shadow-md duration-300 hover:scale-[1.02] hover:shadow-lg`}
     >
+      {/* Wishlist Icon */}
       <FaHeart
         id={`heart-${product.id}`}
         onClick={handleWishlistClick}
         className={`absolute top-4 right-4 cursor-pointer ${wishlistProducts.find((i) => i.id === product.id)
           ? "text-red-500"
           : "text-gray-400"
-          } text-[20px]`}
+          } text-[22px] transition-transform duration-200 transform hover:scale-110`}
       />
 
+      {/* Product Image */}
       {isCard ? (
-        <Link
-          to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-        >
+        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
           <img
-            className="w-full min-h-[200px] max-h-[200px] sm:h-[87%] object-contain  cursor-pointer border border-black"
+            className="w-full min-h-[220px] max-h-[220px] sm:h-[90%] object-cover rounded-t-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
             src={`${product.image1}` || "/emptyCart.png"}
             alt="Product Image"
           />
         </Link>
       ) : (
         <div className="w-[50%] overflow-hidden">
-          <Link
-            to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-          >
+          <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
             <img
-              className="max-h-48 w-full object-contain object-center"
+              className="max-h-48 w-full object-cover rounded-l-lg border border-gray-200 dark:border-gray-700"
               src={`${product.image1}` || "/emptyCart.png"}
               alt="Product Image"
             />
@@ -265,42 +263,39 @@ const ProductCard = ({ product, isCard }) => {
         </div>
       )}
 
-      <div
-        className={`text-[#f5f5f5] relative ${isCard ? "" : "w-[50%] ml-auto"}`}
-      >
-        <Link
-          to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-        >
-          <h2 className="text-[16px] h-[25px] text-[#363F4D] text-center sm:h-fit overflow-hidden sm:text-lg font-medium dark:text-white whitespace-nowrap px-4">
+      {/* Product Details */}
+      <div className={`relative px-4 py-3 ${isCard ? "" : "w-[50%] ml-auto"}`}>
+        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
+          <h2 className="text-[16px] sm:text-lg font-medium text-gray-800 dark:text-white text-center sm:text-left truncate">
             {product.name}
           </h2>
-          <div className="flex flex-col items-center lg:items-center w-full">
-            <div className="flex items-baseline w-full justify-center">
+
+          <div className="flex flex-col items-center sm:items-start mt-2">
+            {/* Pricing */}
+            <div className="flex items-baseline justify-center sm:justify-start">
               {product.mrp !== product.unit_price && (
-                <p className="text-[13.4px] lg:text-base mr-1 text-grey/70 line-through text-[#A4A4A4] dark:text-gray-300">
+                <p className="text-[13.4px] lg:text-sm mr-2 text-gray-500 line-through dark:text-gray-400">
                   <span>{currency}</span>
                   {product.mrp}
                 </p>
               )}
-              <p className="text-center mb-2 lg:mr-2 text-lg font-semibold text-[#F9BA48] dark:text-white">
+              <p className="text-lg font-semibold text-[#F9BA48] dark:text-[#FFA41C]">
                 <span>{currency}</span>
                 {product.unit_price}
               </p>
             </div>
-            <Stars
-              stars={
-                  averageRating
-              }
-            />
+            {/* Ratings */}
+            <div className="mt-2">
+              <Stars stars={averageRating} />
+            </div>
           </div>
         </Link>
-        <div className="flex flex-col justify-self-end">
-          <Link
-            to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-          >
+
+        {/* View Product Button */}
+        <div className="flex mt-4">
+          <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
             <button
-              className={`w-full mt-2 text-[13.7px] sm:text-base bg-[#efefef] dark:bg-[#FFA41C] dark:text-black text-purple-900 font-semibold py-1.5 ${isCard ? "" : "mt-5"
-                }`}
+              className={`w-full py-2 px-2 rounded-lg bg-gradient-to-r bg-[#ffa318] text-white font-medium text-sm shadow-md hover:shadow-lg hover:opacity-90 transition duration-300 ${isCard ? "" : "mt-3"}`}
             >
               View Product
             </button>
