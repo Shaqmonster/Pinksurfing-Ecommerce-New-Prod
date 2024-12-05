@@ -18,6 +18,11 @@ const SearchPage = ({ }) => {
   useEffect(() => {
     const getAllProducts = async () => {
       setLoading(true);
+      if(search === "") {
+        setLoading(false);
+        setProducts([]);
+        return;
+      }
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/product/filter-products/?search=${search}`,

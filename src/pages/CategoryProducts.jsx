@@ -27,8 +27,8 @@ export default function CategoryProducts() {
     const navigate = useNavigate();
     const [cookies, removeCookie] = useCookies([]);
     const { products } = useContext(dataContext);
-    const { currency, isDarkMode } = useContext(authContext);
-
+    const { currency, isDarkMode ,isProfilePopupOpen} = useContext(authContext);
+    console.log("profile",isProfilePopupOpen)
     // useState========================================================================
     const [filterBy, setFilterBy] = useState("");
     const [priceFilter, setPriceFilter] = useState("");
@@ -506,36 +506,39 @@ export default function CategoryProducts() {
                                             </span>
                                         </Disclosure.Button>
                                     </h3>
-                                    <Disclosure.Panel className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 shadow-lg z-10">
-                                        <div className="space-y-4 p-4">
-                                            {sortMethods.map((option, optionIdx) => (
-                                                <div
-                                                    key={optionIdx}
-                                                    className="flex items-center cursor-pointer"
-                                                    onClick={() => {
-                                                        setSortMethod(option.value);
-                                                        setSortName(`${option.name}`);
-                                                    }}
-                                                >
-                                                    <input
-                                                        id={option.name}
-                                                        name={option.name}
-                                                        defaultValue={option.name}
-                                                        type="checkbox"
-                                                        checked={option.value === sortMethod}
-                                                        onChange={() => { }}
-                                                        className="h-4 w-4 rounded border-gray-300 cursor-pointer text-indigo-600 focus:ring-indigo-500"
-                                                    />
-                                                    <label
-                                                        htmlFor={option.name}
-                                                        className="ml-3 text-sm text-gray-600 cursor-pointer dark:text-[#f5f5f5]"
+                                    {!isProfilePopupOpen && (
+                                        <Disclosure.Panel className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 shadow-lg z-10">
+                                            <div className="space-y-4 p-4">
+                                                {sortMethods.map((option, optionIdx) => (
+                                                    <div
+                                                        key={optionIdx}
+                                                        className="flex items-center cursor-pointer"
+                                                        onClick={() => {
+                                                            setSortMethod(option.value);
+                                                            setSortName(`${option.name}`);
+                                                        }}
                                                     >
-                                                        {option.name}
-                                                    </label>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </Disclosure.Panel>
+                                                        <input
+                                                            id={option.name}
+                                                            name={option.name}
+                                                            defaultValue={option.name}
+                                                            type="checkbox"
+                                                            checked={option.value === sortMethod}
+                                                            onChange={() => { }}
+                                                            className="h-4 w-4 rounded border-gray-300 cursor-pointer text-indigo-600 focus:ring-indigo-500"
+                                                        />
+                                                        <label
+                                                            htmlFor={option.name}
+                                                            className="ml-3 text-sm text-gray-600 cursor-pointer dark:text-[#f5f5f5]"
+                                                        >
+                                                            {option.name}
+                                                        </label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </Disclosure.Panel>
+
+                                    )}
                                 </>
                             )}
                         </Disclosure>

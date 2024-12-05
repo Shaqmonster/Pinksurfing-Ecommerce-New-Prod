@@ -39,7 +39,7 @@ const ProductDetailPage = () => {
   const rawProductId = searchParams.get("productId");
   // Remove trailing slash from productId, if any
   const productId = rawProductId ? rawProductId.replace(/\/$/, "") : rawProductId;
-  const {handleError , handleSuccess} = useContext(dataContext);
+  const { handleError, handleSuccess } = useContext(dataContext);
   const {
     setCartProducts,
     cartProducts,
@@ -154,7 +154,7 @@ const ProductDetailPage = () => {
       });
   };
   //   remove product--------------------------------------------------------
-  const RemoveWishlistProduct =async (productId) => {
+  const RemoveWishlistProduct = async (productId) => {
     const heartElement = document.getElementById(`heart-${productId}`);
     heartElement.classList.remove("text-red-500");
     heartElement.classList.add("text-gray-400");
@@ -178,10 +178,10 @@ const ProductDetailPage = () => {
       console.error(error);
       heartElement.classList.add("text-red-500");
       heartElement.classList.remove("text-gray-400");
-      toast.error(error.response.data.message || 
-        error.response.data.Status || 
-        error.response.data.Err || 
-        error.response.data.detail || 
+      toast.error(error.response.data.message ||
+        error.response.data.Status ||
+        error.response.data.Err ||
+        error.response.data.detail ||
         "An error occurred", {
         position: "top-right",
       });
@@ -450,8 +450,8 @@ const ProductDetailPage = () => {
                         <img
                           onClick={() => setActiveImage(product.image1)}
                           className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image1
-                              ? "opacity-40 border-[2px] border-orange-400 "
-                              : " cursor-pointer"
+                            ? "opacity-40 border-[2px] border-orange-400 "
+                            : " cursor-pointer"
                             }  object-contain`}
                           src={
                             product.image1 ||
@@ -466,8 +466,8 @@ const ProductDetailPage = () => {
                             setActiveImage(product.image2);
                           }}
                           className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image2
-                              ? "opacity-40 border-[2px] border-orange-400 "
-                              : " cursor-pointer"
+                            ? "opacity-40 border-[2px] border-orange-400 "
+                            : " cursor-pointer"
                             } object-contain`}
                           src={
                             product.image2 ||
@@ -482,8 +482,8 @@ const ProductDetailPage = () => {
                             setActiveImage(product.image3);
                           }}
                           className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image3
-                              ? "opacity-40 border-[2px] border-orange-400 "
-                              : " cursor-pointer"
+                            ? "opacity-40 border-[2px] border-orange-400 "
+                            : " cursor-pointer"
                             }  object-contain`}
                           src={
                             product.image3 ||
@@ -498,24 +498,13 @@ const ProductDetailPage = () => {
                             setActiveImage(product.image4);
                           }}
                           className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image4
-                              ? "opacity-40 border-[2px] border-orange-400 "
-                              : " cursor-pointer"
+                            ? "opacity-40 border-[2px] border-orange-400 "
+                            : " cursor-pointer"
                             }  object-contain`}
                           src={`${product.image4}`}
                           alt="Product Image"
                         />
                       )}
-                    </div>
-                    <div className=" px-2 pb-4 sm:px-6 border-t flex justify-center sm:justify-start items-center gap-5 border-gray-300  ">
-                      <div className="flex flex-wrap items-center mt-2 sm:mt-4">
-                        <span className="mr-2">
-                          <FaTruck className=" text-gray-800 dark:text-[#f5f5f5]" />
-                        </span>
-                        <h2 className=" text-sm lg:text-lg font-bold text-black/70 lg:  text-black dark:text-[#f5f5f5]">
-                          Free domestic shipping
-                        </h2>
-                      </div>
-                      <div className="flex flex-wrap items-center mt-2 sm:mt-4"></div>
                     </div>
                   </div>
                 </div>
@@ -528,8 +517,8 @@ const ProductDetailPage = () => {
                       className={`absolute top-2 right-2 cursor-pointer ${wishlistProducts.find((i) => {
                         return i.id === product.id;
                       })
-                          ? "text-red-500"
-                          : "text-gray-400"
+                        ? "text-red-500"
+                        : "text-gray-400"
                         } text-[22px] `}
                     />
                   </h2>
@@ -539,7 +528,6 @@ const ProductDetailPage = () => {
                       onClick={handleShareClick}
                     />
                   </div>
-
                   <div className="flex flex-col mb-1 sm:mb-4">
                     <div className="flex mr-4 pt-4 items-center">
                       <span className="text-[1.5rem] md:text-[1.7rem] 2xl:text-[1.9rem] font-semibold raleway  text-[#1d1d1d] dark:text-[#f5f5f5] mr-1">
@@ -591,9 +579,9 @@ const ProductDetailPage = () => {
                                   }
                                   key={index}
                                   className={`w-7 h-7 ${selectedAttributes[attributeName]?.value ===
-                                      value.value
-                                      ? " border-2 border-blue-400"
-                                      : "border-2 border-black"
+                                    value.value
+                                    ? " border-2 border-blue-400"
+                                    : "border-2 border-black"
                                     } rounded-full bg-${value.value.toLowerCase()}-500   ml-2`}
                                 ></button>
                               ))}
@@ -610,9 +598,9 @@ const ProductDetailPage = () => {
                                     )
                                   }
                                   className={`text-gray-500 6 ${selectedAttributes[attributeName]?.value ===
-                                      value.value
-                                      ? " border border-blue-400 bg-blue-600 text-white"
-                                      : "border bg-transparent border-white/30 hover:bg-gray-400 hover:text-gray-800 "
+                                    value.value
+                                    ? " border border-blue-400 bg-blue-600 text-white"
+                                    : "border bg-transparent border-white/30 hover:bg-gray-400 hover:text-gray-800 "
                                     }  py-2 px-4 rounded-xl font-bold mr-2`}
                                 >
                                   {value.value}
@@ -694,6 +682,20 @@ const ProductDetailPage = () => {
                 </div>
               </div>
               <ProductDetailReviewSection reviews={reviews} product={product} />
+              {/* <svg className="z-100" width="536" height="1071" viewBox="0 0 536 1071" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g filter="url(#filter0_f_1_3190)">
+                  <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
+                </g>
+                <defs>
+                  <filter id="filter0_f_1_3190" x="0" y="0" width="1071" height="1071" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                    <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                    <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+                    <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+                  </filter>
+                </defs>
+              </svg> */}
+
+
               <div className="md:hidden">
                 <YouMightAlsoLike
                   allProducts={allProducts}

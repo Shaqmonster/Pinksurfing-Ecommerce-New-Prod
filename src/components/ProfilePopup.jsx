@@ -6,7 +6,7 @@ import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
-
+import Loader from "./Loader";
 export default function ProfilePopup() {
   const {
     isProfilePopupOpen,
@@ -16,6 +16,7 @@ export default function ProfilePopup() {
   } = useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   function closeModal() {
     setIsProfilePopupOpen(false);
@@ -114,9 +115,11 @@ export default function ProfilePopup() {
       navigate("/signin");
       return;
     }
-    console.log(profile);
-    const response = await axios
-      .post(
+    try {
+      setIsLoading(true); // Start loader
+      console.log(profile);
+
+      const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/update-profile/`,
         {
           customer_phone,
@@ -131,23 +134,35 @@ export default function ProfilePopup() {
             Authorization: `Bearer ${cookies.token}`,
           },
         }
-      )
-      if(response.status === 200){
+      );
+
+      if (response.status === 200) {
         toast.success("Profile updated successfully", {
           position: "top-center",
         });
         GetProfile();
       }
-      else{
-        console.error(error);
-        toast.error("Failed to update profile,Please fill the details correctly", {
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        "Failed to update profile. Please fill the details correctly.",
+        {
           position: "top-center",
-        });
-      };
+        }
+      );
+    } finally {
+      setIsLoading(false); // Stop loader
+    }
   };
 
   return (
     <>
+<div
+  className={`fixed inset-0 z-[9999] flex items-center justify-center ${isLoading ? "visible" : "hidden"}`}
+>
+  {isLoading && <Loader />}
+</div>
+
       <Transition appear show={isProfilePopupOpen} as={Fragment}>
         <Dialog
           as="div"

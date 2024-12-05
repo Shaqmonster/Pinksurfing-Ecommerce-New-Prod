@@ -292,7 +292,7 @@ const ProductCard = ({ product, isCard }) => {
         </Link>
 
         {/* View Product Button */}
-        <div className="flex mt-4">
+        <div className="flex mt-4 md:justify-start justify-center">
           <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
             <button
               className={`w-full py-2 px-2 rounded-lg bg-gradient-to-r bg-[#ffa318] text-white font-medium text-sm shadow-md hover:shadow-lg hover:opacity-90 transition duration-300 ${isCard ? "" : "mt-3"}`}
