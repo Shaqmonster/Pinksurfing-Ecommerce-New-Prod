@@ -31,28 +31,40 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
 
   return (
     <>
-      <div className="flex flex-col">
-        <div className="flex items-start justify-left border-b border-gray-400">
+      <div className="flex flex-col border border-white font-public-sans">
+        <div className="flex items-start justify-center ">
           <p
             onClick={() => setActiveTab(1)}
-            className={`raleway cursor-pointer text-center text-[11px] md:text-[16px] 2xl:text-[20px] py-1.5 px-7 ${
-              activeTab === 1 && "bg-white dark:text-black"
-            }`}
+            className={`raleway font-public-sans cursor-pointer text-center text-[11px] md:text-[16px] 2xl:text-[20px] py-1.5 px-7 ${activeTab === 1 && "bg-[#9747FF] underline-[#FA8232] dark:text-black"
+              }`}
           >
             Details
           </p>
           <p
             onClick={() => setActiveTab(2)}
-            className={`raleway cursor-pointer text-center text-[11px] md:text-[16px] 2xl:text-[20px] py-1.5 px-7 ${
-              activeTab === 2 && "bg-white dark:text-black"
-            }`}
+            className={`raleway font-public-sans cursor-pointer text-center text-[11px] md:text-[16px] 2xl:text-[20px] py-1.5 px-7 ${activeTab === 2 && "bg-[#9747FF] dark:text-black"
+              }`}
           >
-            Reviews ({displayReviews? displayReviews.length:0})
+            Reviews ({displayReviews ? displayReviews.length : 0})
           </p>
         </div>
       </div>
+
+      <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-[300px] left-0 z-[0] pointer-events-none hidden lg:block">
+        <g filter="url(#filter0_f_1_3194)">
+          <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
+        </g>
+        <defs>
+          <filter id="filter0_f_1_3194" x="-430" y="0" width="1031" height="1031" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix" />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="154" result="effect1_foregroundBlur_1_3194" />
+          </filter>
+        </defs>
+      </svg>
+
       {activeTab === 1 ? (
-        <div className="flex flex-col text-xs sm:text-sm lg:p-7 py-3 lg:py-10 font-[400]">
+        <div className="flex flex-col border border-white text-xs sm:text-sm lg:p-7 py-3 lg:py-10 font-[400]">
           <div className="raleway text-[12px] md:text-[13.3px] 2xl:text-[14px]">
             {product?.description
               ? parse(product.description)
@@ -60,8 +72,8 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center text-xs sm:text-sm lg:p-7 py-3 lg:py-10 font-[400]">
-          {displayReviews &&displayReviews.length > 0 ? (
+        <div className="flex flex-col items-center justify-center text-xs sm:text-sm lg:p-7 py-3 lg:py-10 font-[400] border border-white">
+          {displayReviews && displayReviews.length > 0 ? (
             displayReviews.map((item, index) => (
               <div
                 key={index}

@@ -5,7 +5,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import Header from "../components/Header";
 import axios from "axios";
-import { FaShare } from "react-icons/fa";
+import { FaCopy, FaFacebook, FaFontAwesome, FaPinterest, FaShare, FaTwitter } from "react-icons/fa";
 import OrderConfirm from "../components/OrderConfirm";
 import { FaHeart, FaStar, FaTruck } from "react-icons/fa";
 import { dataContext } from "../context/dataContext";
@@ -41,6 +41,7 @@ const ProductDetailPage = () => {
   const searchParams = new URLSearchParams(location.search);
   const rawProductId = searchParams.get("productId");
   const [averageRating, setAverageRating] = useState(0);
+  const [currentUrl, setCurrentUrl] = useState("");
 
   // Remove trailing slash from productId, if any
   const productId = rawProductId ? rawProductId.replace(/\/$/, "") : rawProductId;
@@ -60,9 +61,8 @@ const ProductDetailPage = () => {
     setIsProfileOpen,
     currency,
   } = useContext(authContext);
-  console.log(user);
 
-  const handleShareClick = () => {
+  const handleCopy = () => {
     const currentURL = window.location.href;
 
     navigator.clipboard.writeText(currentURL).then(() => {
@@ -70,6 +70,18 @@ const ProductDetailPage = () => {
         position: "top-right",
       });
     });
+  };
+  const handleShareClick = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product.title,
+        url: window.location.href,
+      })
+        .then(() => console.log('Product shared successfully!'))
+        .catch((error) => console.error('Error sharing:', error));
+    } else {
+      toast.error('Sharing is not supported in this browser.');
+    }
   };
   useEffect(() => {
     // Remove trailing slash from URL if present
@@ -404,6 +416,13 @@ const ProductDetailPage = () => {
     }
   }, [product]);
 
+  useEffect(() => {
+    // Safely get the current URL on the client-side
+    if (typeof window !== "undefined") {
+      setCurrentUrl(window.location.href);
+    }
+  }, []);
+
   return (
     <>
       {orderConfirm && <OrderConfirm />}
@@ -518,23 +537,8 @@ const ProductDetailPage = () => {
                     className="text-[20px] font-public-sans font-[400] text-black dark:text-[#f5f5f5] leading-[28px] mb-2 sm:text-[22px] sm:leading-[30px]"
                   >
                     {product.name}
-                    {/* <FaHeart
-                      id={`heart-${product.id}`}
-                      onClick={handleWishlistClick}
-                      className={`absolute top-2 right-2 cursor-pointer ${wishlistProducts.find((i) => {
-                        return i.id === product.id;
-                      })
-                        ? "text-red-500"
-                        : "text-gray-400"
-                        } text-[22px] `}
-                    /> */}
+
                   </h2>
-                  {/* <div className="absolute top-2 right-10">
-                    <FaShare
-                      className="cursor-pointer text-white text-xl"
-                      onClick={handleShareClick}
-                    />
-                  </div> */}
                   <svg
                     className="fixed top-0 right-0 z-[0] pointer-events-none"
                     width="536"
@@ -713,7 +717,7 @@ const ProductDetailPage = () => {
                   </div>
                   <div className="flex flex-col sm:flex-row items-center w-full py-3 sm:py-4 bg-white dark:bg-[#0E0F13] shadow-inner sm:shadow-none shadow-black/20 gap-4">
                     {/* Quantity Selector */}
-                    <div className="flex items-center gap-2 bg-[#D5C1EE] text-[#475156] px-4 py-2 rounded-md">
+                    {/* <div className="flex items-center gap-2 bg-[#D5C1EE] text-[#475156] px-4 py-2 rounded-md">
                       <button
                         onClick={() => DecrementQuantity()}
                         className="text-2xl font-bold hover:text-[#FFD814]"
@@ -727,7 +731,7 @@ const ProductDetailPage = () => {
                       >
                         +
                       </button>
-                    </div>
+                    </div> */}
 
                     {/* Add to Cart Button */}
                     <div className="w-full sm:w-auto">
@@ -779,93 +783,80 @@ const ProductDetailPage = () => {
                   </div>
                   <div className="flex items-center justify-between w-full py-4 px-6 bg-[#0E0F13] text-white shadow-inner sm:shadow-none">
                     {/* Add to Wishlist */}
-                    <div className="flex items-center gap-2 cursor-pointer hover:text-[#FFD814]">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 8a5 5 0 0110 0c0 1.657-.895 3.09-2.222 3.891a7.35 7.35 0 00-1.11.809L12 15.63l2.332-2.93a7.352 7.352 0 00-1.11-.809A5.002 5.002 0 0118 8a5 5 0 01-10 0z"
-                        />
-                      </svg>
-                      <span className="text-sm font-medium">Add to Wishlist</span>
+                    <div className="flex items-center gap-2 ">
+                      <FaHeart
+                        id={`heart-${product.id}`}
+                        onClick={handleWishlistClick}
+                        className={`cursor-pointer ${wishlistProducts.find((i) => {
+                          return i.id === product.id;
+                        })
+                          ? "text-red-500"
+                          : "text-gray-400"
+                          } text-[22px] `}
+                        size={15}
+                      />
+                      <span className="text-sm font-small">Add to Wishlist</span>
                     </div>
 
                     {/* Share Product */}
                     <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium">Share product:</span>
+                      <span className="text-sm font-small">Share product:</span>
                       <div className="flex items-center gap-3">
                         {/* Share Icon */}
                         <button
-                          className="hover:text-[#FFD814]"
-                          onClick={() => navigator.clipboard.writeText(window.location.href)}
+                          className="hover:text-[#6A1BBE]"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2M16 8l4 4m0 0l-4 4m4-4H10"
+                          <div className="">
+                            <FaShare
+                              className="cursor-pointer text-white text-xl"
+                              onClick={handleShareClick}
+                              size={15}
                             />
-                          </svg>
+                          </div>
+                        </button>
+                        <button
+                          className="hover:text-[#6A1BBE]"
+                        >
+                          <div className="">
+                            <FaCopy
+                              className="cursor-pointer text-white text-xl"
+                              onClick={handleCopy}
+                              size={15}
+                            />
+                          </div>
                         </button>
                         {/* Social Icons */}
                         <a
-                          href="https://www.facebook.com/sharer/sharer.php?u=YOUR_PRODUCT_LINK"
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:text-[#FFD814]"
+                          className="hover:text-[#6A1BBE]"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 5.008 3.657 9.128 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.506 1.493-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.772-1.63 1.562v1.867h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 17.008 22 12z" />
-                          </svg>
+                          <FaFacebook size={15} />
                         </a>
+
+                        {/* Twitter Share */}
                         <a
-                          href="https://twitter.com/intent/tweet?url=YOUR_PRODUCT_LINK"
+                          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(
+                            "Have a Look at this product on Pinksurfing"
+                          )}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:text-[#FFD814]"
+                          className="hover:text-[#6A1BBE]"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M8.29 20.74c7.547 0 11.675-6.155 11.675-11.493 0-.175 0-.349-.013-.522A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.637 4.109 4.109 0 001.804-2.27 8.22 8.22 0 01-2.605.979 4.103 4.103 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.275 4.001 4.001 0 001.27 5.483A4.077 4.077 0 012 9.713v.05a4.102 4.102 0 003.29 4.018 4.1 4.1 0 01-1.852.07 4.102 4.102 0 003.833 2.849 8.23 8.23 0 01-5.096 1.745A8.367 8.367 0 010 19.238a11.616 11.616 0 006.29 1.84" />
-                          </svg>
+                          <FaTwitter size={15} />
                         </a>
+
+                        {/* Pinterest Share */}
                         <a
-                          href="https://www.pinterest.com/pin/create/button/?url=YOUR_PRODUCT_LINK"
+                          href={`https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(
+                            currentUrl
+                          )}&media=${encodeURIComponent(product.image1)}&description=${encodeURIComponent(product.name)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:text-[#FFD814]"
+                          className="hover:text-[#6A1BBE]"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M12 0C5.37 0 0 5.37 0 12c0 4.99 3.657 9.128 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.506 1.493-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.772-1.63 1.562v1.867h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 17.008 22 12c0-6.63-5.37-12-12-12z" />
-                          </svg>
+                          <FaPinterest size={15} />
                         </a>
                       </div>
                     </div>
