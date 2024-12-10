@@ -28,7 +28,6 @@ export default function CategoryProducts() {
     const [cookies, removeCookie] = useCookies([]);
     const { products } = useContext(dataContext);
     const { currency, isDarkMode ,isProfilePopupOpen} = useContext(authContext);
-    console.log("profile",isProfilePopupOpen)
     // useState========================================================================
     const [filterBy, setFilterBy] = useState("");
     const [priceFilter, setPriceFilter] = useState("");

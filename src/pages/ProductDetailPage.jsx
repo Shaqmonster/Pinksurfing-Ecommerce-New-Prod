@@ -10,7 +10,7 @@ import OrderConfirm from "../components/OrderConfirm";
 import { FaHeart, FaStar, FaTruck } from "react-icons/fa";
 import { dataContext } from "../context/dataContext";
 import { authContext } from "../context/authContext";
-import { IoClose, IoStarOutline } from "react-icons/io5";
+import { IoClose, IoStarOutline, IoCart } from "react-icons/io5";
 import shareImage from "/media/share.png";
 import ProductDetailReviewSection from "../components/ProductPageComponents/ProductDetail-ReviewSection";
 import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLike";
@@ -18,6 +18,9 @@ import { Helmet } from "react-helmet";
 import ImageZoom from "../components/ProductPageComponents/ZoomImage";
 import parse from "html-react-parser";
 import { data } from "autoprefixer";
+import Stars from '../components/Stars'
+
+
 const ProductDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,6 +40,8 @@ const ProductDetailPage = () => {
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
   const rawProductId = searchParams.get("productId");
+  const [averageRating, setAverageRating] = useState(0);
+
   // Remove trailing slash from productId, if any
   const productId = rawProductId ? rawProductId.replace(/\/$/, "") : rawProductId;
   const { handleError, handleSuccess } = useContext(dataContext);
@@ -248,16 +253,6 @@ const ProductDetailPage = () => {
 
         setAttributeArray2(attributeArrays);
 
-        const reviewsResponse = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL
-          }/api/ratings/get-ratings/${productId}/`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        setReviews(reviewsResponse.data.ratings_reviews);
         if (cookies.token) {
           const addressId = user.addresses[0]?.id;
           const ratesResponse = await axios.get(
@@ -287,6 +282,39 @@ const ProductDetailPage = () => {
       setProductQty(productInCart.quantity);
     }
   }, [cookies, navigate, removeCookie]);
+
+  useEffect(() => {
+    const getProductRatings = async (productId) => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/ratings/get-ratings/${productId}/`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const ratingsReviews = response.data.ratings_reviews;
+        setReviews(ratingsReviews);
+
+        if (ratingsReviews.length > 0) {
+          const totalRating = ratingsReviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          );
+          const avgRating = totalRating / ratingsReviews.length;
+          console.log("Average rating:", avgRating);
+          setAverageRating(avgRating);
+        } else {
+          setAverageRating(0);
+        }
+      } catch (error) {
+        console.error("Error fetching ratings:", error);
+      }
+    };
+    getProductRatings(product.id);
+  }, [product.id])
 
   useEffect(() => {
     const getProducts = async () => {
@@ -370,6 +398,12 @@ const ProductDetailPage = () => {
       });
     }
   };
+  useEffect(() => {
+    if (product.image1) {
+      setActiveImage(product.image1);
+    }
+  }, [product]);
+
   return (
     <>
       {orderConfirm && <OrderConfirm />}
@@ -385,28 +419,7 @@ const ProductDetailPage = () => {
           {product.tags && <meta name="keywords" content={product.tags} />}
         </Helmet>
       )}
-      <section className=" pb-2 bg-white dark:bg-black font-poppins min-h-screen h-max">
-        {/* {viewMainImg && (
-          <div className=" fixed w-full h-[100vh] flex items-center justify-center -top-0 z-50 left-0 bg-black/20">
-            <div className=" relative z-50 w-[70%] md:w-[50%] h-[60%]">
-              <IoClose
-                onClick={() => {
-                  setViewMainImg(false);
-                }}
-                className=" absolute text-[24px] -top-20 bg-orange-400 cursor-pointer right-0 z-50"
-              />
-              <img
-                src={
-                  activeImage ||
-                  product.image1 ||
-                  "https://w7.pngwing.com/pngs/1008/139/png-transparent-cosmetics-advertising-cosmetics-advertising-beauty-others.png"
-                }
-                alt={activeImage}
-                className=" w-full object-cover border border-white h-[80vh] absolute -top-20"
-              />
-            </div>
-          </div>
-        )} */}
+      <section className=" pb-2 bg-white dark:bg-[#0E0F13] font-poppins min-h-screen h-max">
         {viewMainImg && (
           <ImageZoom
             imageUrl={
@@ -427,91 +440,85 @@ const ProductDetailPage = () => {
             />
           </div>
         ) : (
-          <div className="bg-gray-100 dark:bg-black dark:text-[#f5f5f5] py-1 sm:py-8 h-full">
+          <div className="bg-gray-100 dark:bg-[#0E0F13] dark:text-[#f5f5f5] py-1 sm:py-8 h-full">
             <div className="max-w-screen-2xl flex flex-col mx-auto px-4 sm:px-6 lg:px-10 2xl:px-24">
               <div className="flex flex-col md:flex-row -mx-4">
                 <div className="md:flex-1 px-4">
-                  <div className="h-fit sm:min-h-[460px] dark:border dark:border-gray-800 sm:h-fit rounded-lg mb-4">
-                    <img
-                      className="w-full min-h-[320px] max-h-[320px] sm:h-[87%] object-contain  cursor-pointer border border-black"
-                      src={
-                        activeImage ||
-                        product.image1 ||
-                        "https://w7.pngwing.com/pngs/1008/139/png-transparent-cosmetics-advertising-cosmetics-advertising-beauty-others.png"
-                      }
-                      alt="Product Image"
-                      onMouseOut={() => {
-                        setViewMainImg(false);
-                      }}
-                      onMouseMove={handleMouseMove}
-                    />
-                    <div className="flex items-center gap-1 border-t-2 pt-4 border-gray-400 h-[80px] sm:h-[120px]">
+                  <div className="h-fit sm:min-h-[460px] sm:h-fit rounded-lg mb-4 ">
+                    <div className="p-4 border border-[#D5C1EE]">
+                      <img
+                        className="w-full min-h-[320px] max-h-[320px] sm:h-[87%] object-contain cursor-pointer"
+                        src={
+                          activeImage ||
+                          product.image1 ||
+                          "https://w7.pngwing.com/pngs/1008/139/png-transparent-cosmetics-advertising-cosmetics-advertising-beauty-others.png"
+                        }
+                        alt="Product Image"
+                        onMouseOut={() => {
+                          setViewMainImg(false);
+                        }}
+                        onMouseMove={handleMouseMove}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1 pt-4 border-gray-400 h-[80px] sm:h-[80px]">
                       {product.image1 && (
                         <img
                           onClick={() => setActiveImage(product.image1)}
-                          className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image1
-                            ? "opacity-40 border-[2px] border-orange-400 "
-                            : " cursor-pointer"
-                            }  object-contain`}
-                          src={
-                            product.image1 ||
-                            "https://w7.pngwing.com/pngs/1008/139/png-transparent-cosmetics-advertising-cosmetics-advertising-beauty-others.png"
-                          }
+                          className={`w-[12%] sm:w-[12%] lg:w-[12%] h-full object-contain p-2 cursor-pointer ${activeImage === product.image1
+                            ? "border-[2px] border-[#8B33FE66] " // Violet border for active image
+                            : "border-[2px] border-[#D5C1EE]" // White border for inactive image
+                            }`}
+                          src={product.image1}
                           alt="Product Image"
                         />
                       )}
                       {product.image2 && (
                         <img
-                          onClick={() => {
-                            setActiveImage(product.image2);
-                          }}
-                          className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image2
-                            ? "opacity-40 border-[2px] border-orange-400 "
-                            : " cursor-pointer"
-                            } object-contain`}
-                          src={
-                            product.image2 ||
-                            "https://w7.pngwing.com/pngs/1008/139/png-transparent-cosmetics-advertising-cosmetics-advertising-beauty-others.png"
-                          }
+                          onClick={() => setActiveImage(product.image2)}
+                          className={`w-[12%] sm:w-[12%] lg:w-[12%] h-full object-contain p-2 cursor-pointer ${activeImage === product.image2
+                            ? "border-[2px] border-[#8B33FE66] " // Violet border for active image
+                            : "border-[2px] border-[#D5C1EE]" // White border for inactive image
+                            }`}
+                          src={product.image2}
                           alt="Product Image"
                         />
                       )}
                       {product.image3 && (
                         <img
-                          onClick={() => {
-                            setActiveImage(product.image3);
-                          }}
-                          className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image3
-                            ? "opacity-40 border-[2px] border-orange-400 "
-                            : " cursor-pointer"
-                            }  object-contain`}
-                          src={
-                            product.image3 ||
-                            "https://w7.pngwing.com/pngs/1008/139/png-transparent-cosmetics-advertising-cosmetics-advertising-beauty-others.png"
-                          }
+                          onClick={() => setActiveImage(product.image3)}
+                          className={`w-[12%] sm:w-[12%] lg:w-[12%] h-full object-contain  p-2cursor-pointer ${activeImage === product.image3
+                            ? "border-[2px] border-[#8B33FE66] " // Violet border for active image
+                            : "border-[2px] border-[#D5C1EE]" // White border for inactive image
+                            }`}
+                          src={product.image3}
                           alt="Product Image"
                         />
                       )}
                       {product.image4 && (
                         <img
-                          onClick={() => {
-                            setActiveImage(product.image4);
-                          }}
-                          className={`w-[23.95%] sm:w-[23.95%] lg:w-[24.45%] h-full object-contain cursor-pointer ${activeImage === product.image4
-                            ? "opacity-40 border-[2px] border-orange-400 "
-                            : " cursor-pointer"
-                            }  object-contain`}
-                          src={`${product.image4}`}
+                          onClick={() => setActiveImage(product.image4)}
+                          className={`w-[12%] sm:w-[12%] lg:w-[12%] h-full object-contain p-2 cursor-pointer ${activeImage === product.image4
+                            ? "border-[2px] border-[#8B33FE66] " // Violet border for active image
+                            : "border-[2px] border-[#D5C1EE]" // White border for inactive image
+                            }`}
+                          src={product.image4}
                           alt="Product Image"
                         />
                       )}
                     </div>
                   </div>
                 </div>
-                <div className="md:flex-1 px-4 relative dark:bg-black">
-                  <h2 className="text-2xl capitalize font-[600] text-black  dark:text-[#f5f5f5] mb-2">
+                <div className="md:flex-1 px-4 relative z-10 dark:bg-[#0E0F13] text-xs">
+                  <div className="flex  gap-2 mt-2">
+                    <Stars stars={averageRating} />
+                    <p className="">{averageRating} Star Rating ({reviews.length} User feedback)</p>
+                  </div>
+
+                  <h2
+                    className="text-[20px] font-public-sans font-[400] text-black dark:text-[#f5f5f5] leading-[28px] mb-2 sm:text-[22px] sm:leading-[30px]"
+                  >
                     {product.name}
-                    <FaHeart
+                    {/* <FaHeart
                       id={`heart-${product.id}`}
                       onClick={handleWishlistClick}
                       className={`absolute top-2 right-2 cursor-pointer ${wishlistProducts.find((i) => {
@@ -520,42 +527,127 @@ const ProductDetailPage = () => {
                         ? "text-red-500"
                         : "text-gray-400"
                         } text-[22px] `}
-                    />
+                    /> */}
                   </h2>
-                  <div className="absolute top-2 right-10">
+                  {/* <div className="absolute top-2 right-10">
                     <FaShare
                       className="cursor-pointer text-white text-xl"
                       onClick={handleShareClick}
                     />
+                  </div> */}
+                  <svg
+                    className="fixed top-0 right-0 z-[0] pointer-events-none"
+                    width="536"
+                    height="1071"
+                    viewBox="0 0 536 1071"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g filter="url(#filter0_f_1_3190)">
+                      <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
+                    </g>
+                    <defs>
+                      <filter
+                        id="filter0_f_1_3190"
+                        x="0"
+                        y="0"
+                        width="1071"
+                        height="1071"
+                        filterUnits="userSpaceOnUse"
+                        colorInterpolationFilters="sRGB"
+                      >
+                        <feFlood floodOpacity="0" result="BackgroundImageFix" />
+                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+                        <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+                      </filter>
+                    </defs>
+                  </svg>
+                  <div className="flex justify-start py-2 items-center">
+                    <div className="flex flex-wrap justify-between max-w-md w-full rounded-lg">
+                      {/* Left Section */}
+                      <div className="w-1/2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="font-semibold text-black dark:text-white">Sku:</span> A264671
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="font-semibold text-black dark:text-white">Brand:</span>{" "}
+                          <span className="text-black dark:text-white">{product.brand_name}</span>
+                        </p>
+                      </div>
+                      {/* Right Section */}
+                      <div className="w-1/2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="font-semibold text-black dark:text-white">Availability:</span>{" "}
+                          {product.quantity === 0 ? (
+                            <span className="text-red-500 dark:text-red-400">Out of Stock</span>
+                          ) : (
+                            <span className="text-green-600 dark:text-green-400">In Stock</span>
+                          )}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="font-semibold text-black dark:text-white">Category:</span>{" "}
+                          <span className="text-black dark:text-white">{product.category?.name}</span>
+                        </p>
+                      </div>
+                    </div>
                   </div>
+
                   <div className="flex flex-col mb-1 sm:mb-4">
                     <div className="flex mr-4 pt-4 items-center">
-                      <span className="text-[1.5rem] md:text-[1.7rem] 2xl:text-[1.9rem] font-semibold raleway  text-[#1d1d1d] dark:text-[#f5f5f5] mr-1">
+                      {/* Price */}
+                      <span
+                        className="text-[1.5rem] md:text-[1.7rem] 2xl:text-[1.9rem] font-semibold mr-1"
+                        style={{
+                          fontFamily: "Public Sans",
+                          fontWeight: 600,
+                          fontSize: "24px",
+                          lineHeight: "32px",
+                          color: "#2DA5F3",
+                        }}
+                      >
                         {currency}
                         {Object.values(selectedAttributes)
                           .reduce(
-                            (total, attr) =>
-                              total + (attr.additional_price || 0),
+                            (total, attr) => total + (attr.additional_price || 0),
                             Number(product.unit_price)
                           )
                           .toFixed(2)}
                       </span>
+
+                      {/* MRP (if discount exists) */}
                       {discountPercentage !== "0.00" && (
-                        <span className=" text-[1.1rem] md:text-[1.3rem] 2xl:text-[1.5rem] font-semibold raleway   dark:text-[#f5f5f588] ml-1 line-through text-gray-400">
+                        <span
+                          className="text-[1.1rem] md:text-[1.3rem] 2xl:text-[1.5rem] font-semibold ml-1 line-through text-gray-400"
+                          style={{
+                            fontFamily: "Public Sans",
+                            fontWeight: 600,
+                            fontSize: "24px",
+                            lineHeight: "32px",
+                            color: "#f5f5f588",
+                          }}
+                        >
                           {currency}
                           {product.mrp}
                         </span>
                       )}
+
+                      {/* Discount Percentage */}
                       {discountPercentage !== "0.00" && (
-                        <span className="label label-warning text-sm ml-1 raleway h-4">
+                        <span
+                          className="label label-warning text-sm ml-1 h-4"
+                          style={{
+                            fontFamily: "Public Sans",
+                            fontWeight: 600,
+                            fontSize: "24px",
+                            lineHeight: "32px",
+                          }}
+                        >
                           ({discountPercentage}%)
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] md:text-[12px] 2xl:text-[13px] -mt-1 raleway">
-                      Tax Included
-                    </div>
                   </div>
+
                   <p
                     className={` text-[15px] ${additionalAttribute.price === 0 && "hidden"
                       }`}
@@ -619,41 +711,30 @@ const ProductDetailPage = () => {
                         : "No description available."}
                     </p>
                   </div>
-                  <div className="flex items-center w-full sm:w-full py-3 sm:py-3 dark:bg-black shadow-inner sm:shadow-none shadow-black/20">
-                    <div className="w-full">
+                  <div className="flex flex-col sm:flex-row items-center w-full py-3 sm:py-4 bg-white dark:bg-[#0E0F13] shadow-inner sm:shadow-none shadow-black/20 gap-4">
+                    {/* Quantity Selector */}
+                    <div className="flex items-center gap-2 bg-[#D5C1EE] text-[#475156] px-4 py-2 rounded-md">
                       <button
-                        onClick={() => {
-                          if (!user) {
-                            toast.error("You are not Signed In ", {
-                              position: "top-right",
-                            });
-                            sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                            setIsProfileOpen(true);
-                            setTimeout(() => {
-                              setIsProfileOpen(false);
-                            }, 10000);
-                            return;
-                          }
-
-                          AddtoCart();
-                        }}
-                        disabled={product.quantity === 0 ? true : false}
-                        className="w-full bg-[#FFD814] disabled:bg-gray-400 disabled:text-gray-600   text-black p-2 px-4 rounded-2xl font-bold hover:bg-[#2d1e5f] hover:text-white"
+                        onClick={() => DecrementQuantity()}
+                        className="text-2xl font-bold hover:text-[#FFD814]"
                       >
-                        {product.quantity === 0
-                          ? "Out Of Stock"
-                          : "Add To Cart"}
+                        -
+                      </button>
+                      <span className="text-lg px-8 font-medium">{product.quantity}</span>
+                      <button
+                        onClick={() => IncrementQuantity()}
+                        className="text-2xl font-bold hover:text-[#FFD814]"
+                      >
+                        +
                       </button>
                     </div>
-                  </div>
-                  <div className="w-full">
-                    {product.quantity > 0 && (
+
+                    {/* Add to Cart Button */}
+                    <div className="w-full sm:w-auto">
                       <button
                         onClick={() => {
                           if (!user) {
-                            toast.error("You are not Signed In", {
-                              position: "top-right",
-                            });
+                            toast.error("You are not Signed In", { position: "top-right" });
                             sessionStorage.setItem("redirectAfterLogin", window.location.href);
                             setIsProfileOpen(true);
                             setTimeout(() => {
@@ -661,39 +742,147 @@ const ProductDetailPage = () => {
                             }, 10000);
                             return;
                           }
-                          setIsSingleOrderFormOpen(true);
-                          setSingleOrderProduct(product);
-                          setIsProfileOpen(false);
+                          AddtoCart();
                         }}
-                        className="w-full bg-[#FFA41C] mb-3 text-black py-2 px-4 rounded-2xl font-bold hover:bg-[#2d1e5f] hover:text-white"
+                        disabled={product.quantity === 0}
+                        className="w-full sm:w-auto bg-[#9747FF] disabled:bg-gray-400 disabled:text-gray-600 text-white px-6 py-3 rounded-md font-bold flex items-center justify-center gap-2 hover:bg-[#6A1BBE]"
                       >
-                        Buy Now
+                        <span>Add to Cart</span>
+                        <IoCart size={20} />
                       </button>
-                    )}
+                    </div>
+
+                    {/* Buy Now Button */}
+                    <div className="w-full sm:w-auto">
+                      {product.quantity > 0 && (
+                        <button
+                          onClick={() => {
+                            if (!user) {
+                              toast.error("You are not Signed In", { position: "top-right" });
+                              sessionStorage.setItem("redirectAfterLogin", window.location.href);
+                              setIsProfileOpen(true);
+                              setTimeout(() => {
+                                setIsProfileOpen(false);
+                              }, 10000);
+                              return;
+                            }
+                            setIsSingleOrderFormOpen(true);
+                            setSingleOrderProduct(product);
+                            setIsProfileOpen(false);
+                          }}
+                          className="w-full sm:w-auto bg-transparent border-2 border-[#8A2BE2] text-[#8A2BE2] px-6 py-3 rounded-md font-bold flex items-center justify-center gap-2 hover:bg-[#6A1BBE] hover:text-white"
+                        >
+                          Buy Now
+                        </button>
+                      )}
+                    </div>
                   </div>
+                  <div className="flex items-center justify-between w-full py-4 px-6 bg-[#0E0F13] text-white shadow-inner sm:shadow-none">
+                    {/* Add to Wishlist */}
+                    <div className="flex items-center gap-2 cursor-pointer hover:text-[#FFD814]">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 8a5 5 0 0110 0c0 1.657-.895 3.09-2.222 3.891a7.35 7.35 0 00-1.11.809L12 15.63l2.332-2.93a7.352 7.352 0 00-1.11-.809A5.002 5.002 0 0118 8a5 5 0 01-10 0z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium">Add to Wishlist</span>
+                    </div>
+
+                    {/* Share Product */}
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium">Share product:</span>
+                      <div className="flex items-center gap-3">
+                        {/* Share Icon */}
+                        <button
+                          className="hover:text-[#FFD814]"
+                          onClick={() => navigator.clipboard.writeText(window.location.href)}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2M16 8l4 4m0 0l-4 4m4-4H10"
+                            />
+                          </svg>
+                        </button>
+                        {/* Social Icons */}
+                        <a
+                          href="https://www.facebook.com/sharer/sharer.php?u=YOUR_PRODUCT_LINK"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-[#FFD814]"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 5.008 3.657 9.128 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.506 1.493-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.772-1.63 1.562v1.867h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 17.008 22 12z" />
+                          </svg>
+                        </a>
+                        <a
+                          href="https://twitter.com/intent/tweet?url=YOUR_PRODUCT_LINK"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-[#FFD814]"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M8.29 20.74c7.547 0 11.675-6.155 11.675-11.493 0-.175 0-.349-.013-.522A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.637 4.109 4.109 0 001.804-2.27 8.22 8.22 0 01-2.605.979 4.103 4.103 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.275 4.001 4.001 0 001.27 5.483A4.077 4.077 0 012 9.713v.05a4.102 4.102 0 003.29 4.018 4.1 4.1 0 01-1.852.07 4.102 4.102 0 003.833 2.849 8.23 8.23 0 01-5.096 1.745A8.367 8.367 0 010 19.238a11.616 11.616 0 006.29 1.84" />
+                          </svg>
+                        </a>
+                        <a
+                          href="https://www.pinterest.com/pin/create/button/?url=YOUR_PRODUCT_LINK"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-[#FFD814]"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 4.99 3.657 9.128 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.506 1.493-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.772-1.63 1.562v1.867h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 17.008 22 12c0-6.63-5.37-12-12-12z" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
-                <div className="hidden md:block">
+                {/* <div className="hidden md:block">
                   <YouMightAlsoLike
                     allProducts={allProducts}
                     productId={productId}
                     product={product}
                     currency={currency}
                   />
-                </div>
+                </div> */}
               </div>
               <ProductDetailReviewSection reviews={reviews} product={product} />
-              {/* <svg className="z-100" width="536" height="1071" viewBox="0 0 536 1071" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g filter="url(#filter0_f_1_3190)">
-                  <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
-                </g>
-                <defs>
-                  <filter id="filter0_f_1_3190" x="0" y="0" width="1071" height="1071" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                    <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                    <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-                    <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
-                  </filter>
-                </defs>
-              </svg> */}
+
 
 
               <div className="md:hidden">

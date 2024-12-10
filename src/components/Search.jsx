@@ -29,6 +29,9 @@ const SearchForm = () => {
     if (search.trim() === "") {
       inputRef.current.setCustomValidity("Please enter something to search.");
       inputRef.current.reportValidity();
+    } else if(search === ""){
+      inputRef.current.setCustomValidity("Please enter something to search.");
+      inputRef.current.reportValidity();
     } else {
       inputRef.current.setCustomValidity(""); // Clear any custom validity message
       navigate("/search");
