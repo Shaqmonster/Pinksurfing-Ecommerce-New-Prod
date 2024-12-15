@@ -15,6 +15,10 @@ export default {
       animation: {
         marquee: "marquee 10s linear infinite",
       },
+      fontFamily: {
+        playfair: ['"Playfair Display"', 'serif'],
+        robotoMono: ['"Roboto Mono"', 'monospace'], // Add Roboto Mono
+      },
     },
   },
   plugins: [require("@tailwindcss/forms"), require("daisyui")],

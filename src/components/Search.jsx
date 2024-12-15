@@ -41,7 +41,7 @@ const SearchForm = () => {
   return (
     <div
       className={`relative w-full py-3 flex sm:flex-row gap-2 sm:items-center justify-start px-[2.4%] sm:px-[2%] ${
-        isDarkMode ? "bg-black text-white" : "bg-white text-black"
+        isDarkMode ? "bg-[#0E0F13] text-white" : "bg-white text-black"
       }`}
     >
       <div
