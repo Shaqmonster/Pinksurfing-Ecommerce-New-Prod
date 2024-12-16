@@ -397,14 +397,14 @@ const Home = () => {
 
 
           {/* Tabs Section */}
-          <div className="flex justify-start space-x-4 mb-8 lg:px-10">
+          <div className="flex flex-wrap justify-start gap-4 mb-8 lg:px-10">
             {fetchedCategories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`sm:px-6 px-2 py-2 rounded-lg font-robotoMono sm:text-sm text-xs transition ${selectedCategory === category.id
-                  ? "bg-[#B881FF] text-[#1A1C1E]"
-                  : "bg-transparent border border-dashed border-[#333333] text-[#B3B3B2]"
+                    ? "bg-[#B881FF] text-[#1A1C1E]"
+                    : "bg-transparent border border-dashed border-[#333333] text-[#B3B3B2]"
                   }`}
               >
                 {category.name}
