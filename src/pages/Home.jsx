@@ -30,11 +30,25 @@ const Home = () => {
   const [stores, setStores] = useState([]);
   const [storeLoading, setStoreLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(1); // Default to 'Buyer's Choice'
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const getFilteredCards = () => {
     if (selectedCategory === 3) return products; // Buyer's Choice shows all products
     return products.slice(0, 4); // Other categories display limited items
   };
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === categories.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? categories.length - 1 : prevIndex - 1
+    );
+  };
+
 
   const fetchedCategories = [
     { id: 1, name: "Shop By Store" },
@@ -142,11 +156,11 @@ const Home = () => {
     <>
       <SearchForm />
       <div
-        className={`w-full min-h-screen flex flex-col ${isDarkMode ? "bg-[#0E0F13]" : "bg-white"
+        className={`w-full min-h-screen flex flex-col font-robotoMono ${isDarkMode ? "bg-[#0E0F13]" : "bg-white"
           }`}
       >
         <svg
-          className="absolute top-0 right-0 z-[0] pointer-events-none"
+          className="fixed top-0 right-0 z-[0] pointer-events-none"
           width="536"
           height="1071"
           viewBox="0 0 536 1071"
@@ -203,7 +217,7 @@ const Home = () => {
                 key={item.id + index}
                 className=""
               >
-                <div className="w-full sm:w-[330px] lg:w-[360px] h-[260px] flex flex-col items-center gap-1 text-black dark:text-[#f5f5f5] cursor-pointer">
+                <div className="w-full lg:ml-12 ml-0 sm:w-[330px] lg:w-[360px] h-[260px] flex flex-col items-center gap-1 text-black dark:text-[#f5f5f5] cursor-pointer">
                   <div className="w-full h-[85%] flex overflow-hidden p-0 items-center justify-center border border-pink-500 rounded-xl shadow-md bg-[#2d1e5f]">
                     <img
                       src={item.image}
@@ -221,8 +235,7 @@ const Home = () => {
           </div>
 
 
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 place-content-center gap-x-8 gap-y-5 mt-5 w-full flex-wrap pt-[3%] text-black dark:text-[#f5f5f5]">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-x-4 gap-y-5 mt-5 w-full pt-[3%] text-black dark:text-[#f5f5f5]">
             {subCategories.map((item, index) => (
               <div
                 className="cursor-pointer"
@@ -235,32 +248,20 @@ const Home = () => {
                 }}
               >
                 <div className="w-full sm:w-[150px] h-[140px] flex flex-col items-center gap-1">
-                  {item.id === "3" ? (
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-[130px] sm:w-full h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f]"
-                    >
-                      <img
-                        src={item.image}
-                        className={`${item.extraclass} rounded-md`}
-                      />
-                    </a>
-                  ) : (
-                    <Link
-                      className="w-[130px] sm:w-full h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f]"
-                    >
-                      <img
-                        src={item.image}
-                        className={`${item.extraclass} rounded-md`}
-                      />
-                    </Link>
-                  )}
-                  <p className="font-medium text-[15.6px]">{item.name}</p>
+                  <Link
+                    className="w-[90px] sm:w-full h-[90px] sm:h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f]"
+                  >
+                    <img
+                      src={item.image}
+                      className={`${item.extraclass} rounded-md hover:scale-105`}
+                    />
+                  </Link>
+                  <p className="font-medium text-[14px] sm:text-[15.6px]">{item.name}</p>
                 </div>
               </div>
             ))}
           </div>
+
         </div>
         <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-[70%] left-0 z-[0] pointer-events-none hidden lg:block">
           <g filter="url(#filter0_f_1_3194)">
@@ -374,7 +375,7 @@ const Home = () => {
 
           </div>
         ))} */}
-        <div className="bg-[#0E0F13] text-white py-4 sm:py-6 md:py-8 lg:py-10 px-4 sm:px-6 md:px-8 lg:px-12\ border border-dashed my-8 mx-4 sm:mx-8 md:mx-16 rounded-xl"
+        <div className="bg-white dark:bg-[#0E0F13] text-black dark:text-white py-4 sm:py-6 md:py-8 lg:py-10 px-4 sm:px-6 md:px-8 lg:px-12 border border-dashed my-8 mx-4 sm:mx-8 md:mx-16 rounded-xl"
           style={{
             border: "2px dashed #D5C1EEB2",
             borderStyle: "dashed",
@@ -391,7 +392,7 @@ const Home = () => {
           <h1 className="md:text-4xl text-3xl font-playfair  mx-auto text-start mb-4 text-[#B881FF] lg:px-10">
             Elevate Style With Latest Collection
           </h1>
-          <p className="text-start font-roboto text-gray-300 mb-8 lg:px-10">
+          <p className="text-start font-roboto text-gray-800 dark:text-gray-300 mb-8 lg:px-10">
             Each piece is crafted to enhance your fashion statement.
           </p>
 
@@ -403,8 +404,8 @@ const Home = () => {
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`sm:px-6 px-2 py-2 rounded-lg font-robotoMono sm:text-sm text-xs transition ${selectedCategory === category.id
-                    ? "bg-[#B881FF] text-[#1A1C1E]"
-                    : "bg-transparent border border-dashed border-[#333333] text-[#B3B3B2]"
+                  ? "bg-[#B881FF] text-[#1A1C1E]"
+                  : "bg-transparent border border-dashed border-[#333333] text-black  dark:text-[#B3B3B2]"
                   }`}
               >
                 {category.name}
@@ -498,8 +499,8 @@ const Home = () => {
 
         </div>
 
-        <ChannelsForSale />
       </div>
+      <ChannelsForSale />
     </>
   );
 };
