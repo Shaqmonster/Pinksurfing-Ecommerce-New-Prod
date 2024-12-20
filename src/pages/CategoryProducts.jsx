@@ -27,7 +27,7 @@ export default function CategoryProducts() {
     const navigate = useNavigate();
     const [cookies, removeCookie] = useCookies([]);
     const { products } = useContext(dataContext);
-    const { currency, isDarkMode ,isProfilePopupOpen} = useContext(authContext);
+    const { currency, isDarkMode, isProfilePopupOpen } = useContext(authContext);
     // useState========================================================================
     const [filterBy, setFilterBy] = useState("");
     const [priceFilter, setPriceFilter] = useState("");
@@ -181,7 +181,11 @@ export default function CategoryProducts() {
     }, [categoryFilter, shoppingProduct, minValue, maximumValue, sortMethod]); // Re-run the effect when any dependency changes
 
     return (
-        <div className={`bg-white ${isDarkMode && "dark"} dark:bg-black`}>
+        <div className={`bg-white ${isDarkMode && "dark"} dark:bg-[#101017] dark:text-[#f5f5f5]`}
+            style={{
+                fontFamily: "Public Sans",
+            }}
+        >
             <SearchForm />
             <div>
                 {/* Mobile filter dialog ===================================================================================================== */}
@@ -213,14 +217,14 @@ export default function CategoryProducts() {
                                 leaveFrom="translate-x-0"
                                 leaveTo="translate-x-full"
                             >
-                                <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white dark:bg-black py-4 pb-12 shadow-xl">
+                                <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white dark:bg-[#101017] py-4 pb-12 shadow-xl">
                                     <div className="flex items-center justify-between px-4">
-                                        <h2 className="text-lg font-medium text-gray-900">
+                                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                                             Filters
                                         </h2>
                                         <button
                                             type="button"
-                                            className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-gray-400"
+                                            className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-[#101017] p-2 text-gray-400"
                                             onClick={() => setMobileFiltersOpen(false)}
                                         >
                                             <span className="sr-only">Close menu</span>
@@ -234,7 +238,7 @@ export default function CategoryProducts() {
                                         <h3 className="sr-only">Categories</h3>
                                         <div>
                                             <h2 className=" dark:text-purple-500 pb-2 text-[#363F4D] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                                                Filter By Category
+                                                CATEGORY
                                             </h2>
                                             <ul className=" flex flex-col">
                                                 {CategoryOnlyData.map((category, index) => {
@@ -286,7 +290,7 @@ export default function CategoryProducts() {
                                             {({ open }) => (
                                                 <>
                                                     <h3 className="-my-3 flow-root">
-                                                        <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                                                        <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#101017] py-3 text-sm text-gray-400 hover:text-gray-500">
                                                             <span className="font-medium text-gray-900 dark:text-purple-600">
                                                                 Sort By
                                                             </span>
@@ -340,8 +344,12 @@ export default function CategoryProducts() {
                                         </Disclosure>
 
                                         <div className="mt-6">
-                                            <h2 className="dark:text-purple-500 mb-4 plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                                                Filter By Price
+                                            <h2 className="dark:text-purple-500 mb-4 plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]"
+                                                style={{
+                                                    fontFamily: "Public Sans",
+                                                }}
+                                            >
+                                                PRICE RANGE
                                             </h2>
                                             <MultiRangeSlider
                                                 min={0}
@@ -356,14 +364,14 @@ export default function CategoryProducts() {
                                                     outline: "none",
                                                     boxShadow: "none",
                                                 }}
-                                                barInnerColor="#F9BA48"
+                                                barInnerColor="#FA8232"
                                                 barRightColor="#000"
                                                 barLeftColor="#000"
-                                                thumbLeftColor="#F9BA48"
-                                                thumbRightColor="#F9BA48"
+                                                thumbLeftColor="#FA8232"
+                                                thumbRightColor="#FA8232"
                                                 onInput={(e) => handleSliderChange(e)}
                                             />
-                                            <div className="flex justify-between mt-2">
+                                            <div className="flex justify-between mt-2 text-black dark:text-white">
                                                 <span>{`$${minValue}`}</span>
                                                 <span>{`$${maximumValue}`}</span>
                                             </div>
@@ -381,7 +389,7 @@ export default function CategoryProducts() {
                                                         {({ open }) => (
                                                             <>
                                                                 <h3 className="-my-3 flow-root">
-                                                                    <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                                                                    <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#101017] py-3 text-sm text-gray-400 hover:text-gray-500">
                                                                         <span className="font-medium text-gray-900 dark:text-purple-600">
                                                                             {section.name}
                                                                         </span>
@@ -477,70 +485,43 @@ export default function CategoryProducts() {
                             <div className="flex items-center gap-2">
                                 <HiMiniSquares2X2
                                     onClick={() => setIsCard(true)}
-                                    className={`text-[19px] cursor-pointer ${isCard ? "text-[#F9BA48]" : ""
+                                    className={`text-[19px] cursor-pointer ${isCard ? "text-[#FA8232]" : ""
                                         }`}
                                 />
                                 <AiOutlineBars
                                     onClick={() => setIsCard(false)}
-                                    className={`text-[19px] cursor-pointer ${!isCard ? "text-[#F9BA48]" : ""
+                                    className={`text-[19px] cursor-pointer ${!isCard ? "text-[#FA8232]" : ""
                                         }`}
                                 />
                             </div>
                         </div>
-
-                        <Disclosure as="div" className="relative mx-auto hidden lg:block">
+                        <Disclosure as="div" className="absolute right-0 mx-auto hidden lg:block ">
                             {({ open }) => (
                                 <>
                                     <h3 className="-my-3 flow-root">
-                                        <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
-                                            <span className="font-medium text-gray-900 dark:text-white">
-                                                Sort By: {sortName}
-                                            </span>
-                                            <span className="ml-6 flex items-center">
-                                                {open ? (
-                                                    <MinusIcon className="h-5 w-5" aria-hidden="true" />
-                                                ) : (
-                                                    <PlusIcon className="h-5 w-5" aria-hidden="true" />
-                                                )}
-                                            </span>
+                                        <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-[#101017] dark:text-[#f5f5f5] py-3 text-sm text-gray-400 hover:text-gray-500">
+                                            <span className="font-medium text-gray-900 dark:text-white">Sort by:</span>
+                                            <select
+                                            className="ml-2 bg-transparent border border-gray-300 dark:border-gray-700 rounded-md py-1 px-2  focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                value={sortMethod}
+                                                onChange={(e) => {
+                                                    setSortMethod(e.target.value);
+                                                    const selectedOption = sortMethods.find(option => option.value === e.target.value);
+                                                    setSortName(selectedOption?.name || "");
+                                                }}
+                                            >
+                                                {sortMethods.map((option, index) => (
+                                                    <option key={index} value={option.value} className="text-black bg:text-white">
+                                                        {option.name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </Disclosure.Button>
                                     </h3>
-                                    {!isProfilePopupOpen && (
-                                        <Disclosure.Panel className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 shadow-lg z-10">
-                                            <div className="space-y-4 p-4">
-                                                {sortMethods.map((option, optionIdx) => (
-                                                    <div
-                                                        key={optionIdx}
-                                                        className="flex items-center cursor-pointer"
-                                                        onClick={() => {
-                                                            setSortMethod(option.value);
-                                                            setSortName(`${option.name}`);
-                                                        }}
-                                                    >
-                                                        <input
-                                                            id={option.name}
-                                                            name={option.name}
-                                                            defaultValue={option.name}
-                                                            type="checkbox"
-                                                            checked={option.value === sortMethod}
-                                                            onChange={() => { }}
-                                                            className="h-4 w-4 rounded border-gray-300 cursor-pointer text-indigo-600 focus:ring-indigo-500"
-                                                        />
-                                                        <label
-                                                            htmlFor={option.name}
-                                                            className="ml-3 text-sm text-gray-600 cursor-pointer dark:text-[#f5f5f5]"
-                                                        >
-                                                            {option.name}
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </Disclosure.Panel>
-
-                                    )}
                                 </>
                             )}
                         </Disclosure>
+
 
                         <button
                             type="button"
@@ -564,7 +545,7 @@ export default function CategoryProducts() {
                                 <h3 className="sr-only">Categories</h3>
                                 <div>
                                     <h2 className=" dark:text-white pb-2 font-[700] text-[#363F4D] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                                        Filter By Category{" "}
+                                        CATEGORY{" "}
                                     </h2>
                                     <ul className=" flex flex-col">
                                         {CategoryOnlyData.map((category, index) => {
@@ -593,9 +574,9 @@ export default function CategoryProducts() {
                                                                         setCategoryFilter(category);
                                                                     }
                                                                 }}
-                                                                type="checkbox"
-                                                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                            />
+                                                                type="radio"
+                                                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                />
                                                             <label
                                                                 htmlFor={category}
                                                                 className="ml-3 text-[15.5px] mb-1 text-gray-600 dark:text-[#f5f5f5]"
@@ -624,7 +605,7 @@ export default function CategoryProducts() {
                                                 {({ open }) => (
                                                     <>
                                                         <h3 className="-my-3 flow-root">
-                                                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                                                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#101017] dark:text-[#f5f5f5] py-3 text-sm text-gray-400 hover:text-gray-500">
                                                                 <span className="font-medium text-gray-900 dark:text-purple-600">
                                                                     {section.name}
                                                                 </span>
@@ -702,7 +683,7 @@ export default function CategoryProducts() {
                                 ))}
                                 <div className="mt-6">
                                     <h2 className="dark:text-white mb-4 font-[700] text-[#363F4D] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                                        Filter By Price
+                                        PRICE RANGE
                                     </h2>
                                     <MultiRangeSlider
                                         min={0}
@@ -717,11 +698,11 @@ export default function CategoryProducts() {
                                             outline: "none",
                                             boxShadow: "none",
                                         }}
-                                        barInnerColor="#F9BA48"
+                                        barInnerColor="#FA8232"
                                         barRightColor="#000"
                                         barLeftColor="#000"
-                                        thumbLeftColor="#F9BA48"
-                                        thumbRightColor="#F9BA48"
+                                        thumbLeftColor="#FA8232"
+                                        thumbRightColor="#FA8232"
                                         onInput={(e) => handleSliderChange(e)}
                                     />
                                     <div className="flex justify-between mt-2 text-[#4d5c73]">
@@ -730,9 +711,41 @@ export default function CategoryProducts() {
                                     </div>
                                 </div>
                             </form>
+                            <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                className="md:absolute fixed top-1/3 left-0 z-[0] pointer-events-none overflow-hidden"
+
+                            >
+                                <g filter="url(#filter0_f_1_3636)">
+                                    <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
+                                </g>
+                                <defs>
+                                    <filter id="filter0_f_1_3636" x="-430" y="0" width="1031" height="1031" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+                                        <feGaussianBlur stdDeviation="154" result="effect1_foregroundBlur_1_3636" />
+                                    </filter>
+                                </defs>
+                            </svg>
+
+                            <svg width="636" height="1071" viewBox="0 0 636 1071" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                className="fixed top-0 right-0 z-[0] pointer-events-none overflow-hidden"
+
+                            >
+                                <g filter="url(#filter0_f_1_3632)">
+                                    <path d="M743.5 535.5C743.5 650.099 650.599 743 536 743C421.401 743 328.5 650.099 328.5 535.5C328.5 420.901 421.401 328 536 328C650.599 328 743.5 420.901 743.5 535.5Z" fill="#8B33FE" fill-opacity="0.4" />
+                                </g>
+                                <defs>
+                                    <filter id="filter0_f_1_3632" x="0.5" y="0" width="1071" height="1071" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+                                        <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3632" />
+                                    </filter>
+                                </defs>
+                            </svg>
+
                             {!loading ? (
-                                <div className="lg:col-span-3 2xl:col-span-4">
-                                    <div className="bg-white dark:bg-black">
+                                <div className="lg:col-span-3 2xl:col-span-4 p-4">
+                                    <div className="bg-white dark:bg-[#101017] dark:text-[#f5f5f5]">
                                         <div className="w-full sm:py-0 sm:pb-10 lg:px-0">
                                             <div
                                                 className={`grid pb-6 ${isCard

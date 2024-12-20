@@ -7,12 +7,12 @@ import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { IoStarOutline } from "react-icons/io5";
-
+import Stars from "./Stars";
 const ProductCard = ({ product, isCard }) => {
   const [cookies] = useCookies([]);
   const navigate = useNavigate();
   const [averageRating, setAverageRating] = useState(0);
-
+  const [allRatings, setAllRatings] = useState([]);
   const { user, currency, setIsProfileOpen } = useContext(authContext);
   const {
     setCartProducts,
@@ -179,20 +179,20 @@ const ProductCard = ({ product, isCard }) => {
     }
   };
 
-  const Stars = ({ stars }) => {
-    const ratingStars = Array.from({ length: 7 }, (elem, index) => {
-      return (
-        <div key={index}>
-          {stars >= index + 1 ? (
-            <FaStar className=" dark:text-yellow-400 text-black" />
-          ) : (
-            <IoStarOutline className=" text-black dark:text-yellow-400 " />
-          )}
-        </div>
-      );
-    });
-    return <div className=" flex items-center gap-0.5">{ratingStars}</div>;
-  };
+  // const Stars = ({ stars }) => {
+  //   const ratingStars = Array.from({ length: 7 }, (elem, index) => {
+  //     return (
+  //       <div key={index}>
+  //         {stars >= index + 1 ? (
+  //           <FaStar className=" dark:text-yellow-400 text-black" />
+  //         ) : (
+  //           <IoStarOutline className=" text-black dark:text-yellow-400 " />
+  //         )}
+  //       </div>
+  //     );
+  //   });
+  //   return <div className=" flex items-center gap-0.5">{ratingStars}</div>;
+  // };
 
 
   useEffect(() => {
@@ -208,7 +208,7 @@ const ProductCard = ({ product, isCard }) => {
         );
 
         const ratingsReviews = response.data.ratings_reviews;
-
+        setAllRatings(ratingsReviews);
         if (ratingsReviews.length > 0) {
           const totalRating = ratingsReviews.reduce(
             (sum, review) => sum + review.rating,
@@ -230,17 +230,17 @@ const ProductCard = ({ product, isCard }) => {
   return (
     <div
       className={`mx-auto mt-4 rounded-xl relative w-full lg:w-[100%] flex ${isCard ? "flex-col" : "flex-row items-center"
-        } transform overflow-hidden bg-white dark:bg-[#1E1E2A] shadow-md duration-300 hover:scale-[1.02] hover:shadow-lg`}
+        } transform overflow-hidden bg-white dark:bg-[#1A1C1E] shadow-md duration-300 hover:scale-[1.02] hover:shadow-lg`}
     >
       {/* Wishlist Icon */}
-      <FaHeart
+      {/* <FaHeart
         id={`heart-${product.id}`}
         onClick={handleWishlistClick}
         className={`absolute top-4 right-4 cursor-pointer ${wishlistProducts.find((i) => i.id === product.id)
           ? "text-red-500"
           : "text-gray-400"
           } text-[22px] transition-transform duration-200 transform hover:scale-110`}
-      />
+      /> */}
 
       {/* Product Image */}
       {isCard ? (
@@ -265,6 +265,13 @@ const ProductCard = ({ product, isCard }) => {
 
       {/* Product Details */}
       <div className={`relative px-4 py-3 ${isCard ? "" : "w-[50%] ml-auto"}`}>
+        {/* Ratings */}
+        <div className="mt-2">
+          <div className="flex gap-2">
+
+          <Stars stars={averageRating} /> {" "} <span className="text-[#77878F]"> ({allRatings.length})</span>
+          </div>
+        </div>
         <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
           <h2 className="text-[16px] sm:text-lg font-medium text-gray-800 dark:text-white text-center sm:text-left truncate">
             {product.name}
@@ -279,28 +286,25 @@ const ProductCard = ({ product, isCard }) => {
                   {product.mrp}
                 </p>
               )}
-              <p className="text-lg font-semibold text-[#F9BA48] dark:text-[#FFA41C]">
+              <p className="text-lg font-semibold text-[#933FFF] dark:text-[#933FFF]">
                 <span>{currency}</span>
                 {product.unit_price}
               </p>
             </div>
-            {/* Ratings */}
-            <div className="mt-2">
-              <Stars stars={averageRating} />
-            </div>
+
           </div>
         </Link>
 
         {/* View Product Button */}
-        <div className="flex mt-4 md:justify-start justify-center">
+        {/* <div className="flex mt-4 md:justify-start justify-center">
           <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
             <button
-              className={`w-full py-2 px-2 rounded-lg bg-gradient-to-r bg-[#ffa318] text-white font-medium text-sm shadow-md hover:shadow-lg hover:opacity-90 transition duration-300 ${isCard ? "" : "mt-3"}`}
+              className={`w-full py-2 px-2 rounded-lg bg-gradient-to-r bg-[#933FFF] text-white font-medium text-sm shadow-md hover:shadow-lg hover:opacity-90 transition duration-300 ${isCard ? "" : "mt-3"}`}
             >
               View Product
             </button>
           </Link>
-        </div>
+        </div> */}
       </div>
     </div>
   );
