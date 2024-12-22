@@ -180,16 +180,16 @@ const Header = () => {
           <ProfilePopup />
         </>
       )}
-      <div className="bg-black w-full py-1 flex items-center justify-between px-[2%] text-white overflow-hidden">
+      <div className="bg-[#8B33FE] border-b border-gray-500 bg-opacity-40  w-full py-1  flex items-center justify-between px-[2%] text-white overflow-hidden">
         <div className="flex items-center w-3/4 sm:w-auto overflow-hidden sm:overflow-visible">
-          <div className="animate-marquee whitespace-nowrap">
-            <p className="text-[11px] sm:text-[14.3px]">
-              Want to explore Upcoming Deals on Weekends?
+          <div className=" whitespace-nowrap">
+            <p className="text-[11px] text-[#C80101] sm:text-[14.3px]">
+            Welcome to PinkSurfing online eCommerce store. 
             </p>
           </div>
         </div>
-        <div className="flex items-center bg-black">
-          <select className=" bg-black border-none outline-none text-[11px] sm:text-[14px] mr-3">
+        <div className="flex items-center bg-[#8B33FE] bg-opacity-40 ">
+          <select className="bg-inherit border-none outline-none text-[11px] sm:text-[14px] mr-3  bg-[#8B33FE]">
             <option>English</option>
           </select>
           <select
@@ -197,20 +197,17 @@ const Header = () => {
             onChange={(e) => {
               setCurrency(e.target.value);
             }}
-            className=" bg-black border-none outline-none text-[11px] sm:text-[14px]"
+            className="bg-inherit border-none outline-none text-[11px] sm:text-[14px]"
           >
             {Object.keys(currencyOptions).map((code) => (
-              <option key={code} value={currencyOptions[code].symbol}>
+              <option key={code} value={currencyOptions[code].symbol} className="bg-[#8B33FE]">
                 {code}
               </option>
             ))}
-
-            {/* <option value="$">USD</option> */}
-            {/* <option value="Rs.">INR</option> */}
           </select>
         </div>
       </div>
-      <div className="bg-[#2d1e5f] w-full py-3 flex items-center justify-between px-[2.4%] sm:px-[2%] text-white">
+      <div className="bg-[#8B33FE] bg-opacity-40 w-full py-3 flex items-center justify-between px-[2.4%] sm:px-[2%] text-white">
         <Link to="/">
           <div className="flex items-center gap-1 sm:gap-2">
             <p className="text-black font-bold text-[17px] sm:text-[19px] bg-white w-[24px] h-[24px] sm:w-[25px] sm:h-[25px] flex items-center justify-center rounded-full ">
@@ -266,7 +263,7 @@ const Header = () => {
             </div>
           )}
 
-          {isDarkMode ? (
+          {/* {isDarkMode ? (
             <MdOutlineWbSunny
               onClick={() => {
                 setIsDarkMode(false);
@@ -280,7 +277,7 @@ const Header = () => {
               }}
               className=" cursor-pointer -mr-2 text-[24px]"
             />
-          )}
+          )} */}
 
           {user && (
             <div className=" relative">

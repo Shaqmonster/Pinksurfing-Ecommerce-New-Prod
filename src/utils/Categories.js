@@ -9,7 +9,7 @@ export const categories = [
   {
     id: 2,
     name: "Shop by Store concierge game",
-    image: "/new/game.jpg",
+    image: "/new/shp.jpg",
     extraclass: "w-[100%] object-cover h-[165%]",
     link: "/home",
   },
@@ -74,9 +74,9 @@ export const subCategories = [
     id: "6",
     name: "Perfumes",
     category: "perfumes",
-    image2: "/new/perfume.jpg",
+    image2: "/new/beauty.jpg",
     extraclass: "object-cover",
-    image : '/new/beauty_makeup2.jpg',
+    image : '/new/perfume.jpg',
     link: "/home",
   },
   {
@@ -143,12 +143,12 @@ export const subCategories = [
     extraclass: "",
     link: "/home",
   },
-  {
-    id: "18",
-    name: "Channels 4 Sale",
-    category: "Channels for Sale",
-    image: "/new/channels.jpg",
-    extraclass: "",
-    link: "/home",
-  },
+  // {
+  //   id: "18",
+  //   name: "Channels 4 Sale",
+  //   category: "Channels for Sale",
+  //   image: "/new/channels.jpg",
+  //   extraclass: "",
+  //   link: "/home",
+  // },
 ];

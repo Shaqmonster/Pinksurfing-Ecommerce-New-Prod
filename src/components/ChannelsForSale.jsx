@@ -5,39 +5,39 @@ const ChannelsForSale = () => {
   const channels = [
     {
       id: 1,
-      name: "National Geographic",
+      name: "Game Accounts",
       image:
-        "/new/national_geography.jpg",
+        "/new/gaming_acc.webp",
     },
     {
       id: 2,
-      name: "Discovery Channel",
+      name: "Socail Media Accounts",
       image:
-        "/new/discovery.jpeg",
+        "/new/social_media.webp",
     },
-    {
-      id: 3,
-      name: "CNN",
-      image:
-        "/new/cnn.png",
-    },
+    // {
+    //   id: 3,
+    //   name: "CNN",
+    //   image:
+    //     "/new/cnn.png",
+    // },
   ];
 
   return (
     <div className="bg-white dark:bg-[#0E0F13] text-black dark:text-white py-8 px-4">
       <h1 className="text-3xl font-playfair font-bold text-center text-[#B881FF] mb-8">
-        Channels for sale
+        Accounts for Sale
       </h1>
       <div className="flex flex-wrap justify-center gap-6">
         {channels.map((channel) => (
           <div
             key={channel.id}
-            className="bg-white text-black rounded-lg shadow-lg overflow-hidden w-64"
+            className="bg-gray-300 text-black rounded-lg shadow-lg overflow-hidden w-64"
           >
             <img
               src={channel.image}
               alt={channel.name}
-              className="w-full h-40 object-cover"
+              className="w-full h-60 object-cover"
             />
             <div className="p-2 text-center">
               <p className="text-sm font-semibold">{channel.name}</p>

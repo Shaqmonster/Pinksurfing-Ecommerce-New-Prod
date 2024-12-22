@@ -248,14 +248,32 @@ const Home = () => {
                 }}
               >
                 <div className="w-full sm:w-[150px] h-[140px] flex flex-col items-center gap-1">
-                  <Link
-                    className="w-[90px] sm:w-full h-[90px] sm:h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f]"
-                  >
-                    <img
-                      src={item.image}
-                      className={`${item.extraclass} rounded-md hover:scale-105`}
-                    />
-                  </Link>
+                  {
+                    item.id == "6" ? (
+                      <a
+                        className="w-[130px] sm:w-full h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f] group"
+                      >
+                        <img
+                          src={item.image}
+                          className={`${item.extraclass} rounded-md group-hover:hidden`}
+                        />
+                        <img
+                          src={item.image2}
+                          className={`${item.extraclass} rounded-md hidden group-hover:block`}
+                        />
+                      </a>
+                    ) : (
+                      <Link
+                        className="w-[90px] sm:w-full h-[90px] sm:h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f]"
+                      >
+                        <img
+                          src={item.image}
+                          className={`${item.extraclass} rounded-md hover:scale-105`}
+                        />
+                      </Link>
+                    )
+                  }
+
                   <p className="font-medium text-[14px] sm:text-[15.6px]">{item.name}</p>
                 </div>
               </div>
@@ -499,7 +517,7 @@ const Home = () => {
 
         </div>
 
-      </div>
+      </div >
       <ChannelsForSale />
     </>
   );
