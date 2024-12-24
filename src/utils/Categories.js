@@ -2,7 +2,7 @@ export const categories = [
   {
     id: 1,
     name: "Shopping Mall",
-    image: "/new/shopping mall.webp",
+    image: "/new/shopping mall.jpg",
     extraclass: "w-[100%] object-cover h-[165%]",
     link: "/shoppingMall/all",
   },
@@ -123,7 +123,7 @@ export const subCategories = [
     id: "15",
     name: "Hotels",
     category: "hotels",
-    image: "/new/hotel.webp",
+    image: "/new/hotel.jpg",
     extraclass: "",
     link: "/home",
   },

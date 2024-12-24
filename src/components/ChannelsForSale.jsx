@@ -7,13 +7,13 @@ const ChannelsForSale = () => {
       id: 1,
       name: "Game Accounts",
       image:
-        "/new/gaming_acc.webp",
+        "/new/gaming_acc.jpg",
     },
     {
       id: 2,
       name: "Socail Media Accounts",
       image:
-        "/new/social_media.webp",
+        "/new/social_media.jpg",
     },
     // {
     //   id: 3,
