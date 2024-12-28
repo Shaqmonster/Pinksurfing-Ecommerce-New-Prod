@@ -469,8 +469,7 @@ const ProductDetailPage = () => {
                         className="w-full min-h-[320px] max-h-[320px] sm:h-[87%] object-contain cursor-pointer"
                         src={
                           activeImage ||
-                          product.image1 ||
-                          "https://w7.pngwing.com/pngs/1008/139/png-transparent-cosmetics-advertising-cosmetics-advertising-beauty-others.png"
+                          product.image1
                         }
                         alt="Product Image"
                         onMouseOut={() => {

@@ -145,8 +145,7 @@ export default function StoreProducts() {
         setLoading(true);
         axios
           .get(
-            `${
-              import.meta.env.VITE_SERVER_URL
+            `${import.meta.env.VITE_SERVER_URL
             }/api/product/filter-products/?attributes__value=${filterBy}`,
             {
               headers: {
@@ -205,9 +204,37 @@ export default function StoreProducts() {
   };
 
   return (
-    <div className={`bg-white ${isDarkMode && "dark"} dark:bg-black`}>
+    <div className={`bg-white ${isDarkMode && "dark"} dark:bg-[#0E0F13]`}>
       <SearchForm />
       <div>
+        <svg
+          className="fixed top-0 right-0 z-[0] pointer-events-none"
+          width="536"
+          height="1071"
+          viewBox="0 0 536 1071"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g filter="url(#filter0_f_1_3190)">
+            <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
+          </g>
+          <defs>
+            <filter
+              id="filter0_f_1_3190"
+              x="0"
+              y="0"
+              width="1071"
+              height="1071"
+              filterUnits="userSpaceOnUse"
+              colorInterpolationFilters="sRGB"
+            >
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
+              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+              <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+            </filter>
+          </defs>
+        </svg>
+
         {/* Mobile filter dialog ===================================================================================================== */}
         <Transition.Root show={mobileFiltersOpen} as={Fragment}>
           <Dialog
@@ -224,7 +251,7 @@ export default function StoreProducts() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
+              <div className="fixed inset-0 bg-[#0E0F13] bg-opacity-25" />
             </Transition.Child>
 
             <div className="fixed inset-0 z-40 flex">
@@ -237,14 +264,14 @@ export default function StoreProducts() {
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white dark:bg-black py-4 pb-12 shadow-xl">
+                <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white dark:bg-[#0E0F13] py-4 pb-12 shadow-xl">
                   <div className="flex items-center justify-between px-4">
-                    <h2 className="text-lg font-medium text-gray-900">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                       Filters
                     </h2>
                     <button
                       type="button"
-                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-gray-400"
+                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-[#0E0F13] p-2 text-gray-400"
                       onClick={() => setMobileFiltersOpen(false)}
                     >
                       <span className="sr-only">Close menu</span>
@@ -310,7 +337,7 @@ export default function StoreProducts() {
                       {({ open }) => (
                         <>
                           <h3 className="-my-3 flow-root">
-                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#0E0F13] py-3 text-sm text-gray-400 hover:text-gray-500">
                               <span className="font-medium text-gray-900 dark:text-purple-600">
                                 Sort By
                               </span>
@@ -346,7 +373,7 @@ export default function StoreProducts() {
                                     defaultValue={option.name}
                                     type="checkbox"
                                     checked={option.value === sortMethod}
-                                    onChange={() => {}}
+                                    onChange={() => { }}
                                     className="h-4 w-4 rounded border-gray-300 cursor-pointer text-indigo-600 focus:ring-indigo-500"
                                   />
                                   <label
@@ -387,7 +414,7 @@ export default function StoreProducts() {
                         thumbRightColor="#F9BA48"
                         onInput={(e) => handleSliderChange(e)}
                       />
-                      <div className="flex justify-between mt-2">
+                      <div className="flex justify-between mt-2 text-black dark:text-white">
                         <span>{`$${minValue}`}</span>
                         <span>{`$${maximumValue}`}</span>
                       </div>
@@ -405,7 +432,7 @@ export default function StoreProducts() {
                             {({ open }) => (
                               <>
                                 <h3 className="-my-3 flow-root">
-                                  <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                                  <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#0E0F13] py-3 text-sm text-gray-400 hover:text-gray-500">
                                     <span className="font-medium text-gray-900 dark:text-purple-600">
                                       {section.name}
                                     </span>
@@ -439,7 +466,7 @@ export default function StoreProducts() {
                                         defaultValue="all"
                                         type="checkbox"
                                         checked={" " === filterBy}
-                                        onChange={() => {}}
+                                        onChange={() => { }}
                                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                       />
                                       <label
@@ -465,7 +492,7 @@ export default function StoreProducts() {
                                             defaultValue={option}
                                             type="checkbox"
                                             checked={option === filterBy}
-                                            onChange={() => {}}
+                                            onChange={() => { }}
                                             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                           />
                                           <label
@@ -501,15 +528,13 @@ export default function StoreProducts() {
               <div className="flex items-center gap-2">
                 <HiMiniSquares2X2
                   onClick={() => setIsCard(true)}
-                  className={`text-[19px] cursor-pointer ${
-                    isCard ? "text-[#F9BA48]" : ""
-                  }`}
+                  className={`text-[19px] cursor-pointer ${isCard ? "text-[#F9BA48]" : ""
+                    }`}
                 />
                 <AiOutlineBars
                   onClick={() => setIsCard(false)}
-                  className={`text-[19px] cursor-pointer ${
-                    !isCard ? "text-[#F9BA48]" : ""
-                  }`}
+                  className={`text-[19px] cursor-pointer ${!isCard ? "text-[#F9BA48]" : ""
+                    }`}
                 />
               </div>
             </div>
@@ -518,7 +543,7 @@ export default function StoreProducts() {
               {({ open }) => (
                 <>
                   <h3 className="-my-3 flow-root">
-                    <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                    <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-[#0E0F13] py-3 text-sm text-gray-400 hover:text-gray-500">
                       <span className="font-medium text-gray-900 dark:text-white">
                         Sort By: {sortName}
                       </span>
@@ -531,7 +556,7 @@ export default function StoreProducts() {
                       </span>
                     </Disclosure.Button>
                   </h3>
-                  <Disclosure.Panel className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 shadow-lg z-10">
+                  <Disclosure.Panel className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-[#0E0F13] border border-gray-200 dark:border-gray-700 shadow-lg z-10">
                     <div className="space-y-4 p-4">
                       {sortMethods.map((option, optionIdx) => (
                         <div
@@ -548,7 +573,7 @@ export default function StoreProducts() {
                             defaultValue={option.name}
                             type="checkbox"
                             checked={option.value === sortMethod}
-                            onChange={() => {}}
+                            onChange={() => { }}
                             className="h-4 w-4 rounded border-gray-300 cursor-pointer text-indigo-600 focus:ring-indigo-500"
                           />
                           <label
@@ -645,7 +670,7 @@ export default function StoreProducts() {
                         {({ open }) => (
                           <>
                             <h3 className="-my-3 flow-root">
-                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#0E0F13] py-3 text-sm text-gray-400 hover:text-gray-500">
                                 <span className="font-medium text-gray-900 dark:text-purple-600">
                                   {section.name}
                                 </span>
@@ -678,7 +703,7 @@ export default function StoreProducts() {
                                     defaultValue="all"
                                     type="checkbox"
                                     checked={"" === filterBy}
-                                    onChange={() => {}}
+                                    onChange={() => { }}
                                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                   />
                                   <label
@@ -702,7 +727,7 @@ export default function StoreProducts() {
                                       defaultValue={option}
                                       type="checkbox"
                                       checked={option === filterBy}
-                                      onChange={() => {}}
+                                      onChange={() => { }}
                                       className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                     />
                                     <label
@@ -753,16 +778,15 @@ export default function StoreProducts() {
               </form>
               {!loading ? (
                 <div className="lg:col-span-3 2xl:col-span-4">
-                  <div className="bg-white dark:bg-black">
+                  <div className="bg-white dark:bg-[#0E0F13]">
                     <div className=" w-full  sm:py-0 sm:pb-10  lg:px-0">
                       <div
-                        className={`grid pb-6 ${
-                          isCard
-                            ? "lg:grid-cols-3 sm:grid-cols-2 grid-cols-2 2xl:grid-cols-4"
-                            : "2xl:grid-cols-2 lg:grid-cols-2 sm:grid-cols-2 grid-cols-1"
-                        } gap-x-3 gap-y-3 lg:gap-x-5 lg:items-center lg:justify-start flex-wrap`}
+                        className={`grid pb-6 ${isCard
+                          ? "lg:grid-cols-3 sm:grid-cols-2 grid-cols-2 2xl:grid-cols-4"
+                          : "2xl:grid-cols-2 lg:grid-cols-2 sm:grid-cols-2 grid-cols-1"
+                          } gap-x-3 gap-y-3 lg:gap-x-5 lg:items-center lg:justify-start flex-wrap`}
                       >
-                      {console.log(shoppingProduct)}
+                        {console.log(shoppingProduct)}
                         {shoppingProduct
                           ?.filter((i) => {
                             const priceFilter =

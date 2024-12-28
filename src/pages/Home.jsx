@@ -225,7 +225,9 @@ const Home = () => {
                         ? item.extraclass
                         : "w-[45%] object-contain"
                         }`}
-                      loading="lazy"
+                      loading={item.extraclass ? "eager" : "lazy"} // Load above-the-fold images eagerly
+                      alt={item.name || "Descriptive image"} // Add an alt attribute for accessibility and SEO
+                      decoding="async" // Improve rendering performance
                     />
                   </div>
                   <p className="font-medium text-[18px]">{item.name}</p>
@@ -251,14 +253,17 @@ const Home = () => {
                   {
                     item.id == "6" ? (
                       <a
-                        className="w-[130px] sm:w-full h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f] group"
+                        className="w-[90px] sm:w-full h-[90px] sm:h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f] group"
                       >
                         <img
+                          alt="sub category image"
                           src={item.image}
                           className={`${item.extraclass} rounded-md group-hover:hidden`}
                         />
                         <img
                           src={item.image2}
+                          alt="sub category image"
+
                           className={`${item.extraclass} rounded-md hidden group-hover:block`}
                         />
                       </a>
@@ -267,6 +272,7 @@ const Home = () => {
                         className="w-[90px] sm:w-full h-[90px] sm:h-full flex items-center justify-center shadow-md rounded-md border border-pink-500 overflow-hidden bg-[#2d1e5f]"
                       >
                         <img
+                          alt="sub category image"
                           src={item.image}
                           className={`${item.extraclass} rounded-md hover:scale-105`}
                         />
@@ -281,7 +287,7 @@ const Home = () => {
           </div>
 
         </div>
-        <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-[70%] left-0 z-[0] pointer-events-none hidden lg:block">
+        <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-[10%] left-0 z-[0] pointer-events-none hidden lg:block">
           <g filter="url(#filter0_f_1_3194)">
             <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
           </g>

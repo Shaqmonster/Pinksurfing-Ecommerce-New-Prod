@@ -12,16 +12,16 @@ import CancelDialog from "./CancelDialog";
 import { useElements } from "@stripe/react-stripe-js";
 import RatingForm from '../components/RatingForm'
 export default function Orders() {
-  const { currency ,setIsRatingFormOpen,isRatingFormOpen} = useContext(authContext);
+  const { currency, setIsRatingFormOpen, isRatingFormOpen } = useContext(authContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const [isOpen, setIsOpen] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState("");
-  
 
-  const { 
+
+  const {
     user,
     singleOrderProduct,
     setSingleOrderProduct,
@@ -29,9 +29,9 @@ export default function Orders() {
     setIsProfileOpen,
   } = useContext(authContext);
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(singleOrderProduct)
-  },[setSingleOrderProduct])
+  }, [setSingleOrderProduct])
   const GetOrders = async () => {
     if (!cookies.token) {
       navigate("/signin");
@@ -52,7 +52,7 @@ export default function Orders() {
       const sortedOrders = response.data.sort(
         (a, b) => new Date(b.date_of_order) - new Date(a.date_of_order)
       );
-  
+
       setOrders(sortedOrders);
       setLoading(false);
     } catch (error) {
@@ -91,7 +91,7 @@ export default function Orders() {
 
   return (
     <>
-      <div className="flex flex-col w-full h-full min-h-screen dark:bg-black pb-6 px-[2%] 2xl:px-[4.5%]">
+      <div className="flex flex-col w-full h-full min-h-screen dark:bg-[#0E0F13] pb-6 px-[2%] 2xl:px-[4.5%]">
         <h2 className="font-bold flex items-center gap-0.5 mb-3 text-[21px] sm:text-[27px] text-purple-900 dark:text-purple-600">
           <ArrowLeftCircleIcon
             onClick={() => {
@@ -101,6 +101,34 @@ export default function Orders() {
           />
           My Orders {` (${orders.length})`}
         </h2>
+        <svg
+          className="fixed top-0 right-0 z-[0] pointer-events-none"
+          width="536"
+          height="1071"
+          viewBox="0 0 536 1071"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g filter="url(#filter0_f_1_3190)">
+            <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
+          </g>
+          <defs>
+            <filter
+              id="filter0_f_1_3190"
+              x="0"
+              y="0"
+              width="1071"
+              height="1071"
+              filterUnits="userSpaceOnUse"
+              colorInterpolationFilters="sRGB"
+            >
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
+              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+              <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+            </filter>
+          </defs>
+        </svg>
+
         {!loading ? (
           <>
             <div className="flex flex-col items-center gap-2">
@@ -114,7 +142,7 @@ export default function Orders() {
                 .map((orderId) => (
                   <div
                     key={orderId}
-                    className="w-full lg:w-[80%] bg-purple-50 dark:bg-white/20 dark:border dark:border-white/30 dark:text-[#f5f5f5] mt-4 shadow-md border border-black/20 rounded-md"
+                    className="w-full lg:w-[80%] bg-purple-50 dark:bg-[#1A1C1E] dark:border dark:border-white/30 dark:text-[#f5f5f5] mt-4 shadow-md border border-black/20 rounded-md"
                   >
                     <div className="flex justify-between items-center p-4 border-b dark:border-white/30">
                       <div>
@@ -154,14 +182,14 @@ export default function Orders() {
                         >
                           <button onClick={() => navigate(`/summary/${order.id}`)}>
 
-                          <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden "                           >
-                            <img
-                              className="w-full h-full object-cover"
-                              alt="img"
-                              src={`${order.product.image1}`}
+                            <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden "                           >
+                              <img
+                                className="w-full h-full object-cover"
+                                alt="img"
+                                src={`${order.product.image1}`}
                               />
-                          </div>
-                              </button>
+                            </div>
+                          </button>
                           <div className="flex flex-col ml-4 sm:flex-grow">
                             <p className="font-bold mb-1 text-[18px] sm:text-[20px] capitalize">
                               {order.product.name}
@@ -237,15 +265,15 @@ export default function Orders() {
                                       </button>
                                     ) : (
                                       <button
-                                      onClick={() => {
-                                        console.log('clicked')
-                                        setIsRatingFormOpen(true);
-                                        console.log(isRatingFormOpen)
-                                      }}
-                                      className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                                    >
-                                      Rate Product
-                                    </button>
+                                        onClick={() => {
+                                          console.log('clicked')
+                                          setIsRatingFormOpen(true);
+                                          console.log(isRatingFormOpen)
+                                        }}
+                                        className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                      >
+                                        Rate Product
+                                      </button>
                                     )
                                   }
                                 </>

@@ -115,7 +115,8 @@ export default function CategoryProducts() {
                     }
                 );
 
-                const subcategories = response.data;
+                let subcategories = response.data;
+                subcategories = subcategories.sort((a, b) => a.name.localeCompare(b.name));
                 console.log("subcategories", subcategories);
                 setSubcategories(subcategories);
                 setCategoryOnlyData(["all", ...subcategories.map(subcat => subcat.name)]);

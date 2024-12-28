@@ -116,7 +116,7 @@ const Summary = () => {
   };
   return (
     <>
-      <div className=" px-4 py-4 md:px-6 2xl:px-20 w-full min-h-screen dark:bg-black bg-white pb-10">
+      <div className=" px-4 py-4 md:px-6 2xl:px-20 w-full min-h-screen dark:bg-[#1A1C1E] bg-white pb-10">
         <div className="flex justify-start item-start space-y-2 flex-col">
           <h1 className="text-xl flex items-center gap-1 dark:text-white lg:text-4xl font-semibold  text-black">
             <ArrowLeftCircleIcon
@@ -128,6 +128,18 @@ const Summary = () => {
             Order Id : {orderId}
           </h1>
         </div>
+        <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-[10%] left-0 z-[0] pointer-events-none hidden lg:block">
+          <g filter="url(#filter0_f_1_3194)">
+            <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
+          </g>
+          <defs>
+            <filter id="filter0_f_1_3194" x="-430" y="0" width="1031" height="1031" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+              <feFlood flood-opacity="0" result="BackgroundImageFix" />
+              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+              <feGaussianBlur stdDeviation="154" result="effect1_foregroundBlur_1_3194" />
+            </filter>
+          </defs>
+        </svg>
         <div className=" ">
           <div className="grid grid-cols-7 gap-4 px-5 my-4 justify-start items-start w-full h-full ">
             <div className=" flex col-span-7 lg:col-span-7 justify-between items-start dark:bg-transparent  w-full h-full">
@@ -243,7 +255,7 @@ const Summary = () => {
             </div>
 
             <div className=" col-span-7 justify-center flex-col md:flex-row items-stretch w-full ">
-              <div className="flex flex-col px-4 py-6 md:p-6 xl:p-8 w-full bg-gray-100 rounded-md border-purple-700 border-2 mt-4 dark:bg-gray-800 space-y-6">
+              <div className="flex flex-col px-4 py-6 md:p-6 xl:p-8 w-full bg-gray-100 rounded-md border-purple-700 border-2 mt-4 dark:bg-[#1A1C1E] space-y-6">
                 <h3 className="text-xl dark:text-white font-semibold leading-5 text-gray-800">
                   Summary
                 </h3>

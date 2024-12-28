@@ -53,7 +53,7 @@ const Profile = ({ user }) => {
         } justify-center w-max  min-h-fit shadow-md shadow-black/40 rounded-sm `}
       >
         {user ? (
-          <div className="w-full max-w-sm rounded-lg bg-white  dark:bg-black dark:border dark:border-white p-3 drop-shadow-xl divide-y divide-gray-200">
+          <div className="w-full max-w-sm rounded-lg bg-white  dark:bg-[#0E0F13] dark:border dark:border-white p-3 drop-shadow-xl divide-y divide-gray-200">
             <div
               aria-label="header"
               className="flex space-x-4 items-center p-4"
