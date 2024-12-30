@@ -81,9 +81,9 @@ export const subCategories = [
   },
   {
     id: "9",
-    name: "Books",
-    category: "books",
-    image: "/new/books.jpg",
+    name: " AI Agents 4 Sale",
+    category: "AI Agents",
+    image: "/new/ai_agents.jpg",
     extraclass: "",
     link: "/home",
   },
