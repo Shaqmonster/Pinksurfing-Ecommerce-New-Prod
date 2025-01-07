@@ -280,7 +280,7 @@ const Home = () => {
                     )
                   }
 
-                  <p className="font-medium text-[14px] sm:text-[15.6px]">{item.name}</p>
+                  <p className="font-medium text-[13px] text-center">{item.name}</p>
                 </div>
               </div>
             ))}

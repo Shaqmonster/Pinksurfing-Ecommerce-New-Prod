@@ -105,9 +105,9 @@ export const subCategories = [
   },
   {
     id: "13",
-    name: "Estate Sale",
-    category: "estate-sale",
-    image: "/new/real_estates.jpg",
+    name: "Building Materials",
+    category: "building-materials",
+    image: "/new/building_materials.jpg",
     extraclass: "",
     link: "/home",
   },
