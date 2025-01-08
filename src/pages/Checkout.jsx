@@ -170,14 +170,14 @@ const Checkout = () => {
   return (
     <>
       {orderConfirm && <OrderConfirm />}
-      <div className="flex flex-col items-center border-b bg-white dark:bg-black py-4 sm:flex-row sm:px-10 lg:px-20 xl:px-32">
+      <div className="flex flex-col items-center border-b bg-white dark:bg-[#0E0F13] py-4 sm:flex-row sm:px-10 lg:px-20 xl:px-32">
         <Link
           to="/"
           className="text-2xl font-bold text-gray-800 dark:text-purple-600"
         >
           PinkSurfing
         </Link>
-        <div className="mt-4 py-2 text-xs dark:bg-black sm:mt-0 sm:ml-auto sm:text-base">
+        <div className="mt-4 py-2 text-xs   dark:bg-[#0E0F13] sm:mt-0 sm:ml-auto sm:text-base">
           <div className="relative">
             <ul className="relative flex w-full items-center justify-between space-x-2 sm:space-x-4">
               <li className="flex items-center space-x-3 text-left sm:space-x-4">
@@ -233,8 +233,35 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+      <svg
+        className="fixed top-0 right-0 z-[0] pointer-events-none"
+        width="536"
+        height="1071"
+        viewBox="0 0 536 1071"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g filter="url(#filter0_f_1_3190)">
+          <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
+        </g>
+        <defs>
+          <filter
+            id="filter0_f_1_3190"
+            x="0"
+            y="0"
+            width="1071"
+            height="1071"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+          </filter>
+        </defs>
+      </svg>
       {clientSecret && stripePromise && (
-        <div className=" fixed z-50 inset-0 dark:bg-black/80 w-full h-screen flex items-center justify-center">
+        <div className=" fixed z-50 inset-0 dark:bg-[#0E0F13] w-full h-screen flex items-center justify-center">
           <div className=" z-50 bg-white min-h-[200px] w-fit p-4 rounded-md  ">
             <Elements stripe={stripePromise} options={{ clientSecret }}>
               <CheckoutForm />
@@ -250,16 +277,16 @@ const Checkout = () => {
           </div>
         </div>
       )}
-      <div className="grid sm:px-10 h-min min-h-screen pb-8 bg-white dark:bg-black dark:text-[#f5f5f5] text-black lg:grid-cols-2 lg:px-20 xl:px-32">
+      <div className="grid sm:px-10 h-min min-h-screen pb-8 bg-white dark:bg-[#0E0F13] dark:text-[#f5f5f5] text-black lg:grid-cols-2 lg:px-20 xl:px-32">
         <div className=" px-2 sm:px-4 pt-8">
           <p className="text-xl font-medium">Order Summary</p>
           <p className="text-gray-400">
             Check your items. And select a suitable shipping method.
           </p>
-          <div className="mt-8 space-y-3 rounded-lg  w-[95vw] sm:w-full max-h-[340px] overflow-y-auto  border bg-white dark:bg-black  sm:py-4 sm:px-6">
+          <div className="mt-8 space-y-3 rounded-lg  w-[95vw] sm:w-full max-h-[340px] overflow-y-auto  border bg-white dark:bg-[#0E0F13]  sm:py-4 sm:px-6">
             {cartProducts.map((product) => {
               return (
-                <div className="flex flex-row items-center rounded-lg bg-white dark:bg-black sm:flex-row">
+                <div className="flex flex-row items-center rounded-lg bg-white dark:bg-[#0E0F13] sm:flex-row">
                   <img
                     className="m-2 h-24 w-28 rounded-md border object-cover object-center"
                     src={`${product.product.image1}`}
@@ -300,13 +327,13 @@ const Checkout = () => {
               className=" ml-3 cursor-pointer w-[19px] "
             />
           </p>
-          <form className="mt-5 gap-6 w-[95vw] sm:w-full overflow-x-hidden flex flex-col dark:bg-black dark:border dark:border-white overflow-y-scroll p-1 h-[180px] justify-between">
+          <form className="mt-5 gap-6 w-[95vw] sm:w-full overflow-x-hidden flex flex-col dark:bg-[#0E0F13] dark:border dark:border-white overflow-y-scroll p-1 h-[180px] justify-between">
             {addresses?.slice().map((address, index) => (
               <div
                 key={address.id || index + address.zip_code}
                 className={`relative ${addressesId === address.id
-                    ? "border-2 border-blue-400 rounded-md"
-                    : "border border-gray-300 rounded-md"
+                  ? "border-2 border-blue-400 rounded-md"
+                  : "border border-gray-300 rounded-md"
                   }`}
                 onClick={() => {
                   setAddressesId(address.id);
@@ -314,8 +341,8 @@ const Checkout = () => {
               >
                 <span
                   className={`absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 ${addressesId === address.id
-                      ? "border-blue-400"
-                      : "border-gray-300 hidden"
+                    ? "border-blue-400"
+                    : "border-gray-300 hidden"
                     } bg-white dark:bg-black`}
                 ></span>
                 <label
@@ -344,7 +371,7 @@ const Checkout = () => {
             ))}
           </form>
         </div>
-        <div className="sm:mt-10 h-fit w-[98vw] sm:w-full   bg-white dark:bg-black dark:text-[#f5f5f5] px-4 pt-4 sm:pt-8 lg:mt-0">
+        <div className="sm:mt-10 h-fit w-[98vw] sm:w-full   bg-white dark:bg-[#0E0F13] dark:text-[#f5f5f5] px-4 pt-4 sm:pt-8 lg:mt-0">
           <p className="text-xl font-medium">Payment Details</p>
           <p className="text-gray-400">
             Complete your order by providing your payment details.
@@ -382,7 +409,7 @@ const Checkout = () => {
 
           <div>
             <button
-              className="mt-4 mb-8 w-full rounded-md bg-purple-700 px-6 py-3 font-medium text-white"
+              className="mt-4 mb-8 w-full rounded-md bg-[#9747FF] px-6 py-3 font-medium text-white"
               onClick={PlaceOrder}
             >
               Place Order

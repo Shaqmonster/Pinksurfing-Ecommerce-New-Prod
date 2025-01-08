@@ -245,6 +245,7 @@ const ProductDetailPage = () => {
         );
 
         setProduct(productResponse.data.Products);
+        console.log(productResponse.data);
         setLoading(false);
         setActiveImage(productResponse.data.Products.image);
 
@@ -526,7 +527,7 @@ const ProductDetailPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="md:flex-1 px-4 relative z-10 dark:bg-[#0E0F13] text-xs">
+                <div className="md:flex-1 px-4 relative dark:bg-[#0E0F13] text-xs">
                   <div className="flex  gap-2 mt-2">
                     <Stars stars={averageRating} />
                     <p className="">{averageRating} Star Rating ({reviews.length} User feedback)</p>

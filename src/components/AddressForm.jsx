@@ -198,7 +198,7 @@ export default function AddressForm() {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-[#0E0F13]  p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
                     className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900 dark:text-white"
@@ -224,7 +224,7 @@ export default function AddressForm() {
                           </label>
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 text-black dark:text-white border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 text-black dark:text-white border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
                           id="name"
                           name="name"
                           type="text"
@@ -245,7 +245,7 @@ export default function AddressForm() {
                           </label>
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
                           id="phone"
                           name="phone"
                           type="text"
@@ -265,7 +265,7 @@ export default function AddressForm() {
                           Steet 1
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-black"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13]"
                           id="street1"
                           name="street1"
                           type="text"
@@ -283,7 +283,7 @@ export default function AddressForm() {
                           Street 2
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
                           name="street2"
                           id="street2"
                           type="text"
@@ -305,7 +305,7 @@ export default function AddressForm() {
                         </label>
                         <div className="relative">
                           <select
-                            className="block appearance-none w-full bg-gray-200 dark:text-white border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                            className="block appearance-none w-full bg-gray-200 dark:text-white border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
                             id="country"
                             name="country"
                             value={country}
@@ -334,7 +334,7 @@ export default function AddressForm() {
                           </label>
                         </label>
                         <select
-                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
                           id="state"
                           name="state"
                           value={state}
@@ -361,7 +361,7 @@ export default function AddressForm() {
                           </label>
                         </label>
                         <select
-                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
                           id="city"
                           name="city"
                           value={city}
@@ -386,7 +386,7 @@ export default function AddressForm() {
                           </label>
                         </label>
                         <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
                           id="zip_code"
                           name="zip_code"
                           type="number"
@@ -407,7 +407,7 @@ export default function AddressForm() {
                         !country ||
                         !zip_code
                       }
-                      className=" w-full flex items-center justify-center disabled:bg-gray-500 bg-[#2d1e5f] text-white py-3 rounded-lg mt-6"
+                      className=" w-full flex items-center justify-center disabled:bg-gray-500 bg-[#6A1BBE]  border-2 border-[#8A2BE2] text-white py-3 rounded-lg mt-6"
                     >
                       {" "}
                       Add

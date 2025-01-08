@@ -181,15 +181,15 @@ const Header = () => {
         </>
       )}
       <div className="bg-[#8B33FE] border-b border-gray-500 bg-opacity-40  w-full py-1  flex items-center justify-between px-[2%] text-white overflow-hidden">
-        <div className="flex items-center w-3/4 sm:w-auto overflow-hidden sm:overflow-visible">
-          <div className=" whitespace-nowrap">
-            <p className="text-[11px] text-[#C80101] sm:text-[14.3px]">
+        <div className="flex flex-wrap  sm:flex-nowrap sm:whitespace-nowrap items-center w-3/4 sm:w-auto overflow-hidden sm:overflow-visible">
+          <div className=" ">
+            <p className="text-[11px] text-gray-200 sm:text-[14.3px] ">
             Welcome to PinkSurfing online eCommerce store. 
             </p>
           </div>
         </div>
         <div className="flex items-center bg-[#8B33FE] bg-opacity-40 ">
-          <select className="bg-inherit border-none outline-none text-[11px] sm:text-[14px] mr-3  bg-[#8B33FE]">
+          <select className="bg-inherit border-none outline-none text-[11px] sm:text-[14px] mr-3   bg-[#8B33FE]">
             <option>English</option>
           </select>
           <select

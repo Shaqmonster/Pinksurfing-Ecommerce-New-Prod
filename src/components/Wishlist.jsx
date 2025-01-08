@@ -166,7 +166,7 @@ export default function Wishlist() {
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto  w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-black shadow-xl">
+                  <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-[#0E0F13] shadow-xl">
                     <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-6 sm:px-6">
                       <div className="flex items-start justify-between">
                         <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-[#f5f5f5]">
@@ -195,7 +195,7 @@ export default function Wishlist() {
                                   className="flex  py-1 sm:py-2"
                                 >
                                   <div className=" w-full">
-                                    <div className="flex max-w-md h-[120px] sm:h-[155px] w-full bg-white dark:bg-black shadow-lg shadow-black/30 rounded-lg overflow-hidden">
+                                    <div className="flex max-w-md h-[120px] sm:h-[155px] w-full bg-white dark:bg-[#0E0F13] shadow-lg shadow-black/30 rounded-lg overflow-hidden">
                                       <img
                                         className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200"
                                         src={`${product.image1}`}

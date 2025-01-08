@@ -161,7 +161,7 @@ export default function SingleOrderForm() {
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
                 >
-                  <Dialog.Panel className="w-full sm:max-w-md transform overflow-hidden bg-white dark:bg-black rounded-2xl p-4 sm:p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Panel className="w-full sm:max-w-md transform overflow-hidden bg-white dark:bg-[#0E0F13] rounded-2xl p-4 sm:p-6 text-left align-middle shadow-xl transition-all">
                     {clientSecret && stripePromise ? (
                       <div className=" min-h-[200px] w-full  ">
                         <Elements
@@ -188,8 +188,8 @@ export default function SingleOrderForm() {
                             }}
                           />
                         </Dialog.Title>
-                        <div className="mt-8 space-y-3 rounded-lg border text-black dark:text-white dark:bg-black bg-white px-2 py-4 sm:px-6">
-                          <div className="flex flex-row items-center rounded-lg bg-white dark:bg-black sm:flex-row">
+                        <div className="mt-8 space-y-3 rounded-lg border text-black dark:text-white dark:bg-[#0E0F13] bg-white px-2 py-4 sm:px-6">
+                          <div className="flex flex-row items-center rounded-lg bg-white dark:bg-[#0E0F13] sm:flex-row">
                             <img
                               className="m-2 h-24 w-28 rounded-md border object-cover object-center"
                               src={`${singleOrderProduct.image1}`}
@@ -283,7 +283,7 @@ export default function SingleOrderForm() {
                         <div className="mt-5 flex items-center justify-between">
                           <button
                             type="button"
-                            className="w-full py-2.5 bg-[#2d1e5f] hover:bg-[#2d1e5f] font-semibold rounded-md text-white flex items-center justify-center"
+                            className="w-full py-2.5 bg-[#6A1BBE] hover:bg-[#572a88] font-semibold rounded-md text-white flex items-center justify-center"
                             onClick={PlaceSingleOrder}
                             disabled={loading}
                           >

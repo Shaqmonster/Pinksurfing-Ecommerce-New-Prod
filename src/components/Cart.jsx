@@ -173,8 +173,8 @@ export default function Cart() {
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto dark:bg-black  w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-black dark:border-l dark:border-white/70  shadow-xl">
+                <Dialog.Panel className="pointer-events-auto dark:bg-[#0E0F13]  w-screen max-w-md">
+                  <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-[#0E0F13] dark:border-l dark:border-white/70  shadow-xl">
                     <div className="flex-1 overflow-y-scroll   px-4 py-6 sm:px-6">
                       <div className="flex  items-start  justify-between">
                         <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-[#f5f5f5]">
@@ -347,7 +347,7 @@ export default function Cart() {
                       </div>
                     </div>
                     {cartProducts.length === 0 && (
-                      <div className=" w-full dark:bg-black h-full flex   flex-col items-center justify-center">
+                      <div className=" w-full dark:bg-[#0E0F13] h-full flex   flex-col items-center justify-center">
                         <img
                           className=" w-[60%] sm:w-[55%] object-contain "
                           src="/cartEmpty.svg"
@@ -360,7 +360,7 @@ export default function Cart() {
                             navigate("/shoppingMall/all");
                             setIsCartOpen(false);
                           }}
-                          className=" bg-[#2d1e5f] px-3 text-sm sm:text-base py-1.5 rounded-md text-white mt-2"
+                          className=" bg-[#6A1BBE]   px-3 text-sm sm:text-base py-1.5 rounded-md text-white mt-2"
                         >
                           Shop Now{" "}
                         </button>
@@ -383,7 +383,7 @@ export default function Cart() {
                           <button
                             onClick={() => setIsCartOpen(false)}
                             disabled={cartProducts.length === 0}
-                            className="flex items-center justify-center rounded-md border border-transparent bg-[#2d1e5f] disabled:bg-gray-500 w-full px-6 py-3 textsm sm:text-base font-medium text-white shadow-sm hover:bg-[#2d1e5f]"
+                            className="flex items-center justify-center rounded-md border border-transparent bg-[#6A1BBE]  disabled:bg-gray-500 w-full px-6 py-3 textsm sm:text-base font-medium text-white shadow-sm hover:bg-[#5e2d92]"
                           >
                             Checkout
                           </button>
@@ -394,7 +394,7 @@ export default function Cart() {
                           or
                           <button
                             type="button"
-                            className="font-medium ml-1 text-[#6040ca]  hover:text-[#7b62cd]  "
+                            className="font-medium ml-1  text-[#6040ca]  hover:text-[#7b62cd]  "
                             onClick={() => setIsCartOpen(false)}
                           >
                             Continue Shopping
