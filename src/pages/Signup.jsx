@@ -42,12 +42,40 @@ const Signup = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const fetchCountries = () => {
-      const countryData = Country.getAllCountries();
-      setCountries(countryData);
+    const fetchCountries = async () => {
+      try {
+        const response = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name,cca2,idd,currencies,latlng,timezones"
+        );
+        const data = await response.json();
+
+        // Transform the data to match the desired structure
+        const transformedData = data.map((country) => ({
+          name: country.name.common,
+          cca2: country.cca2,
+          phonecode: country.idd?.root
+            ? country.idd.root + (country.idd.suffixes?.[0] || "")
+            : null,
+          currency: country.currencies
+            ? Object.keys(country.currencies).map((code) => ({
+                name: country.currencies[code].name,
+                symbol: country.currencies[code].symbol,
+              }))
+            : [],
+          latitude: country.latlng?.[0] || null,
+          longitude: country.latlng?.[1] || null,
+          timezones: country.timezones || [],
+        }));
+        console.log(transformedData[0]);
+        setCountries(transformedData);
+      } catch (error) {
+        console.error("Error fetching country data:", error);
+      }
     };
+
     fetchCountries();
   }, []);
+
 
   const handlePaste = (event) => {
     const pasteData = event.clipboardData.getData("text");
@@ -447,8 +475,8 @@ const Signup = () => {
                   required
                 >
                   {countries.map((country) => (
-                    <option key={country.isoCode} value={country.phonecode}>
-                      {`+${country.phonecode} (${country.name})`}
+                    <option key={country.cca2} value={country.phonecode}>
+                      {`${country.phonecode} (${country.name})`}
                     </option>
                   ))}
                 </select>

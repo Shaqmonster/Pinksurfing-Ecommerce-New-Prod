@@ -219,17 +219,26 @@ const Home = () => {
               >
                 <div className="w-full lg:ml-12 ml-0 sm:w-[330px] lg:w-[360px] h-[260px] flex flex-col items-center gap-1 text-black dark:text-[#f5f5f5] cursor-pointer">
                   <div className="w-full h-[85%] flex overflow-hidden p-0 items-center justify-center border border-pink-500 rounded-xl shadow-md bg-[#2d1e5f]">
-                    <img
-                      src={item.image}
-                      className={`${item.extraclass
-                        ? item.extraclass
-                        : "w-[45%] object-contain"
-                        }`}
-                      loading={item.extraclass ? "eager" : "lazy"} // Load above-the-fold images eagerly
-                      alt={item.name || "Descriptive image"} // Add an alt attribute for accessibility and SEO
-                      decoding="async" // Improve rendering performance
-                    />
+                    <picture>
+                      {/* Use responsive image sizes and next-gen formats */}
+                      <source
+                        srcSet={`${item.image}?w=480&format=webp 480w, ${item.image}?w=800&format=webp 800w, ${item.image}?w=1200&format=webp 1200w`}
+                        type="image/webp"
+                      />
+                      <source
+                        srcSet={`${item.image}?w=480 480w, ${item.image}?w=800 800w, ${item.image}?w=1200 1200w`}
+                        type="image/jpeg"
+                      />
+                      <img
+                        src={`${item.image}?w=800`} // Default size
+                        className={item.extraclass || "w-[45%] object-contain"} // Apply custom or default styles
+                        loading={item.extraclass ? "eager" : "lazy"} // Load critical images eagerly, others lazily
+                        alt={item.name || "Descriptive image"} // Accessible description
+                        decoding="async" // Enable async decoding for smoother rendering
+                      />
+                    </picture>
                   </div>
+
                   <p className="font-medium text-[18px]">{item.name}</p>
                 </div>
               </div>
