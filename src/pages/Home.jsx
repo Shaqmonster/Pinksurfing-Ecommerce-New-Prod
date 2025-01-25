@@ -230,11 +230,12 @@ const Home = () => {
                         type="image/jpeg"
                       />
                       <img
-                        src={`${item.image}?w=800`} // Default size
-                        className={item.extraclass || "w-[45%] object-contain"} // Apply custom or default styles
-                        loading={item.extraclass ? "eager" : "lazy"} // Load critical images eagerly, others lazily
-                        alt={item.name || "Descriptive image"} // Accessible description
-                        decoding="async" // Enable async decoding for smoother rendering
+                        src={`${item.image}?w=800`}
+                        className={""}
+                        loading={"lazy"}
+                        alt={item.name || "Descriptive image"} 
+                        decoding="async"
+                        fetchpriority="low"
                       />
                     </picture>
                   </div>
