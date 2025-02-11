@@ -113,7 +113,7 @@ export default function StoreProducts() {
       if (filterBy === "") {
         setLoading(true);
         axios
-          .get(`${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`, {
+          .get(`${import.meta.env.VITE_SERVER_URL}/api/product/vendor-products/Arshad's Store/`, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -131,12 +131,7 @@ export default function StoreProducts() {
             setUniqueAttributes(Array.from(new Set(allAttributes)));
 
             // getting maximum and minimun values -----
-            setMaxValue(() => {
-              shoppingProduct.reduce((max, obj) => {
-                return Math.max(max, obj["unit_price"]);
-              }, -Infinity);
-            });
-            // console.log(maxValue);
+            getMaxPrice(shoppingProduct);
           })
           .catch((error) => {
             console.error(error);
@@ -167,6 +162,13 @@ export default function StoreProducts() {
     getFilterProducts();
   }, [cookies, filterBy, navigate, removeCookie]);
 
+  const getMaxPrice = async (shoppingProduct) => {
+    const maxval =await shoppingProduct.reduce((max, obj) => {
+      return Math.max(max, obj["unit_price"]);
+    }, -Infinity);
+    setMaximumValue(maxval);
+    setMaxValue(maxval);
+  }
   uniqueAttributes.forEach((attribute) => {
     const { name, value } = attribute;
 
@@ -396,7 +398,7 @@ export default function StoreProducts() {
                       </h2>
                       <MultiRangeSlider
                         min={0}
-                        max={20000}
+                        max={maxValue}
                         step={5}
                         minValue={minValue}
                         maxValue={maximumValue}
@@ -412,7 +414,7 @@ export default function StoreProducts() {
                         barLeftColor="#000"
                         thumbLeftColor="#F9BA48"
                         thumbRightColor="#F9BA48"
-                        onInput={(e) => handleSliderChange(e)}
+                        onChange={(e) => handleSliderChange(e)}
                       />
                       <div className="flex justify-between mt-2 text-black dark:text-white">
                         <span>{`$${minValue}`}</span>
@@ -752,7 +754,7 @@ export default function StoreProducts() {
                   </h2>
                   <MultiRangeSlider
                     min={0}
-                    max={20000}
+                    max={maxValue}
                     step={5}
                     minValue={minValue}
                     maxValue={maximumValue}
@@ -768,7 +770,7 @@ export default function StoreProducts() {
                     barLeftColor="#000"
                     thumbLeftColor="#F9BA48"
                     thumbRightColor="#F9BA48"
-                    onInput={(e) => handleSliderChange(e)}
+                    onChange={(e) => handleSliderChange(e)}
                   />
                   <div className="flex justify-between mt-2 text-[#4d5c73]">
                     <span>{`$${minValue}`}</span>
@@ -798,14 +800,15 @@ export default function StoreProducts() {
                                 ? true
                                 : i.category.name === categoryFilter;
 
-                            const storeFilter = i?.vendor?.slug === filterStore;
+                            // const storeFilter = i?.vendor?.slug === filterStore;
 
                             return (
-                              priceFilter && categoryFilterReturn && storeFilter
+                              priceFilter && categoryFilterReturn
                             );
                           })
                           .sort(handleSort(sortMethod))
                           .map((product, index) => {
+                            console.log("prod", product);
                             return (
                               <ProductCard
                                 key={product.id}

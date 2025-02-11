@@ -57,7 +57,7 @@ const Home = () => {
     { id: 4, name: "Pinksurfing finds" },
   ];
   const awsS3BaseUrl =
-    "https://pinksurfing.s3.eu-central-1.amazonaws.com/pinksurfing/";
+    "https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/";
 
   useEffect(() => {
     const fetchStores = async () => {
@@ -70,6 +70,7 @@ const Home = () => {
           }
         );
         setStores(storesResponse.data.stores);
+        console.log(storesResponse.data.stores);  
       } catch (error) {
         console.error(error);
       } finally {
@@ -472,11 +473,7 @@ const Home = () => {
                           className="border border-gray-300 rounded-lg w-full h-full flex flex-col items-center gap-1 overflow-hidden cursor-pointer"
                         >
                           <img
-                            src={
-                              store.store_image
-                                ? `${awsS3BaseUrl}${store.store_image}`
-                                : "https://media-cldnry.s-nbcnews.com/image/upload/t_nbcnews-fp-1024-512,f_auto,q_auto:best/newscms/2017_26/2053956/170627-better-grocery-store-main-se-539p.jpg"
-                            }
+                            src={`${awsS3BaseUrl}${store.store_image}`                            }
                             alt={store.store_name}
                             className="w-full h-[180px] object-cover"
                           />

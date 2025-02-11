@@ -23,7 +23,7 @@ export default function ShopByStore() {
   const [sortName, setSortName] = useState("Sort By Newest");
   const [loading, setLoading] = useState(false);
   const awsS3BaseUrl =
-    "https://pinksurfing.s3.eu-central-1.amazonaws.com/pinksurfing/";
+    "https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/";
 
   const sortMethods = [
     { name: "Newest", value: "date" },
