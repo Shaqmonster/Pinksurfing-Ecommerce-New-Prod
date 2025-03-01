@@ -102,7 +102,7 @@ const Footer = () => {
           <div className=" col-span-2 flex justify-center items-center flex-col">
             <img
               src="/logo.jpg"
-              className=" w-[120px] md:w-[150px] bg-white rounded-full border-none"
+              className=" w-[120px] md:w-[150px] bg-white border-none"
               alt="Pink Surfing"
             />
             <p className=" my-5 md:mb-7 text-[13.5px] text-[#929292] dark:text-gray-400 ">
