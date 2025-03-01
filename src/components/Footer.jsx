@@ -101,7 +101,7 @@ const Footer = () => {
         <div className=" grid grid-cols-1 md:grid-cols-6 gap-6 pt-5">
           <div className=" col-span-2 flex justify-center items-center flex-col">
             <img
-              src="/pinksurfing.png"
+              src="/logo.jpg"
               className=" w-[120px] md:w-[150px] bg-white rounded-full border-none"
               alt="Pink Surfing"
             />

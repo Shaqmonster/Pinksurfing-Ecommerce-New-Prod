@@ -210,9 +210,10 @@ const Header = () => {
       <div className="bg-[#8B33FE] bg-opacity-40 w-full py-3 flex items-center justify-between px-[2.4%] sm:px-[2%] text-white">
         <Link to="/">
           <div className="flex items-center gap-1 sm:gap-2">
-            <p className="text-black font-bold text-[17px] sm:text-[19px] bg-white w-[24px] h-[24px] sm:w-[25px] sm:h-[25px] flex items-center justify-center rounded-full ">
+            <img src="/logo.jpg" className="w-[40px] h-[40px] rounded-full" alt="" />
+            {/* <p className="text-black font-bold text-[17px] sm:text-[19px] bg-white w-[24px] h-[24px] sm:w-[25px] sm:h-[25px] flex items-center justify-center rounded-full ">
               P
-            </p>
+            </p> */}
             <p className="hidden sm:block sm:text-[23.8px] sm:font-[600]">
               PinkSurfing
             </p>
