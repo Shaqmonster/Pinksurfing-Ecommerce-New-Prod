@@ -184,7 +184,7 @@ const Header = () => {
         <div className="flex flex-wrap  sm:flex-nowrap sm:whitespace-nowrap items-center w-3/4 sm:w-auto overflow-hidden sm:overflow-visible">
           <div className=" ">
             <p className="text-[11px] text-gray-200 sm:text-[14.3px] ">
-            Welcome to PinkSurfing online eCommerce store. 
+              Welcome to PinkSurfing online eCommerce store.
             </p>
           </div>
         </div>
@@ -210,13 +210,10 @@ const Header = () => {
       <div className="bg-[#8B33FE] bg-opacity-40 w-full py-3 flex items-center justify-between px-[2.4%] sm:px-[2%] text-white">
         <Link to="/">
           <div className="flex items-center gap-1 sm:gap-2">
-            <img src="/logo.jpg" className="w-[48px] h-[48px]" alt="" />
+            <img src="logo.jpg" className="w-[48px] h-[48px]" alt="" />
             {/* <p className="text-black font-bold text-[17px] sm:text-[19px] bg-white w-[24px] h-[24px] sm:w-[25px] sm:h-[25px] flex items-center justify-center rounded-full ">
               P
             </p> */}
-            <p className="hidden sm:block sm:text-[23.8px] sm:font-[600]">
-              PinkSurfing
-            </p>
           </div>
         </Link>
 
