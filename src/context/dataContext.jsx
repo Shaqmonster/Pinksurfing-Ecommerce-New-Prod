@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
@@ -11,7 +11,7 @@ export const dataContext = createContext();
 export const DataProvider = ({ children }) => {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
-  const { search } = useContext(authContext);
+  const { search,setUser } = useContext(authContext);
 
   // UseStates -------------------------------------------------------------------
   let [searchedProducts, setSearchedProducts] = useState([]);
@@ -24,7 +24,21 @@ export const DataProvider = ({ children }) => {
     price: 0,
   });
   // toast functions ------------------------------------------------------------
-
+  const [profileActiveIndex, setProfileActiveIndex] = useState(0);
+  useEffect(()=>{
+    if(profileActiveIndex === 6){
+          removeCookie("token");
+          removeCookie("refresh");
+          localStorage.removeItem("refresh");
+          localStorage.removeItem("token");
+          toast.success("Logged Out Successfully", {
+            position: "top-right",
+            autoClose: 2500,
+          });
+          setUser("");
+          navigate("/");      
+    }
+  },[profileActiveIndex])
   const handleError = (err) => {
     console.error("Error occurred",err);
     toast.error(err, {
@@ -137,6 +151,8 @@ const getVendorProducts = async (shaqshop) => {
         searchProducts,
         Logout,
         getVendorProducts,
+        profileActiveIndex,
+        setProfileActiveIndex,
       }}
     >
       {children}

@@ -305,9 +305,7 @@ const Header = () => {
 
           <div className=" relative ">
             <div
-              onClick={() => {
-                setIsProfileOpen(isProfileOpen === true ? false : true);
-              }}
+              onClick={() => navigate("/profile")}
               aria-label="avatar"
               className="flex items-center cursor-pointer space-x-2 p-1 rounded-md"
             >
@@ -339,9 +337,9 @@ const Header = () => {
                 </div>
               )}
             </div>
-            <div className="absolute top-14 right-0 z-50">
+            {/* <div className="absolute top-14 right-0 z-50">
               {isProfileOpen && <Profile user={user} />}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

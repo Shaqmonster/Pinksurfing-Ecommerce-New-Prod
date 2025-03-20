@@ -18,6 +18,7 @@ export default {
       fontFamily: {
         playfair: ['"Playfair Display"', 'serif'],
         robotoMono: ['"Roboto Mono"', 'monospace'], // Add Roboto Mono
+        sen : ['"Sen"', 'sans-serif'],
       },
     },
   },

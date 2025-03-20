@@ -1,8 +1,31 @@
 import * as React from "react";
-import { Sidebar } from "../components/ProfileSidebar";
-import OrderDetails from "../components/OrderDetails";
+import { Sidebar } from "../components/ProfilePageComponents/ProfileSidebar";
+import OrderDetails from "../components/ProfilePageComponents/OrderDetails";
+import { dataContext } from "../context/dataContext";
+import ProfileDetails from "../components/ProfilePageComponents/ProfileDetails";
+import ProfileCartPage from "../components/ProfilePageComponents/ProfileCartPage";
+import ProfileWishlist from "../components/ProfilePageComponents/ProfileWishlist";
+import ProfileMyStore from "../components/ProfilePageComponents/ProfileMyStore";
+import UserOnSiteWallet from "../components/UserWallet";
+import ProfileUserWallet from "../components/ProfilePageComponents/ProfileUserWallet";
+import AllOrders from "../components/ProfilePageComponents/AllOrders";
 
 export default function ProfilePage() {
+  const { profileActiveIndex, setProfileActiveIndex } = React.useContext(dataContext);
+  React.useEffect(() => {
+    setProfileActiveIndex(0);
+  }, []);
+
+  const profileComponents = {
+    0: <ProfileDetails />,
+    1 : <ProfileCartPage/>,
+    2 : <ProfileWishlist/>,
+    3 : <ProfileMyStore/>,
+    4: <AllOrders />,
+    5 : <ProfileUserWallet/>
+  };
+
+  
   return (
     <>
       <link
@@ -21,10 +44,12 @@ export default function ProfilePage() {
           </filter>
         </defs>
       </svg>
-      <div className="flex gap-10 px-72 pt-10 pb-20 min-h-screen text-sm text-gray-200 bg-[#0E0F13] max-md:px-5 max-md:py-10 max-sm:flex-col max-sm:p-5">
-        <Sidebar />
+      <div className="flex sm:gap-20 gap-5 px-10 md:px-16 lg:px-20 xl:px-20 pt-10 pb-20 min-h-screen text-sm text-gray-200 bg-[#0E0F13] max-sm:flex-col max-sm:p-5">
+        <div className="sidebar-container flex-shrink-0">
+          <Sidebar />
+        </div>
         <div className="overflow-hidden flex-1 bg-[#0E0F13] rounded">
-          <OrderDetails/>
+          {profileComponents[profileActiveIndex] || null}
         </div>
       </div>
     </>
