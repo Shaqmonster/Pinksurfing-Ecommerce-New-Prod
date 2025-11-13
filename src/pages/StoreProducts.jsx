@@ -24,6 +24,7 @@ import SearchForm from "../components/Search";
 
 export default function StoreProducts() {
   const { slug } = useParams();
+  console.log("slug", slug);
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const { products } = useContext(dataContext);
@@ -113,7 +114,7 @@ export default function StoreProducts() {
       if (filterBy === "") {
         setLoading(true);
         axios
-          .get(`${import.meta.env.VITE_SERVER_URL}/api/product/vendor-products/Arshad's Store/`, {
+          .get(`${import.meta.env.VITE_SERVER_URL}/api/product/vendor-products/${slug}/`, {
             headers: {
               "Content-Type": "application/json",
             },

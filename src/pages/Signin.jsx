@@ -42,15 +42,15 @@ const Signin = () => {
         setEmailError("");
       }
     }
-    if (name === "password") {
-      if (!passwordRegex.test(value)) {
-        setPasswordError(
-          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-        );
-      } else {
-        setPasswordError("");
-      }
-    }
+    // if (name === "password") {
+    //   if (!passwordRegex.test(value)) {
+    //     setPasswordError(
+    //       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    //     );
+    //   } else {
+    //     setPasswordError("");
+    //   }
+    // }
   };
 
   const handleSubmit = async (e) => {

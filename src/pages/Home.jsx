@@ -13,6 +13,10 @@ import { categories, subCategories } from "../utils/Categories";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import ChannelsForSale from "../components/ChannelsForSale";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import { IoClose } from "react-icons/io5";
+import { Country, State, City } from "country-state-city";
 
 
 const responsive = {
@@ -31,6 +35,22 @@ const Home = () => {
   const [storeLoading, setStoreLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(1); // Default to 'Buyer's Choice'
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVendorDialogOpen, setIsVendorDialogOpen] = useState(false);
+  const [vendorFormData, setVendorFormData] = useState({
+    store_name: "",
+    website: "",
+    bio: "",
+    street1: "",
+    street2: "",
+    city: "",
+    state: "",
+    country: "",
+    zip_code: "",
+  });
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getFilteredCards = () => {
     if (selectedCategory === 3) return products; // Buyer's Choice shows all products
@@ -58,6 +78,142 @@ const Home = () => {
   ];
   const awsS3BaseUrl =
     "https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/";
+
+  // Initialize countries on component mount
+  useEffect(() => {
+    setCountries(Country.getAllCountries());
+  }, []);
+
+  // Handle My Store click
+  const handleMyStoreClick = () => {
+    // Check if user is logged in
+    if (!user || !cookies.token) {
+      toast.info("Please sign in to access your store");
+      navigate("/signin");
+      return;
+    }
+
+    // Check if user is already a vendor
+    const isVendor = user.is_vendor || localStorage.getItem("user.vendorAccess") === "true";
+    
+    if (isVendor) {
+        window.open("https://vendors.pinksurfing.com", "_blank");
+    } else {
+      // Show vendor registration dialog
+      setIsVendorDialogOpen(true);
+    }
+  };
+
+  // Handle vendor form change
+  const handleVendorFormChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "country") {
+      setVendorFormData((prev) => ({
+        ...prev,
+        country: value,
+        state: "",
+        city: "",
+      }));
+
+      const countryCode = countries.find((c) => c.name === value)?.isoCode;
+      if (countryCode) {
+        setStates(State.getStatesOfCountry(countryCode));
+        setCities([]);
+      } else {
+        setStates([]);
+        setCities([]);
+      }
+    } else if (name === "state") {
+      setVendorFormData((prev) => ({
+        ...prev,
+        state: value,
+        city: "",
+      }));
+
+      const stateCode = states.find((s) => s.name === value)?.isoCode;
+      const countryCode = countries.find((c) => c.name === vendorFormData.country)?.isoCode;
+      if (stateCode && countryCode) {
+        setCities(City.getCitiesOfState(countryCode, stateCode));
+      } else {
+        setCities([]);
+      }
+    } else {
+      setVendorFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  // Submit vendor registration
+  const handleVendorRegistration = async (e) => {
+    e.preventDefault();
+    
+    if (!cookies.token) {
+      toast.error("Please sign in first");
+      navigate("/signin");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("company_name", vendorFormData.store_name);
+    formData.append("website", vendorFormData.website);
+    formData.append("bio", vendorFormData.bio);
+    formData.append("street1", vendorFormData.street1);
+    formData.append("street2", vendorFormData.street2);
+    formData.append("city", vendorFormData.city);
+    formData.append("state", vendorFormData.state);
+    formData.append("country", vendorFormData.country);
+    formData.append("zip_code", vendorFormData.zip_code);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/api/vendor/customer-vendor-registration/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${cookies.token}`,
+          },
+        }
+      );
+
+      console.log("Vendor registration response:", response.data);
+      
+      // Update localStorage
+      localStorage.setItem("vendorAccess", "true");
+      
+      toast.success("Congratulations! You're now a vendor on Pinksurfing", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+
+      // Close dialog
+      setIsVendorDialogOpen(false);
+
+      // Redirect to vendor login after a short delay
+      setTimeout(() => {
+        window.open("https://vendors.pinksurfing.com", "_blank");
+      }, 2000);
+
+    } catch (error) {
+      console.error("Vendor registration error:", error);
+      toast.error(
+        error.response?.data?.message || 
+        error.response?.data?.status || 
+        "Unable to register as vendor. Please try again.",
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStores = async () => {
@@ -193,19 +349,7 @@ const Home = () => {
               <div
                 onClick={() => {
                   if (item.id === 3) {
-                    if (user.is_vendor) {
-                      navigate(`/store/${user.vendor.slug}`);
-                    } else {
-                      toast.info(
-                        "You do not have a store. Register on our vendor page."
-                      );
-                      setTimeout(() => {
-                        window.open(
-                          "https://vendors.pinksurfing.com",
-                          "_blank"
-                        );
-                      }, 3000);
-                    }
+                    handleMyStoreClick();
                   } else if (item.id === 1 || item.id === 2) {
                     setCategory("shoppingMall");
                     localStorage.setItem("category", "shoppingMall");
@@ -219,7 +363,7 @@ const Home = () => {
                 className=""
               >
                 <div className="w-full lg:ml-12 ml-0 sm:w-[330px] lg:w-[360px] h-[260px] flex flex-col items-center gap-1 text-black dark:text-[#f5f5f5] cursor-pointer">
-                  <div className="w-full h-[85%] flex overflow-hidden p-0 items-center justify-center border border-pink-500 rounded-xl shadow-md bg-[#2d1e5f]">
+                  <div  className="w-full h-[85%] flex overflow-hidden p-0 items-center justify-center border border-pink-500 rounded-xl shadow-md bg-[#2d1e5f]">
                     <picture>
                       {/* Use responsive image sizes and next-gen formats */}
                       <source
@@ -532,6 +676,248 @@ const Home = () => {
 
       </div >
       <ChannelsForSale />
+
+      {/* Vendor Registration Dialog */}
+      <Transition appear show={isVendorDialogOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className={`relative ${isDarkMode && "dark"} z-50`}
+          onClose={() => setIsVendorDialogOpen(false)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-xl font-bold mb-4 text-gray-900 dark:text-white flex items-center justify-between"
+                  >
+                    <span>Become a Vendor</span>
+                    <button
+                      onClick={() => setIsVendorDialogOpen(false)}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <IoClose size={28} />
+                    </button>
+                  </Dialog.Title>
+
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    Please fill in the shipping related information to register as a vendor.
+                  </p>
+
+                  <form onSubmit={handleVendorRegistration} className="space-y-4">
+                    {/* Store Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Store Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="store_name"
+                        value={vendorFormData.store_name}
+                        onChange={handleVendorFormChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                        placeholder="Enter your store name"
+                      />
+                    </div>
+
+                    {/* Website */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Website
+                      </label>
+                      <input
+                        type="url"
+                        name="website"
+                        value={vendorFormData.website}
+                        onChange={handleVendorFormChange}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                        placeholder="https://yourwebsite.com"
+                      />
+                    </div>
+
+                    {/* Bio */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Bio
+                      </label>
+                      <textarea
+                        name="bio"
+                        value={vendorFormData.bio}
+                        onChange={handleVendorFormChange}
+                        rows="3"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                        placeholder="Tell us about your store"
+                      />
+                    </div>
+
+                    {/* Shipping Address Section */}
+                    <div className="border-t border-gray-300 dark:border-gray-600 pt-4 mt-4">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        Shipping Address
+                      </h4>
+
+                      {/* Street 1 */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Street Address 1 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="street1"
+                          value={vendorFormData.street1}
+                          onChange={handleVendorFormChange}
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                          placeholder="Street address"
+                        />
+                      </div>
+
+                      {/* Street 2 */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Street Address 2
+                        </label>
+                        <input
+                          type="text"
+                          name="street2"
+                          value={vendorFormData.street2}
+                          onChange={handleVendorFormChange}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                          placeholder="Apartment, suite, etc. (optional)"
+                        />
+                      </div>
+
+                      {/* Country, State, City in a grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {/* Country */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Country <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            name="country"
+                            value={vendorFormData.country}
+                            onChange={handleVendorFormChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                          >
+                            <option value="">Select Country</option>
+                            {countries.map((country) => (
+                              <option key={country.isoCode} value={country.name}>
+                                {country.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* State */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            State <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            name="state"
+                            value={vendorFormData.state}
+                            onChange={handleVendorFormChange}
+                            required
+                            disabled={!vendorFormData.country}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white disabled:opacity-50"
+                          >
+                            <option value="">Select State</option>
+                            {states.map((state) => (
+                              <option key={state.isoCode} value={state.name}>
+                                {state.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* City */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            City <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            name="city"
+                            value={vendorFormData.city}
+                            onChange={handleVendorFormChange}
+                            required
+                            disabled={!vendorFormData.state}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white disabled:opacity-50"
+                          >
+                            <option value="">Select City</option>
+                            {cities.map((city) => (
+                              <option key={city.name} value={city.name}>
+                                {city.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Zip Code */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Zip Code <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="zip_code"
+                          value={vendorFormData.zip_code}
+                          onChange={handleVendorFormChange}
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                          placeholder="Enter zip code"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setIsVendorDialogOpen(false)}
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isSubmitting ? "Registering..." : "Register as Vendor"}
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </>
   );
 };

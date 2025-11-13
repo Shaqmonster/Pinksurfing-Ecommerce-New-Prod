@@ -110,7 +110,8 @@ const ForgotPassword = () => {
                   id="email"
                   value={email}
                   onChange={handleOnChange}
-                  className="border-none text-black outline-none py-2 px-3 rounded-md"
+                  disabled={!otpHidden}
+                  className="border-none text-black outline-none py-2 px-3 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed"
                 />
               </div>
               {!otpHidden && (
