@@ -51,6 +51,8 @@ const Home = () => {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [storeImage, setStoreImage] = useState(null);
+  const [storeImagePreview, setStoreImagePreview] = useState(null);
 
   const getFilteredCards = () => {
     if (selectedCategory === 3) return products; // Buyer's Choice shows all products
@@ -146,6 +148,26 @@ const Home = () => {
     }
   };
 
+  // Handle store image upload
+  const handleStoreImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setStoreImage(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setStoreImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove store image
+  const handleRemoveStoreImage = () => {
+    setStoreImage(null);
+    setStoreImagePreview(null);
+  };
+
   // Submit vendor registration
   const handleVendorRegistration = async (e) => {
     e.preventDefault();
@@ -168,6 +190,11 @@ const Home = () => {
     formData.append("state", vendorFormData.state);
     formData.append("country", vendorFormData.country);
     formData.append("zip_code", vendorFormData.zip_code);
+    
+    // Add store image if selected
+    if (storeImage) {
+      formData.append("shop_image", storeImage);
+    }
 
     try {
       const response = await axios.post(
@@ -770,6 +797,41 @@ const Home = () => {
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                         placeholder="Tell us about your store"
                       />
+                    </div>
+
+                    {/* Store Image Upload */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Store Image
+                      </label>
+                      <div className="space-y-2">
+                        {/* File input */}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleStoreImageChange}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-gray-700 dark:file:text-purple-300"
+                        />
+                        
+                        {/* Image preview */}
+                        {storeImagePreview && (
+                          <div className="relative inline-block">
+                            <img
+                              src={storeImagePreview}
+                              alt="Store preview"
+                              className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300 dark:border-gray-600"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleRemoveStoreImage}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                              title="Remove image"
+                            >
+                              <IoClose size={20} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Shipping Address Section */}

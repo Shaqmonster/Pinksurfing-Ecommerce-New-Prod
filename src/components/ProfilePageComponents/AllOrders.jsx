@@ -99,7 +99,7 @@ export default function AllOrders() {
                         }}
                         className="cursor-pointer block w-[27px] sm:w-[30px] dark:text-[#f5f5f5] top-1.5"
                     />
-                    My Orders {` (${orders.length})`}
+                    My Orders
                 </h2>
                 <svg
                     className="fixed top-0 right-0 z-[0] pointer-events-none"
