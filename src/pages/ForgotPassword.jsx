@@ -40,6 +40,10 @@ const ForgotPassword = () => {
         handleSuccess("Email Sent Successfully");
         setOtpHidden(false);
       } else {
+        if(response.status === 404){
+          handleError("Email not found");
+          return;
+        }
         handleError("Failed to send OTP");
       }
     } catch (error) {

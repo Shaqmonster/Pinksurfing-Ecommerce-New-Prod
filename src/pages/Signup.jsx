@@ -24,6 +24,7 @@ const Signup = () => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState("bottom");
   const countryDropdownRef = useRef(null);
+  const [isCountriesLoaded, setIsCountriesLoaded] = useState(false);
   const [inputValue, setInputValue] = useState({
     first_name: "",
     last_name: "",
@@ -57,24 +58,51 @@ const Signup = () => {
         const data = await response.json();
 
         // Transform the data to match the desired structure
-        const transformedData = data.map((country) => ({
-          name: country.name.common,
-          cca2: country.cca2,
-          phonecode: country.idd?.root
-            ? country.idd.root + (country.idd.suffixes?.[0] || "")
-            : null,
-          currency: country.currencies
-            ? Object.keys(country.currencies).map((code) => ({
-                name: country.currencies[code].name,
-                symbol: country.currencies[code].symbol,
-              }))
-            : [],
-          latitude: country.latlng?.[0] || null,
-          longitude: country.latlng?.[1] || null,
-          timezones: country.timezones || [],
-        }));
+        const transformedData = data.map((country) => {
+          // Special handling for United States to ensure +1 code
+          if (country.cca2 === "US") {
+            return {
+              name: country.name.common,
+              cca2: country.cca2,
+              phonecode: "+1",
+              currency: country.currencies
+                ? Object.keys(country.currencies).map((code) => ({
+                    name: country.currencies[code].name,
+                    symbol: country.currencies[code].symbol,
+                  }))
+                : [],
+              latitude: country.latlng?.[0] || null,
+              longitude: country.latlng?.[1] || null,
+              timezones: country.timezones || [],
+            };
+          }
+          
+          return {
+            name: country.name.common,
+            cca2: country.cca2,
+            phonecode: country.idd?.root
+              ? country.idd.root + (country.idd.suffixes?.[0] || "")
+              : null,
+            currency: country.currencies
+              ? Object.keys(country.currencies).map((code) => ({
+                  name: country.currencies[code].name,
+                  symbol: country.currencies[code].symbol,
+                }))
+              : [],
+            latitude: country.latlng?.[0] || null,
+            longitude: country.latlng?.[1] || null,
+            timezones: country.timezones || [],
+          };
+        });
+        
+        // Sort countries alphabetically by name
+        const sortedData = transformedData.sort((a, b) => 
+          a.name.localeCompare(b.name)
+        );
+        
         console.log(transformedData[0]);
-        setCountries(transformedData);
+        setCountries(sortedData);
+        setIsCountriesLoaded(true);
       } catch (error) {
         console.error("Error fetching country data:", error);
       }
@@ -82,6 +110,34 @@ const Signup = () => {
 
     fetchCountries();
   }, []);
+
+  // Set US as default country code after countries are loaded
+  useEffect(() => {
+    if (isCountriesLoaded && countries.length > 0 && !selectedCountry) {
+      // Check if US already exists in the list
+      let usCountry = countries.find((country) => country.cca2 === "US");
+      
+      // If US doesn't exist, add it manually
+      if (!usCountry) {
+        usCountry = {
+          name: "United States of America",
+          cca2: "US",
+          phonecode: "+1",
+          currency: [{ name: "United States Dollar", symbol: "$" }],
+          latitude: 37.09024,
+          longitude: -95.712891,
+          timezones: ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00"]
+        };
+        setCountries((prev) => [usCountry, ...prev]);
+      }
+      console.log("Defaulting to US country code",usCountry);
+      setSelectedCountry(usCountry);
+      setInputValue((prev) => ({
+        ...prev,
+        country_code: usCountry.phonecode,
+      }));
+    }
+  }, [isCountriesLoaded, countries]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -328,7 +384,7 @@ const Signup = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Failed to send OTP. Please try again later.");
+      toast.error(error?.response?.data?.message || "Failed to send OTP. Please try again later.");
     }
   };
 
@@ -473,6 +529,9 @@ const Signup = () => {
                   }}
                 />
               </div>
+              <p className="text-gray-400 text-xs mt-1">
+                Please check your spam folder if you don't see the email
+              </p>
             </div>
 
             <div className="flex flex-col col-span-1">
