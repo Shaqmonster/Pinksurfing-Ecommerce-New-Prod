@@ -43,14 +43,56 @@ export const AuthProvider = ({ children }) => {
   const [isUserWalletOpen, setIsUserWalletOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const Logout = () => {
-    removeCookie("token");
-    removeCookie("refresh");
-    localStorage.removeItem("token");
-    localStorage.removeItem("refresh");
-    setUser("");
-    setAuthToken("");
-    navigate("/signin");
+  const Logout = async () => {
+    try {
+      // Get the token before clearing
+      const token = authToken || cookies.token || localStorage.getItem("token");
+      
+      // Call server logout API if token exists
+      if (token) {
+        try {
+          await axios.post(
+            "https://auth.pinksurfing.com/logout/",
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
+        } catch (error) {
+          console.error("Server logout error:", error);
+          // Continue with client-side cleanup even if server logout fails
+        }
+      }
+
+      // Clear all cookies
+      const allCookies = Object.keys(cookies);
+      allCookies.forEach((cookieName) => {
+        removeCookie(cookieName, { path: "/" });
+      });
+
+      // Clear all localStorage
+      localStorage.clear();
+
+      setUser("");
+      setAuthToken("");
+      navigate("/signin");
+    } catch (error) {
+      console.error("Logout error:", error);
+      
+      // Still clear local data even if there's an error
+      const allCookies = Object.keys(cookies);
+      allCookies.forEach((cookieName) => {
+        removeCookie(cookieName, { path: "/" });
+      });
+      localStorage.clear();
+      setUser("");
+      setAuthToken("");
+      navigate("/signin");
+    }
   };
 
   const GetProfile = async (token = authToken) => {
