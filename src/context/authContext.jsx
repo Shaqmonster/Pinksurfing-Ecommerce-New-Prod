@@ -46,11 +46,14 @@ export const AuthProvider = ({ children }) => {
   const Logout = () => {
     removeCookie("token");
     removeCookie("refresh");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     setUser("");
-    navigate("/");
+    setAuthToken("");
+    navigate("/signin");
   };
 
-  const GetProfile = async () => {
+  const GetProfile = async (token = authToken) => {
     try {
       setLoading(true)
       const response = await axios.get(
@@ -58,17 +61,25 @@ export const AuthProvider = ({ children }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       setUser(response.data);
+      return true;
     } catch (error) {
-      console.error(error);
+      console.error("GetProfile error:", error);
       if (error.response && error.response.status === 401) {
-        await getRefreshToken();
+        // Access token expired, try to refresh
+        const refreshSuccess = await getRefreshToken();
+        if (!refreshSuccess) {
+          Logout();
+          return false;
+        }
+        return true;
       } else {
         Logout();
+        return false;
       }
     } finally {
       setLoading(false);
@@ -83,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("theme", "light");
     }
   }, [isDarkMode]);
-    const getRefreshToken = async () => {
+  const getRefreshToken = async () => {
     let refresh = localStorage.getItem("refresh") || cookies.refresh;
 
     if (refresh) {
@@ -99,24 +110,76 @@ export const AuthProvider = ({ children }) => {
           }
         );
 
-        setCookie("token", response.data.access, {
+        const newAccessToken = response.data.access;
+        
+        // Store new access token in both cookie and localStorage
+        setCookie("token", newAccessToken, {
           path: "/",
-          expires: new Date(Date.now() + 7 * 60 * 60 * 1000), // 1 hour
+          expires: new Date(Date.now() + 7 * 60 * 60 * 1000),
           secure: true,
           sameSite: "strict",
         });
+        localStorage.setItem("token", newAccessToken);
 
-        setAuthToken(response.data.access);
+        setAuthToken(newAccessToken);
+        
+        // Retry getting profile with new token
+        await GetProfile(newAccessToken);
+        
+        return true;
       } catch (error) {
         console.error("Error refreshing token:", error);
+        // Refresh token is invalid or expired
         Logout();
+        return false;
       } finally {
         setLoading(false);
       }
     } else {
+      // No refresh token available
       Logout();
+      return false;
     }
   };
+
+  // Setup axios interceptor for automatic token refresh
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // If error is 401 and we haven't retried yet
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            const refreshSuccess = await getRefreshToken();
+            
+            if (refreshSuccess && authToken) {
+              // Update the authorization header with new token
+              originalRequest.headers.Authorization = `Bearer ${authToken}`;
+              // Retry the original request
+              return axios(originalRequest);
+            } else {
+              Logout();
+              return Promise.reject(error);
+            }
+          } catch (refreshError) {
+            Logout();
+            return Promise.reject(refreshError);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup interceptor on unmount
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [authToken]);
 
   useEffect(() => {
     const verifyToken = async () => {

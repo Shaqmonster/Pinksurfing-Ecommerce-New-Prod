@@ -62,7 +62,10 @@ const Signin = () => {
       const response = await axios.post(
         "https://auth.pinksurfing.com/api/token/",
         { email, password },
-        { headers: { "Content-Type": "application/json" } }
+        { 
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true
+        }
       );
   
       if (response.status !== 200) {

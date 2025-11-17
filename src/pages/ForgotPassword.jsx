@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Cookies from "js-cookie";
 import { dataContext } from "../context/dataContext.jsx";
 import OtpInput from "react-otp-input";
+import axios from "axios";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -28,47 +29,45 @@ const ForgotPassword = () => {
 
   const sendOtp = async () => {
     try {
-      const response = await fetch("https://auth.pinksurfing.com/api/send-otp/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await axios.post("https://auth.pinksurfing.com/api/send-otp/", 
+        { email },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       console.log(response)
-      if (response.ok) {
+      if (response.status === 200) {
         handleSuccess("Email Sent Successfully");
         setOtpHidden(false);
-      } else {
-        if(response.status === 404){
-          handleError("Email not found");
-          return;
-        }
-        handleError("Failed to send OTP");
       }
     } catch (error) {
       console.log(error)
-      handleError("Error sending OTP");
+      if(error.response?.status === 404){
+        handleError("Email not found");
+        return;
+      }
+      handleError(error.response?.data?.message || "Failed to send OTP");
     }
   };
 
   const verifyOtp = async () => {
     try {
-      const response = await fetch("https://auth.pinksurfing.com/api/password_reset/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, entered_otp: otp, new_password: password }),
-      });
-      if (response.ok) {
+      const response = await axios.post("https://auth.pinksurfing.com/api/password_reset/",
+        { email, entered_otp: otp, new_password: password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status === 200) {
         handleSuccess("Password reset successfully");
         navigate("/signin");
-      } else {
-        handleError("Failed to reset password");
       }
     } catch (error) {
-      handleError("Error resetting password");
+      handleError(error.response?.data?.message || "Failed to reset password");
     }
   };
 
