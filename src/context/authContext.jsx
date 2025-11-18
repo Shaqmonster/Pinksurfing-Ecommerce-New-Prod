@@ -225,13 +225,21 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyToken = async () => {
-      if (!cookies.access_token) {
+      // Check both cookies and localStorage for access token
+      const accessToken = cookies.access_token || localStorage.getItem("access_token");
+      
+      if (accessToken) {
+        // We have an access token, set it
+        if (!authToken || authToken !== accessToken) {
+          setAuthToken(accessToken);
+        }
+      } else {
+        // No access token, check for refresh token
         const refresh = localStorage.getItem("refresh_token") || cookies.refresh_token;
         if (refresh) {
           await getRefreshToken();
         }
-      } else {
-        setAuthToken(cookies.access_token);
+        // Don't logout here - let the GetProfile call handle auth failures
       }
     };
 
