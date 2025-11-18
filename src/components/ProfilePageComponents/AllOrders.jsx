@@ -9,7 +9,6 @@ import axios from "axios";
 import { authContext } from "../../context/authContext";
 import Header from "../Header";
 import CancelDialog from "../CancelDialog";
-import { useElements } from "@stripe/react-stripe-js";
 import RatingForm from '../../components/RatingForm'
 export default function AllOrders() {
     const { currency, setIsRatingFormOpen, isRatingFormOpen } = useContext(authContext);

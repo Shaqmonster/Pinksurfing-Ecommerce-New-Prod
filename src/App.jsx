@@ -20,7 +20,6 @@ import SingleOrderForm from "./components/SingleOrderForm";
 import ForgotPassword from "./pages/ForgotPassword";
 import SubCategories from "./pages/SubCategories";
 import Summary from "./pages/Summary";
-import Payment from "./components/Payment";
 import Completion from "./components/Completion";
 import OrderConfirm from "./components/OrderConfirm";
 import OrderFailed from "./components/OrderFailed";

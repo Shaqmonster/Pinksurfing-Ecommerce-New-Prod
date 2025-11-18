@@ -10,9 +10,6 @@ import { toast } from "react-toastify";
 import OrderConfirm from "../components/OrderConfirm";
 import PaymentOptionsModal from "./PaymentOptionsModal";
 
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import CheckoutForm from "../components/CheckoutForm";
 
 const Checkout = () => {
   const { setIsAddressFormOpen, currency, isAddressFormOpen } =
@@ -25,8 +22,6 @@ const Checkout = () => {
   const [cookies, removeCookie] = useCookies([]);
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const [stripePromise, setStripePromise] = useState(null);
-  const [clientSecret, setClientSecret] = useState("");
   const [order_id, setOrderId] = useState();
   const [loading, setLoading] = useState(false);
 
@@ -260,23 +255,6 @@ const Checkout = () => {
           </filter>
         </defs>
       </svg>
-      {clientSecret && stripePromise && (
-        <div className=" fixed z-50 inset-0 dark:bg-[#0E0F13] w-full h-screen flex items-center justify-center">
-          <div className=" z-50 bg-white min-h-[200px] w-fit p-4 rounded-md  ">
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <CheckoutForm />
-            </Elements>
-            <button
-              onClick={() => {
-                setClientSecret("");
-              }}
-              className=" mt-3 underline font-semibold text-[14px] text-center w-full"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
       <div className="grid sm:px-10 h-min min-h-screen pb-8 bg-white dark:bg-[#0E0F13] dark:text-[#f5f5f5] text-black lg:grid-cols-2 lg:px-20 xl:px-32">
         <div className=" px-2 sm:px-4 pt-8">
           <p className="text-xl font-medium">Order Summary</p>

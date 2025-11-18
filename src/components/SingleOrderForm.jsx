@@ -7,10 +7,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import OrderConfirm from "./OrderConfirm";
 import { IoClose } from "react-icons/io5";
-
-import { Elements } from "@stripe/react-stripe-js";
-import CheckoutForm from "./CheckoutForm";
-import { loadStripe } from "@stripe/stripe-js";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import AddressForm from "./AddressForm";
 import { dataContext } from "../context/dataContext";
@@ -33,9 +29,6 @@ export default function SingleOrderForm() {
   const [addresses, setAddresses] = useState([]);
   const [orderConfirm, setorderConfirm] = useState(false);
   const [addressesId, setAddressesId] = useState("");
-
-  const [stripePromise, setStripePromise] = useState(null);
-  const [clientSecret, setClientSecret] = useState("");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [order_id, setOrderId] = useState();
   const [loading, setLoading] = useState(false);
@@ -162,20 +155,6 @@ export default function SingleOrderForm() {
                   leaveTo="opacity-0 scale-95"
                 >
                   <Dialog.Panel className="w-full sm:max-w-md transform overflow-hidden bg-white dark:bg-[#0E0F13] rounded-2xl p-4 sm:p-6 text-left align-middle shadow-xl transition-all">
-                    {clientSecret && stripePromise ? (
-                      <div className=" min-h-[200px] w-full  ">
-                        <Elements
-                          stripe={stripePromise}
-                          options={{ clientSecret }}
-                        >
-                          <CheckoutForm />
-                        </Elements>
-                        <button className=" mt-3 underline font-semibold text-[14px] text-center w-full">
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <>
                         <Dialog.Title
                           as="h3"
                           className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900 dark:text-white "
@@ -301,8 +280,6 @@ export default function SingleOrderForm() {
                             </span>
                           </button>
                         </div>
-                      </>
-                    )}
                   </Dialog.Panel>
                 </Transition.Child>
               </div>

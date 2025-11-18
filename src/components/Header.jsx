@@ -67,7 +67,6 @@ const Header = () => {
   }, [cookies.token]);
 
   const fetchWalletAddresses = async () => {
-    setLoading(true);
     const response = await axios.get(
       "https://auth.pinksurfing.com/api/crypto/wallet/",
       {
@@ -78,16 +77,13 @@ const Header = () => {
     );
     setWalletDetails(response.data.data);
     setIsWalletOpen(true);
-    setLoading(false);
     return response.data;
   };
 
   const fetchWalletBalance = async (address) => {
-    setLoading(true);
     const response = await axios.get(
       `https://auth.pinksurfing.com/api/crypto/balance/${address}`
     );
-    setLoading(false);
     return response.data.balance;
   };
 
@@ -343,7 +339,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-
+{/* 
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <img
@@ -352,7 +348,7 @@ const Header = () => {
             className="w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] object-contain"
           />
         </div>
-      )}
+      )} */}
 
       {/* {isCategoryOpen && (
         <div className=" hidden lg:block relative">
