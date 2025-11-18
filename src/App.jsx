@@ -81,7 +81,7 @@ function App() {
 
           // Set auth token immediately to prevent logout
           if (access) {
-            console.log("Tokens found in localStorage, setting auth token");
+            console.log("Tokens found in localStorage,setting auth token");
             setCookie("token", access, 1, "/"); // 1 day expiry
             setCookie("refresh", refresh, 7, "/"); // 7 days expiry
             setAuthToken(access);
