@@ -89,6 +89,7 @@ function App() {
       } else {
         // Tokens exist in localStorage, set auth state if not already set
         if (!authToken && access) {
+          console.log("Tokens found in localStorage, setting auth token");
           setCookie("token", access, 1, "/"); // 1 day expiry
           setCookie("refresh", refresh, 7, "/"); // 7 days expiry
           setAuthToken(access);
