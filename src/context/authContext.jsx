@@ -247,10 +247,10 @@ export const AuthProvider = ({ children }) => {
 
       // If not in cookies, check localStorage
       if (!token) {
-        token = localStorage.getItem("access_token");
+        token = localStorage.getItem("access");
       }
       if (!refresh) {
-        refresh = localStorage.getItem("refresh_token");
+        refresh = localStorage.getItem("refresh");
       }
 
       // If tokens found in localStorage but not in cookies, sync them to cookies
