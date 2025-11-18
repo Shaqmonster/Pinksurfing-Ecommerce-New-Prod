@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { FaWallet } from "react-icons/fa";
 import { FaBoxOpen } from "react-icons/fa";
 import axios from "axios";
-
+import { deleteCookie } from "../utils/cookie";
 const Profile = ({ user }) => {
   const {
     setIsCartOpen,
@@ -26,7 +26,7 @@ const Profile = ({ user }) => {
   const Logout = async () => {
     try {
       // Get the token before clearing
-      const token = cookies.access_token || localStorage.getItem("token");
+      const token = cookies.access_token || localStorage.getItem("access");
       
       // Call server logout API if token exists
       if (token) {
@@ -49,13 +49,20 @@ const Profile = ({ user }) => {
       }
 
       // Clear all cookies
-      const allCookies = Object.keys(cookies);
-      allCookies.forEach((cookieName) => {
-        removeCookie(cookieName, { path: "/" });
-      });
+      localStorage.removeItem("access");
+      localStorage.removeItem("vendor_id");
+      localStorage.removeItem("store");
+      localStorage.removeItem("refresh");
+      
+      // Clear subdomain cookies
+      const domain = window.location.hostname.includes('localhost') 
+        ? undefined 
+        : '.pinksurfing.com';
+        
+      deleteCookie("access_token", domain);
+      deleteCookie("refresh_token", domain);
+      deleteCookie("user_id", domain);
 
-      // Clear all localStorage items
-      localStorage.clear();
 
       toast.success("Logged Out Successfully", {
         position: "top-right",

@@ -34,8 +34,7 @@ import Contact from "./pages/ContactUs";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
-import { useCookies } from "react-cookie";
-
+import { getCookie } from "./utils/cookie";
 function App() {
   const {
     isCartOpen,
@@ -48,7 +47,6 @@ function App() {
     authToken,
     setAuthToken,
   } = useContext(authContext);
-  const [cookies, setCookie, removeCookie] = useCookies(["access_token", "refresh_token"]);
 
   const location = useLocation();
   const hideHeaderFooter =
@@ -57,47 +55,39 @@ function App() {
   // Check for existing tokens on first page load
   useEffect(() => {
     const checkAuthentication = () => {
-      // First check cookies (managed by react-cookie)
-      let token = cookies.access_token;
-      let refresh = cookies.refresh_token;
+      let access = localStorage.getItem("access");
+      let user_id = localStorage.getItem("user_id");
+      let refresh = localStorage.getItem("refresh");
 
-      // If not in cookies, check localStorage
-      if (!token) {
-        token = localStorage.getItem("access");
-      }
-      if (!refresh) {
-        refresh = localStorage.getItem("refresh");
-      }
+      // If not in localStorage, check cookies (SSO from ecommerce site)
+      if (!access || !user_id) {
+        const cookieAccess = getCookie("access_token");
+        const cookieUserId = getCookie("user_id");
+        const cookieRefresh = getCookie("refresh_token");
 
-      // If tokens found in localStorage but not in cookies, sync them to cookies
-      if (token && refresh && (!cookies.access_token || !cookies.refresh_token)) {
-        // Store in cookies for consistency
-        setCookie("access_token", token, {
-          path: "/",
-          expires: new Date(Date.now() + 7 * 60 * 60 * 1000), // 7 hours
-          secure: true,
-          sameSite: "strict",
-        });
-        setCookie("refresh_token", refresh, {
-          path: "/",
-          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-          secure: true,
-          sameSite: "strict",
-        });
-        
-        setAuthToken(token);
-        console.log("Tokens synced from localStorage to cookies");
+        if (cookieAccess && cookieUserId) {
+          // Store cookie values in localStorage for future use
+          localStorage.setItem("access", cookieAccess);
+          localStorage.setItem("user_id", cookieUserId);
+          if (cookieRefresh) {
+            localStorage.setItem("refresh", cookieRefresh);
+          }
+          
+          access = cookieAccess;
+          user_id = cookieUserId;
+          refresh = cookieRefresh;
+          
+          console.log("SSO: Tokens found in cookies, stored in localStorage");
+        }
       }
 
-      // If no tokens found at all, user is not authenticated
-      if (!token || !refresh) {
-        console.log("No authentication tokens found");
+      // If still no tokens found, show login
+      if (!access || !user_id) {
         return;
       }
-
       // Tokens exist, set auth state
-      if (!authToken && token) {
-        setAuthToken(token);
+      if (!authToken && access) {
+        setAuthToken(access);
       }
     };
 
