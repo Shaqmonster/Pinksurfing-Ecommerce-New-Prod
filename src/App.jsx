@@ -34,7 +34,7 @@ import Contact from "./pages/ContactUs";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
-import { getCookie } from "./utils/cookie";
+import { getCookie, setCookie } from "./utils/cookie";
 function App() {
   const {
     isCartOpen,
@@ -81,6 +81,8 @@ function App() {
           
           // Set auth token immediately to prevent logout
           if (!authToken && access) {
+            setCookie("token", access, 1, "/"); // 1 day expiry
+            setCookie("refresh", refresh, 7, "/"); // 7 days expiry
             setAuthToken(access);
           }
         }
