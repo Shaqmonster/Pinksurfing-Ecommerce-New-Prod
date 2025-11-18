@@ -26,7 +26,7 @@ const Profile = ({ user }) => {
   const Logout = async () => {
     try {
       // Get the token before clearing
-      const token = cookies.token || localStorage.getItem("token");
+      const token = cookies.access_token || localStorage.getItem("token");
       
       // Call server logout API if token exists
       if (token) {

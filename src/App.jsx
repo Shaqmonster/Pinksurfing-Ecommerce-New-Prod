@@ -7,7 +7,7 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import "react-toastify/dist/ReactToastify.css";
 import Cart from "./components/Cart";
 import Wishlist from "./components/Wishlist";
-import { authContext, Loader } from "./context/authContext";
+import { authContext } from "./context/authContext";
 import Checkout from "./pages/Checkout";
 import Orders from "./components/Orders";
 import CategoriesMobile from "./components/CategoriesMobile";
