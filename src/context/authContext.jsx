@@ -16,7 +16,7 @@ const Loader = () => (
 );
 
 export const AuthProvider = ({ children }) => {
-  const [cookies, setCookie, removeCookie] = useCookies(["token", "refresh"]);
+  const [cookies, setCookie, removeCookie] = useCookies(["access_token", "refresh_token"]);
   const navigate = useNavigate();
   const [authToken, setAuthToken] = useState("");
   const [currency, setCurrency] = useState("$");
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   const Logout = async () => {
     try {
       // Get the token before clearing
-      const token = authToken || cookies.token || localStorage.getItem("token");
+      const token = authToken || cookies.access_token || localStorage.getItem("access_token");
       
       // Call server logout API if token exists
       if (token) {
@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [isDarkMode]);
   const getRefreshToken = async () => {
-    let refresh = localStorage.getItem("refresh") || cookies.refresh;
+    let refresh = localStorage.getItem("refresh_token") || cookies.refresh_token;
 
     if (refresh) {
       try {
@@ -155,13 +155,13 @@ export const AuthProvider = ({ children }) => {
         const newAccessToken = response.data.access;
         
         // Store new access token in both cookie and localStorage
-        setCookie("token", newAccessToken, {
+        setCookie("access_token", newAccessToken, {
           path: "/",
           expires: new Date(Date.now() + 7 * 60 * 60 * 1000),
           secure: true,
           sameSite: "strict",
         });
-        localStorage.setItem("token", newAccessToken);
+        localStorage.setItem("access_token", newAccessToken);
 
         setAuthToken(newAccessToken);
         
@@ -225,18 +225,68 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyToken = async () => {
-      if (!cookies.token) {
-        const refresh = localStorage.getItem("refresh") || cookies.refresh;
+      if (!cookies.access_token) {
+        const refresh = localStorage.getItem("refresh_token") || cookies.refresh_token;
         if (refresh) {
           await getRefreshToken();
         }
       } else {
-        setAuthToken(cookies.token);
+        setAuthToken(cookies.access_token);
       }
     };
 
     verifyToken();
-  }, [cookies.token, cookies.refresh]);
+  }, [cookies.access_token, cookies.refresh_token]);
+
+  // Check for existing tokens on first page load
+  useEffect(() => {
+    const checkAuthentication = () => {
+      // First check cookies (managed by react-cookie)
+      let token = cookies.access_token;
+      let refresh = cookies.refresh_token;
+
+      // If not in cookies, check localStorage
+      if (!token) {
+        token = localStorage.getItem("access_token");
+      }
+      if (!refresh) {
+        refresh = localStorage.getItem("refresh_token");
+      }
+
+      // If tokens found in localStorage but not in cookies, sync them to cookies
+      if (token && refresh && (!cookies.access_token || !cookies.refresh_token)) {
+        // Store in cookies for consistency
+        setCookie("access_token", token, {
+          path: "/",
+          expires: new Date(Date.now() + 7 * 60 * 60 * 1000), // 7 hours
+          secure: true,
+          sameSite: "strict",
+        });
+        setCookie("refresh_token", refresh, {
+          path: "/",
+          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          secure: true,
+          sameSite: "strict",
+        });
+        
+        setAuthToken(token);
+        console.log("Tokens synced from localStorage to cookies");
+      }
+
+      // If no tokens found at all, user is not authenticated
+      if (!token || !refresh) {
+        console.log("No authentication tokens found");
+        return;
+      }
+
+      // Tokens exist, set auth state
+      if (!authToken && token) {
+        setAuthToken(token);
+      }
+    };
+
+    checkAuthentication();
+  }, []); // Run only once on mount
 
   useEffect(() => {
     if (authToken) {
