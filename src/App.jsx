@@ -78,16 +78,17 @@ function App() {
           refresh = cookieRefresh;
           
           console.log("SSO: Tokens found in cookies, stored in localStorage");
+          
+          // Set auth token immediately to prevent logout
+          if (!authToken && access) {
+            setAuthToken(access);
+          }
         }
-      }
-
-      // If still no tokens found, show login
-      if (!access || !user_id) {
-        return;
-      }
-      // Tokens exist, set auth state
-      if (!authToken && access) {
-        setAuthToken(access);
+      } else {
+        // Tokens exist in localStorage, set auth state if not already set
+        if (!authToken && access) {
+          setAuthToken(access);
+        }
       }
     };
 
