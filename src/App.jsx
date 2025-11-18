@@ -59,6 +59,7 @@ function App() {
       let user_id = localStorage.getItem("user_id");
       let refresh = localStorage.getItem("refresh");
 
+
       // If not in localStorage, check cookies (SSO from ecommerce site)
       if (!access || !user_id) {
         const cookieAccess = getCookie("access_token");
@@ -80,7 +81,7 @@ function App() {
           console.log("SSO: Tokens found in cookies, stored in localStorage");
 
           // Set auth token immediately to prevent logout
-          if (!authToken && access) {
+          if (access) {
             setCookie("token", access, 1, "/"); // 1 day expiry
             setCookie("refresh", refresh, 7, "/"); // 7 days expiry
             setAuthToken(access);
@@ -88,7 +89,7 @@ function App() {
         }
       } else {
         // Tokens exist in localStorage, set auth state if not already set
-        if (!authToken && access) {
+        if (access) {
           console.log("Tokens found in localStorage, setting auth token");
           setCookie("token", access, 1, "/"); // 1 day expiry
           setCookie("refresh", refresh, 7, "/"); // 7 days expiry
