@@ -50,23 +50,21 @@ export const AuthProvider = ({ children }) => {
       const token = cookies.access_token;
       console.log("Token to be used for logout:", token);
       // Call server logout API if token exists
-      if (token) {
-        try {
-          console.log("Calling server logout API");
-          const response = await axios.post(
-            `https://auth.pinksurfing.com/logout/`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token.replaceAll('"', "")}`,
-              },
-            }
-          );
-          console.log("Server logout successful",response.data);
-        } catch (error) {
-          console.error("Server logout error:", error);
-          // Continue with client-side cleanup even if server logout fails
-        }
+      try {
+        console.log("Calling server logout API");
+        const response = await axios.post(
+          `https://auth.pinksurfing.com/logout/`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token.replaceAll('"', "")}`,
+            },
+          }
+        );
+        console.log("Server logout successful", response.data);
+      } catch (error) {
+        console.error("Server logout error:", error);
+        // Continue with client-side cleanup even if server logout fails
       }
       // Clear subdomain cookies
       const domain = window.location.hostname.includes('localhost')
@@ -78,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       deleteCookie("user_id", domain);
 
 
-      toast.success("Logged Out Successfully", {
+      toast.success("Logg Out Successfully", {
         position: "top-right",
         autoClose: 2500,
       });
