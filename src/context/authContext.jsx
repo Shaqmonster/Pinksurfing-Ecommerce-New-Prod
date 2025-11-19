@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { deleteCookie } from "../utils/cookie";
 export const authContext = createContext();
 
 const Loader = () => (
@@ -69,12 +69,6 @@ export const AuthProvider = ({ children }) => {
           // Continue with client-side cleanup even if server logout fails
         }
       }
-
-      // Clear all cookies
-      localStorage.removeItem("access");
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("refresh");
-      
       // Clear subdomain cookies
       const domain = window.location.hostname.includes('localhost') 
         ? undefined 
