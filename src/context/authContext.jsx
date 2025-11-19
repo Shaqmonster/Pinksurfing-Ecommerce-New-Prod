@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { deleteCookie } from "../utils/cookie";
 export const authContext = createContext();
+import { toast } from "react-toastify";
 
 const Loader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
