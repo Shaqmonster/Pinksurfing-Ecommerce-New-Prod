@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("Logging out user...");
       // Get the token before clearing
-      const token = cookies.access_token || localStorage.getItem("access");
+      const token = cookies.access_token;
       
       // Call server logout API if token exists
       if (token) {
@@ -151,7 +151,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [isDarkMode]);
   const getRefreshToken = async () => {
-    let refresh = localStorage.getItem("refresh_token") || cookies.refresh_token;
+    let refresh = cookies.refresh_token;
 
     if (refresh) {
       try {
@@ -240,7 +240,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const verifyToken = async () => {
       // Check both cookies and localStorage for access token
-      const accessToken = cookies.access_token || localStorage.getItem("access_token");
+      const accessToken = cookies.access_token;
       
       if (accessToken) {
         // We have an access token, set it
@@ -249,7 +249,7 @@ export const AuthProvider = ({ children }) => {
         }
       } else {
         // No access token, check for refresh token
-        const refresh = localStorage.getItem("refresh_token") || cookies.refresh_token;
+        const refresh = cookies.refresh_token;
         if (refresh) {
           await getRefreshToken();
         }

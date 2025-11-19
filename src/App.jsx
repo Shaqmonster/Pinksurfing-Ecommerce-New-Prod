@@ -55,60 +55,37 @@ function App() {
   // Check for existing tokens on first page load
   useEffect(() => {
     const checkAuthentication = () => {
-      let access = localStorage.getItem("access");
-      let user_id = localStorage.getItem("user_id");
-      let refresh = localStorage.getItem("refresh");
-
-
-      // If not in localStorage, check cookies (SSO from ecommerce site)
-      if (!access || !user_id) {
-        const cookieAccess = getCookie("access_token");
-        const cookieUserId = getCookie("user_id");
-        const cookieRefresh = getCookie("refresh_token");
-
-        if (cookieAccess && cookieUserId) {
-          // Store cookie values in localStorage for future use
-          localStorage.setItem("access", cookieAccess);
-          localStorage.setItem("user_id", cookieUserId);
-          if (cookieRefresh) {
-            localStorage.setItem("refresh", cookieRefresh);
-          }
-
-          access = cookieAccess;
-          user_id = cookieUserId;
-          refresh = cookieRefresh;
-
-          console.log("SSO: Tokens found in cookies, stored in localStorage");
-
-          // Set auth token immediately to prevent logout
-          if (access) {
-            console.log("Tokens found in localStorage,setting auth token");
-            setCookie("token", access, 1, "/"); // 1 day expiry
-            setCookie("refresh", refresh, 7, "/"); // 7 days expiry
-            setAuthToken(access);
-          }
-        }
-      } else {
-        // Tokens exist in localStorage, set auth state if not already set
-        if (access) {
-          console.log("Tokens found in localStorage, setting auth token");
-          setCookie("token", access, 1, "/"); // 1 day expiry
-          setCookie("refresh", refresh, 7, "/"); // 7 days expiry added
-          setAuthToken(access);
-        }
+      const cookieAccess = getCookie("access_token");
+      if (cookieAccess) {
+        console.log("Tokens found in localStorage,setting auth token");
+        setAuthToken(cookieAccess);
       }
     };
 
     checkAuthentication();
   }, []); // Run only once on mount
 
+  const cookieAccess = getCookie("access_token");
+
+  // If an access token cookie exists, redirect away from auth pages
+  useEffect(() => {
+    const protectedPaths = ["/signup", "/signin", "/forgotPassword"];
+    if (cookieAccess && protectedPaths.includes(location.pathname)) {
+      // Use replace so the back button doesn't go back to the auth page
+      window.location.replace("/");
+    }
+  }, [cookieAccess, location.pathname]);
+
   return (
     <main className={`${isDarkMode && "dark"} `}>
       <ScrollToTop />
       {!hideHeaderFooter && <Header />}
       <Routes>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/signin" element={<Signin />} />
+        {/* Only register auth routes when there's no access_token cookie */}
+        {!cookieAccess && <Route path="/signup" element={<Signup />} />}
+        {!cookieAccess && <Route path="/signin" element={<Signin />} />}
+        {!cookieAccess && <Route path="/forgotPassword" element={<ForgotPassword />} />}
+
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<SearchPage />} />
@@ -121,7 +98,6 @@ function App() {
         <Route path="/orders" element={<Orders />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/summary/:orderId" element={<Summary />} />
-        <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route
           path="/product/productDetail/:slug"
           element={<ProductDetailPage />}
