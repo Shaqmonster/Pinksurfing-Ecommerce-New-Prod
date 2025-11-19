@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
       try {
         console.log("Calling server logout API");
         const response = await axios.post(
-          `https://auth.pinksurfing.com/logout/`,
+          `https://auth.pinksurfing.com/api/logout/`,
           {},
           {
             headers: {
