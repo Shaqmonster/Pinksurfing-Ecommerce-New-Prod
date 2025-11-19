@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("theme") === "dark" || !localStorage.getItem("theme")
   );
-    const [isRatingFormOpen, setIsRatingFormOpen] = useState(false);
+  const [isRatingFormOpen, setIsRatingFormOpen] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFirstSearch, setIsFirstSearch] = useState(true);
@@ -48,32 +48,31 @@ export const AuthProvider = ({ children }) => {
       console.log("Logging out user...");
       // Get the token before clearing
       const token = cookies.access_token;
-      
+      console.log("Token to be used for logout:", token);
       // Call server logout API if token exists
       if (token) {
         try {
-          await axios.post(
-            "https://auth.pinksurfing.com/logout/",
+          console.log("Calling server logout API");
+          const response = await axios.post(
+            `https://auth.pinksurfing.com/logout/`,
             {},
             {
               headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
+                Authorization: `Bearer ${token.replaceAll('"', "")}`,
               },
-              withCredentials: true,
             }
           );
-          console.log("Server logout successful");
+          console.log("Server logout successful",response.data);
         } catch (error) {
           console.error("Server logout error:", error);
           // Continue with client-side cleanup even if server logout fails
         }
       }
       // Clear subdomain cookies
-      const domain = window.location.hostname.includes('localhost') 
-        ? undefined 
+      const domain = window.location.hostname.includes('localhost')
+        ? undefined
         : '.pinksurfing.com';
-        
+
       deleteCookie("access_token", domain);
       deleteCookie("refresh_token", domain);
       deleteCookie("user_id", domain);
@@ -83,14 +82,14 @@ export const AuthProvider = ({ children }) => {
         position: "top-right",
         autoClose: 2500,
       });
-      
+
       setUser("");
       setAuthToken("");
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Error during logout, but local session cleared");
-      
+
       // Still clear local data even if there's an error
       const allCookies = Object.keys(cookies);
       allCookies.forEach((cookieName) => {
@@ -161,7 +160,7 @@ export const AuthProvider = ({ children }) => {
         );
 
         const newAccessToken = response.data.access;
-        
+
         // Store new access token in both cookie and localStorage
         setCookie("access_token", newAccessToken, {
           path: "/",
@@ -172,10 +171,10 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("access_token", newAccessToken);
 
         setAuthToken(newAccessToken);
-        
+
         // Retry getting profile with new token
         await GetProfile(newAccessToken);
-        
+
         return true;
       } catch (error) {
         console.error("Error refreshing token:", error);
@@ -205,7 +204,7 @@ export const AuthProvider = ({ children }) => {
 
           try {
             const refreshSuccess = await getRefreshToken();
-            
+
             if (refreshSuccess && authToken) {
               // Update the authorization header with new token
               originalRequest.headers.Authorization = `Bearer ${authToken}`;
@@ -235,7 +234,7 @@ export const AuthProvider = ({ children }) => {
     const verifyToken = async () => {
       // Check both cookies and localStorage for access token
       const accessToken = cookies.access_token;
-      
+
       if (accessToken) {
         // We have an access token, set it
         if (!authToken || authToken !== accessToken) {
