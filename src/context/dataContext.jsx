@@ -90,10 +90,6 @@ export const DataProvider = ({ children }) => {
         console.error(error);
       });
   };
-  const Logout = () => {
-    removeCookie("token");
-    navigate("/");
-  };
 
   // fetch products by shop_name
 // fetch products by shop_name
@@ -149,7 +145,6 @@ const getVendorProducts = async (shaqshop) => {
         searchedProducts,
         setSearchedProducts,
         searchProducts,
-        Logout,
         getVendorProducts,
         profileActiveIndex,
         setProfileActiveIndex,

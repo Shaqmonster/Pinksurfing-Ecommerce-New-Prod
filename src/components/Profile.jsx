@@ -19,72 +19,11 @@ const Profile = ({ user }) => {
     setUser,
     isDarkMode,
     setIsProfileOpen,
+    Logout,
   } = useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
   const navigate = useNavigate();
   
-  const Logout = async () => {
-    try {
-      // Get the token before clearing
-      const token = cookies.access_token || localStorage.getItem("access");
-      
-      // Call server logout API if token exists
-      if (token) {
-        try {
-          await axios.post(
-            "https://auth.pinksurfing.com/logout/",
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              withCredentials: true,
-            }
-          );
-        } catch (error) {
-          console.error("Server logout error:", error);
-          // Continue with client-side cleanup even if server logout fails
-        }
-      }
-
-      // Clear all cookies
-      localStorage.removeItem("access");
-      localStorage.removeItem("vendor_id");
-      localStorage.removeItem("store");
-      localStorage.removeItem("refresh");
-      
-      // Clear subdomain cookies
-      const domain = window.location.hostname.includes('localhost') 
-        ? undefined 
-        : '.pinksurfing.com';
-        
-      deleteCookie("access_token", domain);
-      deleteCookie("refresh_token", domain);
-      deleteCookie("user_id", domain);
-
-
-      toast.success("Logged Out Successfully", {
-        position: "top-right",
-        autoClose: 2500,
-      });
-      
-      setUser("");
-      navigate("/");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Error during logout, but local session cleared");
-      
-      // Still clear local data even if there's an error
-      const allCookies = Object.keys(cookies);
-      allCookies.forEach((cookieName) => {
-        removeCookie(cookieName, { path: "/" });
-      });
-      localStorage.clear();
-      setUser("");
-      navigate("/");
-    }
-  };
   const handleStoreClick = () => {
     if (user.is_vendor) {
       setIsProfileOpen(false);

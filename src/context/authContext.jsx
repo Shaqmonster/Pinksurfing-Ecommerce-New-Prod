@@ -45,8 +45,9 @@ export const AuthProvider = ({ children }) => {
 
   const Logout = async () => {
     try {
+      console.log("Logging out user...");
       // Get the token before clearing
-      const token = authToken || cookies.access_token || localStorage.getItem("access_token");
+      const token = cookies.access_token || localStorage.getItem("access");
       
       // Call server logout API if token exists
       if (token) {
@@ -62,6 +63,7 @@ export const AuthProvider = ({ children }) => {
               withCredentials: true,
             }
           );
+          console.log("Server logout successful");
         } catch (error) {
           console.error("Server logout error:", error);
           // Continue with client-side cleanup even if server logout fails
@@ -69,19 +71,31 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Clear all cookies
-      const allCookies = Object.keys(cookies);
-      allCookies.forEach((cookieName) => {
-        removeCookie(cookieName, { path: "/" });
+      localStorage.removeItem("access");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("refresh");
+      
+      // Clear subdomain cookies
+      const domain = window.location.hostname.includes('localhost') 
+        ? undefined 
+        : '.pinksurfing.com';
+        
+      deleteCookie("access_token", domain);
+      deleteCookie("refresh_token", domain);
+      deleteCookie("user_id", domain);
+
+
+      toast.success("Logged Out Successfully", {
+        position: "top-right",
+        autoClose: 2500,
       });
-
-      // Clear all localStorage
-      localStorage.clear();
-
+      
       setUser("");
       setAuthToken("");
-      navigate("/signin");
+      navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
+      toast.error("Error during logout, but local session cleared");
       
       // Still clear local data even if there's an error
       const allCookies = Object.keys(cookies);
@@ -91,7 +105,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.clear();
       setUser("");
       setAuthToken("");
-      navigate("/signin");
+      navigate("/");
     }
   };
 

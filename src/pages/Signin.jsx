@@ -93,7 +93,16 @@ const Signin = () => {
           path: "/",
           expires: expirationDateRefreshToken,
         });
+        setCookie("access_token", data.access, {
+          path: "/",
+          expires: expirationDateAccessToken,
+        });
+        setCookie("refresh_token", data.refresh, {
+          path: "/",
+          expires: expirationDateRefreshToken,
+        });
         localStorage.setItem("refresh", data.refresh);
+        localStorage.setItem("access", data.access);
   
         setUser(data);
         setIsProfileOpen(false);
