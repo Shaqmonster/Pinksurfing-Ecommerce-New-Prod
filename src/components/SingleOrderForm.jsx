@@ -44,14 +44,14 @@ export default function SingleOrderForm() {
   });
 
   const GetAddresses = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/address/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {
@@ -68,7 +68,7 @@ export default function SingleOrderForm() {
       });
   };
   const PlaceSingleOrder = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     if (!addressesId) {
@@ -89,7 +89,7 @@ export default function SingleOrderForm() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )

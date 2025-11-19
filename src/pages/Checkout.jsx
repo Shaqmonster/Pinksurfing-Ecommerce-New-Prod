@@ -26,7 +26,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
 
   const PlaceOrder = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     if (!addresses[0]) {
@@ -49,7 +49,7 @@ const Checkout = () => {
           headers: {
             "Content-Type": "application/json",
 
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -71,7 +71,7 @@ const Checkout = () => {
   };
 
   const GetAddresses = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     setLoading(true);
@@ -79,7 +79,7 @@ const Checkout = () => {
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/address/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {
@@ -125,14 +125,14 @@ const Checkout = () => {
   // }
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {

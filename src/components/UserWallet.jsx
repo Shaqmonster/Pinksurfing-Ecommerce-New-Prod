@@ -46,15 +46,15 @@ const UserOnSiteWallet = () => {
   }
 
   const GetWalletAddress = async () => {
-    console.log(cookies.token);
-    if (!cookies.token) {
+    console.log(cookies.access_token);
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
       .get("https://auth.pinksurfing.com/api/crypto/wallet/", {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {

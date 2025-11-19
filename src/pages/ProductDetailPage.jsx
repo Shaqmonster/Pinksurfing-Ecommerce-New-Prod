@@ -101,12 +101,12 @@ const ProductDetailPage = () => {
 
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (cookies.token) {
+    if (cookies.access_token) {
       axios
         .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         })
         .then((response) => {
@@ -120,12 +120,12 @@ const ProductDetailPage = () => {
     }
   };
   const GetWishlist = async () => {
-    if (cookies.token) {
+    if (cookies.access_token) {
       axios
         .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         })
         .then((response) => {
@@ -153,7 +153,7 @@ const ProductDetailPage = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -183,7 +183,7 @@ const ProductDetailPage = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );
@@ -213,7 +213,7 @@ const ProductDetailPage = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -266,7 +266,7 @@ const ProductDetailPage = () => {
 
         setAttributeArray2(attributeArrays);
 
-        if (cookies.token) {
+        if (cookies.access_token) {
           const addressId = user.addresses[0]?.id;
           const ratesResponse = await axios.get(
             `${import.meta.env.VITE_SERVER_URL
@@ -274,7 +274,7 @@ const ProductDetailPage = () => {
             {
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${cookies.token}`,
+                Authorization: `Bearer ${cookies.access_token}`,
               },
             }
           );

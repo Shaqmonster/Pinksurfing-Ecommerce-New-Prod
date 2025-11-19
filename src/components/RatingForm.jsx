@@ -42,7 +42,7 @@ export default function RatingForm({ order }) {
     e.preventDefault();
   
     // Redirect to signin if no token
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
       return;
     }
@@ -55,7 +55,7 @@ export default function RatingForm({ order }) {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );
@@ -77,7 +77,7 @@ export default function RatingForm({ order }) {
             {
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${cookies.token}`,
+                Authorization: `Bearer ${cookies.access_token}`,
               },
             }
           );

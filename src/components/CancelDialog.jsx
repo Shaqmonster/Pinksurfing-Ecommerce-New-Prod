@@ -18,7 +18,7 @@ export default function CancelDialog({
 
   const DeleteOrder = () => {
     console.log(orderId);
-    console.log(cookies.token);
+    console.log(cookies.access_token);
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/order/cancel-order/${orderId}/`,
@@ -26,7 +26,7 @@ export default function CancelDialog({
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )

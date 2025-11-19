@@ -19,7 +19,7 @@ const PaymentOptionsModal = ({
   const [cryptoModalOpen, setCryptoModalOpen] = useState(false);
 
   const createPaymentLink = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
       return;
     }
@@ -33,7 +33,7 @@ const PaymentOptionsModal = ({
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );

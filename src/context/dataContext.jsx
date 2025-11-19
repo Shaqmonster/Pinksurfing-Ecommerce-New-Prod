@@ -77,7 +77,7 @@ export const DataProvider = ({ children }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -104,7 +104,7 @@ const getVendorProducts = async (shaqshop) => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       }
     );

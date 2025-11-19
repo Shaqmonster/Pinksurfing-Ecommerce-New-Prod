@@ -89,7 +89,7 @@ const Home = () => {
   // Handle My Store click
   const handleMyStoreClick = () => {
     // Check if user is logged in
-    if (!user || !cookies.token) {
+    if (!user || !cookies.access_token) {
       toast.info("Please sign in to access your store");
       navigate("/signin");
       return;
@@ -172,7 +172,7 @@ const Home = () => {
   const handleVendorRegistration = async (e) => {
     e.preventDefault();
     
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       toast.error("Please sign in first");
       navigate("/signin");
       return;
@@ -203,7 +203,7 @@ const Home = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );
@@ -289,7 +289,7 @@ const Home = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )

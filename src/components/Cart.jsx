@@ -18,14 +18,14 @@ export default function Cart() {
   const [cookies, removeCookie] = useCookies([]);
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       return navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {
@@ -48,7 +48,7 @@ export default function Cart() {
   //   remove product--------------------------------------------------------
   const RemoveCartProduct = (productId) => {
     // console.log(productId);
-    // console.log(cookies.token);
+    // console.log(cookies.access_token);
     axios
       .post(
         `${
@@ -58,7 +58,7 @@ export default function Cart() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -85,7 +85,7 @@ export default function Cart() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -112,7 +112,7 @@ export default function Cart() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )

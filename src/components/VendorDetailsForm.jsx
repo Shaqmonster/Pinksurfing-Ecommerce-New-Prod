@@ -118,14 +118,14 @@ export default function VendorDetailsForm() {
   };
 
   const GetProfile = async (e) => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {
@@ -144,7 +144,7 @@ export default function VendorDetailsForm() {
 
   const UpdateProfile = async (e) => {
     e.preventDefault();
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
 
@@ -171,7 +171,7 @@ export default function VendorDetailsForm() {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )

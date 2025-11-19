@@ -80,7 +80,7 @@ export default function AddressForm() {
 
   const AddAddress = async (e) => {
     e.preventDefault();
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     if (!user.email) {
@@ -100,7 +100,7 @@ export default function AddressForm() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )

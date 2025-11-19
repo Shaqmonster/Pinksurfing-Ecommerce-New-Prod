@@ -22,14 +22,14 @@ const ProductCard = ({ product, isCard }) => {
   } = useContext(dataContext);
 
   const GetCartProducts = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {
@@ -49,7 +49,7 @@ const ProductCard = ({ product, isCard }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -76,7 +76,7 @@ const ProductCard = ({ product, isCard }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -95,14 +95,14 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   const GetWishlist = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {
@@ -125,7 +125,7 @@ const ProductCard = ({ product, isCard }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );

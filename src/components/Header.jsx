@@ -54,7 +54,7 @@ const Header = () => {
   const lastPart = pathParts[pathParts.length - 1];
 
   const updateWalletBalance = useCallback(async () => {
-    if (!cookies.token) return;
+    if (!cookies.access_token) return;
     try {
       const addresses = await fetchWalletAddresses();
       if (addresses.length > 0) {
@@ -64,14 +64,14 @@ const Header = () => {
     } catch (error) {
       console.error("Failed to update wallet balance:", error);
     }
-  }, [cookies.token]);
+  }, [cookies.access_token]);
 
   const fetchWalletAddresses = async () => {
     const response = await axios.get(
       "https://auth.pinksurfing.com/api/crypto/wallet/",
       {
         headers: {
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       }
     );
@@ -88,14 +88,14 @@ const Header = () => {
   };
 
   const getCartProducts = async () => {
-    if (!cookies.token) return;
+    if (!cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );
@@ -107,14 +107,14 @@ const Header = () => {
   };
 
   const getWishlist = async () => {
-    if (!cookies.token) return;
+    if (!cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );
@@ -131,7 +131,7 @@ const Header = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (cookies.token) {
+      if (cookies.access_token) {
         await getAllProducts();
         await getCartProducts();
         await getWishlist();
@@ -139,7 +139,7 @@ const Header = () => {
     };
 
     fetchData();
-  }, [cookies.token]);
+  }, [cookies.access_token]);
 
   const handleWalletClick = () => {
     setShowQRCode(true);

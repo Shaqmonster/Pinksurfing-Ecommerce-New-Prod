@@ -42,7 +42,7 @@ const Summary = () => {
   }
 
   const GetOrder = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
@@ -51,7 +51,7 @@ const Summary = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       )
@@ -65,14 +65,14 @@ const Summary = () => {
   };
 
   const GetAddresses = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/address/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.token}`,
+          Authorization: `Bearer ${cookies.access_token}`,
         },
       })
       .then((response) => {
@@ -93,7 +93,7 @@ const Summary = () => {
     return null;
   }
   const GetOrders = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
       return;
     }
@@ -104,7 +104,7 @@ const Summary = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );

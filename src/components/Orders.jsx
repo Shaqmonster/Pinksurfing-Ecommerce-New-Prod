@@ -32,7 +32,7 @@ export default function Orders() {
     console.log(singleOrderProduct)
   }, [setSingleOrderProduct])
   const GetOrders = async () => {
-    if (!cookies.token) {
+    if (!cookies.access_token) {
       navigate("/signin");
       return;
     }
@@ -43,7 +43,7 @@ export default function Orders() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.token}`,
+            Authorization: `Bearer ${cookies.access_token}`,
           },
         }
       );

@@ -14,8 +14,8 @@ const Footer = () => {
       list: [
         {
           id: "1.1",
-          name: cookies.token ? "My Account" : "Login",
-          link: cookies.token ? "/" : "/signin",
+          name: cookies.access_token ? "My Account" : "Login",
+          link: cookies.access_token ? "/" : "/signin",
         },
         {
           id: "1.2",
@@ -187,7 +187,7 @@ const Footer = () => {
                     .map((e, index) => {
                       let link = e.link;
 
-                      if (e.id === "2.2" && cookies.token) {
+                      if (e.id === "2.2" && cookies.access_token) {
                         link = "#";
                       }
                       return (
@@ -197,7 +197,7 @@ const Footer = () => {
                           className="mb-4"
                           onClick={(event) => {
                             if (e.id == "2.2") {
-                              if (!cookies.token) {
+                              if (!cookies.access_token) {
                                 navigate("/signup");
                               } else {
                                 event.preventDefault();
@@ -210,7 +210,7 @@ const Footer = () => {
                             }
                             if (e.id === "1.1") {
                               event.preventDefault();
-                              if (cookies.token) {
+                              if (cookies.access_token) {
                                 setIsProfilePopupOpen(true);
                               }
                             }
