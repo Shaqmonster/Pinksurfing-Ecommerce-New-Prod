@@ -25,20 +25,6 @@ export const DataProvider = ({ children }) => {
   });
   // toast functions ------------------------------------------------------------
   const [profileActiveIndex, setProfileActiveIndex] = useState(0);
-  useEffect(()=>{
-    if(profileActiveIndex === 6){
-          removeCookie("token");
-          removeCookie("refresh");
-          localStorage.removeItem("refresh");
-          localStorage.removeItem("token");
-          toast.success("Logged Out Successfully", {
-            position: "top-right",
-            autoClose: 2500,
-          });
-          setUser("");
-          navigate("/");      
-    }
-  },[profileActiveIndex])
   const handleError = (err) => {
     console.error("Error occurred",err);
     toast.error(err, {
