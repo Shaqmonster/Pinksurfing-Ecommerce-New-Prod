@@ -51,6 +51,17 @@ const Signup = () => {
 
   useEffect(() => {
     const fetchCountries = async () => {
+      // Hardcoded US country as fallback
+      const usCountry = {
+        name: "United States of America",
+        cca2: "US",
+        phonecode: "+1",
+        currency: [{ name: "United States Dollar", symbol: "$" }],
+        latitude: 37.09024,
+        longitude: -95.712891,
+        timezones: ["UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:00", "UTC-08:00", "UTC-07:00", "UTC-06:00", "UTC-05:00", "UTC-04:00"]
+      };
+
       try {
         const response = await fetch(
           "https://restcountries.com/v3.1/all?fields=name,cca2,idd,currencies,latlng,timezones"
@@ -61,20 +72,7 @@ const Signup = () => {
         const transformedData = data.map((country) => {
           // Special handling for United States to ensure +1 code
           if (country.cca2 === "US") {
-            return {
-              name: country.name.common,
-              cca2: country.cca2,
-              phonecode: "+1",
-              currency: country.currencies
-                ? Object.keys(country.currencies).map((code) => ({
-                    name: country.currencies[code].name,
-                    symbol: country.currencies[code].symbol,
-                  }))
-                : [],
-              latitude: country.latlng?.[0] || null,
-              longitude: country.latlng?.[1] || null,
-              timezones: country.timezones || [],
-            };
+            return usCountry;
           }
           
           return {
@@ -105,6 +103,9 @@ const Signup = () => {
         setIsCountriesLoaded(true);
       } catch (error) {
         console.error("Error fetching country data:", error);
+        // If API fails, set US as the only country
+        setCountries([usCountry]);
+        setIsCountriesLoaded(true);
       }
     };
 

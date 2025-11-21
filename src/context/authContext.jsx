@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
       deleteCookie("user_id", domain);
 
 
-      toast.success("Logg Out Successfully", {
+      toast.success("Log Out Successfull", {
         position: "top-right",
         autoClose: 2500,
       });
