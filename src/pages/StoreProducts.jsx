@@ -790,8 +790,7 @@ export default function StoreProducts() {
                           } gap-x-3 gap-y-3 lg:gap-x-5 lg:items-center lg:justify-start flex-wrap`}
                       >
                         {console.log(shoppingProduct)}
-                        {shoppingProduct
-                          ?.filter((i) => {
+                        {shoppingProduct?.filter((i) => {
                             const priceFilter =
                               i.unit_price >= minValue &&
                               i.unit_price <= maximumValue;
