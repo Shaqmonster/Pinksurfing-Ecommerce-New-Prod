@@ -254,7 +254,7 @@ const Signup = () => {
     }
 
     try {
-      const fullPhoneNumber = `+${
+      const fullPhoneNumber = `${
         inputValue.country_code
       }${inputValue.phone_number.replace(/^\+\d+/, "")}`;
 
