@@ -363,14 +363,18 @@ const ProductDetailPage = () => {
     console.log(name, attribute);
   };
 
+  // Calculate additional price from selected attributes
+  const additionalPrice = Object.values(selectedAttributes).reduce(
+    (total, attr) => total + (attr.additional_price || 0),
+    0
+  );
+
+  // Calculate prices with additional price added to both unit price and MRP
+  const finalUnitPrice = Number(product.unit_price) + additionalPrice;
+  const finalMrp = Number(product.mrp) + additionalPrice;
+
   const discountPercentage = (
-    ((product.mrp -
-      Object.values(selectedAttributes).reduce(
-        (total, attr) => total + (attr.additional_price || 0),
-        Number(product.unit_price)
-      )) /
-      product.mrp) *
-    100
+    ((finalMrp - finalUnitPrice) / finalMrp) * 100
   ).toFixed(2);
 
   function htmlToText(html) {
@@ -581,18 +585,13 @@ const ProductDetailPage = () => {
                   <div className="flex items-baseline gap-4 flex-wrap">
                     <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                       {currency}
-                      {Object.values(selectedAttributes)
-                        .reduce(
-                          (total, attr) => total + (attr.additional_price || 0),
-                          Number(product.unit_price)
-                        )
-                        .toFixed(2)}
+                      {finalUnitPrice.toFixed(2)}
                     </span>
                     
-                    {discountPercentage !== "0.00" && (
+                    {discountPercentage !== "0.00" && Number(discountPercentage) > 0 && (
                       <>
                         <span className="text-2xl font-semibold text-gray-400 line-through">
-                          {currency}{product.mrp}
+                          {currency}{finalMrp.toFixed(2)}
                         </span>
                         <span className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full">
                           Save {discountPercentage}%
