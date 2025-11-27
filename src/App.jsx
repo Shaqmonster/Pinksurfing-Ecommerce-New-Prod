@@ -35,6 +35,7 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
 import { getCookie, setCookie } from "./utils/cookie";
+import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 function App() {
   const {
     isCartOpen,
@@ -89,7 +90,8 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/shoppingMall/:category" element={<ShoppingMallNew />} />
+        {/* <Route path="/shoppingMall/:category" element={<ShoppingMallNew />} /> */}
+        <Route path="/shoppingMall" element={<ShoppingMallwithStores />} />
         <Route path="/shopByCategory" element={<ShopByCategory />} />
         <Route path="/shopByStore" element={<ShopByStore />} />
         <Route path="/store/:slug" element={<StoreProducts />} />

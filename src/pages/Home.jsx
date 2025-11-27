@@ -9,6 +9,7 @@ import { dataContext } from "../context/dataContext";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import SearchForm from "../components/Search";
+import StoreCard from "../components/StoreCard";
 import { categories, subCategories } from "../utils/Categories";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -377,13 +378,11 @@ const Home = () => {
                 onClick={() => {
                   if (item.id === 3) {
                     handleMyStoreClick();
-                  } else if (item.id === 1 || item.id === 2) {
+                  } else {
                     setCategory("shoppingMall");
                     localStorage.setItem("category", "shoppingMall");
                     localStorage.setItem("category_name", item.name);
-                    navigate(`/categoryProducts`);
-                  } else {
-                    navigate(`/shoppingMall/all`);
+                    navigate(`/shoppingMall`);
                   }
                 }}
                 key={item.id + index}
@@ -633,26 +632,9 @@ const Home = () => {
                     />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {stores.map((store, storeIndex) => (
-                      <div
-                        key={storeIndex}
-                        className="p-4 w-full"
-                      >
-                        <Link
-                          to={`/store/${store.slug}`}
-                          className="border border-gray-300 rounded-lg w-full h-full flex flex-col items-center gap-1 overflow-hidden cursor-pointer"
-                        >
-                          <img
-                            src={`${awsS3BaseUrl}${store.store_image}`                            }
-                            alt={store.store_name}
-                            className="w-full h-[180px] object-cover"
-                          />
-                        </Link>
-                        <h3 className="mt-2 text-lg font-robotoMono text-center">
-                          {store.store_name}
-                        </h3>
-                      </div>
+                      <StoreCard key={store.id || storeIndex} store={store} />
                     ))}
                   </div>
                 )}

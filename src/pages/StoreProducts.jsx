@@ -131,8 +131,8 @@ export default function StoreProducts() {
             );
             setUniqueAttributes(Array.from(new Set(allAttributes)));
 
-            // getting maximum and minimun values -----
-            getMaxPrice(shoppingProduct);
+            // // getting maximum and minimun values -----
+            // getMaxPrice(shoppingProduct);
           })
           .catch((error) => {
             console.error(error);
@@ -170,6 +170,9 @@ export default function StoreProducts() {
     setMaximumValue(maxval);
     setMaxValue(maxval);
   }
+  useEffect(() => {
+    getMaxPrice(shoppingProduct);
+  }, [shoppingProduct]);
   uniqueAttributes.forEach((attribute) => {
     const { name, value } = attribute;
 
