@@ -1,20 +1,18 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useContext, useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Header from "../components/Header";
 import ProductCard from "../components/ProductCard";
 import { dataContext } from "../context/dataContext";
 import { Fragment } from "react";
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
-import { ArrowLeftCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
-    ChevronDownIcon,
-    FunnelIcon,
-    MinusIcon,
-    PlusIcon,
-    Squares2X2Icon,
+  ChevronDownIcon,
+  FunnelIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/20/solid";
 import { authContext } from "../context/authContext";
 import MultiRangeSlider from "multi-range-slider-react";
@@ -23,770 +21,736 @@ import { HiMiniSquares2X2 } from "react-icons/hi2";
 import SearchForm from "../components/Search";
 
 export default function CategoryProducts() {
-    const { category } = useParams();
-    const navigate = useNavigate();
-    const [cookies, removeCookie] = useCookies([]);
-    const { products } = useContext(dataContext);
-    const { currency, isDarkMode, isProfilePopupOpen } = useContext(authContext);
-    // useState========================================================================
-    const [filterBy, setFilterBy] = useState("");
-    const [priceFilter, setPriceFilter] = useState("");
-    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-    const [CategoryOnlyData, setCategoryOnlyData] = useState([]);
-    const [categoryFilter, setCategoryFilter] = useState("all");
-    const [shoppingProduct, setShoppingProducts] = useState(products);
-    const [uniqueAttributes, setUniqueAttributes] = useState([]);
-    const [sortMethod, setSortMethod] = useState("default");
-    const [sortName, setSortName] = useState("Sort By Newest");
-    const [loading, setLoading] = useState(false);
-    const [minValue, setMinValue] = useState(0);
-    const [maximumValue, setMaximumValue] = useState(0);
-    const [isCard, setIsCard] = useState(true);
-    const [subcategories, setSubcategories] = useState([]);
-    const title = localStorage.getItem('category_name');
-    const [filteredProducts, setFilteredProducts] = useState([]); // State to store filtered products
-    // Arrays==========================================================================
-    const colorArray = [];
-    const storageArray = [];
-    const sizeArray = [];
-    const systemArray = [];
+  const { category } = useParams();
+  const navigate = useNavigate();
+  const [cookies, removeCookie] = useCookies([]);
+  const { products } = useContext(dataContext);
+  const { currency, isDarkMode } = useContext(authContext);
 
-    // filters ========================================================================
-    const filters = [
-        {
-            id: "color",
-            name: "Color",
-            options: colorArray,
-        },
-        {
-            id: "size",
-            name: "Size",
-            options: sizeArray,
-        },
-        {
-            id: "storage",
-            name: "Storage",
-            options: storageArray,
-        },
-        {
-            id: "system",
-            name: "System / OS",
-            options: systemArray,
-        },
-    ];
-    const sortMethods = [
-        { name: "Newest", value: "date" },
-        { name: "Price: Low to High", value: "ascPrice" },
-        { name: "Price: High to Low", value: "descPrice" },
-        { name: "Name: a to z", value: "ascName" },
-        { name: "Name: z to a", value: "descName" },
-    ];
+  // State Management
+  const [filterBy, setFilterBy] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [CategoryOnlyData, setCategoryOnlyData] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [shoppingProduct, setShoppingProducts] = useState(products);
+  const [uniqueAttributes, setUniqueAttributes] = useState([]);
+  const [maxValue, setMaxValue] = useState(1000);
+  const [sortMethod, setSortMethod] = useState("default");
+  const [sortName, setSortName] = useState("Newest");
+  const [loading, setLoading] = useState(false);
+  const [minValue, setMinValue] = useState(0);
+  const [maximumValue, setMaximumValue] = useState(20000);
+  const [isCard, setIsCard] = useState(true);
+  const [subcategories, setSubcategories] = useState([]);
+  const title = localStorage.getItem('category_name');
+  const categorySlug = localStorage.getItem('category');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
-    const handleSort = (sortMethod) => {
-        switch (sortMethod) {
-            case "ascName":
-                return (a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-            case "descName":
-                return (a, b) => (b.name.toLowerCase() > a.name.toLowerCase() ? 1 : -1);
-            case "ascPrice":
-                return (a, b) => a.unit_price - b.unit_price;
-            case "descPrice":
-                return (a, b) => b.unit_price - a.unit_price;
-            case "date":
-                return (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
-            // Add more cases for other sorting methods if needed
-            default:
-                return (a, b) => a.id - b.id; // Default sorting
+  // Filter Arrays
+  const colorArray = [];
+  const storageArray = [];
+  const sizeArray = [];
+  const systemArray = [];
+
+  const filters = [
+    { id: "color", name: "Color", options: colorArray },
+    { id: "size", name: "Size", options: sizeArray },
+    { id: "storage", name: "Storage", options: storageArray },
+    { id: "system", name: "System / OS", options: systemArray },
+  ];
+
+  const sortMethods = [
+    { name: "Newest", value: "date", icon: "🆕" },
+    { name: "Price: Low to High", value: "ascPrice", icon: "💰" },
+    { name: "Price: High to Low", value: "descPrice", icon: "💎" },
+    { name: "Name: A to Z", value: "ascName", icon: "🔤" },
+    { name: "Name: Z to A", value: "descName", icon: "🔠" },
+  ];
+
+  const handleSort = (sortMethod) => {
+    switch (sortMethod) {
+      case "ascName":
+        return (a, b) => (a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1);
+      case "descName":
+        return (a, b) => (b.name?.toLowerCase() > a.name?.toLowerCase() ? 1 : -1);
+      case "ascPrice":
+        return (a, b) => (Number(a.unit_price) || 0) - (Number(b.unit_price) || 0);
+      case "descPrice":
+        return (a, b) => (Number(b.unit_price) || 0) - (Number(a.unit_price) || 0);
+      case "date":
+        return (a, b) => new Date(b.created_at) - new Date(a.created_at);
+      default:
+        return (a, b) => (a.id || 0) - (b.id || 0);
+    }
+  };
+
+  // Filtered and sorted products using useMemo
+  const filteredProducts = useMemo(() => {
+    if (!shoppingProduct) return [];
+    return shoppingProduct
+      .filter((i) => {
+        const price = Number(i.unit_price) || 0;
+        const priceFilterResult = price >= minValue && price <= maximumValue;
+        const categoryFilterReturn =
+          categoryFilter === "all" ? true : i?.subcategory?.name === categoryFilter;
+        return priceFilterResult && categoryFilterReturn;
+      })
+      .sort(handleSort(sortMethod));
+  }, [shoppingProduct, minValue, maximumValue, categoryFilter, sortMethod]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy]);
+
+  // Fetch products
+  useEffect(() => {
+    const getFilterProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/${categorySlug}/`,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        let subcategoriesData = response.data;
+        subcategoriesData = subcategoriesData.sort((a, b) => a.name.localeCompare(b.name));
+        setSubcategories(subcategoriesData);
+        setCategoryOnlyData(["all", ...subcategoriesData.map(subcat => subcat.name)]);
+
+        const res = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/product/category-products/${categorySlug}/`,
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        const allProducts = res.data;
+        const sortedProducts = allProducts.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        setShoppingProducts(sortedProducts);
+
+        const prices = allProducts.map((product) => parseFloat(product.unit_price));
+        if (prices.length > 0) {
+          setMinValue(Math.min(...prices));
+          setMaximumValue(Math.max(...prices));
+          setMaxValue(Math.max(...prices));
         }
-    };
-    const categorySlug = localStorage.getItem('category');
-    // axios requests ===================================================================
-    useEffect(() => {
-        const getFilterProducts = async () => {
-            setLoading(true);
-            try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/${categorySlug}/`,
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-
-                let subcategories = response.data;
-                subcategories = subcategories.sort((a, b) => a.name.localeCompare(b.name));
-                console.log("subcategories", subcategories);
-                setSubcategories(subcategories);
-                setCategoryOnlyData(["all", ...subcategories.map(subcat => subcat.name)]);
-                let allProducts = [];
-                const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/category-products/${categorySlug}/`, {
-                    headers: { "Content-Type": "application/json'" },
-                })
-                allProducts = res.data;
-                console.log("allProducts", allProducts);
-                const sortedProducts = allProducts.sort(
-                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
-                );
-                setShoppingProducts(sortedProducts);
-                setLoading(false);
-
-
-                const prices = allProducts.map((product) => parseFloat(product.unit_price));
-                console.log("prices", prices);
-                if (prices.length > 0) {
-                    setMinValue(Math.min(...prices));
-                    setMaximumValue(Math.max(...prices));
-                }
-            } catch (error) {
-                console.error(error);
-                setLoading(false);
-            }
-        };
-        setCategoryFilter("all");
-        getFilterProducts();
-    }, [categorySlug]);
-
-    useEffect(() => {
-        setCategoryFilter("all");
-    }, [])
-    const handleSliderChange = (e) => {
-        setMinValue(Number(e.minValue));
-        setMaximumValue(Number(e.maxValue));
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Function to handle category filter changes and update products accordingly
-    useEffect(() => {
-        const filterProducts = () => {
-            const filtered = shoppingProduct
-                ?.filter((product) => {
-                    // Price filter logic
-                    const priceFilter =
-                        product.unit_price >= minValue && product.unit_price <= maximumValue;
+    setCategoryFilter("all");
+    getFilterProducts();
+  }, [categorySlug]);
 
-                    // Category filter logic
-                    if (categoryFilter === "all") {
-                        return priceFilter; // If "all" is selected, return all products within price range
-                    }
+  // Get max price
+  useEffect(() => {
+    if (shoppingProduct && shoppingProduct.length > 0) {
+      const prices = shoppingProduct.map((p) => Number(p.unit_price) || 0);
+      const max = Math.max(...prices);
+      if (max > 0) {
+        setMaxValue(max);
+        setMaximumValue(max);
+      }
+    }
+  }, [shoppingProduct]);
 
-                    // If a specific category is selected, filter by subcategory name
-                    const categoryFilterReturn = product?.subcategory?.name === categoryFilter;
-                    return priceFilter && categoryFilterReturn; // Return true if both filters match
-                })
-                .sort(handleSort(sortMethod));
-            setFilteredProducts(filtered);
-        };
+  const handleSliderChange = (e) => {
+    setMinValue(Number(e.minValue));
+    setMaximumValue(Number(e.maxValue));
+  };
 
-        filterProducts();
-    }, [categoryFilter, shoppingProduct, minValue, maximumValue, sortMethod]); // Re-run the effect when any dependency changes
+  // Pagination handlers
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-    return (
-        <div className={`bg-white ${isDarkMode && "dark"} dark:bg-[#101017] dark:text-[#f5f5f5]`}
-            style={{
-                fontFamily: "Public Sans",
-            }}
-        >
-            <SearchForm />
-            <div>
-                {/* Mobile filter dialog ===================================================================================================== */}
-                <Transition.Root show={mobileFiltersOpen} as={Fragment}>
-                    <Dialog
-                        as="div"
-                        className="relative z-40 lg:hidden"
-                        onClose={setMobileFiltersOpen}
-                    >
-                        <Transition.Child
-                            as={Fragment}
-                            enter="transition-opacity ease-linear duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity ease-linear duration-300"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div className="fixed inset-0 bg-black bg-opacity-25" />
-                        </Transition.Child>
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
-                        <div className="fixed inset-0 z-40 flex">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="transition ease-in-out duration-300 transform"
-                                enterFrom="translate-x-full"
-                                enterTo="translate-x-0"
-                                leave="transition ease-in-out duration-300 transform"
-                                leaveFrom="translate-x-0"
-                                leaveTo="translate-x-full"
-                            >
-                                <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white dark:bg-[#101017] py-4 pb-12 shadow-xl">
-                                    <div className="flex items-center justify-between px-4">
-                                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                                            Filters
-                                        </h2>
-                                        <button
-                                            type="button"
-                                            className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-[#101017] p-2 text-gray-400"
-                                            onClick={() => setMobileFiltersOpen(false)}
-                                        >
-                                            <span className="sr-only">Close menu</span>
-                                            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                                        </button>
-                                    </div>
+  return (
+    <div className={`min-h-screen ${isDarkMode ? "dark bg-[#0A0B0E]" : "bg-gradient-to-br from-slate-50 via-white to-purple-50"}`}>      
+      {/* Subtle Background Gradient */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-[100px]"></div>
+      </div>
 
-                                    <div></div>
-                                    {/* Filters */}
-                                    <form className="block lg:hidden px-5 py-3 text-black">
-                                        <h3 className="sr-only">Categories</h3>
-                                        <div>
-                                            <h2 className=" dark:text-purple-500 pb-2 text-[#363F4D] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                                                CATEGORY
-                                            </h2>
-                                            <ul className=" flex flex-col">
-                                                {CategoryOnlyData.map((category, index) => {
-                                                    return (
-                                                        <div key={index}>
-                                                            {category && (
-                                                                <div
-                                                                    onClick={() => {
-                                                                        if (category === "all") {
-                                                                            setCategoryFilter("all");
-                                                                        } else {
-                                                                            setCategoryFilter(category);
-                                                                        }
-                                                                    }}
-                                                                    className="flex items-center mb-1"
-                                                                >
-                                                                    <input
-                                                                        id={category}
-                                                                        name={category}
-                                                                        value={category}
-                                                                        checked={category === categoryFilter}
-                                                                        onChange={() => {
-                                                                            if (category === "all") {
-                                                                                setCategoryFilter("all");
-                                                                            } else {
-                                                                                setCategoryFilter(category);
-                                                                            }
-                                                                        }}
-                                                                        type="checkbox"
-                                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                    />
-                                                                    <label
-                                                                        htmlFor={category}
-                                                                        className="ml-3 text-[15.5px] mb-1 text-gray-600 dark:text-[#f5f5f5]"
-                                                                    >
-                                                                        {category}
-                                                                    </label>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </ul>
-                                        </div>
-                                        <Disclosure
-                                            as="div"
-                                            className="border-b border-gray-200 py-6"
-                                        >
-                                            {({ open }) => (
-                                                <>
-                                                    <h3 className="-my-3 flow-root">
-                                                        <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#101017] py-3 text-sm text-gray-400 hover:text-gray-500">
-                                                            <span className="font-medium text-gray-900 dark:text-purple-600">
-                                                                Sort By
-                                                            </span>
-                                                            <span className="ml-6 flex items-center">
-                                                                {open ? (
-                                                                    <MinusIcon
-                                                                        className="h-5 w-5"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                ) : (
-                                                                    <PlusIcon
-                                                                        className="h-5 w-5"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                )}
-                                                            </span>
-                                                        </Disclosure.Button>
-                                                    </h3>
-                                                    <Disclosure.Panel className="pt-6">
-                                                        <div className="space-y-4">
-                                                            {sortMethods.map((option, optionIdx) => (
-                                                                <div
-                                                                    key={optionIdx}
-                                                                    className="flex items-center cursor-pointer"
-                                                                    onChange={() => {
-                                                                        setSortMethod(option.value);
-                                                                        setMobileFiltersOpen(false);
-                                                                    }}
-                                                                >
-                                                                    <input
-                                                                        id={option.name}
-                                                                        name={option.name}
-                                                                        defaultValue={option.name}
-                                                                        type="checkbox"
-                                                                        checked={option.value === sortMethod}
-                                                                        onChange={() => { }}
-                                                                        className="h-4 w-4 rounded border-gray-300 cursor-pointer text-indigo-600 focus:ring-indigo-500"
-                                                                    />
-                                                                    <label
-                                                                        htmlFor={option.name}
-                                                                        className="ml-3 text-sm text-gray-600 cursor-pointer dark:text-[#f5f5f5]"
-                                                                    >
-                                                                        {option.name}
-                                                                    </label>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </Disclosure.Panel>
-                                                </>
-                                            )}
-                                        </Disclosure>
+      {/* Mobile Filter Dialog */}
+      <Transition.Root show={mobileFiltersOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setMobileFiltersOpen}>
+          <Transition.Child
+            as={Fragment}
+            enter="transition-opacity ease-linear duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity ease-linear duration-300"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+          </Transition.Child>
 
-                                        <div className="mt-6">
-                                            <h2 className="dark:text-purple-500 mb-4 plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]"
-                                                style={{
-                                                    fontFamily: "Public Sans",
-                                                }}
-                                            >
-                                                PRICE RANGE
-                                            </h2>
-                                            <MultiRangeSlider
-                                                min={0}
-                                                max={maximumValue}
-                                                step={5}
-                                                minValue={minValue}
-                                                maxValue={maximumValue}
-                                                label={false}
-                                                ruler={false}
-                                                style={{
-                                                    border: "none",
-                                                    outline: "none",
-                                                    boxShadow: "none",
-                                                }}
-                                                barInnerColor="#FA8232"
-                                                barRightColor="#000"
-                                                barLeftColor="#000"
-                                                thumbLeftColor="#FA8232"
-                                                thumbRightColor="#FA8232"
-                                                onInput={(e) => handleSliderChange(e)}
-                                            />
-                                            <div className="flex justify-between mt-2 text-black dark:text-white">
-                                                <span>{`$${minValue}`}</span>
-                                                <span>{`$${maximumValue}`}</span>
-                                            </div>
-                                        </div>
+          <div className="fixed inset-0 z-50 flex">
+            <Transition.Child
+              as={Fragment}
+              enter="transition ease-in-out duration-300 transform"
+              enterFrom="translate-x-full"
+              enterTo="translate-x-0"
+              leave="transition ease-in-out duration-300 transform"
+              leaveFrom="translate-x-0"
+              leaveTo="translate-x-full"
+            >
+              <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-sm flex-col overflow-y-auto bg-gray-900 shadow-2xl border-l border-purple-500/20">
+                {/* Mobile Filter Header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-gradient-to-r from-purple-600 to-pink-600">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <FunnelIcon className="w-6 h-6" />
+                    Filters
+                  </h2>
+                  <button
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all duration-300"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+                </div>
 
-                                        {/* ---------------------------------------------------------- */}
-
-                                        {filters.map((section, index) => (
-                                            <div key={section.id || index}>
-                                                {section.options.length !== 0 && (
-                                                    <Disclosure
-                                                        as="div"
-                                                        className="border-b border-gray-200 py-6"
-                                                    >
-                                                        {({ open }) => (
-                                                            <>
-                                                                <h3 className="-my-3 flow-root">
-                                                                    <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#101017] py-3 text-sm text-gray-400 hover:text-gray-500">
-                                                                        <span className="font-medium text-gray-900 dark:text-purple-600">
-                                                                            {section.name}
-                                                                        </span>
-                                                                        <span className="ml-6 flex items-center">
-                                                                            {open ? (
-                                                                                <MinusIcon
-                                                                                    className="h-5 w-5"
-                                                                                    aria-hidden="true"
-                                                                                />
-                                                                            ) : (
-                                                                                <PlusIcon
-                                                                                    className="h-5 w-5"
-                                                                                    aria-hidden="true"
-                                                                                />
-                                                                            )}
-                                                                        </span>
-                                                                    </Disclosure.Button>
-                                                                </h3>
-                                                                <Disclosure.Panel className="pt-6">
-                                                                    <div className="space-y-4">
-                                                                        <div
-                                                                            className="flex items-center"
-                                                                            onClick={() => {
-                                                                                setFilterBy("");
-                                                                                setMobileFiltersOpen(false);
-                                                                            }}
-                                                                        >
-                                                                            <input
-                                                                                id="all"
-                                                                                name="all"
-                                                                                defaultValue="all"
-                                                                                type="checkbox"
-                                                                                checked={" " === filterBy}
-                                                                                onChange={() => { }}
-                                                                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                            />
-                                                                            <label
-                                                                                htmlFor="all"
-                                                                                className="ml-3 text-sm text-gray-600 dark:text-[#f5f5f5]"
-                                                                            >
-                                                                                all
-                                                                            </label>
-                                                                        </div>
-                                                                        {section.options.map(
-                                                                            (option, optionIdx) => (
-                                                                                <div
-                                                                                    key={optionIdx}
-                                                                                    className="flex items-center"
-                                                                                    onClick={() => {
-                                                                                        setFilterBy(option);
-                                                                                        setMobileFiltersOpen(false);
-                                                                                    }}
-                                                                                >
-                                                                                    <input
-                                                                                        id={option}
-                                                                                        name={option}
-                                                                                        defaultValue={option}
-                                                                                        type="checkbox"
-                                                                                        checked={option === filterBy}
-                                                                                        onChange={() => { }}
-                                                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                    />
-                                                                                    <label
-                                                                                        htmlFor={option}
-                                                                                        className="ml-3 text-sm text-gray-600 dark:text-[#f5f5f5]"
-                                                                                    >
-                                                                                        {option}
-                                                                                    </label>
-                                                                                </div>
-                                                                            )
-                                                                        )}
-                                                                    </div>
-                                                                </Disclosure.Panel>
-                                                            </>
-                                                        )}
-                                                    </Disclosure>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </form>
-                                </Dialog.Panel>
-                            </Transition.Child>
-                        </div>
-                    </Dialog>
-                </Transition.Root>
-                {/* web view  ================================================================================================================ */}
-                <main className="sm:mx-auto sm:w-[97%] px-1 sm:px-4">
-                    <div className="flex relative items-center justify-between border-b dark:text-[#f5f5f5] border-gray-200 lg:pb-6 py-4 px-4">
-                        <div className="flex items-center gap-2">
-                            <h1 className="font-bold text-[24px] text-black dark:text-white sm:text-[27px]">
-                                {title}
-                            </h1>
-                            <div className="flex items-center gap-2">
-                                <HiMiniSquares2X2
-                                    onClick={() => setIsCard(true)}
-                                    className={`text-[19px] cursor-pointer ${isCard ? "text-[#FA8232]" : ""
-                                        }`}
-                                />
-                                <AiOutlineBars
-                                    onClick={() => setIsCard(false)}
-                                    className={`text-[19px] cursor-pointer ${!isCard ? "text-[#FA8232]" : ""
-                                        }`}
-                                />
-                            </div>
-                        </div>
-                        <Disclosure as="div" className="absolute right-0 mx-auto hidden lg:block ">
-                            {({ open }) => (
-                                <>
-                                    <h3 className="-my-3 flow-root">
-                                        <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-[#101017] dark:text-[#f5f5f5] py-3 text-sm text-gray-400 hover:text-gray-500">
-                                            <span className="font-medium text-gray-900 dark:text-white">Sort by:</span>
-                                            <select
-                                            className="ml-2 bg-transparent border border-gray-300 dark:border-gray-700 rounded-md py-1 px-2  focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                value={sortMethod}
-                                                onChange={(e) => {
-                                                    setSortMethod(e.target.value);
-                                                    const selectedOption = sortMethods.find(option => option.value === e.target.value);
-                                                    setSortName(selectedOption?.name || "");
-                                                }}
-                                            >
-                                                {sortMethods.map((option, index) => (
-                                                    <option key={index} value={option.value} className="text-black bg:text-white">
-                                                        {option.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </Disclosure.Button>
-                                    </h3>
-                                </>
-                            )}
-                        </Disclosure>
-
-
+                <div className="p-4 space-y-6">
+                  {/* Subcategories */}
+                  <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+                    <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                      Subcategories
+                    </h3>
+                    <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                      {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
                         <button
-                            type="button"
-                            className="lg:hidden text-gray-400 hover:text-gray-500"
-                            onClick={() => setMobileFiltersOpen(true)}
+                          key={index}
+                          onClick={() => {
+                            setCategoryFilter(subcategory === "all" ? "all" : subcategory);
+                            setMobileFiltersOpen(false);
+                          }}
+                          className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${
+                            subcategory === categoryFilter
+                              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                          }`}
                         >
-                            <FunnelIcon className="h-5 w-5" aria-hidden="true" />
+                          {subcategory}
                         </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sort */}
+                  <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+                    <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      Sort By
+                    </h3>
+                    <div className="space-y-2">
+                      {sortMethods.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setSortMethod(option.value);
+                            setSortName(option.name);
+                            setMobileFiltersOpen(false);
+                          }}
+                          className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                            option.value === sortMethod
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                          }`}
+                        >
+                          <span>{option.icon}</span>
+                          {option.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price Range */}
+                  <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+                    <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      Price Range
+                    </h3>
+                    <MultiRangeSlider
+                      min={0}
+                      max={maxValue || 1000}
+                      step={5}
+                      minValue={minValue}
+                      maxValue={maximumValue}
+                      label={false}
+                      ruler={false}
+                      style={{ border: "none", boxShadow: "none" }}
+                      barInnerColor="#8B5CF6"
+                      barRightColor="#374151"
+                      barLeftColor="#374151"
+                      thumbLeftColor="#8B5CF6"
+                      thumbRightColor="#EC4899"
+                      onChange={handleSliderChange}
+                    />
+                    <div className="flex justify-between mt-4">
+                      <span className="px-3 py-1.5 bg-purple-900/50 text-purple-300 rounded-lg text-sm font-semibold">
+                        ${minValue}
+                      </span>
+                      <span className="px-3 py-1.5 bg-pink-900/50 text-pink-300 rounded-lg text-sm font-semibold">
+                        ${maximumValue}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition.Root>
+
+      {/* Main Content */}
+      <main className="relative z-10 max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+        {/* Header */}
+        <div className="mb-5">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <Link to="/" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Home</Link>
+            <ChevronRightIcon className="w-4 h-4" />
+            <span className="text-purple-600 dark:text-purple-400 font-medium capitalize">{title}</span>
+          </nav>
+
+          {/* Category Header Card */}
+          <div className="glass-card relative p-4 sm:p-5 rounded-2xl overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-lg sm:text-xl">{title?.charAt(0).toUpperCase()}</span>
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent capitalize">
+                    {title}
+                  </h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    {filteredProducts.length} products
+                  </p>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* View Toggle */}
+                <div className="flex items-center p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                  <button
+                    onClick={() => setIsCard(true)}
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${
+                      isCard
+                        ? "bg-white dark:bg-gray-700 text-purple-600 shadow-md"
+                        : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                    title="Grid View"
+                  >
+                    <HiMiniSquares2X2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setIsCard(false)}
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${
+                      !isCard
+                        ? "bg-white dark:bg-gray-700 text-purple-600 shadow-md"
+                        : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                    title="List View"
+                  >
+                    <AiOutlineBars className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Sort Dropdown - Desktop */}
+                <Menu as="div" className="relative hidden md:block">
+                  <Menu.Button className="group flex items-center gap-2 px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{sortName}</span>
+                    <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                  </Menu.Button>
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-200"
+                    enterFrom="opacity-0 scale-95 -translate-y-2"
+                    enterTo="opacity-100 scale-100 translate-y-0"
+                    leave="transition ease-in duration-150"
+                    leaveFrom="opacity-100 scale-100 translate-y-0"
+                    leaveTo="opacity-0 scale-95 -translate-y-2"
+                  >
+                    <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right glass-card rounded-2xl shadow-xl p-2 z-50">
+                      {sortMethods.map((option) => (
+                        <Menu.Item key={option.value}>
+                          {({ active }) => (
+                            <button
+                              onClick={() => {
+                                setSortMethod(option.value);
+                                setSortName(option.name);
+                              }}
+                              className={`${
+                                active || option.value === sortMethod
+                                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                  : "text-gray-700 dark:text-gray-300"
+                              } flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200`}
+                            >
+                              <span className="text-lg">{option.icon}</span>
+                              {option.name}
+                            </button>
+                          )}
+                        </Menu.Item>
+                      ))}
+                    </Menu.Items>
+                  </Transition>
+                </Menu>
+
+                {/* Mobile Filter Button */}
+                <button
+                  onClick={() => setMobileFiltersOpen(true)}
+                  className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105"
+                >
+                  <FunnelIcon className="w-5 h-5" />
+                  <span>Filters</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
+          {/* Sidebar - Desktop */}
+          <aside className="hidden lg:block space-y-4">
+            {/* Subcategories */}
+            <div className="glass-card p-4 rounded-xl sticky top-24">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                </div>
+                Subcategories
+              </h3>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCategoryFilter(subcategory === "all" ? "all" : subcategory)}
+                    className={`group w-full px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center justify-between ${
+                      subcategory === categoryFilter
+                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md"
+                        : "bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <span className="capitalize">{subcategory}</span>
+                    {subcategory === categoryFilter && (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className="glass-card p-4 rounded-xl">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                Price Range
+              </h3>
+              <div className="mt-4">
+                <MultiRangeSlider
+                  min={0}
+                  max={maxValue || 1000}
+                  step={5}
+                  minValue={minValue}
+                  maxValue={maximumValue}
+                  label={false}
+                  ruler={false}
+                  style={{ border: "none", boxShadow: "none" }}
+                  barInnerColor="#8B5CF6"
+                  barRightColor="#E5E7EB"
+                  barLeftColor="#E5E7EB"
+                  thumbLeftColor="#8B5CF6"
+                  thumbRightColor="#EC4899"
+                  onChange={handleSliderChange}
+                />
+                <div className="flex justify-between mt-4 gap-2">
+                  <div className="flex-1 p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-center">
+                    <span className="text-xs text-purple-600 dark:text-purple-400">Min</span>
+                    <p className="text-lg font-bold text-purple-700 dark:text-purple-300">${minValue}</p>
+                  </div>
+                  <div className="flex-1 p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-center">
+                    <span className="text-xs text-pink-600 dark:text-pink-400">Max</span>
+                    <p className="text-lg font-bold text-pink-700 dark:text-pink-300">${maximumValue}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Filters */}
+            {filters.some(f => f.options.length > 0) && (
+              <div className="glass-card p-4 rounded-xl">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                  </div>
+                  Quick Filters
+                </h3>
+                {filters.map((section) => (
+                  section.options.length > 0 && (
+                    <Disclosure key={section.id} as="div" className="mt-4">
+                      {({ open }) => (
+                        <>
+                          <Disclosure.Button className="flex w-full items-center justify-between py-2 text-sm font-medium text-gray-900 dark:text-white">
+                            {section.name}
+                            <ChevronDownIcon className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+                          </Disclosure.Button>
+                          <Disclosure.Panel className="pt-2 space-y-2">
+                            {section.options.map((option, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setFilterBy(option === filterBy ? "" : option)}
+                                className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-all duration-300 ${
+                                  option === filterBy
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                }`}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </Disclosure.Panel>
+                        </>
+                      )}
+                    </Disclosure>
+                  )
+                ))}
+              </div>
+            )}
+          </aside>
+
+          {/* Products Section */}
+          <div className="lg:col-span-4 xl:col-span-5">
+            {loading ? (
+              /* Loading State */
+              <div className="flex flex-col items-center justify-center min-h-[500px] glass-card rounded-3xl">
+                <div className="relative">
+                  <div className="w-24 h-24 border-4 border-purple-200 dark:border-purple-900 rounded-full"></div>
+                  <div className="w-24 h-24 border-4 border-purple-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl">✨</span>
+                  </div>
+                </div>
+                <p className="mt-6 text-lg text-gray-500 dark:text-gray-400">Loading amazing products...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              /* Empty State */
+              <div className="flex flex-col items-center justify-center min-h-[500px] glass-card rounded-3xl p-8">
+                <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full flex items-center justify-center mb-6">
+                  <span className="text-6xl">📦</span>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Products Found</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mb-6">
+                  We couldn't find any products matching your criteria. Try adjusting your filters.
+                </p>
+                <button
+                  onClick={() => {
+                    setCategoryFilter("all");
+                    setFilterBy("");
+                    setMinValue(0);
+                    setMaximumValue(maxValue);
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Products Info Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 px-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Showing <span className="font-bold text-purple-600 dark:text-purple-400">{startIndex + 1}-{Math.min(endIndex, filteredProducts.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{filteredProducts.length}</span> products
+                  </p>
+                  
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Show:</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    >
+                      <option value={8}>8</option>
+                      <option value={12}>12</option>
+                      <option value={24}>24</option>
+                      <option value={48}>48</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Products Grid */}
+                <div className={`grid gap-4 sm:gap-6 ${
+                  isCard
+                    ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    : "grid-cols-1 sm:grid-cols-2"
+                }`}>
+                  {currentProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} isCard={isCard} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-12 flex flex-col items-center gap-6">
+                    {/* Pagination Controls */}
+                    <div className="flex items-center gap-2 p-2 glass-card rounded-2xl">
+                      {/* Previous */}
+                      <button
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="group flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300"
+                      >
+                        <ChevronLeftIcon className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                      </button>
+
+                      {/* Page Numbers */}
+                      <div className="flex items-center gap-1">
+                        {getPageNumbers().map((page, index) => (
+                          page === '...' ? (
+                            <span key={`ellipsis-${index}`} className="w-10 h-12 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                              •••
+                            </span>
+                          ) : (
+                            <button
+                              key={page}
+                              onClick={() => goToPage(page)}
+                              className={`relative w-12 h-12 rounded-xl font-semibold text-sm transition-all duration-300 overflow-hidden ${
+                                currentPage === page
+                                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 scale-110"
+                                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                              }`}
+                            >
+                              <span className="relative">{page}</span>
+                            </button>
+                          )
+                        ))}
+                      </div>
+
+                      {/* Next */}
+                      <button
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="group flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300"
+                      >
+                        <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
                     </div>
 
-                    <section
-                        aria-labelledby="products-heading"
-                        className=" min-h-screen pb-20 pt-6"
-                    >
-                        <h2 id="products-heading" className="sr-only">
-                            Products
-                        </h2>
-
-                        <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4 2xl:grid-cols-5">
-                            <form className="hidden lg:block dark:text-[#f5f5f5]">
-                                <h3 className="sr-only">Categories</h3>
-                                <div>
-                                    <h2 className=" dark:text-white pb-2 font-[700] text-[#363F4D] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                                        CATEGORY{" "}
-                                    </h2>
-                                    <ul className=" flex flex-col">
-                                        {CategoryOnlyData.map((category, index) => {
-                                            return (
-                                                <div key={index}>
-                                                    {category && (
-                                                        <div
-                                                            onClick={() => {
-                                                                if (category === "all") {
-                                                                    setCategoryFilter("all");
-                                                                } else {
-                                                                    setCategoryFilter(category);
-                                                                }
-                                                            }}
-                                                            className="flex items-center mb-1"
-                                                        >
-                                                            <input
-                                                                id={category}
-                                                                name={category}
-                                                                value={category}
-                                                                checked={category === categoryFilter}
-                                                                onChange={() => {
-                                                                    if (category === "all") {
-                                                                        setCategoryFilter("all");
-                                                                    } else {
-                                                                        setCategoryFilter(category);
-                                                                    }
-                                                                }}
-                                                                type="radio"
-                                                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                />
-                                                            <label
-                                                                htmlFor={category}
-                                                                className="ml-3 text-[15.5px] mb-1 text-gray-600 dark:text-[#f5f5f5]"
-                                                            >
-                                                                {category}
-                                                            </label>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-
-                                    </ul>
-                                </div>
-
-                                {/* ---------------------------------------------------------- */}
-
-                                {filters.map((section, index) => (
-                                    <div key={section.id || index}>
-                                        {section.options.length !== 0 && (
-                                            <Disclosure
-                                                as="div"
-                                                className="border-b border-gray-200 py-6"
-                                                defaultOpen
-                                            >
-                                                {({ open }) => (
-                                                    <>
-                                                        <h3 className="-my-3 flow-root">
-                                                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-[#101017] dark:text-[#f5f5f5] py-3 text-sm text-gray-400 hover:text-gray-500">
-                                                                <span className="font-medium text-gray-900 dark:text-purple-600">
-                                                                    {section.name}
-                                                                </span>
-                                                                <span className="ml-6 flex items-center">
-                                                                    {open ? (
-                                                                        <MinusIcon
-                                                                            className="h-5 w-5"
-                                                                            aria-hidden="true"
-                                                                        />
-                                                                    ) : (
-                                                                        <PlusIcon
-                                                                            className="h-5 w-5"
-                                                                            aria-hidden="true"
-                                                                        />
-                                                                    )}
-                                                                </span>
-                                                            </Disclosure.Button>
-                                                        </h3>
-                                                        <Disclosure.Panel className="pt-6">
-                                                            <div className="space-y-4">
-                                                                <div
-                                                                    className="flex items-center"
-                                                                    onClick={() => {
-                                                                        setFilterBy("");
-                                                                    }}
-                                                                >
-                                                                    <input
-                                                                        id="all"
-                                                                        name="all"
-                                                                        defaultValue="all"
-                                                                        type="checkbox"
-                                                                        checked={"" === filterBy}
-                                                                        onChange={() => { }}
-                                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                    />
-                                                                    <label
-                                                                        htmlFor="all"
-                                                                        className="ml-3 text-sm text-gray-600 dark:text-[#f5f5f5]"
-                                                                    >
-                                                                        all
-                                                                    </label>
-                                                                </div>
-                                                                {section.options.map((option, optionIdx) => (
-                                                                    <div
-                                                                        key={optionIdx}
-                                                                        className="flex items-center"
-                                                                        onClick={() => {
-                                                                            setFilterBy(option);
-                                                                        }}
-                                                                    >
-                                                                        <input
-                                                                            id={option}
-                                                                            name={option}
-                                                                            defaultValue={option}
-                                                                            type="checkbox"
-                                                                            checked={option === filterBy}
-                                                                            onChange={() => { }}
-                                                                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                        />
-                                                                        <label
-                                                                            htmlFor={option}
-                                                                            className="ml-3 text-sm text-gray-600 dark:text-[#f5f5f5]"
-                                                                        >
-                                                                            {option}
-                                                                        </label>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </Disclosure.Panel>
-                                                    </>
-                                                )}
-                                            </Disclosure>
-                                        )}
-                                    </div>
-                                ))}
-                                <div className="mt-6">
-                                    <h2 className="dark:text-white mb-4 font-[700] text-[#363F4D] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                                        PRICE RANGE
-                                    </h2>
-                                    <MultiRangeSlider
-                                        min={0}
-                                        max={maximumValue}
-                                        step={5}
-                                        minValue={minValue}
-                                        maxValue={maximumValue}
-                                        label={false}
-                                        ruler={false}
-                                        style={{
-                                            border: "none",
-                                            outline: "none",
-                                            boxShadow: "none",
-                                        }}
-                                        barInnerColor="#FA8232"
-                                        barRightColor="#000"
-                                        barLeftColor="#000"
-                                        thumbLeftColor="#FA8232"
-                                        thumbRightColor="#FA8232"
-                                        onInput={(e) => handleSliderChange(e)}
-                                    />
-                                    <div className="flex justify-between mt-2 text-[#4d5c73]">
-                                        <span>{`$${minValue}`}</span>
-                                        <span>{`$${maximumValue}`}</span>
-                                    </div>
-                                </div>
-                            </form>
-                            <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg"
-                                className="md:absolute fixed top-1/3 left-0 z-[0] pointer-events-none overflow-hidden"
-
-                            >
-                                <g filter="url(#filter0_f_1_3636)">
-                                    <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
-                                </g>
-                                <defs>
-                                    <filter id="filter0_f_1_3636" x="-430" y="0" width="1031" height="1031" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                                        <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-                                        <feGaussianBlur stdDeviation="154" result="effect1_foregroundBlur_1_3636" />
-                                    </filter>
-                                </defs>
-                            </svg>
-
-                            <svg width="636" height="1071" viewBox="0 0 636 1071" fill="none" xmlns="http://www.w3.org/2000/svg"
-                                className="fixed top-0 right-0 z-[0] pointer-events-none overflow-hidden"
-
-                            >
-                                <g filter="url(#filter0_f_1_3632)">
-                                    <path d="M743.5 535.5C743.5 650.099 650.599 743 536 743C421.401 743 328.5 650.099 328.5 535.5C328.5 420.901 421.401 328 536 328C650.599 328 743.5 420.901 743.5 535.5Z" fill="#8B33FE" fill-opacity="0.4" />
-                                </g>
-                                <defs>
-                                    <filter id="filter0_f_1_3632" x="0.5" y="0" width="1071" height="1071" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                                        <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-                                        <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3632" />
-                                    </filter>
-                                </defs>
-                            </svg>
-
-                            {!loading ? (
-                                <div className="lg:col-span-3 2xl:col-span-4 p-4">
-                                    <div className="bg-white dark:bg-[#101017] dark:text-[#f5f5f5]">
-                                        <div className="w-full sm:py-0 sm:pb-10 lg:px-0">
-                                            <div
-                                                className={`grid pb-6 ${isCard
-                                                    ? "lg:grid-cols-3 sm:grid-cols-2 grid-cols-2 2xl:grid-cols-4"
-                                                    : "2xl:grid-cols-2 lg:grid-cols-2 sm:grid-cols-2 grid-cols-1"
-                                                    } gap-x-3 gap-y-3 lg:gap-x-5 lg:items-center lg:justify-start flex-wrap`}
-                                            >
-                                                {filteredProducts.map((product, index) => (
-                                                    <ProductCard
-                                                        key={index}
-                                                        product={product}
-                                                        isCard={isCard}
-                                                    />
-                                                ))}
-                                            </div>
-
-                                            {shoppingProduct?.length === 0 && (
-                                                <div className="w-full h-full text-center">
-                                                    <p className="dark:text-[#f5f5f5]">
-                                                        No Products Available
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="lg:col-span-3 2xl:col-span-4 flex items-center justify-center">
-                                    <img
-                                        src="/loading.svg"
-                                        alt="loading"
-                                        className="w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] object-contain"
-                                    />
-                                </div>
-                            )}
-
-                        </div>
-                    </section>
-                </main>
-            </div>
+                    {/* Page Jump */}
+                    <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                      <span>Jump to page:</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={totalPages}
+                        value={currentPage}
+                        onChange={(e) => {
+                          const page = parseInt(e.target.value);
+                          if (page >= 1 && page <= totalPages) goToPage(page);
+                        }}
+                        className="w-16 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-center font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                      <span>of <span className="font-bold text-gray-900 dark:text-white">{totalPages}</span></span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-    );
+      </main>
+
+      {/* Styles */}
+      <style jsx>{`
+        .glass-card {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .glass-card {
+          background: rgba(17, 24, 39, 0.7);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #8B5CF6, #EC4899);
+          border-radius: 20px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #7C3AED, #DB2777);
+        }
+      `}</style>
+    </div>
+  );
 }

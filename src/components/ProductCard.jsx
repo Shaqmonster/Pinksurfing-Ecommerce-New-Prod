@@ -6,7 +6,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { IoStarOutline } from "react-icons/io5";
+import { IoStarOutline, IoCart } from "react-icons/io5";
 import Stars from "./Stars";
 const ProductCard = ({ product, isCard }) => {
   const [cookies] = useCookies([]);
@@ -229,82 +229,97 @@ const ProductCard = ({ product, isCard }) => {
 
   return (
     <div
-      className={`mx-auto mt-4 rounded-xl relative w-full lg:w-[100%] flex ${isCard ? "flex-col" : "flex-row items-center"
-        } transform overflow-hidden bg-white dark:bg-[#1A1C1E] shadow-md duration-300 hover:scale-[1.02] hover:shadow-lg`}
+      className={`group mx-auto mt-4 rounded-2xl relative w-full lg:w-[100%] flex ${
+        isCard ? "flex-col" : "flex-row items-center"
+      } overflow-hidden bg-white/80 dark:bg-white/5 backdrop-blur-md border border-gray-200/50 dark:border-white/10 shadow-lg hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/20 transition-all duration-300 hover:-translate-y-1`}
     >
       {/* Wishlist Icon */}
-      {/* <FaHeart
+      <div
         id={`heart-${product.id}`}
         onClick={handleWishlistClick}
-        className={`absolute top-4 right-4 cursor-pointer ${wishlistProducts.find((i) => i.id === product.id)
-          ? "text-red-500"
-          : "text-gray-400"
-          } text-[22px] transition-transform duration-200 transform hover:scale-110`}
-      /> */}
+        className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md cursor-pointer transition-all duration-200 hover:scale-110 ${
+          wishlistProducts.find((i) => i.id === product.id)
+            ? "bg-red-500/20 text-red-500"
+            : "bg-white/50 dark:bg-black/30 text-gray-400 hover:text-red-500 hover:bg-red-500/20"
+        }`}
+      >
+        <FaHeart className="text-lg" />
+      </div>
+
+      {/* Discount Badge */}
+      {product.mrp !== product.unit_price && (
+        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold shadow-lg">
+          {Math.round(((product.mrp - product.unit_price) / product.mrp) * 100)}% OFF
+        </div>
+      )}
 
       {/* Product Image */}
       {isCard ? (
-        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
+        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`} className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-[1]" />
           <img
-            className="w-full min-h-[220px] max-h-[220px] sm:h-[90%] object-cover rounded-t-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
-            src={`${product.image1}` || "/emptyCart.png"}
-            alt="Product Image"
+            className="w-full min-h-[200px] max-h-[200px] object-cover cursor-pointer transition-transform duration-500 group-hover:scale-105"
+            src={product.image1 || "/emptyCart.png"}
+            alt={product.name}
+            loading="lazy"
           />
         </Link>
       ) : (
-        <div className="w-[50%] overflow-hidden">
+        <div className="w-[45%] overflow-hidden">
           <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
             <img
-              className="max-h-48 w-full object-cover rounded-l-lg border border-gray-200 dark:border-gray-700"
-              src={`${product.image1}` || "/emptyCart.png"}
-              alt="Product Image"
+              className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              src={product.image1 || "/emptyCart.png"}
+              alt={product.name}
+              loading="lazy"
             />
           </Link>
         </div>
       )}
 
       {/* Product Details */}
-      <div className={`relative px-4 py-3 ${isCard ? "" : "w-[50%] ml-auto"}`}>
+      <div className={`relative p-4 ${isCard ? "" : "w-[55%] pl-4"}`}>
         {/* Ratings */}
-        <div className="mt-2">
-          <div className="flex gap-2">
-
-          <Stars stars={averageRating} /> {" "} <span className="text-[#77878F]"> ({allRatings.length})</span>
-          </div>
+        <div className="flex items-center gap-2 mb-2">
+          <Stars stars={averageRating} />
+          <span className="text-xs text-gray-500 dark:text-gray-400">({allRatings.length})</span>
         </div>
+
         <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
-          <h2 className="text-[16px] sm:text-lg font-medium text-gray-800 dark:text-white text-center sm:text-left truncate">
+          <h2 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-white line-clamp-2 leading-tight mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
             {product.name}
           </h2>
-
-          <div className="flex flex-col items-center sm:items-start mt-2">
-            {/* Pricing */}
-            <div className="flex items-baseline justify-center sm:justify-start">
-              {product.mrp !== product.unit_price && (
-                <p className="text-[13.4px] lg:text-sm mr-2 text-gray-500 line-through dark:text-gray-400">
-                  <span>{currency}</span>
-                  {product.mrp}
-                </p>
-              )}
-              <p className="text-lg font-semibold text-[#933FFF] dark:text-[#933FFF]">
-                <span>{currency}</span>
-                {product.unit_price}
-              </p>
-            </div>
-
-          </div>
         </Link>
 
-        {/* View Product Button */}
-        {/* <div className="flex mt-4 md:justify-start justify-center">
-          <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
-            <button
-              className={`w-full py-2 px-2 rounded-lg bg-gradient-to-r bg-[#933FFF] text-white font-medium text-sm shadow-md hover:shadow-lg hover:opacity-90 transition duration-300 ${isCard ? "" : "mt-3"}`}
-            >
-              View Product
-            </button>
-          </Link>
-        </div> */}
+        {/* Pricing & Cart */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+              {currency}{product.unit_price}
+            </p>
+            {product.mrp !== product.unit_price && (
+              <p className="text-sm text-gray-400 line-through">
+                {currency}{product.mrp}
+              </p>
+            )}
+          </div>
+
+          {/* Add to Cart Icon */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              if (!user) {
+                toast.error("Please sign in to add to cart");
+                return;
+              }
+              AddtoCart();
+            }}
+            className="p-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md hover:shadow-lg hover:shadow-purple-500/30 hover:scale-110 active:scale-95 transition-all duration-200"
+            title="Add to Cart"
+          >
+            <IoCart className="text-lg" />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { authContext } from "../context/authContext";
 import { useCookies } from "react-cookie";
 import { FaAppStore , FaGooglePlay } from "react-icons/fa";
@@ -97,104 +98,102 @@ const Footer = () => {
 
   return (
     <>
-      <footer className="relative bg-[#F6F6F6]  dark:text-gray-400 dark:bg-[#191C1F] dark:border-t dark:border-gray-400 min-h-[360px] flex flex-col justify-between pt-5 px-[8%]  ">
-        <div className=" grid grid-cols-1 md:grid-cols-6 gap-6 pt-5">
-          <div className=" col-span-2 flex justify-center items-center flex-col">
-            <img
-              src="/logo.jpg"
-              className=" w-[120px] md:w-[150px] bg-white border-none"
-              alt="Pink Surfing"
-            />
-            <p className=" my-5 md:mb-7 text-[13.5px] text-[#929292] dark:text-gray-400 ">
-              A multidimensional chat and ecommerce for trading goods, selling services, and networking that pays you for your network… for life. What if the billions you - the people - made for social websites could be recreated and redistributed to the users. And you get a piece of that pie.
-            </p>
-            <p className=" dark:text-gray-400 text-[#292929] mb-2 font-[600]  text-[15px] ">
-              Follow Us On Social:
-            </p>
-            <div className="absolute inset-0 bottom-0 left-0 z-0 pointer-events-none">
-              <svg
-                width="329"
-                height="500"
-                viewBox="0 0 329 500"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="absolute left-0 bottom-0 pointer-events-none"
+      <footer className="relative bg-gradient-to-b from-[#13131a] to-[#0a0a0f] text-gray-300 border-t border-purple-500/20 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+
+        <div className="relative z-10 px-[8%] pt-12 pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-8">
+            {/* Brand Section */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="col-span-2 flex justify-center items-center flex-col"
+            >
+              <motion.img
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                src="/logo.jpg"
+                className="w-[120px] md:w-[150px] rounded-full ring-4 ring-purple-500/30 shadow-xl shadow-purple-500/20"
+                alt="Pink Surfing"
+              />
+              
+              <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="my-5 md:mb-7 text-[13.5px] text-gray-400 text-center leading-relaxed"
               >
-                <g opacity="0.09">
-                  <path
-                    d="M199.103 250.21L170.377 195.944C129.009 217.835 95.401 231.145 69.9124 235.719C99.6149 215.42 126.594 180.476 151.157 130.578L96.0691 103.394C79.3165 137.361 63.643 159.15 49.4598 173.025C57.5278 135.768 47.2501 83.2492 3.15881 0L-51.1073 28.7262C-29.2159 70.0939 -15.9063 103.702 -11.3327 129.139C-31.6311 99.4366 -66.5753 72.5091 -116.422 47.894L-143.607 102.982C-109.639 119.735 -87.8501 135.408 -73.9752 149.592C-111.232 141.524 -163.751 151.801 -247 195.841L-218.274 250.107C-176.958 228.216 -143.401 214.958 -117.912 210.333C-147.666 230.888 -174.594 265.781 -199.055 315.422L-143.966 342.607C-127.316 308.793 -111.592 286.953 -97.3569 272.975C-105.425 310.232 -95.1472 362.751 -51.056 446L3.21022 417.274C-18.6812 375.958 -31.9395 342.401 -36.5644 316.912C-16.0091 346.666 18.8837 373.594 68.5249 398.055L95.7094 342.966C61.8958 326.316 40.0557 310.643 26.078 296.408C33.6321 298.053 41.7515 298.926 50.6931 298.926C85.8428 298.926 132.76 285.257 199.154 250.107L199.103 250.21Z"
-                    fill="#D5C1EE"
-                  />
-                </g>
-              </svg>
-            </div>
+                A multidimensional chat and ecommerce for trading goods, selling services, and networking that pays you for your network… for life. What if the billions you - the people - made for social websites could be recreated and redistributed to the users. And you get a piece of that pie.
+              </motion.p>
+              
+              <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="text-white mb-4 font-semibold text-[15px] bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+              >
+                Follow Us On Social:
+              </motion.p>
 
-            <div className=" flex items-center gap-5 mb-4 md:mb-6">
-              <Link to={social?.facebook ? social?.facebook : "/"}>
-                <img className=" h-[17px]  " src="/social/fb.svg" alt="logo" />
-              </Link>
-              <Link to={social?.twitter ? social?.twitter : "/"}>
-                <img
-                  className=" h-[17px]  "
-                  src="/social/twitter.svg"
-                  alt="logo"
-                />
-              </Link>
-              <Link to={social?.instagram ? social?.instagram : "/"}>
-                <img
-                  className=" h-[17px]  "
-                  src="/social/insta.svg"
-                  alt="logo"
-                />
-              </Link>
-              <Link to={social?.linkedin ? social?.linkedin : "/"}>
-                <img
-                  className=" h-[17px]  "
-                  src="/social/linkedin.svg"
-                  alt="logo"
-                />
-              </Link>
-              <Link to={social?.youtube ? social?.youtube : "/"}>
-                <img
-                  className=" h-[17px]  "
-                  src="/social/youtube.svg"
-                  alt="logo"
-                />
-              </Link>
-            </div>
-          </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="flex items-center gap-4 mb-6"
+              >
+                {[
+                  { icon: "/social/fb.svg", link: social?.facebook || "/" },
+                  { icon: "/social/twitter.svg", link: social?.twitter || "/" },
+                  { icon: "/social/insta.svg", link: social?.instagram || "/" },
+                  { icon: "/social/linkedin.svg", link: social?.linkedin || "/" },
+                  { icon: "/social/youtube.svg", link: social?.youtube || "/" }
+                ].map((item, index) => (
+                  <Link key={index} to={item.link}>
+                    <motion.div
+                      whileHover={{ scale: 1.2, rotate: 5 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="bg-white/5 backdrop-blur-md p-3 rounded-full border border-white/10 hover:border-purple-500/50 transition-all"
+                    >
+                      <img className="h-[17px]" src={item.icon} alt="social" />
+                    </motion.div>
+                  </Link>
+                ))}
+              </motion.div>
+            </motion.div>
 
-          {/* <div className=" col-span-3 md:col-span-1 flex flex-col text-left ">
-            <h2 className="mb-3 ml-2 font-[600]  dark:text-gray-400 text-[#292929] capitalize">
-              Opening Time{" "}
-            </h2>
-            <ul className="dark:text-gray-400 text-[#727272] flex flex-col  text-[13.3px] ">
-              <li className="mb-4">Mon – Fri: 8AM – 10PM</li>
-              <li className="mb-4">Sat: 9AM-8PM</li>
-              <li className="mb-4">Sun: Closed</li>
-            </ul>
-          </div> */}
-
-          {FooterLinks.map((item, index) => {
-            return (
-              <div key={index} className="md:col-span-1 col-span-2  flex flex-col text-left">
-                <h2 className="mb-3 font-[600]  dark:text-white text-[#292929] capitalize">
+            {/* Footer Links */}
+            {FooterLinks.map((item, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="md:col-span-1 col-span-2 flex flex-col text-left"
+              >
+                <h2 className="mb-4 font-bold text-white text-[16px] relative inline-block">
                   {item.heading}
+                  <span className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></span>
                 </h2>
-                <ul className="dark:text-gray-400 text-[#727272] flex flex-col text-[13.5px]">
+                <ul className="text-gray-400 flex flex-col text-[13.5px] space-y-3">
                   {item.list
                     .filter((e) => !(user.is_vendor && e.id === "2.4"))
-                    .map((e, index) => {
+                    .map((e, idx) => {
                       let link = e.link;
-
                       if (e.id === "2.2" && cookies.access_token) {
                         link = "#";
                       }
                       return (
                         <Link
                           to={link}
-                          key={index}
-                          className="mb-4"
+                          key={idx}
                           onClick={(event) => {
                             if (e.id == "2.2") {
                               if (!cookies.access_token) {
@@ -220,53 +219,80 @@ const Footer = () => {
                             }
                           }}
                         >
-                          <li className="hover:underline">{e.name}</li>
+                          <motion.li 
+                            whileHover={{ x: 5, color: "#a855f7" }}
+                            className="transition-colors cursor-pointer"
+                          >
+                            {e.name}
+                          </motion.li>
                         </Link>
                       );
                     })}
                 </ul>
+              </motion.div>
+            ))}
+
+            {/* Download Section */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="col-span-3 md:col-span-2 flex flex-col text-left"
+            >
+              <h2 className="mb-4 font-bold text-white text-[16px] relative inline-block">
+                Download App
+                <span className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></span>
+              </h2>
+              <div className="flex flex-col gap-3">
+                <motion.a
+                  whileHover={{ scale: 1.05, x: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                  href="https://play.google.com"
+                  className="flex items-center gap-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl p-4 w-48 hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-purple-500/50 border border-purple-500/30"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaGooglePlay size={24}/>
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs text-purple-200">Get it on</span>
+                    <span className="text-sm font-semibold">Google Play</span>
+                  </div>
+                </motion.a>
+                <motion.a
+                  whileHover={{ scale: 1.05, x: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                  href="https://www.apple.com/app-store/"
+                  className="flex items-center gap-3 bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-4 w-48 hover:from-pink-700 hover:to-pink-800 transition-all shadow-lg hover:shadow-pink-500/50 border border-pink-500/30"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaAppStore size={24}/>
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs text-pink-200">Download on</span>
+                    <span className="text-sm font-semibold">App Store</span>
+                  </div>
+                </motion.a>
               </div>
-            );
-          })}
-          <div className="col-span-3 md:col-span-2 flex flex-col text-left mb-4">
-            <h2 className="mb-3 ml-2 font-[600] dark:text-white text-[#292929] capitalize">
-              Download
-            </h2>
-            <div className="flex flex-col gap-3 ml-2">
-              <a
-                href="https://play.google.com"
-                className="flex items-center justify-center gap-2 bg-[#303639] text-white rounded-md p-3 w-40 hover:bg-[#363a3d]"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaGooglePlay size={20}/>
-                <span>{"  "}Google Play</span>
-              </a>
-              <a
-                href="https://www.apple.com/app-store/"
-                className="flex items-center justify-center gap-4 bg-[#303639] text-white rounded-md p-3 w-40 hover:bg-[#363a3d]"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaAppStore size={20}/>
-                <span>App Store</span>
-              </a>
-            </div>
+            </motion.div>
           </div>
 
-        </div>
-        <div className=" py-4 md:py-6 border-t border-gray-400 text-[12.2px] md:text-[13.4px] dark:text-gray-400 text-[#292929] ">
-          <p className=" mt-3 md:mt-0 text-center">
-            Copyright ©2024{" "}
-            <span className=" text-[#fff]">Pinksurfing LLC</span> All rights
-            reserved.
-          </p>
-          {/* <div className="flex items-center gap-6">
-            <Link to="/privacy-policy">Policy</Link>
-            <Link to="/faqs">Questions</Link>
-            <Link to="/contact">Affiliate</Link>
-            <Link to="/contact">Help</Link>
-          </div> */}
+          {/* Bottom Section */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="py-6 mt-8 border-t border-purple-500/20 text-[13px] text-gray-400"
+          >
+            <p className="text-center">
+              Copyright ©2024{" "}
+              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold">
+                Pinksurfing LLC
+              </span>{" "}
+              All rights reserved.
+            </p>
+          </motion.div>
         </div>
       </footer>
     </>

@@ -69,7 +69,7 @@ export default function ShopByStore() {
   return (
     <div className={`bg-white ${isDarkMode && "dark"} dark:bg-black`}>
 
-      <SearchForm />
+      {/* <SearchForm /> */}
       <div>
         {/* Mobile filter dialog ===================================================================================================== */}
         <Transition.Root show={mobileFiltersOpen} as={Fragment}>
