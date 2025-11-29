@@ -317,7 +317,7 @@ export default function ShopByCategory() {
 
   return (
     <div className={`bg-white ${isDarkMode && "dark"} dark:bg-black`}>
-      <SearchForm />
+      {/* <SearchForm /> */}
       <div>
         {/* Mobile filter dialog */}
         {/* Mobile filter dialog ===================================================================================================== */}

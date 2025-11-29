@@ -34,6 +34,7 @@ import Contact from "./pages/ContactUs";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
+import ComingSoon from "./pages/ComingSoon";
 import { getCookie, setCookie } from "./utils/cookie";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 function App() {
@@ -97,6 +98,7 @@ function App() {
         <Route path="/store/:slug" element={<StoreProducts />} />
         <Route path="/subCategories" element={<SubCategories />} />
         <Route path="/categoryProducts" element={<CategoryProducts />} />
+        <Route path="/coming-soon" element={<ComingSoon />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/summary/:orderId" element={<Summary />} />

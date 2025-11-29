@@ -33,7 +33,7 @@ export default function ShoppingMallwithStores() {
 
     return (
         <div className={`min-h-screen ${isDarkMode ? "bg-[#0E0F13]" : "bg-white"}`}>
-            <SearchForm />
+            {/* <SearchForm /> */}
 
             {/* Background SVG */}
             <svg

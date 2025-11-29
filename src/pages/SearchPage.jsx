@@ -45,7 +45,7 @@ const SearchPage = ({ }) => {
 
   return (
     <div className="w-full min-h-screen dark:bg-[#0E0F13] bg-white flex flex-col">
-      <SearchForm />
+      {/* <SearchForm /> */}
       <div className="flex relative flex-col w-full h-full px-[2%] 2xl:px-[4.5%]">
         <h2 className="font-bold text-[24px] sm:text-[27px] flex items-center gap-2 text-purple-900 dark:text-purple-600">
           <ArrowLeftCircleIcon

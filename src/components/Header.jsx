@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useCallback } from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -19,7 +20,7 @@ import QRCode from "qrcode.react";
 // icons-------------------------------------------------------------
 import { MdOutlineWbSunny } from "react-icons/md";
 import { IoIosMoon } from "react-icons/io";
-import { IoCart, IoMenuOutline, IoPersonCircleOutline } from "react-icons/io5";
+import { IoCart, IoMenuOutline, IoPersonCircleOutline, IoSearchSharp, IoClose } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
@@ -38,6 +39,10 @@ const Header = () => {
     setIsWishlistOpen,
     setIsProfileOpen,
     isProfileOpen,
+    search,
+    setSearch,
+    isMobileCategoryOpen,
+    setIsMobileCategoryOpen,
   } = useContext(authContext);
   const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
     useContext(dataContext);
@@ -48,7 +53,9 @@ const Header = () => {
   const [walletDetails, setWalletDetails] = useState();
   const [showQRCode, setShowQRCode] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const navigate = useNavigate();
+  const searchInputRef = React.useRef(null);
 
   const pathParts = window.location.pathname.split("/");
   const lastPart = pathParts[pathParts.length - 1];
@@ -163,12 +170,19 @@ const Header = () => {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (search.trim()) {
+      navigate("/search");
+      setShowMobileSearch(false);
+    }
+  };
+
   return (
     <>
       <CategoriesMobile />
       {user && (
         <>
-          {" "}
           <Cart />
           <Wishlist />
           <SingleOrderForm />
@@ -176,185 +190,275 @@ const Header = () => {
           <ProfilePopup />
         </>
       )}
-      <div className="bg-[#8B33FE] border-b border-gray-500 bg-opacity-40  w-full py-1  flex items-center justify-between px-[2%] text-white overflow-hidden">
-        <div className="flex flex-wrap  sm:flex-nowrap sm:whitespace-nowrap items-center w-3/4 sm:w-auto overflow-hidden sm:overflow-visible">
-          <div className=" ">
-            <p className="text-[11px] text-gray-200 sm:text-[14.3px] ">
-              Welcome to PinkSurfing online eCommerce store.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center bg-[#8B33FE] bg-opacity-40 ">
-          <select className="bg-inherit border-none outline-none text-[11px] sm:text-[14px] mr-3   bg-[#8B33FE]">
-            <option>English</option>
-          </select>
-          <select
-            value={currency}
-            onChange={(e) => {
-              setCurrency(e.target.value);
-            }}
-            className="bg-inherit border-none outline-none text-[11px] sm:text-[14px]"
-          >
-            {Object.keys(currencyOptions).map((code) => (
-              <option key={code} value={currencyOptions[code].symbol} className="bg-[#8B33FE]">
-                {code}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="bg-[#8B33FE] bg-opacity-40 w-full py-3 flex items-center justify-between px-[2.4%] sm:px-[2%] text-white">
-        <Link to="/">
-          <div className="flex items-center gap-1 sm:gap-2">
-            <img src="logo.jpg" className="w-[48px] h-[48px]" alt="" />
-            {/* <p className="text-black font-bold text-[17px] sm:text-[19px] bg-white w-[24px] h-[24px] sm:w-[25px] sm:h-[25px] flex items-center justify-center rounded-full ">
-              P
-            </p> */}
-          </div>
-        </Link>
-
-        <div className="  flex items-center gap-5">
-          {isWalletOpen && (
-            <div className="flex items-center">
-              <p className="text-white mr-2 flex">
-                {selectedCurrency === "MYBIZ" ? "MYBIZ" : selectedCurrency}{" "}
-                <span className="hidden sm:block sm:text-white ml-1">
-                  Balance:
-                </span>
-              </p>
-              <p className=" text-white mr-1 sm:mr-3">${walletBalance}</p>
-              <FaWallet className="hidden sm:block sm:text-2xl cursor-pointer" />
-              <select
-                className="ml-2 p-1 bg-black text-white"
-                value={selectedCurrency}
-                onChange={(e) => setSelectedCurrency(e.target.value)}
-              >
-                <option value="BTC">BTC</option>
-                <option value="ETH">ETH</option>
-                <option value="USDT">USDT</option>
-                <option value="MYBIZ">MYBIZ</option>
-              </select>
-              <QRCode
-                value={getWalletAddress()}
-                className={`ml-2 ${!showQRCode && "cursor-pointer"}`}
-                size={32}
-                onClick={handleWalletClick}
+      
+      {/* Unified Compact Header */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="sticky top-0 z-40 glass bg-gradient-to-r from-purple-900/95 via-purple-800/95 to-pink-600/95 backdrop-blur-xl w-full py-3 sm:py-4 shadow-xl border-b border-white/10"
+      >
+        <div className="flex items-center justify-between px-[2%] sm:px-[3%] text-white">
+          {/* Logo */}
+          <Link to="/">
+            <motion.div 
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center"
+            >
+              <motion.img 
+                src="logo.jpg" 
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg ring-2 ring-white/20" 
+                alt="PinkSurfing Logo"
+                transition={{ duration: 0.6 }}
               />
-            </div>
-          )}
+            </motion.div>
+          </Link>
 
-          {showQRCode && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-              <div className="bg-white p-4 rounded">
-                <QRCode value={getWalletAddress()} size={256} />
+          {/* Right Section - All Actions */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Search Bar - Desktop */}
+            <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-xl mx-4">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-400 transition-all text-sm"
+                />
                 <button
-                  onClick={closeQRCode}
-                  className="mt-4 p-2 bg-red-500 text-white rounded"
+                  type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:text-purple-300 transition-colors"
                 >
-                  Close
+                  <IoSearchSharp className="text-xl" />
                 </button>
               </div>
+            </form>
+
+            {/* Mobile Search Icon */}
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="md:hidden"
+            >
+              <IoSearchSharp
+                onClick={() => setShowMobileSearch(true)}
+                className="text-2xl text-white cursor-pointer"
+              />
+            </motion.div>
+
+            {/* Language & Currency - Compact */}
+            <div className="hidden sm:flex items-center gap-2">
+              <select className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-xs px-2 py-1.5 hover:bg-white/20 transition-all cursor-pointer">
+                <option className="bg-purple-900 text-white">EN</option>
+              </select>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-xs px-2 py-1.5 hover:bg-white/20 transition-all cursor-pointer"
+              >
+                {Object.keys(currencyOptions).map((code) => (
+                  <option key={code} value={currencyOptions[code].symbol} className="bg-purple-900 text-white">
+                    {code}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
+            {/* Wallet Section */}
+            <AnimatePresence>
+              {isWalletOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-lg px-2 sm:px-3 py-1.5 border border-white/20"
+                >
+                  <p className="text-white text-xs font-semibold">
+                    {selectedCurrency === "MYBIZ" ? "MYBIZ" : selectedCurrency}
+                  </p>
+                  <motion.p 
+                    key={walletBalance}
+                    initial={{ scale: 1.2, color: "#fbbf24" }}
+                    animate={{ scale: 1, color: "#ffffff" }}
+                    className="text-white font-bold text-xs sm:text-sm"
+                  >
+                    ${walletBalance}
+                  </motion.p>
+                  
+                  <select
+                    className="bg-black/30 text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded border border-white/20 outline-none cursor-pointer"
+                    value={selectedCurrency}
+                    onChange={(e) => setSelectedCurrency(e.target.value)}
+                  >
+                    <option value="BTC">BTC</option>
+                    <option value="ETH">ETH</option>
+                    <option value="USDT">USDT</option>
+                    <option value="MYBIZ">MYBIZ</option>
+                  </select>
+                  
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <QRCode
+                      value={getWalletAddress()}
+                      className="cursor-pointer rounded"
+                      size={24}
+                      onClick={handleWalletClick}
+                    />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          {/* {isDarkMode ? (
-            <MdOutlineWbSunny
-              onClick={() => {
-                setIsDarkMode(false);
-              }}
-              className=" cursor-pointer -mr-2 text-[24px]"
-            />
-          ) : (
-            <IoIosMoon
-              onClick={() => {
-                setIsDarkMode(true);
-              }}
-              className=" cursor-pointer -mr-2 text-[24px]"
-            />
-          )} */}
+            {/* QR Code Modal */}
+            <AnimatePresence>
+              {showQRCode && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50"
+                  onClick={closeQRCode}
+                >
+                  <motion.div 
+                    initial={{ scale: 0.8, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.8, y: 20 }}
+                    className="glass bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="bg-white p-4 rounded-2xl shadow-inner">
+                      <QRCode value={getWalletAddress()} size={256} />
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={closeQRCode}
+                      className="mt-6 w-full py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-red-500/50 transition-all"
+                    >
+                      Close
+                    </motion.button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          {user && (
-            <div className=" relative">
-              <div className=" -mr-2 sm:mr-0 flex items-center gap-3">
-                <FaHeart
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    setIsWishlistOpen(true);
-                  }}
-                  className=" cursor-pointer text-[19px] sm:text-[20px]"
-                />
-                <div
+            {/* User Actions */}
+            {user && (
+              <div className="flex items-center gap-2 sm:gap-3">
+                <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                  <FaHeart
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      setIsWishlistOpen(true);
+                    }}
+                    className="cursor-pointer text-lg sm:text-xl text-pink-300 hover:text-pink-400 transition-colors"
+                  />
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.1 }} 
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     setIsProfileOpen(false);
                     setIsCartOpen(true);
                   }}
-                  className=" relative cursor-pointer "
+                  className="relative cursor-pointer"
                 >
-                  <span className=" bg-purple-200 px-[5px] sm:px-1.5 sm:py-[1px] absolute -top-2 sm:-top-3 -right-2 text-black text-[11px] font-bold rounded-full">
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="bg-gradient-to-r from-pink-500 to-purple-500 px-1.5 py-0.5 absolute -top-2 -right-2 text-white text-[9px] sm:text-[10px] font-bold rounded-full shadow-lg"
+                  >
                     {cartProducts.length}
-                  </span>
-                  <IoCart className=" cursor-pointer text-[22px] " />
-                </div>
+                  </motion.span>
+                  <IoCart className="cursor-pointer text-xl sm:text-2xl text-purple-200 hover:text-purple-300 transition-colors" />
+                </motion.div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className=" relative ">
-            <div
+            {/* Profile Section */}
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/profile")}
-              aria-label="avatar"
-              className="flex items-center cursor-pointer space-x-2 p-1 rounded-md"
+              className="flex items-center cursor-pointer gap-2 bg-white/10 backdrop-blur-md px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
             >
               {user.img ? (
-                <img
+                <motion.img
+                  whileHover={{ scale: 1.1 }}
                   src="https://avatars.githubusercontent.com/u/499550?v=4"
-                  alt="avatar Evan You"
-                  className=" w-8  h-8 sm:w-10 sm:h-10 shrink-0 rounded-full"
+                  alt="avatar"
+                  className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full ring-2 ring-white/30 shadow-lg"
                 />
               ) : (
-                <IoPersonCircleOutline className=" -ml-2 text-[29px] cursor-pointer" />
+                <IoPersonCircleOutline className="text-2xl sm:text-3xl text-purple-200" />
               )}
               {user && (
-                <div className="space-y-2 hidden sm:flex flex-col flex-1 truncate">
-                  <div className="font-medium relative text-lg  leading-tight text-white">
-                    <span className="flex flex-col">
-                      <p className=" text-[12.5px] text-white/70 -mb-1">
-                        Hello
-                      </p>
-                      <span className=" relative pr-1">
-                        {user?.first_name}
-                        <span
-                          aria-label="verified"
-                          className="absolute top-1/2 -translate-y-1/2 right-0 inline-block rounded-full"
-                        ></span>
-                      </span>
-                    </span>
-                  </div>
+                <div className="hidden sm:flex flex-col">
+                  <p className="text-[10px] text-white/60 leading-tight">Hello</p>
+                  <span className="text-xs font-semibold text-white leading-tight">
+                    {user?.first_name}
+                  </span>
                 </div>
               )}
-            </div>
-            {/* <div className="absolute top-14 right-0 z-50">
-              {isProfileOpen && <Profile user={user} />}
-            </div> */}
+            </motion.div>
+
+            {/* Shop by Categories Button */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsMobileCategoryOpen(!isMobileCategoryOpen)}
+              className="flex items-center justify-center cursor-pointer bg-white/10 backdrop-blur-md p-2 sm:p-2.5 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
+              title="Shop by Categories"
+            >
+              <IoMenuOutline className="text-xl sm:text-2xl text-purple-200 hover:text-white transition-colors" />
+            </motion.div>
           </div>
         </div>
-      </div>
-{/* 
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <img
-            src="/loading.svg"
-            alt="loading"
-            className="w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] object-contain"
-          />
-        </div>
-      )} */}
+      </motion.div>
 
-      {/* {isCategoryOpen && (
-        <div className=" hidden lg:block relative">
-          <Category />
-        </div>
-      )} */}
+      {/* Mobile Search Overlay */}
+      <AnimatePresence>
+        {showMobileSearch && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-start justify-center pt-4 px-4"
+          >
+            <motion.div
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              className="w-full max-w-2xl"
+            >
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  autoFocus
+                  className="w-full px-5 py-4 bg-white/10 backdrop-blur-md border-2 border-white/30 rounded-2xl outline-none text-white placeholder-gray-300 text-lg focus:ring-2 focus:ring-purple-400 transition-all"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-16 top-1/2 -translate-y-1/2 text-white hover:text-purple-300 transition-colors"
+                >
+                  <IoSearchSharp className="text-2xl" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMobileSearch(false)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-red-400 transition-colors"
+                >
+                  <IoClose className="text-3xl" />
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
