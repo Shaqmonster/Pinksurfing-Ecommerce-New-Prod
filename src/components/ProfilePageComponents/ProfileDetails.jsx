@@ -288,6 +288,9 @@ export default function ProfileDetails() {
                             >
                                 Your Store Link
                             </label>
+                            <p className="text-xs text-center text-gray-500 dark:text-gray-400 mb-2">
+                                You can use this as a clickable link to your store.
+                            </p>
                             <div className="w-full sm:w-3/4 mx-auto flex items-center gap-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4">
                                 <a
                                     href={`https://pinksurfing.com/store/${profile.vendor.slug}`}
