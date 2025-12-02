@@ -7,10 +7,11 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "../Loader";
-import { FaEdit } from 'react-icons/fa';
+import { FaEdit, FaCopy, FaCheck } from 'react-icons/fa';
 
 export default function ProfileDetails() {
     const [isEditing, setIsEditing] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const {
         isProfilePopupOpen,
@@ -117,6 +118,7 @@ export default function ProfileDetails() {
             })
             .then((response) => {
                 setProfile(response.data);
+                console.log(response.data);
             })
             .catch((error) => {
                 console.error(error);
@@ -177,6 +179,16 @@ export default function ProfileDetails() {
 
     const toggleEdit = () => {
         setIsEditing(!isEditing);
+    };
+
+    const handleCopyStoreLink = () => {
+        const storeUrl = `https://pinksurfing.com/store/${profile?.vendor?.slug}`;
+        navigator.clipboard.writeText(storeUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => {
+                setCopied(false);
+            }, 3000);
+        });
     };
 
     return (
@@ -267,6 +279,39 @@ export default function ProfileDetails() {
                             required
                         />
                     </div>
+
+                    {/* Store Link - Only show if vendor slug exists */}
+                    {profile?.vendor?.slug && (
+                        <div className="flex flex-col w-full">
+                            <label
+                                className="block text-xs font-bold uppercase text-center tracking-wider text-gray-700 dark:text-gray-300 mb-2"
+                            >
+                                Your Store Link
+                            </label>
+                            <div className="w-full sm:w-3/4 mx-auto flex items-center gap-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4">
+                                <a
+                                    href={`https://pinksurfing.com/store/${profile.vendor.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium text-sm break-all transition duration-200"
+                                >
+                                    pinksurfing.com/store/{profile.vendor.slug}
+                                </a>
+                                <button
+                                    type="button"
+                                    onClick={handleCopyStoreLink}
+                                    className="flex-shrink-0 p-2 text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 transition duration-200"
+                                    title={copied ? "Copied!" : "Copy to clipboard"}
+                                >
+                                    {copied ? (
+                                        <FaCheck className="w-4 h-4 text-green-500" />
+                                    ) : (
+                                        <FaCopy className="w-4 h-4" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                         <button
