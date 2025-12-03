@@ -70,13 +70,13 @@ function App() {
   const cookieAccess = getCookie("access_token");
 
   // If an access token cookie exists, redirect away from auth pages
-  useEffect(() => {
-    const protectedPaths = ["/signup", "/signin", "/forgotPassword"];
-    if (cookieAccess && protectedPaths.includes(location.pathname)) {
-      // Use replace so the back button doesn't go back to the auth page
-      window.location.replace("/");
-    }
-  }, [cookieAccess, location.pathname]);
+  // useEffect(() => {
+  //   const protectedPaths = ["/signup", "/signin", "/forgotPassword"];
+  //   if (cookieAccess && protectedPaths.includes(location.pathname)) {
+  //     // Use replace so the back button doesn't go back to the auth page
+  //     window.location.replace("/");
+  //   }
+  // }, [cookieAccess, location.pathname]);
 
   return (
     <main className={`${isDarkMode && "dark"} `}>
