@@ -64,7 +64,7 @@ export const subCategories = [
   },
   {
     id: "5",
-    name: "Jobs",
+    name: "Jobs/Gigs",
     category: "jobs",
     image: "/new/jobs.jpg",
     extraclass: "object-cover",

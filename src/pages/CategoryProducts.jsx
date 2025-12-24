@@ -45,6 +45,22 @@ export default function CategoryProducts() {
   const title = localStorage.getItem('category_name');
   const categorySlug = localStorage.getItem('category');
 
+  // Real Estate Specific Logic
+  const isRealEstate = categorySlug?.includes('real-estate') || title?.toLowerCase().includes('real estate');
+  const [realEstateFilters, setRealEstateFilters] = useState({
+    units_min: "", units_max: "",
+    sqft_min: "", sqft_max: "",
+    lot_size_min: "", lot_size_max: "",
+    year_built_min: "",
+    bedrooms_min: "", bathrooms_min: "",
+    has_garage: false, has_pool: false, is_waterfront: false,
+    listing_status: "",
+    created_within_days: ""
+  });
+  const [residentialSubcats, setResidentialSubcats] = useState([]);
+  const [commercialSubcats, setCommercialSubcats] = useState([]);
+  const [realEstateLoading, setRealEstateLoading] = useState(false);
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
@@ -90,6 +106,12 @@ export default function CategoryProducts() {
   // Filtered and sorted products using useMemo
   const filteredProducts = useMemo(() => {
     if (!shoppingProduct) return [];
+
+    // For Real Estate, server does the filtering, so we mostly pass through, unless we want to do client-side sorting
+    if (isRealEstate) {
+      return shoppingProduct.sort(handleSort(sortMethod));
+    }
+
     return shoppingProduct
       .filter((i) => {
         const price = Number(i.unit_price) || 0;
@@ -99,7 +121,7 @@ export default function CategoryProducts() {
         return priceFilterResult && categoryFilterReturn;
       })
       .sort(handleSort(sortMethod));
-  }, [shoppingProduct, minValue, maximumValue, categoryFilter, sortMethod]);
+  }, [shoppingProduct, minValue, maximumValue, categoryFilter, sortMethod, isRealEstate]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -154,8 +176,82 @@ export default function CategoryProducts() {
     };
 
     setCategoryFilter("all");
-    getFilterProducts();
-  }, [categorySlug]);
+
+    if (isRealEstate) {
+      // Real Estate Specific Intialization
+      const fetchRealEstateSubcats = async () => {
+        try {
+          const [resSub, commSub] = await Promise.all([
+            axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/residential-real-estate/`),
+            axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/commercial-real-estate/`)
+          ]);
+          setResidentialSubcats(resSub.data.sort((a, b) => a.name.localeCompare(b.name)));
+          setCommercialSubcats(commSub.data.sort((a, b) => a.name.localeCompare(b.name)));
+        } catch (e) {
+          console.error("Error fetching RE subcats", e);
+        }
+      };
+      fetchRealEstateSubcats();
+      // Initial fetch handled by the effect below watching filters
+    } else {
+      getFilterProducts();
+    }
+  }, [categorySlug, isRealEstate]);
+
+  // Real Estate Fetch Logic
+  useEffect(() => {
+    if (!isRealEstate) return;
+
+    const fetchFilteredRealEstate = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+
+        // Base Category/Subcategory
+        if (categoryFilter !== 'all') {
+          // If a specific subcategory is selected, use that
+          // We need to find the slug for the selected name. 
+          // Ideally CategoryOnlyData would store objects, but it stores names.
+          // We'll try to find it in our lists.
+          const sub = [...residentialSubcats, ...commercialSubcats].find(s => s.name === categoryFilter);
+          if (sub) {
+            params.append('subcategory_slug', sub.slug);
+          } else {
+            // Fallback if we can't find slug, though we should be able to.
+            // Maybe it's a top level category selection like "Commercial Real Estate" logic?
+            // For now, if "all", we default to the main category slug.
+          }
+        } else {
+          params.append('category_slug', categorySlug);
+        }
+
+        // Price
+        if (minValue > 0) params.append('min_price', minValue);
+        if (maximumValue < maxValue) params.append('max_price', maximumValue);
+
+        // RE Specifics
+        Object.entries(realEstateFilters).forEach(([key, value]) => {
+          if (value !== "" && value !== false) {
+            params.append(key, value);
+          }
+        });
+
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/filter?${params.toString()}`);
+        setShoppingProducts(response.data);
+      } catch (error) {
+        console.error("Failed to fetch filtered RE products", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      fetchFilteredRealEstate();
+    }, 500); // Debounce
+
+    return () => clearTimeout(timeoutId);
+
+  }, [isRealEstate, categoryFilter, realEstateFilters, minValue, maximumValue, categorySlug]);
 
   // Get max price
   useEffect(() => {
@@ -205,7 +301,7 @@ export default function CategoryProducts() {
   };
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? "dark bg-[#0A0B0E]" : "bg-gradient-to-br from-slate-50 via-white to-purple-50"}`}>      
+    <div className={`min-h-screen ${isDarkMode ? "dark bg-[#0A0B0E]" : "bg-gradient-to-br from-slate-50 via-white to-purple-50"}`}>
       {/* Subtle Background Gradient */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px]"></div>
@@ -267,11 +363,10 @@ export default function CategoryProducts() {
                             setCategoryFilter(subcategory === "all" ? "all" : subcategory);
                             setMobileFiltersOpen(false);
                           }}
-                          className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${
-                            subcategory === categoryFilter
-                              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                          }`}
+                          className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${subcategory === categoryFilter
+                            ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                            }`}
                         >
                           {subcategory}
                         </button>
@@ -294,11 +389,10 @@ export default function CategoryProducts() {
                             setSortName(option.name);
                             setMobileFiltersOpen(false);
                           }}
-                          className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-                            option.value === sortMethod
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                          }`}
+                          className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center gap-2 ${option.value === sortMethod
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                            }`}
                         >
                           <span>{option.icon}</span>
                           {option.name}
@@ -380,22 +474,20 @@ export default function CategoryProducts() {
                 <div className="flex items-center p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl">
                   <button
                     onClick={() => setIsCard(true)}
-                    className={`p-2.5 rounded-lg transition-all duration-300 ${
-                      isCard
-                        ? "bg-white dark:bg-gray-700 text-purple-600 shadow-md"
-                        : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${isCard
+                      ? "bg-white dark:bg-gray-700 text-purple-600 shadow-md"
+                      : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
                     title="Grid View"
                   >
                     <HiMiniSquares2X2 className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setIsCard(false)}
-                    className={`p-2.5 rounded-lg transition-all duration-300 ${
-                      !isCard
-                        ? "bg-white dark:bg-gray-700 text-purple-600 shadow-md"
-                        : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${!isCard
+                      ? "bg-white dark:bg-gray-700 text-purple-600 shadow-md"
+                      : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
                     title="List View"
                   >
                     <AiOutlineBars className="w-5 h-5" />
@@ -426,11 +518,10 @@ export default function CategoryProducts() {
                                 setSortMethod(option.value);
                                 setSortName(option.name);
                               }}
-                              className={`${
-                                active || option.value === sortMethod
-                                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                  : "text-gray-700 dark:text-gray-300"
-                              } flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200`}
+                              className={`${active || option.value === sortMethod
+                                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                : "text-gray-700 dark:text-gray-300"
+                                } flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200`}
                             >
                               <span className="text-lg">{option.icon}</span>
                               {option.name}
@@ -460,7 +551,7 @@ export default function CategoryProducts() {
           {/* Sidebar - Desktop */}
           <aside className="hidden lg:block space-y-4">
             {/* Subcategories */}
-            <div className="glass-card p-4 rounded-xl sticky top-24">
+            <div className="glass-card p-4 rounded-xl">
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -469,26 +560,78 @@ export default function CategoryProducts() {
                 </div>
                 Subcategories
               </h3>
-              <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCategoryFilter(subcategory === "all" ? "all" : subcategory)}
-                    className={`group w-full px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center justify-between ${
-                      subcategory === categoryFilter
+
+              {!isRealEstate ? (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                  {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCategoryFilter(subcategory === "all" ? "all" : subcategory)}
+                      className={`group w-full px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center justify-between ${subcategory === categoryFilter
                         ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md"
                         : "bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}
+                        }`}
+                    >
+                      <span className="capitalize">{subcategory}</span>
+                      {subcategory === categoryFilter && (
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                  <button
+                    onClick={() => setCategoryFilter("all")}
+                    className={`w-full px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${categoryFilter === "all"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md"
+                      : "bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                      }`}
                   >
-                    <span className="capitalize">{subcategory}</span>
-                    {subcategory === categoryFilter && (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
+                    All Real Estate
                   </button>
-                ))}
-              </div>
+
+                  {/* Residential Group */}
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Residential</h4>
+                    <div className="space-y-1">
+                      {residentialSubcats.map((sub, idx) => (
+                        <button
+                          key={`res-${idx}`}
+                          onClick={() => setCategoryFilter(sub.name)}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${categoryFilter === sub.name
+                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 font-medium"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            }`}
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Commercial Group */}
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Commercial</h4>
+                    <div className="space-y-1">
+                      {commercialSubcats.map((sub, idx) => (
+                        <button
+                          key={`comm-${idx}`}
+                          onClick={() => setCategoryFilter(sub.name)}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${categoryFilter === sub.name
+                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 font-medium"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            }`}
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Price Range */}
@@ -499,7 +642,7 @@ export default function CategoryProducts() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                Price Range
+                {isRealEstate ? "Price Range" : "Price Range"}
               </h3>
               <div className="mt-4">
                 <MultiRangeSlider
@@ -521,15 +664,170 @@ export default function CategoryProducts() {
                 <div className="flex justify-between mt-4 gap-2">
                   <div className="flex-1 p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-center">
                     <span className="text-xs text-purple-600 dark:text-purple-400">Min</span>
-                    <p className="text-lg font-bold text-purple-700 dark:text-purple-300">${minValue}</p>
+                    <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                      ${minValue.toLocaleString()}
+                    </p>
                   </div>
                   <div className="flex-1 p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-center">
                     <span className="text-xs text-pink-600 dark:text-pink-400">Max</span>
-                    <p className="text-lg font-bold text-pink-700 dark:text-pink-300">${maximumValue}</p>
+                    <p className="text-lg font-bold text-pink-700 dark:text-pink-300">
+                      ${maximumValue.toLocaleString()}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Real Estate Specific Filters */}
+            {isRealEstate && (
+              <div className="space-y-4">
+                {/* Size & Structure */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Size & Structure</h3>
+
+                  {/* Square Feet */}
+                  <div className="mb-4">
+                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Square Feet</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                        value={realEstateFilters.sqft_min}
+                        onChange={e => setRealEstateFilters({ ...realEstateFilters, sqft_min: e.target.value })}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                        value={realEstateFilters.sqft_max}
+                        onChange={e => setRealEstateFilters({ ...realEstateFilters, sqft_max: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Beds & Baths */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Min Beds</label>
+                      <select
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                        value={realEstateFilters.bedrooms_min}
+                        onChange={e => setRealEstateFilters({ ...realEstateFilters, bedrooms_min: e.target.value })}
+                      >
+                        <option value="">Any</option>
+                        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}+</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Min Baths</label>
+                      <select
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                        value={realEstateFilters.bathrooms_min}
+                        onChange={e => setRealEstateFilters({ ...realEstateFilters, bathrooms_min: e.target.value })}
+                      >
+                        <option value="">Any</option>
+                        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}+</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Year Built */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Year Built (Min)</label>
+                    <input
+                      type="number"
+                      placeholder="Year (e.g. 2020)"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={realEstateFilters.year_built_min}
+                      onChange={e => setRealEstateFilters({ ...realEstateFilters, year_built_min: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Commercial / Multi-Family */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Units (Commercial)</h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min Units"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={realEstateFilters.units_min}
+                      onChange={e => setRealEstateFilters({ ...realEstateFilters, units_min: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max Units"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={realEstateFilters.units_max}
+                      onChange={e => setRealEstateFilters({ ...realEstateFilters, units_max: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Amenities */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Amenities</h3>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'has_garage', label: 'Garage' },
+                      { id: 'has_pool', label: 'Swimming Pool' },
+                      { id: 'is_waterfront', label: 'Waterfront' },
+                    ].map(item => (
+                      <label key={item.id} className="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 transition-all"
+                          checked={realEstateFilters[item.id]}
+                          onChange={e => setRealEstateFilters({ ...realEstateFilters, [item.id]: e.target.checked })}
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                          {item.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status & Dates */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Status & Dates</h3>
+
+                  <div className="mb-4">
+                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Listing Status</label>
+                    <select
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={realEstateFilters.listing_status}
+                      onChange={e => setRealEstateFilters({ ...realEstateFilters, listing_status: e.target.value })}
+                    >
+                      <option value="">Any Status</option>
+                      <option value="For Sale">For Sale</option>
+                      <option value="For Rent">For Rent</option>
+                      <option value="New Construction">New Construction</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Sold">Sold</option>
+                      <option value="Foreclosure">Foreclosure</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Listed</label>
+                    <select
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={realEstateFilters.created_within_days}
+                      onChange={e => setRealEstateFilters({ ...realEstateFilters, created_within_days: e.target.value })}
+                    >
+                      <option value="">Any Time</option>
+                      <option value="1">Last 24 Hours</option>
+                      <option value="3">Last 3 Days</option>
+                      <option value="7">Last 7 Days</option>
+                      <option value="30">Last 30 Days</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Quick Filters */}
             {filters.some(f => f.options.length > 0) && (
@@ -556,11 +854,10 @@ export default function CategoryProducts() {
                               <button
                                 key={idx}
                                 onClick={() => setFilterBy(option === filterBy ? "" : option)}
-                                className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-all duration-300 ${
-                                  option === filterBy
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                                }`}
+                                className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-all duration-300 ${option === filterBy
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  }`}
                               >
                                 {option}
                               </button>
@@ -618,7 +915,7 @@ export default function CategoryProducts() {
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Showing <span className="font-bold text-purple-600 dark:text-purple-400">{startIndex + 1}-{Math.min(endIndex, filteredProducts.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{filteredProducts.length}</span> products
                   </p>
-                  
+
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-gray-500 dark:text-gray-400">Show:</span>
                     <select
@@ -638,11 +935,10 @@ export default function CategoryProducts() {
                 </div>
 
                 {/* Products Grid */}
-                <div className={`grid gap-4 sm:gap-6 ${
-                  isCard
-                    ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                    : "grid-cols-1 sm:grid-cols-2"
-                }`}>
+                <div className={`grid gap-4 sm:gap-6 ${isCard
+                  ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "grid-cols-1 sm:grid-cols-2"
+                  }`}>
                   {currentProducts.map((product) => (
                     <ProductCard key={product.id} product={product} isCard={isCard} />
                   ))}
@@ -673,11 +969,10 @@ export default function CategoryProducts() {
                             <button
                               key={page}
                               onClick={() => goToPage(page)}
-                              className={`relative w-12 h-12 rounded-xl font-semibold text-sm transition-all duration-300 overflow-hidden ${
-                                currentPage === page
-                                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 scale-110"
-                                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                              }`}
+                              className={`relative w-12 h-12 rounded-xl font-semibold text-sm transition-all duration-300 overflow-hidden ${currentPage === page
+                                ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 scale-110"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                }`}
                             >
                               <span className="relative">{page}</span>
                             </button>
