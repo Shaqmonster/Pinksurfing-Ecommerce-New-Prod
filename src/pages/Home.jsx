@@ -101,9 +101,9 @@ const Home = () => {
 
     // Check if user is already a vendor
     const isVendor = user.is_vendor || localStorage.getItem("user.vendorAccess") === "true";
-    
+
     if (isVendor) {
-        window.open("https://vendors.pinksurfing.com", "_blank");
+      window.open("https://vendors.pinksurfing.com", "_blank");
     } else {
       // Show vendor registration dialog
       setIsVendorDialogOpen(true);
@@ -175,7 +175,7 @@ const Home = () => {
   // Submit vendor registration
   const handleVendorRegistration = async (e) => {
     e.preventDefault();
-    
+
     if (!cookies.access_token) {
       toast.error("Please sign in first");
       navigate("/signin");
@@ -194,7 +194,7 @@ const Home = () => {
     formData.append("state", vendorFormData.state);
     formData.append("country", vendorFormData.country);
     formData.append("zip_code", vendorFormData.zip_code);
-    
+
     // Add store image if selected
     if (storeImage) {
       formData.append("shop_image", storeImage);
@@ -213,10 +213,10 @@ const Home = () => {
       );
 
       console.log("Vendor registration response:", response.data);
-      
+
       // Update localStorage
       localStorage.setItem("vendorAccess", "true");
-      
+
       toast.success("Congratulations! You're now a vendor on Pinksurfing", {
         position: "top-center",
         autoClose: 3000,
@@ -233,8 +233,8 @@ const Home = () => {
     } catch (error) {
       console.error("Vendor registration error:", error);
       toast.error(
-        error.response?.data?.message || 
-        error.response?.data?.status || 
+        error.response?.data?.message ||
+        error.response?.data?.status ||
         "Unable to register as vendor. Please try again.",
         {
           position: "top-center",
@@ -257,7 +257,7 @@ const Home = () => {
           }
         );
         setStores(storesResponse.data.stores);
-        console.log(storesResponse.data.stores);  
+        console.log(storesResponse.data.stores);
       } catch (error) {
         console.error(error);
       } finally {
@@ -344,7 +344,7 @@ const Home = () => {
     <>
       {/* Main Container */}
       <div className="w-full min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#13131a] to-[#0a0a0f] relative overflow-hidden">
-        
+
         {/* Simple Static Background */}
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-[100px]"></div>
@@ -420,11 +420,10 @@ const Home = () => {
                 <button
                   key={index}
                   onClick={() => setCategoryCarouselIndex(index)}
-                  className={`transition-all duration-300 rounded-full ${
-                    categoryCarouselIndex === index
-                      ? "w-8 h-3 bg-gradient-to-r from-purple-500 to-pink-500"
-                      : "w-3 h-3 bg-white/30 hover:bg-white/50"
-                  }`}
+                  className={`transition-all duration-300 rounded-full ${categoryCarouselIndex === index
+                    ? "w-8 h-3 bg-gradient-to-r from-purple-500 to-pink-500"
+                    : "w-3 h-3 bg-white/30 hover:bg-white/50"
+                    }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
@@ -506,10 +505,16 @@ const Home = () => {
                   <div
                     key={item.id}
                     onClick={() => {
-                      setCategory(item.category.toLowerCase());
-                      localStorage.setItem("category", item.category.toLowerCase());
-                      localStorage.setItem("category_name", item.name);
-                      navigate(`/categoryProducts`);
+                      console.log(item.id);
+                      if (item.id == 5) {
+                        console.log("Gigs Pro");
+                        window.location.href = "https://gighub.pinksurfing.com/";
+                      } else {
+                        setCategory(item.category.toLowerCase());
+                        localStorage.setItem("category", item.category.toLowerCase());
+                        localStorage.setItem("category_name", item.name);
+                        navigate(`/categoryProducts`);
+                      }
                     }}
                     className="cursor-pointer group"
                   >
@@ -584,11 +589,10 @@ const Home = () => {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                    selectedCategory === category.id
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-                      : "bg-white/5 border border-white/10 text-gray-300 hover:border-purple-500/50"
-                  }`}
+                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${selectedCategory === category.id
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                    : "bg-white/5 border border-white/10 text-gray-300 hover:border-purple-500/50"
+                    }`}
                 >
                   {category.name}
                 </button>
@@ -771,7 +775,7 @@ const Home = () => {
                           onChange={handleStoreImageChange}
                           className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white/5 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white hover:file:from-purple-600 hover:file:to-pink-600 file:cursor-pointer transition-all"
                         />
-                        
+
                         {storeImagePreview && (
                           <div className="relative inline-block">
                             <img
