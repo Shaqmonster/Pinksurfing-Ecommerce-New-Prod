@@ -31,7 +31,11 @@ export default function CategoriesMobile() {
         );
 
         const fetchedCategories = categoryResponse.data;
-        setCategories(fetchedCategories);
+        // Sort categories alphabetically by name
+        const sortedCategories = [...fetchedCategories].sort((a, b) => 
+          a.name.localeCompare(b.name)
+        );
+        setCategories(sortedCategories);
 
         // Initialize subcategories object
         const fetchedSubcategories = {};
