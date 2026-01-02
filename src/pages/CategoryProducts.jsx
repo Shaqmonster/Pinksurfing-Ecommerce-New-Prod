@@ -46,17 +46,56 @@ export default function CategoryProducts() {
   const categorySlug = localStorage.getItem('category');
 
   // Real Estate Specific Logic
-  const isRealEstate = categorySlug?.includes('real-estate') || title?.toLowerCase().includes('real estate');
-  const [realEstateFilters, setRealEstateFilters] = useState({
-    units_min: "", units_max: "",
-    sqft_min: "", sqft_max: "",
-    lot_size_min: "", lot_size_max: "",
+  const isResidentialRealEstate = categorySlug === 'residential-real-estate' || title?.toLowerCase().includes('residential real estate');
+  const isCommercialRealEstate = categorySlug === 'commercial-real-estate' || title?.toLowerCase().includes('commercial real estate');
+  const isRealEstate = isResidentialRealEstate || isCommercialRealEstate;
+
+  // Residential Real Estate Filters
+  const [residentialFilters, setResidentialFilters] = useState({
+    // Price filters
+    min_price: "",
+    max_price: "",
+    // Listing date filters
+    created_within_days: "",
+    created_after_days: "",
+    // Price per sqft
+    price_per_sqft_min: "",
+    price_per_sqft_max: "",
+    // Bedroom/Bathroom
+    bedrooms_min: "",
+    bedrooms_max: "",
+    bathrooms_min: "",
+    bathrooms_max: "",
+    // Property size
+    sqft_min: "",
+    sqft_max: "",
+    // Lot size
+    lot_size_min: "",
+    lot_size_max: "",
+    // Year built (min only)
     year_built_min: "",
-    bedrooms_min: "", bathrooms_min: "",
-    has_garage: false, has_pool: false, is_waterfront: false,
+    // Amenities (checkboxes)
+    is_waterfront: false,
+    has_garage: false,
+    is_single_story: false,
+    has_pool: false,
+    // Listing status
+    listing_status: ""
+  });
+
+  // Commercial Real Estate Filters
+  const [commercialFilters, setCommercialFilters] = useState({
+    units_min: "",
+    units_max: "",
+    sqft_min: "",
+    sqft_max: "",
+    lot_size_min: "",
+    lot_size_max: "",
+    year_built_min: "",
     listing_status: "",
     created_within_days: ""
   });
+
   const [residentialSubcats, setResidentialSubcats] = useState([]);
   const [commercialSubcats, setCommercialSubcats] = useState([]);
   const [realEstateLoading, setRealEstateLoading] = useState(false);
@@ -82,8 +121,8 @@ export default function CategoryProducts() {
     { name: "Newest", value: "date", icon: "🆕" },
     { name: "Price: Low to High", value: "ascPrice", icon: "💰" },
     { name: "Price: High to Low", value: "descPrice", icon: "💎" },
-    { name: "Name: A to Z", value: "ascName", icon: "🔤" },
-    { name: "Name: Z to A", value: "descName", icon: "🔠" },
+    // { name: "Name: A to Z", value: "ascName", icon: "🔤" },
+    // { name: "Name: Z to A", value: "descName", icon: "🔠" },
   ];
 
   const handleSort = (sortMethod) => {
@@ -178,15 +217,20 @@ export default function CategoryProducts() {
     setCategoryFilter("all");
 
     if (isRealEstate) {
-      // Real Estate Specific Intialization
+      // Real Estate Specific Initialization
       const fetchRealEstateSubcats = async () => {
         try {
-          const [resSub, commSub] = await Promise.all([
-            axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/residential-real-estate/`),
-            axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/commercial-real-estate/`)
-          ]);
-          setResidentialSubcats(resSub.data.sort((a, b) => a.name.localeCompare(b.name)));
-          setCommercialSubcats(commSub.data.sort((a, b) => a.name.localeCompare(b.name)));
+          if (isResidentialRealEstate) {
+            const resSub = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/residential-real-estate/`);
+            setResidentialSubcats(resSub.data.sort((a, b) => a.name.localeCompare(b.name)));
+            setSubcategories(resSub.data.sort((a, b) => a.name.localeCompare(b.name)));
+            setCategoryOnlyData(["all", ...resSub.data.map(subcat => subcat.name)]);
+          } else if (isCommercialRealEstate) {
+            const commSub = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/commercial-real-estate/`);
+            setCommercialSubcats(commSub.data.sort((a, b) => a.name.localeCompare(b.name)));
+            setSubcategories(commSub.data.sort((a, b) => a.name.localeCompare(b.name)));
+            setCategoryOnlyData(["all", ...commSub.data.map(subcat => subcat.name)]);
+          }
         } catch (e) {
           console.error("Error fetching RE subcats", e);
         }
@@ -209,32 +253,70 @@ export default function CategoryProducts() {
 
         // Base Category/Subcategory
         if (categoryFilter !== 'all') {
-          // If a specific subcategory is selected, use that
-          // We need to find the slug for the selected name. 
-          // Ideally CategoryOnlyData would store objects, but it stores names.
-          // We'll try to find it in our lists.
-          const sub = [...residentialSubcats, ...commercialSubcats].find(s => s.name === categoryFilter);
+          // Find the slug for the selected subcategory name
+          const subcatList = isResidentialRealEstate ? residentialSubcats : commercialSubcats;
+          const sub = subcatList.find(s => s.name === categoryFilter);
           if (sub) {
             params.append('subcategory_slug', sub.slug);
-          } else {
-            // Fallback if we can't find slug, though we should be able to.
-            // Maybe it's a top level category selection like "Commercial Real Estate" logic?
-            // For now, if "all", we default to the main category slug.
           }
         } else {
           params.append('category_slug', categorySlug);
         }
 
-        // Price
-        if (minValue > 0) params.append('min_price', minValue);
-        if (maximumValue < maxValue) params.append('max_price', maximumValue);
+        if (isResidentialRealEstate) {
+          // Apply Residential Filters
+          // Price
+          if (residentialFilters.min_price) params.append('min_price', residentialFilters.min_price);
+          if (residentialFilters.max_price) params.append('max_price', residentialFilters.max_price);
+          
+          // Listing date filters
+          if (residentialFilters.created_within_days) params.append('created_within_days', residentialFilters.created_within_days);
+          if (residentialFilters.created_after_days) params.append('created_after_days', residentialFilters.created_after_days);
+          
+          // Price per sqft
+          if (residentialFilters.price_per_sqft_min) params.append('price_per_sqft_min', residentialFilters.price_per_sqft_min);
+          if (residentialFilters.price_per_sqft_max) params.append('price_per_sqft_max', residentialFilters.price_per_sqft_max);
+          
+          // Bedrooms
+          if (residentialFilters.bedrooms_min) params.append('bedrooms_min', residentialFilters.bedrooms_min);
+          if (residentialFilters.bedrooms_max) params.append('bedrooms_max', residentialFilters.bedrooms_max);
+          
+          // Bathrooms
+          if (residentialFilters.bathrooms_min) params.append('bathrooms_min', residentialFilters.bathrooms_min);
+          if (residentialFilters.bathrooms_max) params.append('bathrooms_max', residentialFilters.bathrooms_max);
+          
+          // Property size (sqft)
+          if (residentialFilters.sqft_min) params.append('sqft_min', residentialFilters.sqft_min);
+          if (residentialFilters.sqft_max) params.append('sqft_max', residentialFilters.sqft_max);
+          
+          // Lot size
+          if (residentialFilters.lot_size_min) params.append('lot_size_min', residentialFilters.lot_size_min);
+          if (residentialFilters.lot_size_max) params.append('lot_size_max', residentialFilters.lot_size_max);
+          
+          // Year built (min only)
+          if (residentialFilters.year_built_min) params.append('year_built_min', residentialFilters.year_built_min);
+          
+          // Amenities (checkboxes - only add if true)
+          if (residentialFilters.is_waterfront) params.append('is_waterfront', 'true');
+          if (residentialFilters.has_garage) params.append('has_garage', 'true');
+          if (residentialFilters.is_single_story) params.append('is_single_story', 'true');
+          if (residentialFilters.has_pool) params.append('has_pool', 'true');
+          
+          // Listing status
+          if (residentialFilters.listing_status) params.append('listing_status', residentialFilters.listing_status);
 
-        // RE Specifics
-        Object.entries(realEstateFilters).forEach(([key, value]) => {
-          if (value !== "" && value !== false) {
-            params.append(key, value);
-          }
-        });
+        } else if (isCommercialRealEstate) {
+          // Apply Commercial Filters
+          if (commercialFilters.units_min) params.append('units_min', commercialFilters.units_min);
+          if (commercialFilters.units_max) params.append('units_max', commercialFilters.units_max);
+          if (commercialFilters.sqft_min) params.append('sqft_min', commercialFilters.sqft_min);
+          if (commercialFilters.sqft_max) params.append('sqft_max', commercialFilters.sqft_max);
+          if (commercialFilters.lot_size_min) params.append('lot_size_min', commercialFilters.lot_size_min);
+          if (commercialFilters.lot_size_max) params.append('lot_size_max', commercialFilters.lot_size_max);
+          if (commercialFilters.year_built_min) params.append('year_built_min', commercialFilters.year_built_min);
+          if (commercialFilters.listing_status) params.append('listing_status', commercialFilters.listing_status);
+          if (commercialFilters.created_within_days) params.append('created_within_days', commercialFilters.created_within_days);
+        }
 
         const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/filter?${params.toString()}`);
         setShoppingProducts(response.data);
@@ -251,7 +333,7 @@ export default function CategoryProducts() {
 
     return () => clearTimeout(timeoutId);
 
-  }, [isRealEstate, categoryFilter, realEstateFilters, minValue, maximumValue, categorySlug]);
+  }, [isRealEstate, isResidentialRealEstate, isCommercialRealEstate, categoryFilter, residentialFilters, commercialFilters, categorySlug, residentialSubcats, commercialSubcats]);
 
   // Get max price
   useEffect(() => {
@@ -582,7 +664,7 @@ export default function CategoryProducts() {
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                   <button
                     onClick={() => setCategoryFilter("all")}
                     className={`w-full px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${categoryFilter === "all"
@@ -590,51 +672,30 @@ export default function CategoryProducts() {
                       : "bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300"
                       }`}
                   >
-                    All Real Estate
+                    All {isResidentialRealEstate ? 'Residential' : 'Commercial'} Properties
                   </button>
 
-                  {/* Residential Group */}
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Residential</h4>
-                    <div className="space-y-1">
-                      {residentialSubcats.map((sub, idx) => (
-                        <button
-                          key={`res-${idx}`}
-                          onClick={() => setCategoryFilter(sub.name)}
-                          className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${categoryFilter === sub.name
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 font-medium"
-                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            }`}
-                        >
-                          {sub.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Commercial Group */}
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Commercial</h4>
-                    <div className="space-y-1">
-                      {commercialSubcats.map((sub, idx) => (
-                        <button
-                          key={`comm-${idx}`}
-                          onClick={() => setCategoryFilter(sub.name)}
-                          className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${categoryFilter === sub.name
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 font-medium"
-                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            }`}
-                        >
-                          {sub.name}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Subcategories for the selected real estate type */}
+                  <div className="space-y-1 mt-2">
+                    {(isResidentialRealEstate ? residentialSubcats : commercialSubcats).map((sub, idx) => (
+                      <button
+                        key={`subcat-${idx}`}
+                        onClick={() => setCategoryFilter(sub.name)}
+                        className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${categoryFilter === sub.name
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 font-medium"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          }`}
+                      >
+                        {sub.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Price Range */}
+            {/* Price Range - Show only for non-real estate categories */}
+            {!isRealEstate && (
             <div className="glass-card p-4 rounded-xl">
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -642,7 +703,7 @@ export default function CategoryProducts() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                {isRealEstate ? "Price Range" : "Price Range"}
+                Price Range
               </h3>
               <div className="mt-4">
                 <MultiRangeSlider
@@ -677,110 +738,231 @@ export default function CategoryProducts() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Real Estate Specific Filters */}
-            {isRealEstate && (
+            {isResidentialRealEstate && (
               <div className="space-y-4">
-                {/* Size & Structure */}
+                {/* Price Range */}
                 <div className="glass-card p-4 rounded-xl">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Size & Structure</h3>
-
-                  {/* Square Feet */}
-                  <div className="mb-4">
-                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Square Feet</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                        value={realEstateFilters.sqft_min}
-                        onChange={e => setRealEstateFilters({ ...realEstateFilters, sqft_min: e.target.value })}
-                      />
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                        value={realEstateFilters.sqft_max}
-                        onChange={e => setRealEstateFilters({ ...realEstateFilters, sqft_max: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Beds & Baths */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Min Beds</label>
-                      <select
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                        value={realEstateFilters.bedrooms_min}
-                        onChange={e => setRealEstateFilters({ ...realEstateFilters, bedrooms_min: e.target.value })}
-                      >
-                        <option value="">Any</option>
-                        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}+</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Min Baths</label>
-                      <select
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                        value={realEstateFilters.bathrooms_min}
-                        onChange={e => setRealEstateFilters({ ...realEstateFilters, bathrooms_min: e.target.value })}
-                      >
-                        <option value="">Any</option>
-                        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}+</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Year Built */}
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Year Built (Min)</label>
-                    <input
-                      type="number"
-                      placeholder="Year (e.g. 2020)"
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                      value={realEstateFilters.year_built_min}
-                      onChange={e => setRealEstateFilters({ ...realEstateFilters, year_built_min: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                {/* Commercial / Multi-Family */}
-                <div className="glass-card p-4 rounded-xl">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Units (Commercial)</h3>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    Price
+                  </h3>
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="Min Units"
+                      placeholder="Min ($)"
                       className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                      value={realEstateFilters.units_min}
-                      onChange={e => setRealEstateFilters({ ...realEstateFilters, units_min: e.target.value })}
+                      value={residentialFilters.min_price}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, min_price: e.target.value })}
                     />
                     <input
                       type="number"
-                      placeholder="Max Units"
+                      placeholder="Max ($)"
                       className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                      value={realEstateFilters.units_max}
-                      onChange={e => setRealEstateFilters({ ...realEstateFilters, units_max: e.target.value })}
+                      value={residentialFilters.max_price}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, max_price: e.target.value })}
                     />
                   </div>
                 </div>
 
-                {/* Amenities */}
+                {/* Listing Date Filters */}
                 <div className="glass-card p-4 rounded-xl">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Amenities</h3>
-                  <div className="space-y-2">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    Listing Date
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Listed Within</label>
+                      <select
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                        value={residentialFilters.created_within_days}
+                        onChange={e => setResidentialFilters({ ...residentialFilters, created_within_days: e.target.value })}
+                      >
+                        <option value="">Any Time</option>
+                        <option value="1">Last 24 Hours</option>
+                        <option value="3">Last 3 Days</option>
+                        <option value="7">Last 7 Days</option>
+                        <option value="14">Last 14 Days</option>
+                        <option value="30">Last 30 Days</option>
+                        <option value="60">Last 60 Days</option>
+                        <option value="90">Last 90 Days</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Listed After (days ago)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 7"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                        value={residentialFilters.created_after_days}
+                        onChange={e => setResidentialFilters({ ...residentialFilters, created_after_days: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price Per Square Feet */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                    Price per Sq Ft
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min ($/sqft)"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={residentialFilters.price_per_sqft_min}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, price_per_sqft_min: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max ($/sqft)"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={residentialFilters.price_per_sqft_max}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, price_per_sqft_max: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Bedrooms & Bathrooms */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
+                    Bedrooms & Bathrooms
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Bedrooms</label>
+                      <div className="flex gap-2">
+                        <select
+                          className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                          value={residentialFilters.bedrooms_min}
+                          onChange={e => setResidentialFilters({ ...residentialFilters, bedrooms_min: e.target.value })}
+                        >
+                          <option value="">Min</option>
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n}+</option>)}
+                        </select>
+                        <select
+                          className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                          value={residentialFilters.bedrooms_max}
+                          onChange={e => setResidentialFilters({ ...residentialFilters, bedrooms_max: e.target.value })}
+                        >
+                          <option value="">Max</option>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 10].map(n => <option key={n} value={n}>{n}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">Bathrooms</label>
+                      <div className="flex gap-2">
+                        <select
+                          className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                          value={residentialFilters.bathrooms_min}
+                          onChange={e => setResidentialFilters({ ...residentialFilters, bathrooms_min: e.target.value })}
+                        >
+                          <option value="">Min</option>
+                          {[1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6].map(n => <option key={n} value={n}>{n}+</option>)}
+                        </select>
+                        <select
+                          className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                          value={residentialFilters.bathrooms_max}
+                          onChange={e => setResidentialFilters({ ...residentialFilters, bathrooms_max: e.target.value })}
+                        >
+                          <option value="">Max</option>
+                          {[1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 8].map(n => <option key={n} value={n}>{n}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Property Size */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                    Property Size (Sq Ft)
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={residentialFilters.sqft_min}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, sqft_min: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={residentialFilters.sqft_max}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, sqft_max: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Lot Size */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                    Lot Size (Sq Ft)
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={residentialFilters.lot_size_min}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, lot_size_min: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={residentialFilters.lot_size_max}
+                      onChange={e => setResidentialFilters({ ...residentialFilters, lot_size_max: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Year Built */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                    Year Built
+                  </h3>
+                  <input
+                    type="number"
+                    placeholder="Built after (e.g. 2000)"
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                    value={residentialFilters.year_built_min}
+                    onChange={e => setResidentialFilters({ ...residentialFilters, year_built_min: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Properties built in this year or later</p>
+                </div>
+
+                {/* Property Features */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                    Property Features
+                  </h3>
+                  <div className="space-y-3">
                     {[
-                      { id: 'has_garage', label: 'Garage' },
-                      { id: 'has_pool', label: 'Swimming Pool' },
-                      { id: 'is_waterfront', label: 'Waterfront' },
+                      { id: 'is_waterfront', label: 'Waterfront Property' },
+                      { id: 'has_garage', label: 'Has Garage' },
+                      { id: 'is_single_story', label: 'Single Story / Ranch Style' },
+                      { id: 'has_pool', label: 'Has Pool' },
                     ].map(item => (
                       <label key={item.id} className="flex items-center gap-3 cursor-pointer group">
                         <input
                           type="checkbox"
                           className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 transition-all"
-                          checked={realEstateFilters[item.id]}
-                          onChange={e => setRealEstateFilters({ ...realEstateFilters, [item.id]: e.target.checked })}
+                          checked={residentialFilters[item.id]}
+                          onChange={e => setResidentialFilters({ ...residentialFilters, [item.id]: e.target.checked })}
                         />
                         <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                           {item.label}
@@ -790,42 +972,191 @@ export default function CategoryProducts() {
                   </div>
                 </div>
 
-                {/* Status & Dates */}
+                {/* Listing Status */}
                 <div className="glass-card p-4 rounded-xl">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Status & Dates</h3>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    Listing Status
+                  </h3>
+                  <select
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                    value={residentialFilters.listing_status}
+                    onChange={e => setResidentialFilters({ ...residentialFilters, listing_status: e.target.value })}
+                  >
+                    <option value="">Any Status</option>
+                    <option value="For Sale">For Sale</option>
+                    <option value="For Rent">For Rent</option>
+                    <option value="Pending">Pending</option>
+                    <option value="New Construction">New Construction</option>
+                    <option value="Foreclosure">Foreclosure / Bank Owned</option>
+                  </select>
+                </div>
 
-                  <div className="mb-4">
-                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Listing Status</label>
-                    <select
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                      value={realEstateFilters.listing_status}
-                      onChange={e => setRealEstateFilters({ ...realEstateFilters, listing_status: e.target.value })}
-                    >
-                      <option value="">Any Status</option>
-                      <option value="For Sale">For Sale</option>
-                      <option value="For Rent">For Rent</option>
-                      <option value="New Construction">New Construction</option>
-                      <option value="Pending">Pending</option>
-                      <option value="Sold">Sold</option>
-                      <option value="Foreclosure">Foreclosure</option>
-                    </select>
-                  </div>
+                {/* Clear Filters Button */}
+                <button
+                  onClick={() => setResidentialFilters({
+                    min_price: "", max_price: "",
+                    created_within_days: "", created_after_days: "",
+                    price_per_sqft_min: "", price_per_sqft_max: "",
+                    bedrooms_min: "", bedrooms_max: "",
+                    bathrooms_min: "", bathrooms_max: "",
+                    sqft_min: "", sqft_max: "",
+                    lot_size_min: "", lot_size_max: "",
+                    year_built_min: "",
+                    is_waterfront: false, has_garage: false,
+                    is_single_story: false, has_pool: false,
+                    listing_status: ""
+                  })}
+                  className="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            )}
 
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1.5 block">Listed</label>
-                    <select
+            {/* Commercial Real Estate Specific Filters */}
+            {isCommercialRealEstate && (
+              <div className="space-y-4">
+                {/* Units */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    Number of Units
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min Units"
                       className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                      value={realEstateFilters.created_within_days}
-                      onChange={e => setRealEstateFilters({ ...realEstateFilters, created_within_days: e.target.value })}
-                    >
-                      <option value="">Any Time</option>
-                      <option value="1">Last 24 Hours</option>
-                      <option value="3">Last 3 Days</option>
-                      <option value="7">Last 7 Days</option>
-                      <option value="30">Last 30 Days</option>
-                    </select>
+                      value={commercialFilters.units_min}
+                      onChange={e => setCommercialFilters({ ...commercialFilters, units_min: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max Units"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={commercialFilters.units_max}
+                      onChange={e => setCommercialFilters({ ...commercialFilters, units_max: e.target.value })}
+                    />
                   </div>
                 </div>
+
+                {/* Square Feet */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                    Square Feet
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={commercialFilters.sqft_min}
+                      onChange={e => setCommercialFilters({ ...commercialFilters, sqft_min: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={commercialFilters.sqft_max}
+                      onChange={e => setCommercialFilters({ ...commercialFilters, sqft_max: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Lot Size */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    Lot Size (Sq Ft)
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={commercialFilters.lot_size_min}
+                      onChange={e => setCommercialFilters({ ...commercialFilters, lot_size_min: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                      value={commercialFilters.lot_size_max}
+                      onChange={e => setCommercialFilters({ ...commercialFilters, lot_size_max: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Year Built */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                    Year Built (Min)
+                  </h3>
+                  <input
+                    type="number"
+                    placeholder="Year (e.g. 2000)"
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                    value={commercialFilters.year_built_min}
+                    onChange={e => setCommercialFilters({ ...commercialFilters, year_built_min: e.target.value })}
+                  />
+                </div>
+
+                {/* Listing Status */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    Listing Status
+                  </h3>
+                  <select
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                    value={commercialFilters.listing_status}
+                    onChange={e => setCommercialFilters({ ...commercialFilters, listing_status: e.target.value })}
+                  >
+                    <option value="">Any Status</option>
+                    <option value="For Sale">For Sale</option>
+                    <option value="For Rent">For Rent</option>
+                    <option value="New Construction">New Construction</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Foreclosure">Foreclosure</option>
+                  </select>
+                </div>
+
+                {/* Listed Within */}
+                <div className="glass-card p-4 rounded-xl">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                    Listed Within
+                  </h3>
+                  <select
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                    value={commercialFilters.created_within_days}
+                    onChange={e => setCommercialFilters({ ...commercialFilters, created_within_days: e.target.value })}
+                  >
+                    <option value="">Any Time</option>
+                    <option value="1">Last 24 Hours</option>
+                    <option value="3">Last 3 Days</option>
+                    <option value="7">Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                  </select>
+                </div>
+
+                {/* Clear Filters Button */}
+                <button
+                  onClick={() => setCommercialFilters({
+                    units_min: "", units_max: "",
+                    sqft_min: "", sqft_max: "",
+                    lot_size_min: "", lot_size_max: "",
+                    year_built_min: "",
+                    listing_status: "",
+                    created_within_days: ""
+                  })}
+                  className="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Clear All Filters
+                </button>
               </div>
             )}
 
