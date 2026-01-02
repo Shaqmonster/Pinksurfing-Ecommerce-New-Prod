@@ -56,7 +56,15 @@ export const subCategories = [
   },
   {
     id: "20",
-    name: "Real Estate",
+    name: "Residential Real Estate",
+    category: "residential-real-estate",
+    image: "/new/real_estate3.jpg",
+    extraclass: "object-cover",
+    link: "/home",
+  },
+  {
+    id: "21",
+    name: "Commercial Real Estate",
     category: "commercial-real-estate",
     image: "/new/real_estate3.jpg",
     extraclass: "object-cover",
