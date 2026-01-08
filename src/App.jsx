@@ -97,7 +97,7 @@ function App() {
         <Route path="/shopByStore" element={<ShopByStore />} />
         <Route path="/store/:slug" element={<StoreProducts />} />
         <Route path="/subCategories" element={<SubCategories />} />
-        <Route path="/categoryProducts" element={<CategoryProducts />} />
+        <Route path="/category/:slug" element={<CategoryProducts />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/checkout" element={<Checkout />} />

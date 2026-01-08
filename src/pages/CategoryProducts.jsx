@@ -21,7 +21,7 @@ import { HiMiniSquares2X2 } from "react-icons/hi2";
 import SearchForm from "../components/Search";
 
 export default function CategoryProducts() {
-  const { category } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const { products } = useContext(dataContext);
@@ -42,12 +42,12 @@ export default function CategoryProducts() {
   const [maximumValue, setMaximumValue] = useState(20000);
   const [isCard, setIsCard] = useState(true);
   const [subcategories, setSubcategories] = useState([]);
-  const title = localStorage.getItem('category_name');
-  const categorySlug = localStorage.getItem('category');
+  const [title, setTitle] = useState('');
+  const categorySlug = slug;
 
-  // Real Estate Specific Logic
-  const isResidentialRealEstate = categorySlug === 'residential-real-estate' || title?.toLowerCase().includes('residential real estate');
-  const isCommercialRealEstate = categorySlug === 'commercial-real-estate' || title?.toLowerCase().includes('commercial real estate');
+  // Real Estate Specific Logic - Only check slug for reliable detection
+  const isResidentialRealEstate = categorySlug === 'residential-real-estate';
+  const isCommercialRealEstate = categorySlug === 'commercial-real-estate';
   const isRealEstate = isResidentialRealEstate || isCommercialRealEstate;
 
   // Residential Real Estate Filters
@@ -173,7 +173,19 @@ export default function CategoryProducts() {
     setCurrentPage(1);
   }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy]);
 
-  // Fetch products
+  // Set title from slug
+  useEffect(() => {
+    if (categorySlug) {
+      // Convert slug to readable title (e.g., "residential-real-estate" -> "Residential Real Estate")
+      const formattedTitle = categorySlug
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      setTitle(formattedTitle);
+    }
+  }, [categorySlug]);
+
+  // Fetch products - same approach for ALL categories including real estate
   useEffect(() => {
     const getFilterProducts = async () => {
       setLoading(true);
@@ -189,6 +201,13 @@ export default function CategoryProducts() {
         subcategoriesData = subcategoriesData.sort((a, b) => a.name.localeCompare(b.name));
         setSubcategories(subcategoriesData);
         setCategoryOnlyData(["all", ...subcategoriesData.map(subcat => subcat.name)]);
+
+        // Also set real estate specific subcats if needed
+        if (isResidentialRealEstate) {
+          setResidentialSubcats(subcategoriesData);
+        } else if (isCommercialRealEstate) {
+          setCommercialSubcats(subcategoriesData);
+        }
 
         const res = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/product/category-products/${categorySlug}/`,
@@ -215,36 +234,42 @@ export default function CategoryProducts() {
     };
 
     setCategoryFilter("all");
+    getFilterProducts();
+  }, [categorySlug]);
 
-    if (isRealEstate) {
-      // Real Estate Specific Initialization
-      const fetchRealEstateSubcats = async () => {
-        try {
-          if (isResidentialRealEstate) {
-            const resSub = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/residential-real-estate/`);
-            setResidentialSubcats(resSub.data.sort((a, b) => a.name.localeCompare(b.name)));
-            setSubcategories(resSub.data.sort((a, b) => a.name.localeCompare(b.name)));
-            setCategoryOnlyData(["all", ...resSub.data.map(subcat => subcat.name)]);
-          } else if (isCommercialRealEstate) {
-            const commSub = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/commercial-real-estate/`);
-            setCommercialSubcats(commSub.data.sort((a, b) => a.name.localeCompare(b.name)));
-            setSubcategories(commSub.data.sort((a, b) => a.name.localeCompare(b.name)));
-            setCategoryOnlyData(["all", ...commSub.data.map(subcat => subcat.name)]);
-          }
-        } catch (e) {
-          console.error("Error fetching RE subcats", e);
-        }
-      };
-      fetchRealEstateSubcats();
-      // Initial fetch handled by the effect below watching filters
-    } else {
-      getFilterProducts();
-    }
-  }, [categorySlug, isRealEstate]);
-
-  // Real Estate Fetch Logic
+  // Real Estate Fetch Logic - Only runs when filters are applied
   useEffect(() => {
     if (!isRealEstate) return;
+
+    // Check if any real estate specific filters are applied
+    const hasResidentialFilters = isResidentialRealEstate && (
+      residentialFilters.min_price || residentialFilters.max_price ||
+      residentialFilters.created_within_days || residentialFilters.created_after_days ||
+      residentialFilters.price_per_sqft_min || residentialFilters.price_per_sqft_max ||
+      residentialFilters.bedrooms_min || residentialFilters.bedrooms_max ||
+      residentialFilters.bathrooms_min || residentialFilters.bathrooms_max ||
+      residentialFilters.sqft_min || residentialFilters.sqft_max ||
+      residentialFilters.lot_size_min || residentialFilters.lot_size_max ||
+      residentialFilters.year_built_min ||
+      residentialFilters.is_waterfront || residentialFilters.has_garage ||
+      residentialFilters.is_single_story || residentialFilters.has_pool ||
+      residentialFilters.listing_status
+    );
+
+    const hasCommercialFilters = isCommercialRealEstate && (
+      commercialFilters.units_min || commercialFilters.units_max ||
+      commercialFilters.sqft_min || commercialFilters.sqft_max ||
+      commercialFilters.lot_size_min || commercialFilters.lot_size_max ||
+      commercialFilters.year_built_min || commercialFilters.listing_status ||
+      commercialFilters.created_within_days
+    );
+
+    const hasSubcategoryFilter = categoryFilter !== 'all';
+
+    // Only fetch with filter API if filters are applied
+    if (!hasResidentialFilters && !hasCommercialFilters && !hasSubcategoryFilter) {
+      return; // Initial products already loaded by the main fetch
+    }
 
     const fetchFilteredRealEstate = async () => {
       setLoading(true);
@@ -318,7 +343,7 @@ export default function CategoryProducts() {
           if (commercialFilters.created_within_days) params.append('created_within_days', commercialFilters.created_within_days);
         }
 
-        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/filter?${params.toString()}`);
+        const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/product/filter-products/?${params.toString()}`);
         setShoppingProducts(response.data);
       } catch (error) {
         console.error("Failed to fetch filtered RE products", error);

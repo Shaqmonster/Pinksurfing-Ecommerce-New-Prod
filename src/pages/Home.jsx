@@ -506,14 +506,12 @@ const Home = () => {
                     key={item.id}
                     onClick={() => {
                       console.log(item.id);
-                      if (item.id == 5) {
+                      if (item.id == "5") {
                         console.log("Gigs Pro");
                         window.location.href = "https://gighub.pinksurfing.com/";
                       } else {
                         setCategory(item.category.toLowerCase());
-                        localStorage.setItem("category", item.category.toLowerCase());
-                        localStorage.setItem("category_name", item.name);
-                        navigate(`/categoryProducts`);
+                        navigate(`/category/${item.category.toLowerCase()}`);
                       }
                     }}
                     className="cursor-pointer group"
@@ -542,10 +540,14 @@ const Home = () => {
                 <div
                   key={item.id}
                   onClick={() => {
-                    setCategory(item.category.toLowerCase());
-                    localStorage.setItem("category", item.category.toLowerCase());
-                    localStorage.setItem("category_name", item.name);
-                    navigate(`/categoryProducts`);
+                    console.log(item.id);
+                    if (item.id == "5") {
+                      console.log("Gigs Pro");
+                      window.location.href = "https://gighub.pinksurfing.com/";
+                    } else {
+                      setCategory(item.category.toLowerCase());
+                      navigate(`/category/${item.category.toLowerCase()}`);
+                    }
                   }}
                   className="cursor-pointer group hover:-translate-y-1 transition-transform duration-200"
                 >
