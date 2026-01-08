@@ -16,19 +16,19 @@ export const navigationItems = [
   },
   {
     icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/7b3e05eaddd97eb84412e1bb37d1e60fcbee19dcb94a0808828ca0ca59546029?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
-    label: "My Store",
+    label: "Store",
     altText: "My Store"
   },
   {
     icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/503b26d08a7c2530a335a7b98a65e9fc342cea829581729b963d74162db53069?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
-    label: "My Orders",
+    label: "Orders",
     isActive: true,
     altText: "My Order icon"
   },
 
   {
     icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/f0c6fe10706ff1475945313dccdf751c4b29bea5296270e940c6e7f0a0e93167?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
-    label: "My Wallet",
+    label: "Wallet",
     altText: "My Wallet icon"
   },
   {
