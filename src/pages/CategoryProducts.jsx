@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useMemo } from "react";
+import { useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
@@ -7,7 +7,7 @@ import ProductCard from "../components/ProductCard";
 import { dataContext } from "../context/dataContext";
 import { Fragment } from "react";
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
   FunnelIcon,
@@ -104,6 +104,12 @@ export default function CategoryProducts() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
+  // Dynamic Attribute Filters State
+  const [allowedAttributes, setAllowedAttributes] = useState([]);
+  const [attributeFilters, setAttributeFilters] = useState({});
+  const [attributesLoading, setAttributesLoading] = useState(false);
+  const [showAttributeFilters, setShowAttributeFilters] = useState(false);
+
   // Filter Arrays
   const colorArray = [];
   const storageArray = [];
@@ -157,10 +163,53 @@ export default function CategoryProducts() {
         const priceFilterResult = price >= minValue && price <= maximumValue;
         const categoryFilterReturn =
           categoryFilter === "all" ? true : i?.subcategory?.name === categoryFilter;
-        return priceFilterResult && categoryFilterReturn;
+        
+        // Apply dynamic attribute filters
+        let attributeFilterResult = true;
+        const productAttrs = i.attributes || i.product_attributes;
+        if (Object.keys(attributeFilters).length > 0 && productAttrs) {
+          attributeFilterResult = Object.entries(attributeFilters).every(([attrName, filterValue]) => {
+            // Skip empty filters
+            if (filterValue === "" || filterValue === null || filterValue === undefined) return true;
+            if (Array.isArray(filterValue) && filterValue.length === 0) return true;
+            
+            // Find the matching attribute in product
+            const productAttr = productAttrs.find(
+              attr => attr.name?.toLowerCase() === attrName.toLowerCase()
+            );
+            
+            if (!productAttr) return true; // If product doesn't have this attribute, don't filter it out
+            
+            const productValue = productAttr.value;
+            
+            // Handle different filter types
+            if (Array.isArray(filterValue)) {
+              // Multi-select filter
+              return filterValue.some(fv => 
+                String(productValue).toLowerCase() === String(fv).toLowerCase()
+              );
+            } else if (typeof filterValue === "object" && filterValue !== null) {
+              // Range filter (min/max)
+              const numValue = Number(productValue);
+              if (isNaN(numValue)) return true;
+              const { min, max } = filterValue;
+              const minCheck = min === "" || min === undefined ? true : numValue >= Number(min);
+              const maxCheck = max === "" || max === undefined ? true : numValue <= Number(max);
+              return minCheck && maxCheck;
+            } else if (typeof filterValue === "boolean") {
+              // Boolean filter
+              return productValue === filterValue || String(productValue).toLowerCase() === String(filterValue).toLowerCase();
+            } else {
+              // Single value filter (text/select)
+              return String(productValue).toLowerCase().includes(String(filterValue).toLowerCase());
+            }
+          });
+        }
+        
+        return priceFilterResult && categoryFilterReturn && attributeFilterResult;
       })
       .sort(handleSort(sortMethod));
-  }, [shoppingProduct, minValue, maximumValue, categoryFilter, sortMethod, isRealEstate]);
+  }, [shoppingProduct, minValue, maximumValue, categoryFilter, sortMethod, isRealEstate, attributeFilters]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -171,7 +220,98 @@ export default function CategoryProducts() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy]);
+  }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy, attributeFilters]);
+
+  // Fetch allowed attributes when subcategory changes
+  useEffect(() => {
+    const extractAttributesFromProducts = () => {
+      // Skip for real estate categories
+      if (isRealEstate) {
+        setAllowedAttributes([]);
+        setAttributeFilters({});
+        return;
+      }
+
+      // Extract unique attributes from products
+      const attributeMap = new Map();
+      
+      // Filter products based on selected category
+      const productsToAnalyze = categoryFilter === "all" 
+        ? shoppingProduct 
+        : shoppingProduct.filter(p => p?.subcategory?.name === categoryFilter);
+      
+      productsToAnalyze.forEach(product => {
+        // Check both 'attributes' and 'product_attributes' field names
+        const attrs = product.attributes || product.product_attributes;
+        if (attrs && Array.isArray(attrs)) {
+          attrs.forEach(attr => {
+            if (attr.name && !attributeMap.has(attr.name)) {
+              attributeMap.set(attr.name, {
+                name: attr.name,
+                data_type: attr.data_type || "text",
+                options: attr.options || []
+              });
+            }
+          });
+        }
+      });
+      
+      setAllowedAttributes(Array.from(attributeMap.values()));
+      // Reset attribute filters when category changes
+      setAttributeFilters({});
+    };
+
+    extractAttributesFromProducts();
+  }, [categoryFilter, shoppingProduct, isRealEstate]);
+
+  // Handler to update attribute filters
+  const handleAttributeFilterChange = useCallback((attrName, value, filterType = "single") => {
+    setAttributeFilters(prev => {
+      const newFilters = { ...prev };
+      
+      if (filterType === "multi") {
+        // For checkbox multi-select
+        const currentValues = Array.isArray(prev[attrName]) ? [...prev[attrName]] : [];
+        const index = currentValues.indexOf(value);
+        if (index > -1) {
+          currentValues.splice(index, 1);
+        } else {
+          currentValues.push(value);
+        }
+        newFilters[attrName] = currentValues;
+      } else if (filterType === "range") {
+        // For number range (value is {min, max} object)
+        newFilters[attrName] = { ...prev[attrName], ...value };
+      } else {
+        // For single value (text, select, boolean)
+        newFilters[attrName] = value;
+      }
+      
+      return newFilters;
+    });
+  }, []);
+
+  // Clear all attribute filters
+  const clearAttributeFilters = useCallback(() => {
+    setAttributeFilters({});
+  }, []);
+
+  // Get unique values for a specific attribute from products
+  const getUniqueAttributeValues = useCallback((attrName) => {
+    const values = new Set();
+    shoppingProduct.forEach(product => {
+      const attrs = product.attributes || product.product_attributes;
+      if (attrs) {
+        const attr = attrs.find(
+          a => a.name?.toLowerCase() === attrName.toLowerCase()
+        );
+        if (attr && attr.value !== null && attr.value !== undefined && attr.value !== "") {
+          values.add(String(attr.value));
+        }
+      }
+    });
+    return Array.from(values).sort();
+  }, [shoppingProduct]);
 
   // Set title from slug
   useEffect(() => {
@@ -539,6 +679,176 @@ export default function CategoryProducts() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Dynamic Attribute Filters - Mobile */}
+                  {!isRealEstate && allowedAttributes.length > 0 && (
+                    <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700 z-100">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                          <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                          Filter by Attributes
+                        </h3>
+                        {Object.keys(attributeFilters).some(key => {
+                          const val = attributeFilters[key];
+                          if (Array.isArray(val)) return val.length > 0;
+                          if (typeof val === "object" && val !== null) return val.min || val.max;
+                          return val !== "" && val !== undefined;
+                        }) && (
+                          <button
+                            onClick={clearAttributeFilters}
+                            className="text-xs text-purple-400 hover:text-purple-300 font-medium"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
+                        {allowedAttributes.map((attr, idx) => {
+                          const uniqueValues = getUniqueAttributeValues(attr.name);
+                          
+                          // Skip if no values found in products
+                          if (uniqueValues.length === 0) return null;
+                          
+                          return (
+                            <Disclosure key={`mobile-${attr.name}-${idx}`} as="div">
+                              {({ open }) => (
+                                <>
+                                  <Disclosure.Button className="flex w-full items-center justify-between py-2.5 px-3 bg-gray-700/50 rounded-lg text-sm font-medium text-white hover:bg-gray-700 transition-colors">
+                                    <span className="capitalize">{attr.name}</span>
+                                    <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+                                  </Disclosure.Button>
+                                  
+                                  <Transition
+                                    enter="transition duration-100 ease-out"
+                                    enterFrom="transform scale-95 opacity-0"
+                                    enterTo="transform scale-100 opacity-100"
+                                    leave="transition duration-75 ease-out"
+                                    leaveFrom="transform scale-100 opacity-100"
+                                    leaveTo="transform scale-95 opacity-0"
+                                  >
+                                    <Disclosure.Panel className="pt-3 pb-2 px-1">
+                                      {/* Number type - Range inputs */}
+                                      {attr.data_type === "number" && (
+                                        <div className="flex gap-2">
+                                          <input
+                                            type="number"
+                                            placeholder="Min"
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            value={attributeFilters[attr.name]?.min || ""}
+                                            onChange={(e) => handleAttributeFilterChange(attr.name, { min: e.target.value }, "range")}
+                                          />
+                                          <input
+                                            type="number"
+                                            placeholder="Max"
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            value={attributeFilters[attr.name]?.max || ""}
+                                            onChange={(e) => handleAttributeFilterChange(attr.name, { max: e.target.value }, "range")}
+                                          />
+                                        </div>
+                                      )}
+                                      
+                                      {/* Boolean type - Toggle buttons */}
+                                      {attr.data_type === "boolean" && (
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={() => handleAttributeFilterChange(attr.name, attributeFilters[attr.name] === true ? "" : true)}
+                                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                              attributeFilters[attr.name] === true
+                                                ? "bg-green-500 text-white shadow-md"
+                                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                                            }`}
+                                          >
+                                            Yes
+                                          </button>
+                                          <button
+                                            onClick={() => handleAttributeFilterChange(attr.name, attributeFilters[attr.name] === false ? "" : false)}
+                                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                              attributeFilters[attr.name] === false
+                                                ? "bg-red-500 text-white shadow-md"
+                                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                                            }`}
+                                          >
+                                            No
+                                          </button>
+                                        </div>
+                                      )}
+                                      
+                                      {/* Select type with predefined options */}
+                                      {attr.data_type === "select" && attr.options && attr.options.length > 0 && (
+                                        <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+                                          {attr.options.map((option, optIdx) => {
+                                            const isSelected = Array.isArray(attributeFilters[attr.name]) 
+                                              ? attributeFilters[attr.name].includes(option)
+                                              : false;
+                                            return (
+                                              <label key={optIdx} className="flex items-center gap-3 cursor-pointer group">
+                                                <input
+                                                  type="checkbox"
+                                                  className="w-4 h-4 rounded border-gray-500 bg-gray-700 text-purple-500 focus:ring-purple-500 focus:ring-offset-gray-800"
+                                                  checked={isSelected}
+                                                  onChange={() => handleAttributeFilterChange(attr.name, option, "multi")}
+                                                />
+                                                <span className={`text-sm transition-colors ${
+                                                  isSelected 
+                                                    ? "text-purple-400 font-medium" 
+                                                    : "text-gray-400 group-hover:text-purple-400"
+                                                }`}>
+                                                  {option}
+                                                </span>
+                                              </label>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Text type or select without predefined options */}
+                                      {(attr.data_type === "text" || (attr.data_type === "select" && (!attr.options || attr.options.length === 0)) || !attr.data_type) && uniqueValues.length > 0 && (
+                                        <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+                                          {uniqueValues.length <= 8 ? (
+                                            uniqueValues.map((value, valIdx) => {
+                                              const isSelected = Array.isArray(attributeFilters[attr.name]) 
+                                                ? attributeFilters[attr.name].includes(value)
+                                                : false;
+                                              return (
+                                                <label key={valIdx} className="flex items-center gap-3 cursor-pointer group">
+                                                  <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded border-gray-500 bg-gray-700 text-purple-500 focus:ring-purple-500 focus:ring-offset-gray-800"
+                                                    checked={isSelected}
+                                                    onChange={() => handleAttributeFilterChange(attr.name, value, "multi")}
+                                                  />
+                                                  <span className={`text-sm capitalize transition-colors ${
+                                                    isSelected 
+                                                      ? "text-purple-400 font-medium" 
+                                                      : "text-gray-400 group-hover:text-purple-400"
+                                                  }`}>
+                                                    {value}
+                                                  </span>
+                                                </label>
+                                              );
+                                            })
+                                          ) : (
+                                            <input
+                                              type="text"
+                                              placeholder={`Search ${attr.name}...`}
+                                              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                              value={attributeFilters[attr.name] || ""}
+                                              onChange={(e) => handleAttributeFilterChange(attr.name, e.target.value)}
+                                            />
+                                          )}
+                                        </div>
+                                      )}
+                                    </Disclosure.Panel>
+                                  </Transition>
+                                </>
+                              )}
+                            </Disclosure>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -558,7 +868,7 @@ export default function CategoryProducts() {
           </nav>
 
           {/* Category Header Card */}
-          <div className="glass-card relative p-4 sm:p-5 rounded-2xl overflow-hidden">
+          <div className="glass-card relative p-4 sm:p-5 rounded-2xl z-[60]">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -640,13 +950,189 @@ export default function CategoryProducts() {
                   </Transition>
                 </Menu>
 
+                {/* Attribute Filters Dropdown - Desktop */}
+                {!isRealEstate && (
+                  <Menu as="div" className="relative hidden md:block" style={{ zIndex: 9999 }}>
+                    <Menu.Button className="group relative flex items-center gap-2 px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                      <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-500 group-hover:text-purple-500 transition-colors" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters</span>
+                      <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                      {/* Active Filter Count Badge */}
+                      {(() => {
+                        const activeCount = Object.entries(attributeFilters).filter(([_, val]) => {
+                          if (Array.isArray(val)) return val.length > 0;
+                          if (typeof val === "object" && val !== null) return val.min || val.max;
+                          return val !== "" && val !== undefined;
+                        }).length;
+                        return activeCount > 0 ? (
+                          <span className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                            {activeCount}
+                          </span>
+                        ) : null;
+                      })()}
+                    </Menu.Button>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-200"
+                      enterFrom="opacity-0 scale-95 -translate-y-2"
+                      enterTo="opacity-100 scale-100 translate-y-0"
+                      leave="transition ease-in duration-150"
+                      leaveFrom="opacity-100 scale-100 translate-y-0"
+                      leaveTo="opacity-0 scale-95 -translate-y-2"
+                    >
+                      <Menu.Items className="absolute right-0 mt-2 w-72 sm:w-80 origin-top-right bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-4 z-[9999] max-h-[70vh] overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700">
+                        {allowedAttributes.length > 0 ? (
+                          <>
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-sm font-bold text-gray-900 dark:text-white">Filter by Attributes</h3>
+                              {Object.keys(attributeFilters).some(key => {
+                                const val = attributeFilters[key];
+                                if (Array.isArray(val)) return val.length > 0;
+                                if (typeof val === "object" && val !== null) return val.min || val.max;
+                                return val !== "" && val !== undefined;
+                              }) && (
+                                <button
+                                  onClick={clearAttributeFilters}
+                                  className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium"
+                                >
+                                  Clear All
+                                </button>
+                              )}
+                            </div>
+                            
+                            <div className="space-y-3">
+                              {allowedAttributes.map((attr, idx) => {
+                                const uniqueValues = getUniqueAttributeValues(attr.name);
+                                
+                                // Skip if no values found in products
+                                if (uniqueValues.length === 0) return null;
+                                
+                                return (
+                                  <Disclosure key={`header-${attr.name}-${idx}`} as="div" defaultOpen={idx < 2}>
+                                    {({ open }) => (
+                                      <>
+                                        <Disclosure.Button className="flex w-full items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                          <span className="capitalize">{attr.name}</span>
+                                          <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+                                        </Disclosure.Button>
+                                        
+                                        <Disclosure.Panel className="pt-2 pb-1 px-1">
+                                          {/* Number type - Range inputs */}
+                                          {attr.data_type === "number" && (
+                                            <div className="flex gap-2">
+                                              <input
+                                                type="number"
+                                                placeholder="Min"
+                                                className="w-full px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                value={attributeFilters[attr.name]?.min || ""}
+                                                onChange={(e) => handleAttributeFilterChange(attr.name, { min: e.target.value }, "range")}
+                                              />
+                                              <input
+                                                type="number"
+                                                placeholder="Max"
+                                                className="w-full px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                value={attributeFilters[attr.name]?.max || ""}
+                                                onChange={(e) => handleAttributeFilterChange(attr.name, { max: e.target.value }, "range")}
+                                              />
+                                            </div>
+                                          )}
+                                          
+                                          {/* Boolean type - Toggle buttons */}
+                                          {attr.data_type === "boolean" && (
+                                            <div className="flex gap-2">
+                                              <button
+                                                onClick={() => handleAttributeFilterChange(attr.name, attributeFilters[attr.name] === true ? "" : true)}
+                                                className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                                                  attributeFilters[attr.name] === true
+                                                    ? "bg-green-500 text-white"
+                                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                }`}
+                                              >
+                                                Yes
+                                              </button>
+                                              <button
+                                                onClick={() => handleAttributeFilterChange(attr.name, attributeFilters[attr.name] === false ? "" : false)}
+                                                className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                                                  attributeFilters[attr.name] === false
+                                                    ? "bg-red-500 text-white"
+                                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                }`}
+                                              >
+                                                No
+                                              </button>
+                                            </div>
+                                          )}
+                                          
+                                          {/* Text type or default - Show unique values from products as checkboxes */}
+                                          {(attr.data_type === "text" || attr.data_type === "select" || !attr.data_type) && uniqueValues.length > 0 && (
+                                            <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar">
+                                              {uniqueValues.slice(0, 8).map((value, valIdx) => {
+                                                const isSelected = Array.isArray(attributeFilters[attr.name]) 
+                                                  ? attributeFilters[attr.name].includes(value)
+                                                  : false;
+                                                return (
+                                                  <label key={valIdx} className="flex items-center gap-2 cursor-pointer group">
+                                                    <input
+                                                      type="checkbox"
+                                                      className="w-3.5 h-3.5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                                      checked={isSelected}
+                                                      onChange={() => handleAttributeFilterChange(attr.name, value, "multi")}
+                                                    />
+                                                    <span className={`text-xs capitalize transition-colors ${
+                                                      isSelected 
+                                                        ? "text-purple-600 dark:text-purple-400 font-medium" 
+                                                        : "text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                                                    }`}>
+                                                      {value}
+                                                    </span>
+                                                  </label>
+                                                );
+                                              })}
+                                              {uniqueValues.length > 8 && (
+                                                <p className="text-xs text-gray-400 pl-5">+{uniqueValues.length - 8} more</p>
+                                              )}
+                                            </div>
+                                          )}
+                                        </Disclosure.Panel>
+                                      </>
+                                    )}
+                                  </Disclosure>
+                                );
+                              })}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="py-6 text-center">
+                            <AdjustmentsHorizontalIcon className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                            <p className="text-sm text-gray-500 dark:text-gray-400">No attribute filters available</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Products in this category don't have filterable attributes</p>
+                          </div>
+                        )}
+                      </Menu.Items>
+                    </Transition>
+                  </Menu>
+                )}
+
                 {/* Mobile Filter Button */}
                 <button
                   onClick={() => setMobileFiltersOpen(true)}
-                  className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105"
+                  className="lg:hidden relative flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105"
                 >
                   <FunnelIcon className="w-5 h-5" />
                   <span>Filters</span>
+                  {/* Active Filter Count Badge */}
+                  {(() => {
+                    const activeCount = Object.entries(attributeFilters).filter(([_, val]) => {
+                      if (Array.isArray(val)) return val.length > 0;
+                      if (typeof val === "object" && val !== null) return val.min || val.max;
+                      return val !== "" && val !== undefined;
+                    }).length;
+                    return activeCount > 0 ? (
+                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                        {activeCount}
+                      </span>
+                    ) : null;
+                  })()}
                 </button>
               </div>
             </div>
@@ -1258,6 +1744,7 @@ export default function CategoryProducts() {
                     setFilterBy("");
                     setMinValue(0);
                     setMaximumValue(maxValue);
+                    setAttributeFilters({});
                   }}
                   className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105"
                 >
@@ -1266,6 +1753,69 @@ export default function CategoryProducts() {
               </div>
             ) : (
               <>
+                {/* Active Attribute Filters Tags */}
+                {!isRealEstate && Object.entries(attributeFilters).some(([_, val]) => {
+                  if (Array.isArray(val)) return val.length > 0;
+                  if (typeof val === "object" && val !== null) return val.min || val.max;
+                  return val !== "" && val !== undefined;
+                }) && (
+                  <div className="mb-4 p-3 glass-card rounded-xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active Filters:</span>
+                      <button
+                        onClick={clearAttributeFilters}
+                        className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(attributeFilters).map(([attrName, value]) => {
+                        // Skip empty filters
+                        if (Array.isArray(value) && value.length === 0) return null;
+                        if (typeof value === "object" && value !== null && !value.min && !value.max) return null;
+                        if (value === "" || value === undefined) return null;
+                        
+                        let displayValue = "";
+                        if (Array.isArray(value)) {
+                          displayValue = value.join(", ");
+                        } else if (typeof value === "object" && value !== null) {
+                          const parts = [];
+                          if (value.min) parts.push(`Min: ${value.min}`);
+                          if (value.max) parts.push(`Max: ${value.max}`);
+                          displayValue = parts.join(" - ");
+                        } else if (typeof value === "boolean") {
+                          displayValue = value ? "Yes" : "No";
+                        } else {
+                          displayValue = String(value);
+                        }
+                        
+                        return (
+                          <span
+                            key={attrName}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium rounded-full"
+                          >
+                            <span className="capitalize">{attrName}:</span>
+                            <span className="font-semibold">{displayValue}</span>
+                            <button
+                              onClick={() => {
+                                setAttributeFilters(prev => {
+                                  const newFilters = { ...prev };
+                                  delete newFilters[attrName];
+                                  return newFilters;
+                                });
+                              }}
+                              className="ml-1 p-0.5 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+                            >
+                              <XMarkIcon className="w-3 h-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              
                 {/* Products Info Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 px-1">
                   <p className="text-sm text-gray-600 dark:text-gray-400">

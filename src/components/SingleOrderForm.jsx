@@ -9,7 +9,6 @@ import OrderConfirm from "./OrderConfirm";
 import { IoClose } from "react-icons/io5";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import AddressForm from "./AddressForm";
-import { dataContext } from "../context/dataContext";
 import PaymentOptionsModal from "../pages/PaymentOptionsModal";
 
 export default function SingleOrderForm() {
@@ -23,8 +22,6 @@ export default function SingleOrderForm() {
     isAddressFormOpen,
     setIsAddressFormOpen,
   } = useContext(authContext);
-  const { additionalAttribute, setAdditionalAttribute } =
-    useContext(dataContext);
   const [cookies, removeCookie] = useCookies([]);
   const [addresses, setAddresses] = useState([]);
   const [orderConfirm, setorderConfirm] = useState(false);
@@ -84,7 +81,7 @@ export default function SingleOrderForm() {
         }/`,
         {
           address: addressesId,
-          additional_price: additionalAttribute.price,
+          additional_price: singleOrderProduct.additional_price || 0,
         },
         {
           headers: {
@@ -184,21 +181,13 @@ export default function SingleOrderForm() {
                               </span>
                               <p className="mt-auto text-md font-semibold">
                                 {currency}
-                                {additionalAttribute.price > 0
-                                  ? additionalAttribute.price
-                                  : singleOrderProduct.unit_price}
+                                {singleOrderProduct.unit_price}
                               </p>
-                              <p
-                                className={`text-[15px] ${
-                                  additionalAttribute?.price === 0 && "hidden"
-                                }`}
-                              >
-                                {additionalAttribute.price > 0 && (
-                                  <>
-                                    {/* Additional Price: {currency} {additionalAttribute.price} */}
-                                  </>
-                                )}
-                              </p>
+                              {singleOrderProduct.additional_price > 0 && (
+                                <p className="text-[13px] text-gray-500 dark:text-gray-400">
+                                  (includes {currency}{singleOrderProduct.additional_price} variant)
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>

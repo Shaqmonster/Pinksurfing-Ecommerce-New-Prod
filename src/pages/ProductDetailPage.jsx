@@ -696,7 +696,17 @@ const ProductDetailPage = () => {
                           return;
                         }
                         setIsSingleOrderFormOpen(true);
-                        setSingleOrderProduct(product);
+                        // Pass product with additional price from selected variants
+                        setSingleOrderProduct({
+                          ...product,
+                          unit_price: finalUnitPrice,
+                          mrp: finalMrp,
+                          original_unit_price: product.unit_price,
+                          original_mrp: product.mrp,
+                          additional_price: additionalPrice,
+                          selected_attributes: selectedAttributes,
+                          quantity: productQty
+                        });
                         setIsProfileOpen(false);
                       }}
                       className="flex-1 px-8 py-4 bg-white dark:bg-gray-900 text-purple-600 dark:text-purple-400 font-bold rounded-xl border-2 border-purple-600 dark:border-purple-500 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-600 dark:hover:text-white transition-all duration-300 hover:shadow-2xl hover:scale-105"

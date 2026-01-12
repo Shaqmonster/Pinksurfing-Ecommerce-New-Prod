@@ -247,7 +247,7 @@ const ProductCard = ({ product, isCard }) => {
       </div>
 
       {/* Discount Badge */}
-      {product.mrp !== product.unit_price && (
+      {product.mrp && product.unit_price && product.mrp !== product.unit_price && Math.round(((product.mrp - product.unit_price) / product.mrp) * 100) > 0 && (
         <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold shadow-lg">
           {Math.round(((product.mrp - product.unit_price) / product.mrp) * 100)}% OFF
         </div>
