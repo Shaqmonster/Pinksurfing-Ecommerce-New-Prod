@@ -340,7 +340,13 @@ export default function CategoryProducts() {
         let subcategoriesData = response.data;
         subcategoriesData = subcategoriesData.sort((a, b) => a.name.localeCompare(b.name));
         setSubcategories(subcategoriesData);
-        setCategoryOnlyData(["all", ...subcategoriesData.map(subcat => subcat.name)]);
+        
+        // If category is "business-for-sale" and no subcategories exist, use "Business For Sale" as subcategory
+        if (categorySlug === 'business4sale' && subcategoriesData.length === 0) {
+          setCategoryOnlyData(["all", "Business For Sale"]);
+        } else {
+          setCategoryOnlyData(["all", ...subcategoriesData.map(subcat => subcat.name)]);
+        }
 
         // Also set real estate specific subcats if needed
         if (isResidentialRealEstate) {

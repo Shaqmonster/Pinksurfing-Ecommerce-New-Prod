@@ -137,8 +137,8 @@ export const subCategories = [
   },
   {
     id: "16",
-    name: "Business 4 Sale",
-    category: "business4sale",
+    name: "Business For Sale",
+    category: "business-for-sale",
     image: "/new/business for sale.jpg",
     extraclass: "",
     link: "/home",
