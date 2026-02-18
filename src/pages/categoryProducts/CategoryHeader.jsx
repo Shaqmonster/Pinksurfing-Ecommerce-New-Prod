@@ -158,7 +158,7 @@ export default function CategoryHeader({
                                                     <AttributeFilterPanel
                                                         key={`header-${attr.name}-${idx}`}
                                                         attr={attr}
-                                                        uniqueValues={getUniqueAttributeValues(attr.name)}
+                                                        uniqueValues={getUniqueAttributeValues(attr.name, attr.data_type)}
                                                         attributeFilters={attributeFilters}
                                                         onFilterChange={onFilterChange}
                                                         variant="desktop"

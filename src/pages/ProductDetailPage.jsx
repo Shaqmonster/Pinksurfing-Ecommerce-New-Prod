@@ -606,7 +606,7 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* Attributes Selection */}
-                {Object.entries(attributeArrays2).map(([attributeName, values]) => (
+                {/* {Object.entries(attributeArrays2).map(([attributeName, values]) => (
                   <div key={attributeName} className="space-y-3">
                     <label className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
                       Select {attributeName}
@@ -652,7 +652,7 @@ const ProductDetailPage = () => {
                       </div>
                     )}
                   </div>
-                ))}
+                ))} */}
 
                 {/* Description */}
                 <div className="p-6 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">

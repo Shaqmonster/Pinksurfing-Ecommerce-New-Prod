@@ -60,36 +60,42 @@ export default function useCategoryProducts() {
     const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
     // ---------- Effects ----------
-
+    useEffect(()=>{
+        console.log("allowedAttributes:", allowedAttributes);
+        console.log("attributeFilters:", attributeFilters);
+        console.log("shoppingProduct:", shoppingProduct);
+    },[allowedAttributes, attributeFilters,shoppingProduct]);
     // Reset to page 1 when filters change
     useEffect(() => {
         setCurrentPage(1);
     }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy, attributeFilters]);
 
-    // Extract attributes from products when subcategory or products change
+    // Get allowed attributes from the first product's subcategory.
+    // All products in the same subcategory share the same allowed_attributes,
+    // so we only need to check one product.
     useEffect(() => {
-        const attributeMap = new Map();
-
-        const productsToAnalyze = categoryFilter === "all"
+        const productsToCheck = categoryFilter === "all"
             ? shoppingProduct
             : shoppingProduct.filter(p => p?.subcategory?.name === categoryFilter);
 
-        productsToAnalyze.forEach(product => {
-            const attrs = product.attributes || product.product_attributes;
+        if (productsToCheck && productsToCheck.length > 0) {
+            const attrs = productsToCheck[0]?.subcategory?.allowed_attributes;
             if (attrs && Array.isArray(attrs)) {
-                attrs.forEach(attr => {
-                    if (attr.name && !attributeMap.has(attr.name)) {
-                        attributeMap.set(attr.name, {
-                            name: attr.name,
-                            data_type: attr.data_type || "text",
-                            options: attr.options || [],
-                        });
-                    }
-                });
+                setAllowedAttributes(
+                    attrs.map(attr => ({
+                        id: attr.id,
+                        name: attr.name,
+                        data_type: attr.data_type || "text",
+                        options: attr.options || [],
+                        is_variant: attr.is_variant || false,
+                    }))
+                );
+            } else {
+                setAllowedAttributes([]);
             }
-        });
-
-        setAllowedAttributes(Array.from(attributeMap.values()));
+        } else {
+            setAllowedAttributes([]);
+        }
         setAttributeFilters({});
     }, [categoryFilter, shoppingProduct]);
 
@@ -205,7 +211,7 @@ export default function useCategoryProducts() {
         });
     }, []);
 
-    const getUniqueAttributeValues = useCallback((attrName) => {
+    const getUniqueAttributeValues = useCallback((attrName, dataType) => {
         const values = new Set();
         shoppingProduct.forEach(product => {
             const attrs = product.attributes || product.product_attributes;
@@ -214,7 +220,25 @@ export default function useCategoryProducts() {
                     a => a.name?.toLowerCase() === attrName.toLowerCase()
                 );
                 if (attr && attr.value !== null && attr.value !== undefined && attr.value !== "") {
-                    values.add(String(attr.value));
+                    const rawValue = attr.value;
+                    // For multi_select, split comma-separated or array values into individual items
+                    if (dataType === "multi_select" || dataType === "select") {
+                        if (Array.isArray(rawValue)) {
+                            rawValue.forEach(v => {
+                                const trimmed = String(v).trim();
+                                if (trimmed) values.add(trimmed);
+                            });
+                        } else if (typeof rawValue === "string" && rawValue.includes(",")) {
+                            rawValue.split(",").forEach(v => {
+                                const trimmed = v.trim();
+                                if (trimmed) values.add(trimmed);
+                            });
+                        } else {
+                            values.add(String(rawValue).trim());
+                        }
+                    } else {
+                        values.add(String(rawValue));
+                    }
                 }
             }
         });

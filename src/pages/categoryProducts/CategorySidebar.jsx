@@ -26,7 +26,7 @@ export default function CategorySidebar({
                     </div>
                     Subcategories
                 </h3>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                <div className="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                     {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
                         <button
                             key={index}
@@ -48,7 +48,7 @@ export default function CategorySidebar({
             </div>
 
             {/* Price Range */}
-            <div className="glass-card p-4 rounded-xl">
+            {/* <div className="glass-card p-4 rounded-xl">
                 <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ export default function CategorySidebar({
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Quick Filters */}
             {QUICK_FILTERS.some(f => f.options.length > 0) && (

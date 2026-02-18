@@ -47,9 +47,18 @@ export const filterProducts = (products, { minValue, maximumValue, categoryFilte
 
                     const productValue = productAttr.value;
 
+                    // Handle array filter values (multi-select / multi_select user selection)
                     if (Array.isArray(filterValue)) {
+                        // Product value could itself be an array (multi_select attribute)
+                        if (Array.isArray(productValue)) {
+                            return filterValue.some(fv =>
+                                productValue.some(pv => String(pv).toLowerCase() === String(fv).toLowerCase())
+                            );
+                        }
+                        // Product value could be comma-separated string
+                        const productValues = String(productValue).split(",").map(v => v.trim().toLowerCase());
                         return filterValue.some(fv =>
-                            String(productValue).toLowerCase() === String(fv).toLowerCase()
+                            productValues.includes(String(fv).toLowerCase())
                         );
                     } else if (typeof filterValue === "object" && filterValue !== null) {
                         const numValue = Number(productValue);
