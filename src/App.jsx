@@ -37,6 +37,8 @@ import CategoryProducts from "./pages/CategoryProducts";
 import ComingSoon from "./pages/ComingSoon";
 import { getCookie, setCookie } from "./utils/cookie";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
+import CreateBidPage from "./pages/CreateBidPage";
+import MyBidsPage from "./pages/MyBidsPage";
 function App() {
   const {
     isCartOpen,
@@ -111,6 +113,8 @@ function App() {
         <Route path="/completion" element={<Completion />} />
         <Route path="/userwallet" element={<UserOnSiteWallet />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/create-bid" element={<CreateBidPage />} />
+        <Route path="/my-bids" element={<MyBidsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!hideHeaderFooter && <Footer />}
