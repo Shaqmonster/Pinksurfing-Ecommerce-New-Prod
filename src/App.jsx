@@ -39,6 +39,14 @@ import { getCookie, setCookie } from "./utils/cookie";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 import CreateBidPage from "./pages/CreateBidPage";
 import MyBidsPage from "./pages/MyBidsPage";
+import GigsPage from "./pages/gigs/GigsPage";
+import GigDetailPage from "./pages/gigs/GigDetailPage";
+import CreateGigPage from "./pages/gigs/CreateGigPage";
+import GigWorkerSetup from "./pages/gigs/GigWorkerSetup";
+import MyGigOrders from "./pages/gigs/MyGigOrders";
+import GigOrderSuccess from "./pages/gigs/GigOrderSuccess";
+import GigOrderCancel from "./pages/gigs/GigOrderCancel";
+
 function App() {
   const {
     isCartOpen,
@@ -115,6 +123,14 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/create-bid" element={<CreateBidPage />} />
         <Route path="/my-bids" element={<MyBidsPage />} />
+        {/* Gigs routes — static paths before dynamic :id */}
+        <Route path="/gigs" element={<GigsPage />} />
+        <Route path="/gigs/create" element={<CreateGigPage />} />
+        <Route path="/gigs/become-a-seller" element={<GigWorkerSetup />} />
+        <Route path="/gigs/orders" element={<MyGigOrders />} />
+        <Route path="/gigs/orders/success" element={<GigOrderSuccess />} />
+        <Route path="/gigs/orders/cancel" element={<GigOrderCancel />} />
+        <Route path="/gigs/:id" element={<GigDetailPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!hideHeaderFooter && <Footer />}

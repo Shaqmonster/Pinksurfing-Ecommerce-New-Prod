@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { FaWallet, FaGavel } from "react-icons/fa";
+import { FaWallet, FaGavel, FaBriefcase } from "react-icons/fa";
 
 import Profile from "./Profile";
 import Category from "./Category";
@@ -340,6 +340,17 @@ const Header = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Gigs Marketplace */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/gigs"
+                className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all whitespace-nowrap"
+              >
+                <FaBriefcase className="text-xs" />
+                Gigs
+              </Link>
+            </motion.div>
 
             {/* Create a Bid */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
