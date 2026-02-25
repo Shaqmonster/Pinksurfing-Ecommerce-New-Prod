@@ -48,6 +48,7 @@ const CreateGigPage = () => {
 
   // Step 1 — Details
   const [details, setDetails] = useState({
+    id: null,
     title: "",
     description: "",
     category: "",
@@ -65,13 +66,13 @@ const CreateGigPage = () => {
   const [mediaPreviews, setMediaPreviews] = useState([]);
 
   useEffect(() => {
-    if (!cookies.access_token) {
-      toast.error("Please sign in to create a gig.");
-      navigate("/signin");
-      return;
-    }
+    // if (!cookies.access_token) {
+    //   toast.error("Please sign in to create a gig.");
+    //   navigate("/signin");
+    //   return;
+    // }
     getGigCategories()
-      .then((res) => setCategories(res.results))
+      .then((res) => setCategories(res.data.results))
       .catch(() => {});
   }, []);
 
@@ -81,7 +82,7 @@ const CreateGigPage = () => {
   useEffect(() => {
     if (details.category) {
       getGigSubcategories(details.category)
-        .then((res) => setSubcategories(res.results))
+        .then((res) => setSubcategories(res.data.results))
         .catch(() => setSubcategories([]));
     } else {
       setSubcategories([]);
@@ -265,116 +266,115 @@ const CreateGigPage = () => {
           ))}
         </div>
 
-        {/* ── STEP 0: Details ── */}
-        <AnimatePresence mode="wait">
-          {step === 0 && (
-            <motion.div
-              key="step0"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              className="bg-[#13131a] border border-white/5 rounded-2xl p-6 sm:p-8 space-y-5"
-            >
-              <h2 className="text-white font-bold text-lg">Gig Details</h2>
-
-              <div className="space-y-1.5">
-                <label className="text-white/70 text-sm font-medium">Title <span className="text-pink-400">*</span></label>
-                <input
-                  name="title"
-                  value={details.title}
-                  onChange={handleDetailChange}
-                  placeholder="I will design your professional logo"
-                  maxLength={255}
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-white/70 text-sm font-medium">Description <span className="text-pink-400">*</span></label>
-                <textarea
-                  name="description"
-                  value={details.description}
-                  onChange={handleDetailChange}
-                  placeholder="Describe your service in detail — what you offer, your process, what buyers can expect…"
-                  rows={5}
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-white/70 text-sm font-medium">Category</label>
-                  <select
-                    name="category"
-                    value={details.category}
-                    onChange={handleDetailChange}
-                    className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24]"
-                  >
-                    <option value="">Select category…</option>
-                    {categories.length > 0  && categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-white/70 text-sm font-medium">Subcategory</label>
-                  <select
-                    name="subcategory"
-                    value={details.subcategory}
-                    onChange={handleDetailChange}
-                    disabled={!details.category || subcategories.length === 0}
-                    className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-40"
-                  >
-                    <option value="">Select subcategory…</option>
-                    {subcategories.length > 0 && subcategories.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-white/70 text-sm font-medium">Status</label>
-                <div className="flex gap-3">
-                  {["active", "draft"].map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setDetails((prev) => ({ ...prev, status: s }))}
-                      className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold capitalize transition-all ${
-                        details.status === s
-                          ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white"
-                          : "bg-transparent border-white/10 text-white/50 hover:border-white/20"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-white/30 text-xs">
-                  {details.status === "active"
-                    ? "Your gig will be visible to buyers immediately."
-                    : "Your gig will be saved as a draft and not visible to buyers."}
-                </p>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: submitting ? 1 : 1.02 }}
-                whileTap={{ scale: submitting ? 1 : 0.98 }}
-                onClick={handleDetailsNext}
-                disabled={submitting}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-base shadow-lg hover:shadow-purple-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          <AnimatePresence mode="wait">
+            {step === 0 && (
+              <motion.div
+                key="step0"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                className="bg-[#13131a] border border-white/5 rounded-2xl p-6 sm:p-8 space-y-5"
               >
-                {submitting ? (
-                  <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
-                ) : (
-                  "Continue to Packages →"
-                )}
-              </motion.button>
-            </motion.div>
-          )}
+                <h2 className="text-white font-bold text-lg">Gig Details</h2>
 
-          {/* ── STEP 1: Packages ── */}
+                <div className="space-y-1.5">
+            <label className="text-white/70 text-sm font-medium">Title <span className="text-pink-400">*</span></label>
+            <input
+              name="title"
+              value={details.title}
+              onChange={handleDetailChange}
+              placeholder="I will design your professional logo"
+              maxLength={255}
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all"
+            />
+                </div>
+
+                <div className="space-y-1.5">
+            <label className="text-white/70 text-sm font-medium">Description <span className="text-pink-400">*</span></label>
+            <textarea
+              name="description"
+              value={details.description}
+              onChange={handleDetailChange}
+              placeholder="Describe your service in detail — what you offer, your process, what buyers can expect…"
+              rows={5}
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none"
+            />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-white/70 text-sm font-medium">Category</label>
+              <select
+                name="category"
+                value={details.category}
+                onChange={(e) => setDetails((prev) => ({ ...prev, category: e.target.selectedOptions[0]?.id || e.target.value }))}
+                className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24]"
+              >
+                <option value="">Select category…</option>
+                {categories.length > 0  && categories.map((c) => (
+                  <option key={c.id} id={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-white/70 text-sm font-medium">Subcategory</label>
+              <select
+                name="subcategory"
+                value={details.subcategory}
+                onChange={(e) => setDetails((prev) => ({ ...prev, subcategory: e.target.selectedOptions[0]?.id || e.target.value }))}
+                disabled={!details.category || subcategories.length === 0}
+                className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-40"
+              >
+                <option value="">Select subcategory…</option>
+                {subcategories.length > 0 && subcategories.map((s) => (
+                  <option key={s.id} id={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+                </div>
+
+                <div className="space-y-1.5">
+            <label className="text-white/70 text-sm font-medium">Status</label>
+            <div className="flex gap-3">
+              {["active", "draft"].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setDetails((prev) => ({ ...prev, status: s }))}
+                  className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold capitalize transition-all ${
+              details.status === s
+                ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white"
+                : "bg-transparent border-white/10 text-white/50 hover:border-white/20"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <p className="text-white/30 text-xs">
+              {details.status === "active"
+                ? "Your gig will be visible to buyers immediately."
+                : "Your gig will be saved as a draft and not visible to buyers."}
+            </p>
+                </div>
+
+                <motion.button
+            whileHover={{ scale: submitting ? 1 : 1.02 }}
+            whileTap={{ scale: submitting ? 1 : 0.98 }}
+            onClick={handleDetailsNext}
+            disabled={submitting}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-base shadow-lg hover:shadow-purple-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                >
+            {submitting ? (
+              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
+            ) : (
+              "Continue to Packages →"
+            )}
+                </motion.button>
+              </motion.div>
+            )}
+
+            {/* ── STEP 1: Packages ── */}
           {step === 1 && (
             <motion.div
               key="step1"
