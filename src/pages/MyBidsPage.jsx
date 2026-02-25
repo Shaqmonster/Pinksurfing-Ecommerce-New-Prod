@@ -140,7 +140,7 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
               <p className="text-white/40 text-xs uppercase tracking-wider font-semibold">
                 Vendor Bids
               </p>
-              {req.bids.map((bid) => (
+              {req.bids && req.bids.length > 0 && req.bids.map((bid) => (
                 <BidRow
                   key={bid.id}
                   bid={bid}
@@ -356,7 +356,7 @@ const MyBidsPage = () => {
           </motion.div>
         ) : (
           <div className="space-y-4">
-            {requests.map((req) => (
+            {requests && requests.length > 0 && requests.map((req) => (
               <RequestCard
                 key={req.id}
                 req={req}
