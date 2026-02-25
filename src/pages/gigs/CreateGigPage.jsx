@@ -71,7 +71,7 @@ const CreateGigPage = () => {
       return;
     }
     getGigCategories()
-      .then((res) => setCategories(res.data))
+      .then((res) => setCategories(res.results))
       .catch(() => {});
   }, []);
 
@@ -81,7 +81,7 @@ const CreateGigPage = () => {
   useEffect(() => {
     if (details.category) {
       getGigSubcategories(details.category)
-        .then((res) => setSubcategories(res.data))
+        .then((res) => setSubcategories(res.results))
         .catch(() => setSubcategories([]));
     } else {
       setSubcategories([]);
