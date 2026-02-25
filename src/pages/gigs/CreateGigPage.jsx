@@ -75,6 +75,9 @@ const CreateGigPage = () => {
       .catch(() => {});
   }, []);
 
+  useEffect(()=> {
+    console.log("categories:", categories, subcategories);
+  }, [categories, subcategories]);
   useEffect(() => {
     if (details.category) {
       getGigSubcategories(details.category)
@@ -308,7 +311,7 @@ const CreateGigPage = () => {
                     className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24]"
                   >
                     <option value="">Select category…</option>
-                    {categories.map((c) => (
+                    {categories.length > 0  && categories.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
@@ -323,7 +326,7 @@ const CreateGigPage = () => {
                     className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-40"
                   >
                     <option value="">Select subcategory…</option>
-                    {subcategories.map((s) => (
+                    {subcategories.length > 0 && subcategories.map((s) => (
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>
