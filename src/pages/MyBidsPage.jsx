@@ -52,11 +52,11 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
               >
                 {req.status}
               </span>
-              {req.category_name && (
+              {/* {req.category_name && (
                 <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
                   {req.category_name}
                 </span>
-              )}
+              )} */}
             </div>
             <h3 className="text-white font-semibold text-base sm:text-lg truncate">
               {req.title}
@@ -256,8 +256,9 @@ const MyBidsPage = () => {
     try {
       setLoading(true);
       const res = await getMyRequests(cookies.access_token);
-      setRequests(res.data);
-    } catch {
+      console.log("Fetched requests:", res.data.results);
+      setRequests(res.data.results);
+    } catch (err) {
       toast.error("Failed to load your bid requests.");
     } finally {
       setLoading(false);
