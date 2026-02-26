@@ -120,8 +120,8 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
             className="mt-4 flex items-center gap-2 text-pink-400 hover:text-pink-300 text-sm font-medium transition-colors"
           >
             {expanded ? <IoChevronUp /> : <IoChevronDown />}
-            {expanded ? "Hide" : "View"} {req.bids.length}{" "}
-            {req.bids.length === 1 ? "bid" : "bids"}
+            {expanded ? "Hide" : "View"} {req.bids?.length}{" "}
+            {req.bids?.length === 1 ? "bid" : "bids"}
           </button>
         )}
       </div>
@@ -140,7 +140,7 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
               <p className="text-white/40 text-xs uppercase tracking-wider font-semibold">
                 Vendor Bids
               </p>
-              {req.bids && req.bids.length > 0 && req.bids.map((bid) => (
+              {req.bids && req.bids?.length > 0 && req.bids.map((bid) => (
                 <BidRow
                   key={bid.id}
                   bid={bid}
@@ -197,7 +197,7 @@ const BidRow = ({ bid, requestStatus, requestId, onAcceptBid, accepting }) => {
         <p className="text-white/80 text-sm leading-relaxed">{bid.proposal}</p>
       </div>
 
-      {bidImages.length > 0 && (
+      {bidImages?.length > 0 && (
         <div className="flex gap-2">
           {bidImages.map((img, i) => (
             <img
@@ -340,7 +340,7 @@ const MyBidsPage = () => {
           <div className="flex justify-center py-20">
             <span className="w-8 h-8 border-2 border-white/20 border-t-pink-400 rounded-full animate-spin" />
           </div>
-        ) : requests.length === 0 ? (
+        ) : requests?.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -357,7 +357,7 @@ const MyBidsPage = () => {
           </motion.div>
         ) : (
           <div className="space-y-4">
-            {requests && requests.length > 0 && requests.map((req) => (
+            {requests && requests?.length > 0 && requests.map((req) => (
               <RequestCard
                 key={req.id}
                 req={req}
