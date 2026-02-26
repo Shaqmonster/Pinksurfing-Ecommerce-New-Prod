@@ -217,7 +217,7 @@ const GigsPage = () => {
                 className="w-full pl-11 pr-4 py-3 bg-[#13131a] border border-white/10 rounded-xl text-white placeholder-white/30 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
               />
             </div>
-            <motion.button
+            {/* <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => setShowFilters(!showFilters)}
@@ -234,7 +234,7 @@ const GigsPage = () => {
                   !
                 </span>
               )}
-            </motion.button>
+            </motion.button> */}
           </div>
         </motion.div>
 

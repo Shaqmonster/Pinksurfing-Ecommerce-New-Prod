@@ -5,9 +5,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
-  createGig,
-  addGigPackage,
-  addGigMedia,
+  createGigFull,
   getGigCategories,
   getGigSubcategories,
 } from "../../api/gigs";
@@ -44,7 +42,6 @@ const CreateGigPage = () => {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [createdGigId, setCreatedGigId] = useState(null);
 
   // Step 1 — Details
   const [details, setDetails] = useState({
@@ -119,39 +116,17 @@ const CreateGigPage = () => {
     setMediaPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Step 1 → Step 2 — create the gig
-  const handleDetailsNext = async () => {
+  // Step 1 → Step 2 — validate details and move to packages
+  const handleDetailsNext = () => {
     if (!details.title.trim() || !details.description.trim()) {
       toast.error("Title and description are required.");
       return;
     }
-    try {
-      setSubmitting(true);
-      const payload = {
-        title: details.title.trim(),
-        description: details.description.trim(),
-        status: details.status,
-      };
-      if (details.category) payload.category = Number(details.category);
-      if (details.subcategory) payload.subcategory = Number(details.subcategory);
-
-      const res = await createGig(cookies.access_token, payload);
-      setCreatedGigId(res.data.id);
-      setStep(1);
-    } catch (err) {
-      const errData = err?.response?.data;
-      const msg =
-        errData?.detail ||
-        (typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
-        "Failed to save gig details.";
-      toast.error(msg);
-    } finally {
-      setSubmitting(false);
-    }
+    setStep(1);
   };
 
-  // Step 2 → Step 3 — add packages
-  const handlePackagesNext = async () => {
+  // Step 2 → Step 3 — validate packages and move to media
+  const handlePackagesNext = () => {
     const activePkgs = packages.filter((p) => p.enabled);
     if (activePkgs.length === 0) {
       toast.error("Please enable and configure at least one package.");
@@ -163,44 +138,49 @@ const CreateGigPage = () => {
         return;
       }
     }
+    setStep(2);
+  };
+
+  // Step 3 — publish: send everything in a single API call
+  const handlePublish = async () => {
     try {
       setSubmitting(true);
-      for (const p of activePkgs) {
-        await addGigPackage(cookies.access_token, createdGigId, {
+
+      const gigDetails = {
+        title: details.title.trim(),
+        description: details.description.trim(),
+        status: details.status,
+      };
+      if (details.category) gigDetails.category = Number(details.category);
+      if (details.subcategory) gigDetails.subcategory = Number(details.subcategory);
+
+      const activePkgs = packages
+        .filter((p) => p.enabled)
+        .map((p) => ({
           tier: p.tier,
           title: p.title || undefined,
           description: p.description,
           price: p.price,
           delivery_days: Number(p.delivery_days),
           revisions: Number(p.revisions),
-        });
-      }
-      setStep(2);
+        }));
+
+      const res = await createGigFull(
+        cookies.access_token,
+        gigDetails,
+        activePkgs,
+        mediaFiles
+      );
+
+      toast.success("Gig published successfully!");
+      navigate(`/gigs/${res.data.id}`);
     } catch (err) {
       const errData = err?.response?.data;
       const msg =
         errData?.detail ||
         (typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
-        "Failed to save packages.";
+        "Failed to create gig.";
       toast.error(msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Step 3 — upload media and finish
-  const handlePublish = async () => {
-    try {
-      setSubmitting(true);
-      for (let i = 0; i < mediaFiles.length; i++) {
-        await addGigMedia(cookies.access_token, createdGigId, mediaFiles[i], i === 0);
-      }
-      toast.success("Gig published successfully!");
-      navigate(`/gigs/${createdGigId}`);
-    } catch (err) {
-      // Media upload failure is non-fatal; gig is already created
-      toast.warning("Gig created, but some media failed to upload.");
-      navigate(`/gigs/${createdGigId}`);
     } finally {
       setSubmitting(false);
     }
@@ -597,10 +577,11 @@ const CreateGigPage = () => {
               </div>
 
               <button
-                onClick={() => navigate(`/gigs/${createdGigId}`)}
+                onClick={handlePublish}
+                disabled={submitting}
                 className="w-full text-center text-white/30 text-xs hover:text-white/50 transition-colors"
               >
-                Skip media and view gig →
+                Skip media and publish gig →
               </button>
             </motion.div>
           )}
