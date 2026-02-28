@@ -23,7 +23,6 @@ import {
   IoWalletOutline,
   IoChatbubbleOutline,
   IoStorefrontOutline,
-  IoPersonOutline
 } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
 
@@ -523,32 +522,6 @@ const GigHubDashboard = () => {
           ))}
         </div>
 
-        {/* Seller notice if not a worker yet (on selling tab) */}
-        <AnimatePresence>
-          {activeTab === "selling" && !loadingWorker && !workerProfile && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6"
-            >
-              <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/20 border border-purple-500/20 rounded-2xl p-6 text-center">
-                <IoPersonOutline className="text-5xl text-purple-400/50 mx-auto mb-3" />
-                <h3 className="text-white font-bold text-lg mb-2">Start Selling Your Skills</h3>
-                <p className="text-white/40 text-sm mb-5 max-w-sm mx-auto">
-                  Create a gig worker profile to start offering services and earning money.
-                </p>
-                <Link
-                  to="/gigs/become-a-seller"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-purple-500/30 transition-all"
-                >
-                  <FaBriefcase /> Set Up Seller Profile
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Tab content */}
         <AnimatePresence mode="wait">
           {activeTab === "buying" ? (
@@ -567,16 +540,14 @@ const GigHubDashboard = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
             >
-              {(workerProfile || loadingWorker) && (
-                <SellerTab
-                  workerProfile={workerProfile}
-                  sellerOrders={sellerOrders}
-                  myGigs={myGigs}
-                  loadingOrders={loadingOrders}
-                  loadingGigs={loadingGigs}
-                  refetchGigs={fetchWorkerAndGigs}
-                />
-              )}
+              <SellerTab
+                workerProfile={workerProfile}
+                sellerOrders={sellerOrders}
+                myGigs={myGigs}
+                loadingOrders={loadingOrders}
+                loadingGigs={loadingGigs}
+                refetchGigs={fetchWorkerAndGigs}
+              />
             </motion.div>
           )}
         </AnimatePresence>

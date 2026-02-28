@@ -398,7 +398,7 @@ const GigHubLanding = () => {
               <FaBriefcase className="text-5xl text-white/10 mx-auto mb-4" />
               <p className="text-white/40">No gigs available yet.</p>
               <Link
-                to="/gigs/become-a-seller"
+                to="/gigs/create"
                 className="mt-4 inline-block text-purple-400 hover:text-purple-300 text-sm"
               >
                 Be the first to post a gig →
@@ -478,10 +478,10 @@ const GigHubLanding = () => {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
-                  to="/gigs/become-a-seller"
+                  to="/gigs/create"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-base shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
-                  Become a Seller
+                  Create a Gig
                 </Link>
                 <Link
                   to="/gigs"
