@@ -23,6 +23,7 @@ import {
   IoWalletOutline,
   IoChatbubbleOutline,
   IoStorefrontOutline,
+  IoPersonOutline
 } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
 
