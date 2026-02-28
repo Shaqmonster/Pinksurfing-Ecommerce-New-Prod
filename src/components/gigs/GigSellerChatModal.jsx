@@ -2,9 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IoCloseOutline,
-  IoSendOutline,
+  IoSendSharp,
   IoAttachOutline,
   IoChatbubbleOutline,
+  IoCheckmarkDoneSharp,
+  IoCheckmarkSharp,
+  IoImageOutline,
 } from "react-icons/io5";
 import {
   createConversation,
@@ -14,61 +17,61 @@ import {
 
 const BASE_URL = import.meta.env.VITE_SERVER_URL;
 
-/**
- * Derive the WebSocket base URL from the HTTP API URL.
- * http://... → ws://...   |   https://... → wss://...
- */
+/** WS URL from REST URL */
 const getWsBaseUrl = () => {
   const url = BASE_URL.replace(/\/$/, "");
   if (url.startsWith("https://")) return url.replace("https://", "wss://");
   return url.replace("http://", "ws://");
 };
 
-/** Parse the current user's email from the SSO JWT (payload.email). */
-const getEmailFromToken = (token) => {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.email || null;
-  } catch {
-    return null;
-  }
-};
-
-/** Linkify URLs inside message text. */
+/** Linkify URLs */
 const MessageContent = ({ content }) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = content.split(urlRegex);
+  const urlRe = /(https?:\/\/[^\s]+)/g;
+  const parts = content.split(urlRe);
   return (
-    <span>
-      {parts.map((part, i) =>
-        urlRegex.test(part) ? (
+    <span className="whitespace-pre-wrap break-words">
+      {parts.map((p, i) =>
+        urlRe.test(p) ? (
           <a
             key={i}
-            href={part}
+            href={p}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 underline hover:text-blue-300 break-all"
+            className="text-blue-300 underline hover:text-blue-200 break-all"
           >
-            {part}
+            {p}
           </a>
         ) : (
-          <span key={i}>{part}</span>
+          <span key={i}>{p}</span>
         )
       )}
     </span>
   );
 };
 
+/** Check if two timestamps are on different calendar days */
+const isDifferentDay = (a, b) => {
+  if (!a || !b) return true;
+  const da = new Date(a);
+  const db = new Date(b);
+  return da.toDateString() !== db.toDateString();
+};
+
+/** Readable date banner */
+const dateBanner = (iso) => {
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return "Today";
+  const y = new Date(now);
+  y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return "Yesterday";
+  return d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+};
+
 /**
- * A slide-up chat modal for contacting a gig seller.
- *
- * Props:
- *  - isOpen          : boolean
- *  - onClose         : () => void
- *  - accessToken     : string  (SSO JWT)
- *  - sellerEmail     : string  (GigWorker email)
- *  - sellerName      : string  (display name / username)
- *  - currentUserEmail: string  (current buyer's email)
+ * Premium slide-up chat modal for contacting a gig seller.
+ * WhatsApp-inspired design with inline timestamps, read ticks,
+ * message grouping, and date separators.
  */
 const GigSellerChatModal = ({
   isOpen,
@@ -90,7 +93,15 @@ const GigSellerChatModal = ({
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
 
-  // ---- Initialise conversation when modal opens ----
+  // ─── Identity ───
+  const isMe = (msg) => {
+    const se = msg.sender?.email;
+    if (se) return se === currentUserEmail;
+    // Fallback: username = email prefix
+    return msg.sender?.username === currentUserEmail?.split("@")[0];
+  };
+
+  // ─── Init conversation ───
   useEffect(() => {
     if (!isOpen || !accessToken || !sellerEmail) return;
     let cancelled = false;
@@ -98,14 +109,11 @@ const GigSellerChatModal = ({
     const init = async () => {
       setLoadingInit(true);
       try {
-        // Create or find existing 1-to-1 conversation
         const convRes = await createConversation(accessToken, sellerEmail);
         if (cancelled) return;
-        const conv = convRes.data;
-        setConversationId(conv.id);
+        setConversationId(convRes.data.id);
 
-        // Fetch existing messages
-        const msgRes = await getConversationMessages(accessToken, conv.id);
+        const msgRes = await getConversationMessages(accessToken, convRes.data.id);
         if (cancelled) return;
         const data = Array.isArray(msgRes.data) ? msgRes.data : msgRes.data.results || [];
         setMessages(data);
@@ -117,85 +125,60 @@ const GigSellerChatModal = ({
     };
 
     init();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [isOpen, accessToken, sellerEmail]);
 
-  // ---- WebSocket lifecycle ----
+  // ─── WebSocket ───
   const connectWs = useCallback(() => {
     if (!conversationId) return;
-    // Close any existing connection
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
+    if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
 
-    const wsUrl = `${getWsBaseUrl()}/ws/chat/${conversationId}/`;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      console.log("[GigChat] WS connected", conversationId);
-    };
-
+    const ws = new WebSocket(`${getWsBaseUrl()}/ws/chat/${conversationId}/`);
+    ws.onopen = () => console.log("[GigChat] WS connected", conversationId);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // Construct a message object consistent with the REST format
         const newMsg = {
           id: data.message_id || `ws-${Date.now()}`,
           content: data.message,
           sender: {
             id: data.sender_id,
             username: data.sender_username || "",
+            email: data.sender_email || "",
           },
           created_at: data.created_at || new Date().toISOString(),
           is_read: false,
           attachments: [],
         };
-
         setMessages((prev) => {
-          // Avoid duplicates (same id)
           if (prev.some((m) => m.id === newMsg.id)) return prev;
           return [...prev, newMsg];
         });
-      } catch {
-        // ignore bad frames
-      }
+      } catch { /* ignore */ }
     };
-
     ws.onclose = () => {
-      console.log("[GigChat] WS closed");
-      // Attempt reconnect after 3s if modal still open
       reconnectTimer.current = setTimeout(() => {
         if (wsRef.current === ws) connectWs();
       }, 3000);
     };
-
     ws.onerror = () => ws.close();
-
     wsRef.current = ws;
   }, [conversationId]);
 
   useEffect(() => {
-    if (isOpen && conversationId) {
-      connectWs();
-    }
+    if (isOpen && conversationId) connectWs();
     return () => {
       clearTimeout(reconnectTimer.current);
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
+      if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
     };
   }, [isOpen, conversationId, connectWs]);
 
-  // ---- Auto-scroll ----
+  // ─── Auto-scroll ───
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ---- Send message via WS (with REST fallback) ----
+  // ─── Send ───
   const handleSend = async (e) => {
     e?.preventDefault();
     const text = input.trim();
@@ -205,19 +188,15 @@ const GigSellerChatModal = ({
     setSending(true);
     try {
       if (attachments.length > 0) {
-        // Attachments must go through REST
         await sendMessage(accessToken, conversationId, text, attachments);
         setAttachments([]);
-        // Refresh messages to get attachment URLs
         const msgRes = await getConversationMessages(accessToken, conversationId);
         setMessages(Array.isArray(msgRes.data) ? msgRes.data : msgRes.data.results || []);
       } else if (wsRef.current?.readyState === WebSocket.OPEN) {
-        // Fast path — send via WebSocket (consumer persists to DB)
         wsRef.current.send(
           JSON.stringify({ message: text, sender_email: currentUserEmail })
         );
       } else {
-        // Fallback REST
         await sendMessage(accessToken, conversationId, text);
         const msgRes = await getConversationMessages(accessToken, conversationId);
         setMessages(Array.isArray(msgRes.data) ? msgRes.data : msgRes.data.results || []);
@@ -236,23 +215,9 @@ const GigSellerChatModal = ({
     e.target.value = "";
   };
 
-  const removeAttachment = (idx) => {
+  const removeAttachment = (idx) =>
     setAttachments((prev) => prev.filter((_, i) => i !== idx));
-  };
 
-  // ---- Determine "isMe" ----
-  const isMe = (msg) => {
-    // Compare by email if available, else by username matching
-    const senderEmail = msg.sender?.email;
-    if (senderEmail) return senderEmail === currentUserEmail;
-    // Fallback: if sender username matches first part of our email
-    return (
-      msg.sender?.username === currentUserEmail?.split("@")[0] ||
-      msg.sender?.id === currentUserEmail
-    );
-  };
-
-  // ---- Reset state on close ----
   const handleClose = () => {
     setConversationId(null);
     setMessages([]);
@@ -280,126 +245,190 @@ const GigSellerChatModal = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.97 }}
             transition={{ type: "spring", damping: 25, stiffness: 350 }}
-            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full sm:w-[420px] h-[80vh] sm:h-[600px] bg-[#0d0d14] border border-white/10 sm:rounded-2xl rounded-t-2xl shadow-2xl shadow-black/50 z-[101] flex flex-col overflow-hidden"
+            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full sm:w-[420px] h-[80vh] sm:h-[600px] bg-[#0d0d14] border border-white/[0.08] sm:rounded-2xl rounded-t-2xl shadow-2xl shadow-black/60 z-[101] flex flex-col overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 bg-[#0a0a12] flex-shrink-0">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-sm uppercase flex-shrink-0">
-                {sellerName?.[0] || "?"}
+            {/* ── Header ── */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-[#13131a] border-b border-white/[0.06] flex-shrink-0">
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm uppercase">
+                  {sellerName?.[0] || "?"}
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-[#13131a]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm truncate">{sellerName}</p>
-                <p className="text-white/30 text-xs flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
-                  {conversationId ? "Connected" : "Connecting…"}
+                <p className="text-white font-semibold text-[15px] truncate">{sellerName}</p>
+                <p className="text-green-400/70 text-xs">
+                  {conversationId ? "online" : "connecting…"}
                 </p>
               </div>
               <button
                 onClick={handleClose}
-                className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70 transition-all"
+                className="p-2 rounded-full hover:bg-white/[0.06] text-white/40 hover:text-white/70 transition-all"
               >
                 <IoCloseOutline className="text-xl" />
               </button>
             </div>
 
-            {/* Messages area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {loadingInit ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-3">
-                  <IoChatbubbleOutline className="text-5xl text-white/10" />
-                  <p className="text-white/30 text-sm text-center">
-                    Start a conversation with {sellerName}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {messages.map((msg) => {
-                    const mine = isMe(msg);
-                    return (
-                      <motion.div
-                        key={msg.id}
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`flex gap-2 ${mine ? "flex-row-reverse" : "flex-row"}`}
-                      >
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white text-xs font-bold uppercase flex-shrink-0 mt-1">
-                          {msg.sender?.username?.[0] || "?"}
-                        </div>
-                        <div
-                          className={`max-w-[75%] flex flex-col gap-1 ${
-                            mine ? "items-end" : "items-start"
-                          }`}
-                        >
+            {/* ── Messages ── */}
+            <div
+              className="flex-1 overflow-y-auto"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 20% 50%, rgba(139,92,246,0.04) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(236,72,153,0.03) 0%, transparent 50%)",
+              }}
+            >
+              <div className="px-4 py-3 space-y-0.5">
+                {loadingInit ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 gap-3">
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl px-5 py-3 text-center">
+                      <p className="text-purple-300/80 text-sm">
+                        🔒 Say hello to <span className="font-semibold text-white/80">{sellerName}</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((msg, idx) => {
+                      const mine = isMe(msg);
+                      const prev = messages[idx - 1];
+                      const showDate = isDifferentDay(prev?.created_at, msg.created_at);
+                      const sameSenderAsPrev = prev && prev.sender?.email === msg.sender?.email && !showDate;
+                      const next = messages[idx + 1];
+                      const sameSenderAsNext = next && next.sender?.email === msg.sender?.email && !isDifferentDay(msg.created_at, next?.created_at);
+
+                      const isFirst = !sameSenderAsPrev;
+                      const isLast = !sameSenderAsNext;
+
+                      return (
+                        <React.Fragment key={msg.id}>
+                          {showDate && (
+                            <div className="flex justify-center my-3">
+                              <span className="bg-[#1a1a26] text-white/40 text-[10px] font-medium px-3 py-1 rounded-lg">
+                                {dateBanner(msg.created_at)}
+                              </span>
+                            </div>
+                          )}
+
                           <div
-                            className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                              mine
-                                ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-tr-sm"
-                                : "bg-[#1a1a24] text-white/80 border border-white/5 rounded-tl-sm"
+                            className={`flex ${mine ? "justify-end" : "justify-start"} ${
+                              isFirst && idx > 0 && !showDate ? "mt-2.5" : "mt-[2px]"
                             }`}
                           >
-                            {msg.content && <MessageContent content={msg.content} />}
-                            {msg.attachments?.map((att, i) => (
-                              <a
-                                key={i}
-                                href={att.file}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block mt-1 text-xs underline opacity-80"
-                              >
-                                📎 Attachment {i + 1}
-                              </a>
-                            ))}
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, y: 3 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              transition={{ duration: 0.12 }}
+                              className={`relative max-w-[80%] px-3 py-2 ${
+                                mine
+                                  ? `bg-gradient-to-br from-purple-600/90 to-purple-700/90 text-white ${
+                                      isFirst && isLast ? "rounded-2xl rounded-tr-md" :
+                                      isFirst ? "rounded-2xl rounded-tr-md rounded-br-md" :
+                                      isLast ? "rounded-2xl rounded-r-md rounded-tr-md" :
+                                      "rounded-2xl rounded-r-md"
+                                    }`
+                                  : `bg-[#1e1e2c] text-white/90 border border-white/[0.04] ${
+                                      isFirst && isLast ? "rounded-2xl rounded-tl-md" :
+                                      isFirst ? "rounded-2xl rounded-tl-md rounded-bl-md" :
+                                      isLast ? "rounded-2xl rounded-l-md rounded-tl-md" :
+                                      "rounded-2xl rounded-l-md"
+                                    }`
+                              }`}
+                            >
+                              {msg.content && (
+                                <div className="text-[13.5px] leading-[1.45]">
+                                  <MessageContent content={msg.content} />
+                                  <span className="inline-flex items-center gap-1 float-right ml-3 mt-1 translate-y-[2px]">
+                                    <span className={`text-[10px] ${mine ? "text-white/50" : "text-white/25"}`}>
+                                      {new Date(msg.created_at).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                    {mine && (
+                                      <span className="text-purple-300/70">
+                                        {msg.is_read ? (
+                                          <IoCheckmarkDoneSharp className="text-[12px]" />
+                                        ) : (
+                                          <IoCheckmarkSharp className="text-[12px]" />
+                                        )}
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                              )}
+
+                              {msg.attachments?.length > 0 && (
+                                <div className="mt-1 space-y-1">
+                                  {msg.attachments.map((att, i) => (
+                                    <a
+                                      key={i}
+                                      href={att.file}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1.5 text-xs bg-black/20 rounded-lg px-2.5 py-1.5 hover:bg-black/30 transition-colors"
+                                    >
+                                      <IoImageOutline className="text-sm flex-shrink-0" />
+                                      <span className="truncate">Attachment {i + 1}</span>
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </motion.div>
                           </div>
-                          <span className="text-white/25 text-[10px] px-1">
-                            {new Date(msg.created_at).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </>
-              )}
+                        </React.Fragment>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* Attachment previews */}
-            {attachments.length > 0 && (
-              <div className="px-4 pb-2 flex gap-2 overflow-x-auto flex-shrink-0">
-                {attachments.map((f, i) => (
-                  <div key={i} className="relative flex-shrink-0">
-                    <div className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white/60 text-xs flex items-center gap-1.5">
-                      <IoAttachOutline />
-                      <span className="max-w-[80px] truncate">{f.name}</span>
-                    </div>
-                    <button
-                      onClick={() => removeAttachment(i)}
-                      className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center"
-                    >
-                      ×
-                    </button>
+            {/* ── Attachment previews ── */}
+            <AnimatePresence>
+              {attachments.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="bg-[#13131a] border-t border-white/[0.04] px-4 overflow-hidden"
+                >
+                  <div className="flex gap-2 py-2 overflow-x-auto">
+                    {attachments.map((f, i) => (
+                      <div
+                        key={i}
+                        className="relative flex-shrink-0 bg-[#1a1a24] border border-white/[0.06] rounded-lg px-2.5 py-1.5 flex items-center gap-1.5"
+                      >
+                        <IoAttachOutline className="text-white/40 text-xs" />
+                        <span className="text-white/60 text-[11px] max-w-[70px] truncate">{f.name}</span>
+                        <button
+                          onClick={() => removeAttachment(i)}
+                          className="ml-0.5 text-white/30 hover:text-red-400 transition-colors"
+                        >
+                          <IoCloseOutline className="text-xs" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Input */}
+            {/* ── Input ── */}
             <form
               onSubmit={handleSend}
-              className="flex items-end gap-2 px-4 py-3 border-t border-white/5 bg-[#0a0a12] flex-shrink-0"
+              className="flex items-end gap-2 px-3 py-2.5 bg-[#13131a] border-t border-white/[0.04] flex-shrink-0"
             >
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all flex-shrink-0"
+                className="p-2 rounded-full text-white/40 hover:text-white/60 hover:bg-white/[0.04] transition-all flex-shrink-0"
               >
-                <IoAttachOutline className="text-lg" />
+                <IoAttachOutline className="text-lg rotate-45" />
               </button>
               <input
                 ref={fileInputRef}
@@ -410,29 +439,32 @@ const GigSellerChatModal = ({
               />
               <textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  e.target.style.height = "auto";
+                  e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleSend(e);
                   }
                 }}
-                placeholder="Type a message…"
+                placeholder="Type a message"
                 rows={1}
-                className="flex-1 bg-[#13131a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-500 transition-all resize-none"
-                style={{ minHeight: "44px", maxHeight: "100px" }}
+                className="flex-1 bg-[#1a1a24] rounded-2xl px-4 py-2.5 text-white text-[13.5px] placeholder-white/25 outline-none resize-none focus:bg-[#1e1e2a] transition-colors"
+                style={{ minHeight: "40px", maxHeight: "100px" }}
               />
               <motion.button
                 type="submit"
-                whileHover={{ scale: sending ? 1 : 1.05 }}
-                whileTap={{ scale: sending ? 1 : 0.95 }}
+                whileTap={{ scale: 0.9 }}
                 disabled={sending || (!input.trim() && attachments.length === 0)}
-                className="p-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 shadow-lg hover:shadow-purple-500/30 transition-all"
+                className="p-2.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0 shadow-lg shadow-purple-500/20 transition-all"
               >
                 {sending ? (
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin block" />
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin block" />
                 ) : (
-                  <IoSendOutline className="text-lg" />
+                  <IoSendSharp className="text-base" />
                 )}
               </motion.button>
             </form>
