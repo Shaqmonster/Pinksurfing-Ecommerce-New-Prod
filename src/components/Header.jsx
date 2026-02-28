@@ -341,14 +341,14 @@ const Header = () => {
               )}
             </AnimatePresence>
 
-            {/* Gigs Marketplace */}
+            {/* GigHub Marketplace */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
-                to="/gigs"
+                to="/gighub"
                 className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all whitespace-nowrap"
               >
                 <FaBriefcase className="text-xs" />
-                Gigs
+                GigHub
               </Link>
             </motion.div>
 

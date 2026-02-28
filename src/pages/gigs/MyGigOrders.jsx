@@ -344,6 +344,12 @@ const MyGigOrders = () => {
                             Accept Delivery
                           </motion.button>
                         )}
+                        <Link
+                          to={`/gigs/orders/${order.id}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold hover:bg-purple-500/20 transition-all"
+                        >
+                          View Details
+                        </Link>
                         {order.gig?.id && (
                           <Link
                             to={`/gigs/${order.gig.id}`}

@@ -46,6 +46,10 @@ import GigWorkerSetup from "./pages/gigs/GigWorkerSetup";
 import MyGigOrders from "./pages/gigs/MyGigOrders";
 import GigOrderSuccess from "./pages/gigs/GigOrderSuccess";
 import GigOrderCancel from "./pages/gigs/GigOrderCancel";
+import GigHubLanding from "./pages/gigs/GigHubLanding";
+import GigHubDashboard from "./pages/gigs/GigHubDashboard";
+import GigMessages from "./pages/gigs/GigMessages";
+import GigOrderDetail from "./pages/gigs/GigOrderDetail";
 
 function App() {
   const {
@@ -123,6 +127,11 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/create-bid" element={<CreateBidPage />} />
         <Route path="/my-bids" element={<MyBidsPage />} />
+        {/* GigHub integrated routes */}
+        <Route path="/gighub" element={<GigHubLanding />} />
+        <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
+        <Route path="/gighub/messages" element={<GigMessages />} />
+
         {/* Gigs routes — static paths before dynamic :id */}
         <Route path="/gigs" element={<GigsPage />} />
         <Route path="/gigs/create" element={<CreateGigPage />} />
@@ -130,6 +139,7 @@ function App() {
         <Route path="/gigs/orders" element={<MyGigOrders />} />
         <Route path="/gigs/orders/success" element={<GigOrderSuccess />} />
         <Route path="/gigs/orders/cancel" element={<GigOrderCancel />} />
+        <Route path="/gigs/orders/:id" element={<GigOrderDetail />} />
         <Route path="/gigs/:id" element={<GigDetailPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

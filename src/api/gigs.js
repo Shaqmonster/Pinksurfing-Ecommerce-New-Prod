@@ -62,30 +62,20 @@ export const addGigMedia = (token, gigId, file, isMain = false) => {
 
 /**
  * Create a gig with packages and media in a single request.
- * Sends FormData so files can be included alongside JSON fields.
- *
- * @param {string} token
- * @param {object} details   – { title, description, status, category?, subcategory? }
- * @param {array}  packages  – array of { tier, title, description, price, delivery_days, revisions }
- * @param {File[]} mediaFiles – array of File objects (first one is treated as main)
  */
 export const createGigFull = (token, details, packages = [], mediaFiles = []) => {
   const form = new FormData();
 
-  // Gig detail fields
   form.append("title", details.title);
   form.append("description", details.description);
   form.append("status", details.status || "active");
   if (details.category) form.append("category", details.category);
   if (details.subcategory) form.append("subcategory", details.subcategory);
 
-  // Packages as JSON string
   form.append("packages", JSON.stringify(packages));
 
-  // Media files
   mediaFiles.forEach((file, idx) => {
     form.append("media_files", file);
-    // Tag the first file as main
     if (idx === 0) form.append("main_media_index", "0");
   });
 
@@ -93,6 +83,36 @@ export const createGigFull = (token, details, packages = [], mediaFiles = []) =>
     headers: authHeader(token),
   });
 };
+
+export const updateGig = (token, gigId, details, packages = [], mediaFiles = []) => {
+  const form = new FormData();
+
+  if (details.title) form.append("title", details.title);
+  if (details.description) form.append("description", details.description);
+  if (details.status) form.append("status", details.status);
+  if (details.category) form.append("category", details.category);
+  if (details.subcategory) form.append("subcategory", details.subcategory);
+
+  if (packages.length > 0) form.append("packages", JSON.stringify(packages));
+
+  mediaFiles.forEach((file) => {
+    form.append("media_files", file);
+  });
+
+  return axios.patch(`${BASE_URL}/api/gigs/${gigId}/`, form, {
+    headers: authHeader(token),
+  });
+};
+
+export const deleteGig = (token, gigId) =>
+  axios.delete(`${BASE_URL}/api/gigs/${gigId}/`, {
+    headers: authHeader(token),
+  });
+
+export const getMyGigs = (token) =>
+  axios.get(`${BASE_URL}/api/gigs/my_gigs/`, {
+    headers: authHeader(token),
+  });
 
 // ─── Orders (Buyer) ──────────────────────────────────────────────────────────
 
@@ -115,6 +135,11 @@ export const getMyGigOrders = (token) =>
     headers: authHeader(token),
   });
 
+export const getGigOrderDetail = (token, orderId) =>
+  axios.get(`${BASE_URL}/api/gig-orders/${orderId}/`, {
+    headers: authHeader(token),
+  });
+
 export const submitOrderRequirements = (token, orderId, answers) =>
   axios.post(
     `${BASE_URL}/api/gig-orders/${orderId}/submit_requirements/`,
@@ -125,11 +150,25 @@ export const submitOrderRequirements = (token, orderId, answers) =>
 export const deliverOrder = (token, orderId, { message, files }) => {
   const form = new FormData();
   form.append("message", message);
-  files.forEach((f) => form.append("files", f));
+  if (files && files.length) files.forEach((f) => form.append("files", f));
   return axios.post(`${BASE_URL}/api/gig-orders/${orderId}/deliver/`, form, {
     headers: authHeader(token),
   });
 };
+
+export const completeOrder = (token, orderId) =>
+  axios.post(
+    `${BASE_URL}/api/gig-orders/${orderId}/complete/`,
+    {},
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
+
+export const cancelOrder = (token, orderId) =>
+  axios.post(
+    `${BASE_URL}/api/gig-orders/${orderId}/cancel/`,
+    {},
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
 
 // ─── Chat ────────────────────────────────────────────────────────────────────
 
@@ -137,3 +176,26 @@ export const getConversations = (token) =>
   axios.get(`${BASE_URL}/api/chat/conversations/`, {
     headers: authHeader(token),
   });
+
+export const createConversation = (token, participantId) =>
+  axios.post(
+    `${BASE_URL}/api/chat/conversations/`,
+    { participant_id: participantId },
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
+
+export const getConversationMessages = (token, conversationId) =>
+  axios.get(`${BASE_URL}/api/chat/conversations/${conversationId}/messages/`, {
+    headers: authHeader(token),
+  });
+
+export const sendMessage = (token, conversationId, content, attachments = []) => {
+  const form = new FormData();
+  form.append("content", content);
+  attachments.forEach((f) => form.append("attachments", f));
+  return axios.post(
+    `${BASE_URL}/api/chat/conversations/${conversationId}/messages/`,
+    form,
+    { headers: authHeader(token) }
+  );
+};
