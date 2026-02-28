@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
@@ -96,10 +96,10 @@ function App() {
       <ScrollToTop />
       {!hideHeaderFooter && <Header />}
       <Routes>
-        {/* Only register auth routes when there's no access_token cookie */}
-        {!cookieAccess && <Route path="/signup" element={<Signup />} />}
-        {!cookieAccess && <Route path="/signin" element={<Signin />} />}
-        {!cookieAccess && <Route path="/forgotPassword" element={<ForgotPassword />} />}
+        {/* Auth routes — redirect to home if already logged in */}
+        <Route path="/signup" element={cookieAccess ? <Navigate to="/" replace /> : <Signup />} />
+        <Route path="/signin" element={cookieAccess ? <Navigate to="/" replace /> : <Signin />} />
+        <Route path="/forgotPassword" element={cookieAccess ? <Navigate to="/" replace /> : <ForgotPassword />} />
 
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Home />} />

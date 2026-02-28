@@ -373,9 +373,9 @@ const SellerTab = ({ workerProfile, sellerOrders, myGigs, loadingOrders, loading
                         </span>
                         <span className="text-white/30">#{order.id}</span>
                         <span className="text-white/30">Buyer: {order.buyer_username || "—"}</span>
-                        {order.expected_delivery_date && (
+                        {order.due_date && (
                           <span className="text-white/30">
-                            Due: {new Date(order.expected_delivery_date).toLocaleDateString()}
+                            Due: {new Date(order.due_date).toLocaleDateString()}
                           </span>
                         )}
                       </div>

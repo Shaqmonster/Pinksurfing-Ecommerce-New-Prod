@@ -114,9 +114,9 @@ const GigCard = ({ gig }) => {
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white text-[10px] font-bold uppercase">
-            {gig.worker?.username?.[0] || "?"}
+            {(gig.worker?.name || gig.worker?.username)?.[0] || "?"}
           </div>
-          <span className="text-white/50 text-xs">{gig.worker?.username}</span>
+          <span className="text-white/50 text-xs">{gig.worker?.name || gig.worker?.username}</span>
           <div className="ml-auto flex items-center gap-1">
             <IoStarSharp className="text-yellow-400 text-xs" />
             <span className="text-white/70 text-xs">{gig.rating}</span>
@@ -128,16 +128,22 @@ const GigCard = ({ gig }) => {
         </h3>
 
         <div className="flex items-center justify-between pt-3 border-t border-white/5">
-          <div className="flex items-center gap-1 text-white/40 text-xs">
-            <IoTimeOutline className="text-sm" />
-            <span>{lowestPkg?.delivery_days}d</span>
-          </div>
-          <div className="text-right">
-            <span className="text-white/30 text-[10px]">From</span>
-            <p className="text-white font-bold text-base leading-tight">
-              ${parseFloat(lowestPkg?.price || 0).toFixed(2)}
-            </p>
-          </div>
+          {lowestPkg ? (
+            <>
+              <div className="flex items-center gap-1 text-white/40 text-xs">
+                <IoTimeOutline className="text-sm" />
+                <span>{lowestPkg.delivery_days}d</span>
+              </div>
+              <div className="text-right">
+                <span className="text-white/30 text-[10px]">From</span>
+                <p className="text-white font-bold text-base leading-tight">
+                  ${parseFloat(lowestPkg.price).toFixed(2)}
+                </p>
+              </div>
+            </>
+          ) : (
+            <span className="text-white/30 text-xs">Contact for pricing</span>
+          )}
         </div>
       </div>
 
