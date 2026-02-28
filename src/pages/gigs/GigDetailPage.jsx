@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { getGig, createGigOrder, createStripeCheckoutSession } from "../../api/gigs";
+import GigSellerChatModal from "../../components/gigs/GigSellerChatModal";
 import {
   IoStarSharp,
   IoTimeOutline,
@@ -14,6 +15,7 @@ import {
   IoChevronForwardOutline,
   IoShieldCheckmarkOutline,
   IoPersonCircleOutline,
+  IoChatbubbleOutline,
 } from "react-icons/io5";
 import { FaBriefcase, FaCheck } from "react-icons/fa";
 
@@ -58,6 +60,7 @@ const GigDetailPage = () => {
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [purchasing, setPurchasing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -545,11 +548,39 @@ const GigDetailPage = () => {
                   <IoCheckmarkCircle className="text-green-400 text-sm" />
                   <span>{gig.worker?.total_orders_completed} orders completed</span>
                 </div>
+
+                {/* Message Seller */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    if (!cookies.access_token) {
+                      toast.error("Please sign in to message this seller.");
+                      navigate("/signin");
+                      return;
+                    }
+                    setChatOpen(true);
+                  }}
+                  className="mt-4 w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <IoChatbubbleOutline className="text-base" />
+                  Message Seller
+                </motion.button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Seller Chat Modal */}
+      <GigSellerChatModal
+        isOpen={chatOpen}
+        onClose={() => setChatOpen(false)}
+        accessToken={cookies.access_token}
+        sellerEmail={gig.worker?.email}
+        sellerName={gig.worker?.name || gig.worker?.username || "Seller"}
+        currentUserEmail={user?.email}
+      />
     </div>
   );
 };

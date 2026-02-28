@@ -177,10 +177,10 @@ export const getConversations = (token) =>
     headers: authHeader(token),
   });
 
-export const createConversation = (token, participantId) =>
+export const createConversation = (token, participantEmail) =>
   axios.post(
     `${BASE_URL}/api/chat/conversations/`,
-    { participant_id: participantId },
+    { participant_email: participantEmail },
     { headers: { ...authHeader(token), "Content-Type": "application/json" } }
   );
 
