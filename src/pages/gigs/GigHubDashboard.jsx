@@ -426,9 +426,11 @@ const GigHubDashboard = () => {
     setLoadingOrders(true);
     try {
       const res = await getMyGigOrders(cookies.access_token);
-      setAllOrders(Array.isArray(res.data) ? res.data : res.data.results || []);
-    } catch {
+      const data = res.data;
+      setAllOrders(Array.isArray(data) ? data : data.results || []);
+    } catch (err) {
       toast.error("Failed to load orders.");
+      setAllOrders([]);
     } finally {
       setLoadingOrders(false);
     }
@@ -437,26 +439,30 @@ const GigHubDashboard = () => {
   const fetchWorkerAndGigs = async () => {
     setLoadingWorker(true);
     setLoadingGigs(true);
-    try {
-      const wRes = await getMyGigWorkerProfile(cookies.access_token);
-      setWorkerProfile(wRes.data);
-    } catch {
-      setWorkerProfile(null);
-    } finally {
-      setLoadingWorker(false);
-    }
+    // Run both calls in parallel
+    const [workerResult, gigsResult] = await Promise.allSettled([
+      getMyGigWorkerProfile(cookies.access_token),
+      getMyGigs(cookies.access_token),
+    ]);
 
-    try {
-      const gRes = await getMyGigs(cookies.access_token);
-      setMyGigs(Array.isArray(gRes.data) ? gRes.data : gRes.data.results || []);
-    } catch {
-      setMyGigs([]);
-    } finally {
-      setLoadingGigs(false);
+    if (workerResult.status === "fulfilled") {
+      setWorkerProfile(workerResult.value.data);
+    } else {
+      setWorkerProfile(null);
     }
+    setLoadingWorker(false);
+
+    if (gigsResult.status === "fulfilled") {
+      const data = gigsResult.value.data;
+      setMyGigs(Array.isArray(data) ? data : data.results || []);
+    } else {
+      setMyGigs([]);
+    }
+    setLoadingGigs(false);
   };
 
-  // Split orders into buyer orders vs seller orders using API-provided flags
+  // Split orders into buyer orders vs seller orders using API-provided flags.
+  // The backend now returns both types for customers who are also sellers.
   const buyerOrders = allOrders.filter((o) => o.is_buyer === true);
   const sellerOrders = allOrders.filter((o) => o.is_seller === true);
 
