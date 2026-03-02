@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { listGigs, getGigCategories } from "../../api/gigs";
 import {
   IoSearchSharp,
@@ -13,7 +13,6 @@ import {
   IoPersonOutline,
   IoRocketOutline,
   IoGridOutline,
-  IoChevronBackOutline,
   IoStorefrontOutline,
 } from "react-icons/io5";
 import {
@@ -166,12 +165,6 @@ const GigHubLanding = () => {
   const [featuredGigs, setFeaturedGigs] = useState([]);
   const [loadingGigs, setLoadingGigs] = useState(true);
 
-  // Category browsing state
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
-  const [categoryGigs, setCategoryGigs] = useState([]);
-  const [loadingCategoryGigs, setLoadingCategoryGigs] = useState(false);
-  const categoryPanelRef = useRef(null);
 
   useEffect(() => {
     getGigCategories()
@@ -192,40 +185,7 @@ const GigHubLanding = () => {
   }, []);
 
   const handleCategoryClick = (cat) => {
-    if (selectedCategory?.id === cat.id) {
-      // Toggle off
-      setSelectedCategory(null);
-      setSelectedSubcategory(null);
-      setCategoryGigs([]);
-      return;
-    }
-    setSelectedCategory(cat);
-    setSelectedSubcategory(null);
-    fetchCategoryGigs({ category_slug: cat.slug });
-    setTimeout(() => {
-      categoryPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-  };
-
-  const handleSubcategoryClick = (subcat) => {
-    if (selectedSubcategory?.id === subcat.id) {
-      setSelectedSubcategory(null);
-      fetchCategoryGigs({ category_slug: selectedCategory.slug });
-      return;
-    }
-    setSelectedSubcategory(subcat);
-    fetchCategoryGigs({ subcategory_slug: subcat.slug });
-  };
-
-  const fetchCategoryGigs = (params) => {
-    setLoadingCategoryGigs(true);
-    listGigs(params)
-      .then((res) => {
-        const data = res.data;
-        setCategoryGigs(data.results || (Array.isArray(data) ? data : []));
-      })
-      .catch(() => setCategoryGigs([]))
-      .finally(() => setLoadingCategoryGigs(false));
+    navigate(`/gigs?category_slug=${cat.slug}`);
   };
 
   const handleSearch = (e) => {
@@ -400,8 +360,6 @@ const GigHubLanding = () => {
                   "from-indigo-600/20 to-violet-500/10",
                 ];
                 const gradient = gradients[i % gradients.length];
-                const isSelected = selectedCategory?.id === cat.id;
-
                 return (
                   <motion.button
                     key={cat.id}
@@ -411,154 +369,18 @@ const GigHubLanding = () => {
                     transition={{ delay: (i % 6) * 0.05 }}
                     whileHover={{ y: -4, scale: 1.03 }}
                     onClick={() => handleCategoryClick(cat)}
-                    className={`flex flex-col items-center gap-3 p-4 bg-gradient-to-b ${gradient} border rounded-2xl transition-all text-center group ${
-                      isSelected
-                        ? "border-purple-500/60 ring-2 ring-purple-500/30 scale-105"
-                        : "border-white/5 hover:border-white/15"
-                    }`}
+                    className={`flex flex-col items-center gap-3 p-4 bg-gradient-to-b ${gradient} border border-white/5 hover:border-white/15 rounded-2xl transition-all text-center group`}
                   >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${isSelected ? "bg-purple-500/20" : "bg-white/5 group-hover:bg-white/10"}`}>
-                      <Icon className={`text-xl transition-colors ${isSelected ? "text-purple-300" : "text-white/60 group-hover:text-white/90"}`} />
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-all bg-white/5 group-hover:bg-white/10">
+                      <Icon className="text-xl transition-colors text-white/60 group-hover:text-white/90" />
                     </div>
-                    <span className={`text-xs font-medium leading-snug transition-colors ${isSelected ? "text-white" : "text-white/60 group-hover:text-white/90"}`}>
+                    <span className="text-xs font-medium leading-snug transition-colors text-white/60 group-hover:text-white/90">
                       {cat.name}
                     </span>
-                    {isSelected && (
-                      <span className="text-[10px] text-purple-400 font-semibold">Selected ▾</span>
-                    )}
                   </motion.button>
                 );
               })}
             </div>
-
-            {/* Inline Category Browser Panel */}
-            <AnimatePresence>
-              {selectedCategory && (
-                <motion.div
-                  ref={categoryPanelRef}
-                  key={selectedCategory.id}
-                  initial={{ opacity: 0, y: -12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.25 }}
-                  className="mt-6 border border-white/10 rounded-3xl overflow-hidden bg-[#0e0e16]"
-                >
-                  {/* Panel header */}
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 bg-white/2">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => { setSelectedCategory(null); setSelectedSubcategory(null); setCategoryGigs([]); }}
-                        className="flex items-center gap-1 text-white/40 hover:text-white/70 text-xs transition-colors"
-                      >
-                        <IoChevronBackOutline /> All Categories
-                      </button>
-                      <span className="text-white/20">/</span>
-                      <span className="text-white font-semibold text-sm">{selectedCategory.name}</span>
-                      {selectedSubcategory && (
-                        <>
-                          <span className="text-white/20">/</span>
-                          <span className="text-purple-300 text-sm">{selectedSubcategory.name}</span>
-                        </>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => navigate(`/gigs?category_slug=${selectedCategory.slug}`)}
-                      className="flex items-center gap-1 text-purple-400 hover:text-purple-300 text-xs transition-colors"
-                    >
-                      See all <IoArrowForwardOutline />
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col lg:flex-row min-h-[400px]">
-                    {/* Left: Subcategory sidebar */}
-                    {selectedCategory.subcategories?.length > 0 && (
-                      <div className="w-full lg:w-56 xl:w-64 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/5 p-4 space-y-1">
-                        <p className="text-white/30 text-[11px] font-semibold uppercase tracking-wider px-2 mb-3">
-                          Subcategories
-                        </p>
-                        <button
-                          onClick={() => { setSelectedSubcategory(null); fetchCategoryGigs({ category_slug: selectedCategory.slug }); }}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${
-                            !selectedSubcategory
-                              ? "bg-purple-600/20 text-purple-300 font-semibold border border-purple-500/30"
-                              : "text-white/50 hover:text-white/80 hover:bg-white/5"
-                          }`}
-                        >
-                          All in {selectedCategory.name}
-                        </button>
-                        {selectedCategory.subcategories.map((sub) => (
-                          <button
-                            key={sub.id}
-                            onClick={() => handleSubcategoryClick(sub)}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${
-                              selectedSubcategory?.id === sub.id
-                                ? "bg-purple-600/20 text-purple-300 font-semibold border border-purple-500/30"
-                                : "text-white/50 hover:text-white/80 hover:bg-white/5"
-                            }`}
-                          >
-                            {sub.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Right: Gigs grid */}
-                    <div className="flex-1 p-5">
-                      {loadingCategoryGigs ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                          {Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="bg-[#13131a] rounded-2xl overflow-hidden animate-pulse">
-                              <div className="h-36 bg-white/5" />
-                              <div className="p-4 space-y-2">
-                                <div className="h-3 bg-white/5 rounded-full w-1/2" />
-                                <div className="h-4 bg-white/5 rounded-full" />
-                                <div className="h-7 bg-white/5 rounded-xl mt-3" />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : categoryGigs.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full py-16 text-center">
-                          <FaBriefcase className="text-4xl text-white/10 mb-3" />
-                          <p className="text-white/40 text-sm">No services in this category yet.</p>
-                          <Link
-                            to="/gigs/create"
-                            className="mt-3 text-purple-400 hover:text-purple-300 text-sm"
-                          >
-                            Be the first to post →
-                          </Link>
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-white/30 text-xs mb-4">
-                            {categoryGigs.length} service{categoryGigs.length !== 1 ? "s" : ""} found
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {categoryGigs.slice(0, 9).map((gig) => (
-                              <GigCard key={gig.id} gig={gig} />
-                            ))}
-                          </div>
-                          {categoryGigs.length > 9 && (
-                            <div className="text-center mt-6">
-                              <button
-                                onClick={() => navigate(
-                                  selectedSubcategory
-                                    ? `/gigs?subcategory_slug=${selectedSubcategory.slug}`
-                                    : `/gigs?category_slug=${selectedCategory.slug}`
-                                )}
-                                className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors"
-                              >
-                                View all {categoryGigs.length} services <IoArrowForwardOutline />
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             <div className="text-center mt-8">
               <Link

@@ -115,6 +115,7 @@ const GigsPage = () => {
     min_price: searchParams.get("min_price") || "",
     max_price: searchParams.get("max_price") || "",
     category_slug: searchParams.get("category_slug") || "",
+    subcategory_slug: searchParams.get("subcategory_slug") || "",
     min_rating: searchParams.get("min_rating") || "",
     delivery_days: searchParams.get("delivery_days") || "",
     ordering: searchParams.get("ordering") || "",
@@ -129,6 +130,7 @@ const GigsPage = () => {
       if (filters.min_price) params.min_price = filters.min_price;
       if (filters.max_price) params.max_price = filters.max_price;
       if (filters.category_slug) params.category_slug = filters.category_slug;
+      if (filters.subcategory_slug) params.subcategory_slug = filters.subcategory_slug;
       if (filters.min_rating) params.min_rating = filters.min_rating;
       if (filters.delivery_days) params.delivery_days = filters.delivery_days;
       if (filters.ordering) params.ordering = filters.ordering;
@@ -162,6 +164,7 @@ const GigsPage = () => {
     if (filters.min_price) params.min_price = filters.min_price;
     if (filters.max_price) params.max_price = filters.max_price;
     if (filters.category_slug) params.category_slug = filters.category_slug;
+    if (filters.subcategory_slug) params.subcategory_slug = filters.subcategory_slug;
     if (filters.min_rating) params.min_rating = filters.min_rating;
     if (filters.delivery_days) params.delivery_days = filters.delivery_days;
     if (filters.ordering) params.ordering = filters.ordering;
@@ -178,12 +181,13 @@ const GigsPage = () => {
   };
 
   const clearFilters = () => {
-    setFilters({ search: "", min_price: "", max_price: "", category_slug: "", min_rating: "", delivery_days: "", ordering: "", page: 1 });
+    setFilters({ search: "", min_price: "", max_price: "", category_slug: "", subcategory_slug: "", min_rating: "", delivery_days: "", ordering: "", page: 1 });
     setSearchQuery("");
   };
 
-  const hasActiveFilters = filters.min_price || filters.max_price || filters.category_slug || filters.min_rating || filters.delivery_days;
+  const hasActiveFilters = filters.min_price || filters.max_price || filters.category_slug || filters.subcategory_slug || filters.min_rating || filters.delivery_days;
   const hasAnyFilter = hasActiveFilters || filters.search;
+  const activeCategory = categories.find((c) => c.slug === filters.category_slug) || null;
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
@@ -306,12 +310,12 @@ const GigsPage = () => {
         {/* ── Category pills ── */}
         {categories.length > 0 && (
           <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
-            <button onClick={() => applyFilter("category_slug", "")}
+            <button onClick={() => setFilters((prev) => ({ ...prev, category_slug: "", subcategory_slug: "", page: 1 }))}
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
                 !filters.category_slug ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white" : "bg-transparent border-white/10 text-white/60 hover:border-white/20"
               }`}>All</button>
             {categories.map((cat) => (
-              <button key={cat.id} onClick={() => applyFilter("category_slug", cat.slug)}
+              <button key={cat.id} onClick={() => setFilters((prev) => ({ ...prev, category_slug: cat.slug, subcategory_slug: "", page: 1 }))}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   filters.category_slug === cat.slug ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white" : "bg-transparent border-white/10 text-white/60 hover:border-white/20"
                 }`}>{cat.name}</button>
@@ -354,57 +358,98 @@ const GigsPage = () => {
           </div>
         </div>
 
-        {/* ── Grid ── */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-[#13131a] rounded-2xl overflow-hidden animate-pulse">
-                <div className="h-48 bg-white/5" />
-                <div className="p-4 space-y-3">
-                  <div className="h-3 bg-white/5 rounded-full w-1/2" />
-                  <div className="h-4 bg-white/5 rounded-full" />
-                  <div className="h-4 bg-white/5 rounded-full w-3/4" />
-                  <div className="h-8 bg-white/5 rounded-xl mt-4" />
+        {/* ── Content: Subcategory Sidebar + Grid ── */}
+        <div className={activeCategory?.subcategories?.length > 0 ? "flex gap-6 items-start" : ""}>
+
+          {/* Subcategory Sidebar */}
+          {activeCategory?.subcategories?.length > 0 && (
+            <aside className="w-52 flex-shrink-0 sticky top-4 hidden md:block">
+              <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
+                <p className="text-white/30 text-[11px] font-semibold uppercase tracking-wider mb-3">Subcategories</p>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => setFilters((prev) => ({ ...prev, subcategory_slug: "", page: 1 }))}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${
+                      !filters.subcategory_slug
+                        ? "bg-purple-600/20 text-purple-300 font-semibold border border-purple-500/30"
+                        : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                    }`}
+                  >
+                    All in {activeCategory.name}
+                  </button>
+                  {activeCategory.subcategories.map((sub) => (
+                    <button
+                      key={sub.id}
+                      onClick={() => setFilters((prev) => ({ ...prev, subcategory_slug: sub.slug, page: 1 }))}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${
+                        filters.subcategory_slug === sub.slug
+                          ? "bg-purple-600/20 text-purple-300 font-semibold border border-purple-500/30"
+                          : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                      }`}
+                    >
+                      {sub.name}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        ) : gigs.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
-            <FaBriefcase className="text-5xl text-white/10 mx-auto mb-4" />
-            <p className="text-white/40 text-lg">No gigs found</p>
-            <p className="text-white/25 text-sm mt-1">
-              {hasAnyFilter ? "Try adjusting your search or filters" : "Be the first to post a gig!"}
-            </p>
-            {hasAnyFilter && (
-              <button onClick={clearFilters}
-                className="mt-4 px-4 py-2 bg-purple-600/30 border border-purple-500/30 text-purple-400 rounded-xl text-sm hover:bg-purple-600/50 transition-all">
-                Clear all filters
-              </button>
-            )}
-          </motion.div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {gigs.map((gig) => <GigCard key={gig.id} gig={gig} />)}
-          </div>
-        )}
+            </aside>
+          )}
 
-        {/* ── Pagination ── */}
-        {(prevPage || nextPage) && (
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} disabled={!prevPage}
-              onClick={() => setFilters((f) => ({ ...f, page: Math.max(1, Number(f.page) - 1) }))}
-              className="flex items-center gap-2 px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/70 text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:border-white/20 transition-all">
-              <IoChevronBackOutline /> Previous
-            </motion.button>
-            <span className="text-white/30 text-sm">Page {filters.page}</span>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} disabled={!nextPage}
-              onClick={() => setFilters((f) => ({ ...f, page: Number(f.page) + 1 }))}
-              className="flex items-center gap-2 px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/70 text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:border-white/20 transition-all">
-              Next <IoChevronForwardOutline />
-            </motion.button>
+          {/* Gig Grid + Pagination */}
+          <div className="flex-1 min-w-0">
+            {/* ── Grid ── */}
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="bg-[#13131a] rounded-2xl overflow-hidden animate-pulse">
+                    <div className="h-48 bg-white/5" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-3 bg-white/5 rounded-full w-1/2" />
+                      <div className="h-4 bg-white/5 rounded-full" />
+                      <div className="h-4 bg-white/5 rounded-full w-3/4" />
+                      <div className="h-8 bg-white/5 rounded-xl mt-4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : gigs.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
+                <FaBriefcase className="text-5xl text-white/10 mx-auto mb-4" />
+                <p className="text-white/40 text-lg">No gigs found</p>
+                <p className="text-white/25 text-sm mt-1">
+                  {hasAnyFilter ? "Try adjusting your search or filters" : "Be the first to post a gig!"}
+                </p>
+                {hasAnyFilter && (
+                  <button onClick={clearFilters}
+                    className="mt-4 px-4 py-2 bg-purple-600/30 border border-purple-500/30 text-purple-400 rounded-xl text-sm hover:bg-purple-600/50 transition-all">
+                    Clear all filters
+                  </button>
+                )}
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {gigs.map((gig) => <GigCard key={gig.id} gig={gig} />)}
+              </div>
+            )}
+
+            {/* ── Pagination ── */}
+            {(prevPage || nextPage) && (
+              <div className="flex items-center justify-center gap-4 mt-8">
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} disabled={!prevPage}
+                  onClick={() => setFilters((f) => ({ ...f, page: Math.max(1, Number(f.page) - 1) }))}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/70 text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:border-white/20 transition-all">
+                  <IoChevronBackOutline /> Previous
+                </motion.button>
+                <span className="text-white/30 text-sm">Page {filters.page}</span>
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} disabled={!nextPage}
+                  onClick={() => setFilters((f) => ({ ...f, page: Number(f.page) + 1 }))}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/70 text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:border-white/20 transition-all">
+                  Next <IoChevronForwardOutline />
+                </motion.button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
