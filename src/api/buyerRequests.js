@@ -64,3 +64,46 @@ export const addToCart = async (token, productId) => {
 export const getCategories = async () => {
   return axios.get(`${BASE_URL}/api/product/schema/categories/`);
 };
+
+// ── Marketplace (open requests visible to all signed-in users) ─────────────
+
+// Get all open buyer requests for the marketplace
+export const getOpenRequests = async (token) => {
+  return axios.get(`${BASE_URL}/api/buyer_requests/vendor/explore/`, {
+    headers: authHeader(token),
+  });
+};
+
+// Get a single open request detail
+export const getOpenRequestDetail = async (token, id) => {
+  return axios.get(`${BASE_URL}/api/buyer_requests/vendor/explore/${id}/`, {
+    headers: authHeader(token),
+  });
+};
+
+// Submit a bid/offer on an open request
+export const createBidOffer = async (token, { request_id, bid_amount, delivery_time_days, proposal }, images = []) => {
+  const form = new FormData();
+  form.append("request_id", String(request_id));
+  form.append("bid_amount", String(bid_amount));
+  form.append("delivery_time_days", String(delivery_time_days));
+  form.append("proposal", proposal);
+  images.forEach((img, i) => form.append(`image${i + 1}`, img));
+  return axios.post(`${BASE_URL}/api/buyer_requests/vendor/bids/`, form, {
+    headers: authHeader(token),
+  });
+};
+
+// Get current user's submitted bids (to check if already bid on a request)
+export const getMySubmittedBids = async (token) => {
+  return axios.get(`${BASE_URL}/api/buyer_requests/vendor/bids/`, {
+    headers: authHeader(token),
+  });
+};
+
+// Withdraw/delete a submitted bid
+export const withdrawBidOffer = async (token, bidId) => {
+  return axios.delete(`${BASE_URL}/api/buyer_requests/vendor/bids/${bidId}/`, {
+    headers: authHeader(token),
+  });
+};

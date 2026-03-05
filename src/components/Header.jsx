@@ -352,14 +352,14 @@ const Header = () => {
               </Link>
             </motion.div>
 
-            {/* Create a Bid */}
+            {/* Bids Marketplace */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
-                to="/create-bid"
+                to="/bids"
                 className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all shadow-md hover:shadow-pink-500/30 whitespace-nowrap"
               >
                 <FaGavel className="text-xs" />
-                Create a Bid
+                Bids
               </Link>
             </motion.div>
 

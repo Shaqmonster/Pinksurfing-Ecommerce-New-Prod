@@ -39,6 +39,9 @@ import { getCookie, setCookie } from "./utils/cookie";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 import CreateBidPage from "./pages/CreateBidPage";
 import MyBidsPage from "./pages/MyBidsPage";
+import BidsLandingPage from "./pages/bids/BidsLandingPage";
+import BidsMarketplace from "./pages/bids/BidsMarketplace";
+import BidRequestDetail from "./pages/bids/BidRequestDetail";
 import GigsPage from "./pages/gigs/GigsPage";
 import GigDetailPage from "./pages/gigs/GigDetailPage";
 import CreateGigPage from "./pages/gigs/CreateGigPage";
@@ -126,6 +129,10 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/create-bid" element={<CreateBidPage />} />
         <Route path="/my-bids" element={<MyBidsPage />} />
+        {/* Bids Marketplace */}
+        <Route path="/bids" element={<BidsLandingPage />} />
+        <Route path="/bids/marketplace" element={<BidsMarketplace />} />
+        <Route path="/bids/requests/:id" element={<BidRequestDetail />} />
         {/* GigHub integrated routes */}
         <Route path="/gighub" element={<GigHubLanding />} />
         <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
