@@ -240,7 +240,7 @@ export default function BidsLandingPage() {
       </section>
 
       {/* ── Stats bar ──────────────────────────────────────────────────────── */}
-      <section className="px-4 pb-14">
+      {/* <section className="px-4 pb-14">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           {STATS.map(({ value, label }) => (
             <div key={label} className="text-center">
@@ -251,7 +251,7 @@ export default function BidsLandingPage() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* ── Latest Requests Preview ─────────────────────────────────────────── */}
       <section className="px-4 pb-16">

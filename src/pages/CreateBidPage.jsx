@@ -994,8 +994,17 @@ const CreateBidPage = () => {
 
   useEffect(() => {
     getCategories()
-      .then((res) => setApiCategories(res.data))
-      .catch(() => {});
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setApiCategories(res.data);
+        } else {
+          console.error("[CreateBidPage:L997] getCategories response is not an array:", typeof res.data, res.data);
+          setApiCategories([]);
+        }
+      })
+      .catch((err) => {
+        console.error("[CreateBidPage:L1002] getCategories failed:", err);
+      });
   }, []);
 
   const updateField = useCallback((field, value) => {
@@ -1013,15 +1022,27 @@ const CreateBidPage = () => {
       return;
     }
 
+    if (!Array.isArray(BUDGET_OPTIONS)) {
+      console.error("[CreateBidPage:L1016] BUDGET_OPTIONS is not an array:", typeof BUDGET_OPTIONS, BUDGET_OPTIONS);
+    }
     const budgetOpt = BUDGET_OPTIONS.find((o) => o.value === requestData.budgetRange);
     const budget = budgetOpt ? budgetOpt.num : 1;
 
+    if (!Array.isArray(TIMELINE_OPTIONS)) {
+      console.error("[CreateBidPage:L1022] TIMELINE_OPTIONS is not an array:", typeof TIMELINE_OPTIONS, TIMELINE_OPTIONS);
+    }
     const timelineOpt = TIMELINE_OPTIONS.find((o) => o.value === requestData.timeline);
     const deadline = timelineOpt?.days
       ? new Date(Date.now() + timelineOpt.days * 86400000).toISOString().split("T")[0]
       : undefined;
 
-    const scopeLines = requestData.scopeDraft.split("\n");
+    if (typeof requestData.scopeDraft !== "string") {
+      console.error("[CreateBidPage:L1030] scopeDraft is not a string:", typeof requestData.scopeDraft, requestData.scopeDraft);
+    }
+    const scopeLines = (typeof requestData.scopeDraft === "string" ? requestData.scopeDraft : String(requestData.scopeDraft || "")).split("\n");
+    if (!Array.isArray(scopeLines)) {
+      console.error("[CreateBidPage:L1034] scopeLines is not an array:", typeof scopeLines, scopeLines);
+    }
     const firstLine = scopeLines.find((l) => l.trim()) || "";
     const title = (firstLine.replace(/^[\u2022#\-*\s]+/, "").slice(0, 255) ||
       [requestData.category, requestData.subcategory].filter(Boolean).join(" - ") ||
@@ -1040,9 +1061,14 @@ const CreateBidPage = () => {
     ].filter(Boolean);
     const description = descParts.join("\n").trim() || title;
 
-    const catMatch = apiCategories.find(
-      (c) => c.name?.toLowerCase() === requestData.category.toLowerCase()
-    );
+    if (!Array.isArray(apiCategories)) {
+      console.error("[CreateBidPage:L1055] apiCategories is not an array:", typeof apiCategories, apiCategories);
+    }
+    const catMatch = Array.isArray(apiCategories)
+      ? apiCategories.find(
+          (c) => c.name?.toLowerCase() === requestData.category.toLowerCase()
+        )
+      : undefined;
     const category = catMatch?.id;
 
     const images = requestData.photos.slice(0, 4).map((p) => p.file);
