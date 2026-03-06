@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
@@ -37,6 +37,23 @@ import CategoryProducts from "./pages/CategoryProducts";
 import ComingSoon from "./pages/ComingSoon";
 import { getCookie, setCookie } from "./utils/cookie";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
+import CreateBidPage from "./pages/CreateBidPage";
+import MyBidsPage from "./pages/MyBidsPage";
+import BidsLandingPage from "./pages/bids/BidsLandingPage";
+import BidsMarketplace from "./pages/bids/BidsMarketplace";
+import BidRequestDetail from "./pages/bids/BidRequestDetail";
+import MyOffersPage from "./pages/bids/MyOffersPage";
+import GigsPage from "./pages/gigs/GigsPage";
+import GigDetailPage from "./pages/gigs/GigDetailPage";
+import CreateGigPage from "./pages/gigs/CreateGigPage";
+import MyGigOrders from "./pages/gigs/MyGigOrders";
+import GigOrderSuccess from "./pages/gigs/GigOrderSuccess";
+import GigOrderCancel from "./pages/gigs/GigOrderCancel";
+import GigHubLanding from "./pages/gigs/GigHubLanding";
+import GigHubDashboard from "./pages/gigs/GigHubDashboard";
+import GigMessages from "./pages/gigs/GigMessages";
+import GigOrderDetail from "./pages/gigs/GigOrderDetail";
+
 function App() {
   const {
     isCartOpen,
@@ -83,10 +100,10 @@ function App() {
       <ScrollToTop />
       {!hideHeaderFooter && <Header />}
       <Routes>
-        {/* Only register auth routes when there's no access_token cookie */}
-        {!cookieAccess && <Route path="/signup" element={<Signup />} />}
-        {!cookieAccess && <Route path="/signin" element={<Signin />} />}
-        {!cookieAccess && <Route path="/forgotPassword" element={<ForgotPassword />} />}
+        {/* Auth routes — redirect to home if already logged in */}
+        <Route path="/signup" element={cookieAccess ? <Navigate to="/" replace /> : <Signup />} />
+        <Route path="/signin" element={cookieAccess ? <Navigate to="/" replace /> : <Signin />} />
+        <Route path="/forgotPassword" element={cookieAccess ? <Navigate to="/" replace /> : <ForgotPassword />} />
 
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Home />} />
@@ -111,6 +128,26 @@ function App() {
         <Route path="/completion" element={<Completion />} />
         <Route path="/userwallet" element={<UserOnSiteWallet />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/create-bid" element={<CreateBidPage />} />
+        <Route path="/my-bids" element={<MyBidsPage />} />
+        {/* Bids Marketplace */}
+        <Route path="/bids" element={<BidsLandingPage />} />
+        <Route path="/bids/marketplace" element={<BidsMarketplace />} />
+        <Route path="/bids/requests/:id" element={<BidRequestDetail />} />
+        <Route path="/bids/my-offers" element={<MyOffersPage />} />
+        {/* GigHub integrated routes */}
+        <Route path="/gighub" element={<GigHubLanding />} />
+        <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
+        <Route path="/gighub/messages" element={<GigMessages />} />
+
+        {/* Gigs routes — static paths before dynamic :id */}
+        <Route path="/gigs" element={<GigsPage />} />
+        <Route path="/gigs/create" element={<CreateGigPage />} />
+        <Route path="/gigs/orders" element={<MyGigOrders />} />
+        <Route path="/gigs/orders/success" element={<GigOrderSuccess />} />
+        <Route path="/gigs/orders/cancel" element={<GigOrderCancel />} />
+        <Route path="/gigs/orders/:id" element={<GigOrderDetail />} />
+        <Route path="/gigs/:id" element={<GigDetailPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!hideHeaderFooter && <Footer />}

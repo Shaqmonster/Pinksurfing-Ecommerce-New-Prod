@@ -1,9 +1,11 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { NavigationItem } from "./NavigationItem";
 import { navigationItems } from "../../utils/ProfileItems";
 import { dataContext } from "../../context/dataContext";
 
 export function Sidebar() {
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(0);
     const sidebarRef = React.useRef(null);
@@ -28,6 +30,12 @@ export function Sidebar() {
     };
 
     const handleItemClick = (index) => {
+        const item = navigationItems[index];
+        if (item.route) {
+            navigate(item.route);
+            setIsOpen(false);
+            return;
+        }
         setActiveIndex(index);
         setIsOpen(false);
         setProfileActiveIndex(index);
