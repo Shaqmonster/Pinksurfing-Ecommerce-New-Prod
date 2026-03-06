@@ -41,6 +41,7 @@ import {
 } from "react-icons/fa";
 import { authContext } from "../context/authContext";
 import { createBuyerRequest, getCategories } from "../api/buyerRequests";
+import BidsNavBar from "../components/BidsNavBar";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1122,6 +1123,7 @@ const CreateBidPage = () => {
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen">
+      <BidsNavBar />
       {/* Progress Bar — hidden on step 0 */}
       {currentStep > 0 && <StepProgressBar currentStep={currentStep} />}
 

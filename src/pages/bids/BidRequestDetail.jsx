@@ -39,6 +39,7 @@ import {
   withdrawBidOffer,
 } from "../../api/buyerRequests";
 import { toast } from "react-toastify";
+import BidsNavBar from "../../components/BidsNavBar";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -943,42 +944,136 @@ const ConfirmationStep = ({ onGoBack }) => (
   </div>
 );
 
-const ExistingBidView = ({ bid, onWithdraw, deleting }) => (
-  <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-4">
-    <div className="flex items-center justify-between">
-      <h3 className="text-base font-bold text-white">Your Submitted Offer</h3>
-      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${BID_STATUS_COLORS[bid.status] ?? "bg-white/10 text-white/60"}`}>
-        {bid.status}
-      </span>
-    </div>
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <FaDollarSign className="text-emerald-500" />
-        <span className="text-lg font-bold text-emerald-400">${bid.bid_amount}</span>
-      </div>
-      <div className="flex items-center gap-2 text-sm text-white/60">
-        <IoCalendarOutline />
-        <span>{bid.delivery_time_days} day{bid.delivery_time_days !== 1 ? "s" : ""} delivery</span>
-      </div>
-      {bid.proposal && (
-        <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-          <p className="text-xs text-white/50 leading-relaxed line-clamp-4">{bid.proposal}</p>
+const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
+  const bidImages = [bid.image1, bid.image2, bid.image3, bid.image4].filter(Boolean);
+
+  return (
+    <div className="space-y-4">
+      {/* Accepted banner */}
+      {bid.status === "ACCEPTED" && (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <IoCheckmarkCircle className="text-emerald-400 text-2xl" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-emerald-400">Your Offer Was Accepted!</h3>
+              <p className="text-sm text-white/60 mt-0.5">
+                The buyer has accepted your offer. The project will proceed to checkout and payment.
+              </p>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Rejected banner */}
+      {bid.status === "REJECTED" && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+              <IoAlertCircle className="text-red-400 text-2xl" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-red-400">Offer Not Selected</h3>
+              <p className="text-sm text-white/60 mt-0.5">
+                The buyer chose a different vendor for this project.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shortlisted banner */}
+      {bid.status === "SHORTLISTED" && (
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <IoSparkles className="text-blue-400 text-2xl" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-blue-400">You've Been Shortlisted!</h3>
+              <p className="text-sm text-white/60 mt-0.5">
+                The buyer is reviewing your offer alongside other top candidates.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Offer details card */}
+      <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-white">Your Submitted Offer</h3>
+          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${BID_STATUS_COLORS[bid.status] ?? "bg-white/10 text-white/60"}`}>
+            {bid.status}
+          </span>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/5 rounded-xl p-3">
+            <p className="text-white/40 text-xs mb-1">Bid Amount</p>
+            <div className="flex items-center gap-1.5">
+              <FaDollarSign className="text-emerald-500 text-sm" />
+              <span className="text-lg font-bold text-emerald-400">${bid.bid_amount}</span>
+            </div>
+          </div>
+          <div className="bg-white/5 rounded-xl p-3">
+            <p className="text-white/40 text-xs mb-1">Delivery Time</p>
+            <div className="flex items-center gap-1.5">
+              <IoCalendarOutline className="text-pink-400 text-sm" />
+              <span className="text-base font-semibold text-white">{bid.delivery_time_days} day{bid.delivery_time_days !== 1 ? "s" : ""}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Full proposal */}
+        {bid.proposal && (
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Full Proposal</p>
+            <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{bid.proposal}</p>
+          </div>
+        )}
+
+        {/* Attachments */}
+        {bidImages.length > 0 && (
+          <div>
+            <p className="text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Attachments</p>
+            <div className="flex gap-2 flex-wrap">
+              {bidImages.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`bid-img-${i}`}
+                  className="w-16 h-16 rounded-lg object-cover border border-white/10"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Submitted time */}
+        {bid.created_at && (
+          <p className="text-xs text-white/30">
+            Submitted {timeAgo(bid.created_at)}
+          </p>
+        )}
+
+        {bid.status === "PENDING" && (
+          <button
+            type="button"
+            onClick={onWithdraw}
+            disabled={deleting}
+            className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
+          >
+            <IoTrash className="text-sm" />
+            {deleting ? "Withdrawing..." : "Withdraw Offer"}
+          </button>
+        )}
+      </div>
     </div>
-    {bid.status === "PENDING" && (
-      <button
-        type="button"
-        onClick={onWithdraw}
-        disabled={deleting}
-        className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
-      >
-        <IoTrash className="text-sm" />
-        {deleting ? "Withdrawing..." : "Withdraw Offer"}
-      </button>
-    )}
-  </div>
-);
+  );
+};
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
@@ -1134,23 +1229,29 @@ export default function BidRequestDetail() {
   // ── Loading ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-pink-500/20 border-t-pink-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#0a0a0f]">
+        <BidsNavBar />
+        <div className="flex items-center justify-center pt-32">
+          <div className="w-8 h-8 border-2 border-pink-500/20 border-t-pink-500 rounded-full animate-spin" />
+        </div>
       </div>
     );
   }
 
   if (!request) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4">
-        <div className="text-center">
-          <IoAlertCircle className="text-5xl text-white/20 mx-auto mb-4" />
-          <p className="text-white/60 mb-4">Request not found.</p>
-          <Link to="/bids/marketplace">
-            <button className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold hover:opacity-90 transition-all">
-              Back to Marketplace
-            </button>
-          </Link>
+      <div className="min-h-screen bg-[#0a0a0f]">
+        <BidsNavBar />
+        <div className="flex items-center justify-center px-4 pt-32">
+          <div className="text-center">
+            <IoAlertCircle className="text-5xl text-white/20 mx-auto mb-4" />
+            <p className="text-white/60 mb-4">Request not found.</p>
+            <Link to="/bids/marketplace">
+              <button className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold hover:opacity-90 transition-all">
+                Back to Marketplace
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -1159,9 +1260,12 @@ export default function BidRequestDetail() {
   // ── Confirmed ──
   if (isConfirmed) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4">
-        <div className="max-w-md w-full">
-          <ConfirmationStep onGoBack={() => navigate("/bids/marketplace")} />
+      <div className="min-h-screen bg-[#0a0a0f]">
+        <BidsNavBar />
+        <div className="flex items-center justify-center px-4 pt-20">
+          <div className="max-w-md w-full">
+            <ConfirmationStep onGoBack={() => navigate("/bids/marketplace")} />
+          </div>
         </div>
       </div>
     );
@@ -1170,50 +1274,73 @@ export default function BidRequestDetail() {
   // ── Existing bid ──
   if (myBid) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] px-4 py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <Link
-            to="/bids/marketplace"
-            className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-pink-400 transition-colors"
-          >
-            <IoArrowBack />
-            Back to Marketplace
-          </Link>
+      <div className="min-h-screen bg-[#0a0a0f]">
+        <BidsNavBar />
+        <div className="px-4 py-8">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <Link
+              to="/bids/marketplace"
+              className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-pink-400 transition-colors"
+            >
+              <IoArrowBack />
+              Back to Marketplace
+            </Link>
 
-          <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-3">
-            {request.category_name && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-pink-400 bg-pink-500/10 px-2.5 py-0.5 rounded-full">
-                <FaTag className="text-[9px]" />
-                {request.category_name}
-              </span>
-            )}
-            <h1 className="text-xl font-bold text-white">{request.title}</h1>
-            <p className="text-sm text-white/60">{request.description}</p>
-          </div>
-
-          <ExistingBidView bid={myBid} onWithdraw={handleDeleteBid} deleting={deleting} />
-
-          {request.bids?.length > 0 && (
             <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
-                All Bids ({request.bids.length})
-              </p>
-              {request.bids.map((bid) => (
-                <div
-                  key={bid.id}
-                  className="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-xl text-sm"
-                >
-                  <span className="text-white/70 truncate">{bid.vendor_store_name}</span>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="font-semibold text-emerald-400">${bid.bid_amount}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BID_STATUS_COLORS[bid.status] ?? "bg-white/10 text-white/60"}`}>
-                      {bid.status}
-                    </span>
-                  </div>
+              {request.category_name && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-pink-400 bg-pink-500/10 px-2.5 py-0.5 rounded-full">
+                  <FaTag className="text-[9px]" />
+                  {request.category_name}
+                </span>
+              )}
+              <h1 className="text-xl font-bold text-white">{request.title}</h1>
+              <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{request.description}</p>
+              <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/10 text-sm">
+                <div className="flex items-center gap-1.5">
+                  <FaDollarSign className="text-emerald-500 text-xs" />
+                  <span className="font-semibold text-emerald-400">${request.budget}</span>
+                  <span className="text-white/30">budget</span>
                 </div>
-              ))}
+                {request.deadline && (
+                  <div className="flex items-center gap-1.5 text-white/60">
+                    <IoCalendarOutline className="text-pink-400 text-sm" />
+                    <span>{new Date(request.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                  </div>
+                )}
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                  request.status === "OPEN" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" :
+                  request.status === "AWARDED" ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+                  "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                }`}>
+                  {request.status}
+                </span>
+              </div>
             </div>
-          )}
+
+            <ExistingBidView bid={myBid} onWithdraw={handleDeleteBid} deleting={deleting} />
+
+            {request.bids?.length > 0 && (
+              <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
+                  All Bids ({request.bids.length})
+                </p>
+                {request.bids.map((bid) => (
+                  <div
+                    key={bid.id}
+                    className="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-xl text-sm"
+                  >
+                    <span className="text-white/70 truncate">{bid.vendor_store_name}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="font-semibold text-emerald-400">${bid.bid_amount}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BID_STATUS_COLORS[bid.status] ?? "bg-white/10 text-white/60"}`}>
+                        {bid.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -1259,6 +1386,7 @@ export default function BidRequestDetail() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] pb-28">
+      <BidsNavBar />
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Back link */}
         <Link

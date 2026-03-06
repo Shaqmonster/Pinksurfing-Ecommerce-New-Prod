@@ -42,6 +42,7 @@ import MyBidsPage from "./pages/MyBidsPage";
 import BidsLandingPage from "./pages/bids/BidsLandingPage";
 import BidsMarketplace from "./pages/bids/BidsMarketplace";
 import BidRequestDetail from "./pages/bids/BidRequestDetail";
+import MyOffersPage from "./pages/bids/MyOffersPage";
 import GigsPage from "./pages/gigs/GigsPage";
 import GigDetailPage from "./pages/gigs/GigDetailPage";
 import CreateGigPage from "./pages/gigs/CreateGigPage";
@@ -133,6 +134,7 @@ function App() {
         <Route path="/bids" element={<BidsLandingPage />} />
         <Route path="/bids/marketplace" element={<BidsMarketplace />} />
         <Route path="/bids/requests/:id" element={<BidRequestDetail />} />
+        <Route path="/bids/my-offers" element={<MyOffersPage />} />
         {/* GigHub integrated routes */}
         <Route path="/gighub" element={<GigHubLanding />} />
         <Route path="/gighub/dashboard" element={<GigHubDashboard />} />

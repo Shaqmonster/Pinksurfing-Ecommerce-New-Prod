@@ -356,10 +356,10 @@ const Header = () => {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/bids"
-                className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all shadow-md hover:shadow-pink-500/30 whitespace-nowrap"
+                className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 text-white text-xs font-semibold transition-all shadow-md hover:shadow-pink-500/30 whitespace-nowrap"
               >
                 <FaGavel className="text-xs" />
-                Bids
+                <span className="hidden sm:inline">Bids</span>
               </Link>
             </motion.div>
 

@@ -30,6 +30,7 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import { getOpenRequests } from "../../api/buyerRequests";
+import BidsNavBar from "../../components/BidsNavBar";
 
 // ─── Filter Data (from bidding/src/components/marketplace/filterData.ts) ───────
 
@@ -766,6 +767,8 @@ export default function BidsMarketplace() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
+      <BidsNavBar />
+
       {/* Mobile filter drawer */}
       <MobileFilterDrawer isOpen={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)}>
         <FilterSidebar {...filterSidebarProps} />

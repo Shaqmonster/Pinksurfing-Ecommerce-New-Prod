@@ -20,6 +20,7 @@ import {
   FaArrowRight,
 } from "react-icons/fa";
 import { getOpenRequests } from "../../api/buyerRequests";
+import BidsNavBar from "../../components/BidsNavBar";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -151,6 +152,7 @@ export default function BidsLandingPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
+      <BidsNavBar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 pt-16 pb-20 md:pt-24 md:pb-28">
