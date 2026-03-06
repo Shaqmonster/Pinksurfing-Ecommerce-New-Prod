@@ -995,8 +995,8 @@ const CreateBidPage = () => {
   useEffect(() => {
     getCategories()
       .then((res) => {
-        if (Array.isArray(res.data)) {
-          setApiCategories(res.data);
+        if (Array.isArray(res.data?.categories)) {
+          setApiCategories(res.data.categories);
         } else {
           console.error("[CreateBidPage:L997] getCategories response is not an array:", typeof res.data, res.data);
           setApiCategories([]);
