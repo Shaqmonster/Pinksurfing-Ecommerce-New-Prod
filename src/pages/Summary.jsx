@@ -309,6 +309,83 @@ const Summary = () => {
               )}
             </div>
 
+            {/* Payment Protection Status */}
+            <div className="col-span-7 mt-4">
+              <div className="bg-gray-100 rounded-md border-purple-700 border-2 dark:bg-[#1A1C1E] p-6">
+                <h3 className="text-xl dark:text-white font-semibold leading-5 text-gray-800 mb-4">
+                  Payment Status
+                </h3>
+                <div className="flex items-start gap-3">
+                  {order.held_in_escrow > 0 ? (
+                    <>
+                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-blue-700 dark:text-blue-400 text-[15px]">
+                          Payment Protected
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                          Your payment of {currency}{Number(order.held_in_escrow).toFixed(2)} is held securely until your order is fulfilled. 
+                          This protects you from any issues with your purchase.
+                        </p>
+                      </div>
+                    </>
+                  ) : order.vendor_earnings_status === "PAID_OUT" || order.vendor_earnings_status === "CLEARED" ? (
+                    <>
+                      <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-green-700 dark:text-green-400 text-[15px]">
+                          Payment Released
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                          Your transaction has been completed successfully. The payment has been released to the seller.
+                        </p>
+                      </div>
+                    </>
+                  ) : order.vendor_earnings_status === "PENDING" ? (
+                    <>
+                      <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-yellow-700 dark:text-yellow-400 text-[15px]">
+                          Payment Processing
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                          Your order has been fulfilled and the payment is being processed. Funds will be released after the holding period.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-500/20 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-700 dark:text-gray-300 text-[15px]">
+                          Payment Received
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                          Your payment has been received and your order is being processed.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* <div className="col-span-7 hidden sm:block">
               {order.paid_with_escrow ? (
                 <div className="col-span-7">
