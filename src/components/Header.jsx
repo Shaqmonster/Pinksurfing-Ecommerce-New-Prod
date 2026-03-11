@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { FaWallet } from "react-icons/fa";
+import { FaWallet, FaGavel, FaBriefcase } from "react-icons/fa";
 
 import Profile from "./Profile";
 import Category from "./Category";
@@ -340,6 +340,28 @@ const Header = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* GigHub Marketplace */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/gighub/dashboard"
+                className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all whitespace-nowrap"
+              >
+                <FaBriefcase className="text-xs" />
+                GigHub
+              </Link>
+            </motion.div>
+
+            {/* Bids Marketplace */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/bids"
+                className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 text-white text-xs font-semibold transition-all shadow-md hover:shadow-pink-500/30 whitespace-nowrap"
+              >
+                <FaGavel className="text-xs" />
+                <span className="hidden sm:inline">Bids</span>
+              </Link>
+            </motion.div>
 
             {/* User Actions */}
             {user && (

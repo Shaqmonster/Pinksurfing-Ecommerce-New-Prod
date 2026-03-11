@@ -507,8 +507,7 @@ const Home = () => {
                     onClick={() => {
                       console.log(item.id);
                       if (item.id == "5") {
-                        console.log("Gigs Pro");
-                        window.location.href = "https://gighub.pinksurfing.com/";
+                        navigate("/gighub");
                       } else {
                         setCategory(item.category.toLowerCase());
                         navigate(`/category/${item.category.toLowerCase()}`);
@@ -540,10 +539,8 @@ const Home = () => {
                 <div
                   key={item.id}
                   onClick={() => {
-                    console.log(item.id);
                     if (item.id == "5") {
-                      console.log("Gigs Pro");
-                      window.location.href = "https://gighub.pinksurfing.com/";
+                      navigate("/gighub");
                     } else {
                       setCategory(item.category.toLowerCase());
                       navigate(`/category/${item.category.toLowerCase()}`);

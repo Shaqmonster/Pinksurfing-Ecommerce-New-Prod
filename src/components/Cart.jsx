@@ -231,10 +231,10 @@ export default function Cart() {
                                     </div>
                                     <p className="mt-1 text-[13.4px] sm:text-sm text-gray-500 whitespace-normal">
                                       {htmlToText(
-                                        product.product.short_description
+                                        product.product?.short_description ?? ""
                                       ).slice(0, 10)}
-                                      {product.product.short_description
-                                        .length > 10
+                                      {(product.product?.short_description
+                                        ?.length ?? 0) > 10
                                         ? "..."
                                         : ""}
                                     </p>
