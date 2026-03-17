@@ -8,6 +8,9 @@ import { DataProvider } from "./context/dataContext.jsx";
 import { CookiesProvider } from "react-cookie";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LogRocket from 'logrocket';
+LogRocket.init('vdxhjc/pinksurfing-ecom');
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
