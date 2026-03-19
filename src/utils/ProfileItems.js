@@ -32,6 +32,18 @@ export const navigationItems = [
     altText: "My Wallet icon"
   },
   {
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3C/svg%3E",
+    label: "My Bids",
+    altText: "My Bids icon",
+    route: "/my-bids"
+  },
+  {
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='22' y1='2' x2='11' y2='13'/%3E%3Cpolygon points='22 2 15 22 11 13 2 9 22 2'/%3E%3C/svg%3E",
+    label: "My Offers",
+    altText: "My Offers icon",
+    route: "/bids/my-offers"
+  },
+  {
     icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/3fc4c0132983cb6b227f3de3497ad40d404bad5dca20bdc8ea57cd932cb4a535?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
     label: "Log-out",
     altText: "Log-out icon"
