@@ -505,25 +505,29 @@ const Home = () => {
                   <div
                     key={item.id}
                     onClick={() => {
-                      console.log(item.id);
-                      if (item.id == "5") {
-                        console.log("Gigs Pro");
-                        window.location.href = "https://gighub.pinksurfing.com/";
+                      if (item.coming_soon) {
+                        console.log("Coming Soon");
+                        return;
                       } else {
                         setCategory(item.category.toLowerCase());
                         navigate(`/category/${item.category.toLowerCase()}`);
                       }
                     }}
-                    className="cursor-pointer group"
+                    className={`cursor-pointer group ${item.coming_soon ? 'opacity-75' : ''}`}
                   >
                     <div className="flex flex-col items-center">
-                      <div className="w-20 h-20 mb-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-white/10 flex items-center justify-center overflow-hidden group-hover:border-purple-500/50 transition-colors">
+                      <div className="w-20 h-20 mb-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-white/10 flex items-center justify-center overflow-hidden group-hover:border-purple-500/50 transition-colors relative">
                         <img
                           src={item.image}
                           alt={item.name}
                           className={`w-full h-full object-contain p-2 ${item.extraclass || ''}`}
                           loading="lazy"
                         />
+                        {item.coming_soon && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm">
+                            <span className="text-white text-xs font-bold text-center px-1">Coming Soon</span>
+                          </div>
+                        )}
                       </div>
                       <span className="text-gray-300 text-xs text-center font-medium line-clamp-2">
                         {item.name}
@@ -539,16 +543,15 @@ const Home = () => {
               {subCategories.map((item) => (
                 <div
                   key={item.id}
-                  onClick={() => {
-                    console.log(item.id);
-                    if (item.id == "5") {
-                      console.log("Gigs Pro");
-                      window.location.href = "https://gighub.pinksurfing.com/";
-                    } else {
-                      setCategory(item.category.toLowerCase());
-                      navigate(`/category/${item.category.toLowerCase()}`);
-                    }
-                  }}
+                    onClick={() => {
+                      if (item.coming_soon) {
+                        console.log("Coming Soon");
+                        return;
+                      } else {
+                        setCategory(item.category.toLowerCase());
+                        navigate(`/category/${item.category.toLowerCase()}`);
+                      }
+                    }}
                   className="cursor-pointer group hover:-translate-y-1 transition-transform duration-200"
                 >
                   <div className="flex flex-col items-center">
