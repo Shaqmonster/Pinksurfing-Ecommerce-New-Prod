@@ -10,6 +10,7 @@ import CancelDialog from "../components/CancelDialog";
 import { toast } from "react-toastify";
 import RatingForm from "../components/RatingForm";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
+import TrackingTimeline from "../components/TrackingTimeline";
 
 const Summary = () => {
   const { user, isRatingFormOpen, currency, setIsRatingFormOpen } =
@@ -231,6 +232,16 @@ const Summary = () => {
                 </div>
               </div>
             </div>
+
+            {/* ── Package Tracking Section ── */}
+            {order.order_status &&
+              ["SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(
+                order.order_status.toUpperCase().replace(/\s+/g, "_")
+              ) && (
+                <div className="col-span-7">
+                  <TrackingTimeline orderItemId={orderId} />
+                </div>
+              )}
 
             <div className=" h-full w-full col-span-7 lg:col-span-2">
               {order.order_status.toLowerCase() ===
