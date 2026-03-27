@@ -1,4 +1,4 @@
-import { PencilIcon } from "@heroicons/react/24/outline";
+import { MapPinIcon, PlusIcon, CheckIcon } from "@heroicons/react/24/outline";
 import React, { useContext, useEffect, useState } from "react";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
@@ -24,6 +24,7 @@ const Checkout = () => {
 
   const [order_id, setOrderId] = useState();
   const [loading, setLoading] = useState(false);
+  const [shippingSpeed, setShippingSpeed] = useState("standard");
 
   const PlaceOrder = async () => {
     if (!cookies.access_token) {
@@ -44,6 +45,7 @@ const Checkout = () => {
         `${import.meta.env.VITE_SERVER_URL}/api/customer/create-order/`,
         {
           address: addressesId,
+          shipping_speed: shippingSpeed,
         },
         {
           headers: {
@@ -161,6 +163,12 @@ const Checkout = () => {
       setAddressesId(addresses[0].id);
     }
   }, [addresses]);
+
+  useEffect(() => {
+    if (!loading && addresses.length === 0 && cookies.access_token) {
+      setIsAddressFormOpen(true);
+    }
+  }, [loading, addresses]);
 
   return (
     <>
@@ -296,58 +304,112 @@ const Checkout = () => {
             })}
           </div>
 
-          <p className="mt-8 text-lg flex  items-center font-medium">
-            Shipping Address{" "}
-            <PencilIcon
-              onClick={() => {
-                setIsAddressFormOpen(true);
-              }}
-              className=" ml-3 cursor-pointer w-[19px] "
-            />
+          <p className="mt-8 text-lg font-medium">Shipping Speed</p>
+          <p className="text-gray-400 text-sm mb-3">
+            Select your preferred shipping speed.
           </p>
-          <form className="mt-5 gap-6 w-[95vw] sm:w-full overflow-x-hidden flex flex-col dark:bg-[#0E0F13] dark:border dark:border-white overflow-y-scroll p-1 h-[180px] justify-between">
-            {addresses?.slice().map((address, index) => (
-              <div
-                key={address.id || index + address.zip_code}
-                className={`relative ${addressesId === address.id
-                  ? "border-2 border-blue-400 rounded-md"
-                  : "border border-gray-300 rounded-md"
-                  }`}
-                onClick={() => {
-                  setAddressesId(address.id);
-                }}
-              >
-                <span
-                  className={`absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 ${addressesId === address.id
-                    ? "border-blue-400"
-                    : "border-gray-300 hidden"
-                    } bg-white dark:bg-black`}
-                ></span>
-                <label
-                  className="dark:text-[#f5f5f5] dark:bg-gray-800 flex cursor-pointer select-none rounded-md p-4"
-                  htmlFor={`radio_${index}`}
-                >
-                  <div className="ml-5 flex items-center overflow-hidden overflow-ellipsis justify-between w-[85%]">
-                    <div className="flex flex-col">
-                      <span className="mt-2 font-semibold">
-                        Address - {index + 1}
-                      </span>
-                      <p className="text-slate-500 dark:text-[#f5f5f5] text-sm leading-6">
-                        {address.street1},{address.street2},
-                        <span className="block">
-                          {address.city},{address.state},
-                        </span>
-                        <span>{address.country}.</span>
-                        <span className="inline">
-                          zip code: {address.zip_code}
-                        </span>
-                      </p>
+          <div className="flex gap-4">
+            <div
+              onClick={() => setShippingSpeed("standard")}
+              className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                shippingSpeed === "standard"
+                  ? "border-[#9747FF] bg-purple-50 dark:bg-purple-900/20"
+                  : "border-gray-300 dark:border-gray-600"
+              }`}
+            >
+              <p className="font-semibold text-[15px]">Standard</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Economical delivery
+              </p>
+            </div>
+            <div
+              onClick={() => setShippingSpeed("express")}
+              className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                shippingSpeed === "express"
+                  ? "border-[#9747FF] bg-purple-50 dark:bg-purple-900/20"
+                  : "border-gray-300 dark:border-gray-600"
+              }`}
+            >
+              <p className="font-semibold text-[15px]">Express</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Fastest available delivery
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MapPinIcon className="w-5 h-5 text-[#9747FF]" />
+              <p className="text-lg font-medium">Shipping Address</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAddressFormOpen(true)}
+              className="flex items-center gap-1.5 text-sm font-medium text-[#9747FF] hover:text-[#8533EE] transition-colors"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Add New
+            </button>
+          </div>
+
+          {addresses.length > 0 ? (
+            <div className="mt-4 space-y-3 max-h-[220px] overflow-y-auto pr-1 w-[95vw] sm:w-full">
+              {addresses.map((address, index) => {
+                const isSelected = addressesId === address.id;
+                return (
+                  <div
+                    key={address.id || index + address.zip_code}
+                    onClick={() => setAddressesId(address.id)}
+                    className={`relative cursor-pointer rounded-xl p-4 transition-all ${
+                      isSelected
+                        ? "border-2 border-[#9747FF] bg-purple-50 dark:bg-purple-900/10"
+                        : "border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                          isSelected
+                            ? "border-[#9747FF] bg-[#9747FF]"
+                            : "border-gray-300 dark:border-gray-600"
+                        }`}
+                      >
+                        {isSelected && (
+                          <CheckIcon className="h-3 w-3 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                          {address.name || `Address ${index + 1}`}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                          {address.street1}
+                          {address.street2 ? `, ${address.street2}` : ""}
+                          <br />
+                          {address.city}, {address.state}, {address.country} - {address.zip_code}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </label>
+                );
+              })}
+            </div>
+          ) : (
+            <div
+              onClick={() => setIsAddressFormOpen(true)}
+              className="mt-4 cursor-pointer rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-[#9747FF] dark:hover:border-[#9747FF] p-8 flex flex-col items-center justify-center transition-colors"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#9747FF]/10 mb-3">
+                <MapPinIcon className="h-6 w-6 text-[#9747FF]" />
               </div>
-            ))}
-          </form>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                No shipping address yet
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Click here to add your first address
+              </p>
+            </div>
+          )}
         </div>
         <div className="sm:mt-10 h-fit w-[98vw] sm:w-full   bg-white dark:bg-[#0E0F13] dark:text-[#f5f5f5] px-4 pt-4 sm:pt-8 lg:mt-0">
           <p className="text-xl font-medium">Payment Details</p>

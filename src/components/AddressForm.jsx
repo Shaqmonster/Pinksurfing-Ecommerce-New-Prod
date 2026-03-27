@@ -5,28 +5,27 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { IoCloseOutline } from "react-icons/io5";
+import { XMarkIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { Country, State, City } from "country-state-city";
 import { dataContext } from "../context/dataContext";
-// import { useReducer } from "react";
+
 export default function AddressForm() {
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
   const { isAddressFormOpen, setIsAddressFormOpen, user } =
     useContext(authContext);
-  const [cookies, removeCookie] = useCookies([]);
-  const { handleError, handleSuccess } = useContext(dataContext);
+  const [cookies] = useCookies([]);
+  const { handleError } = useContext(dataContext);
 
   const navigate = useNavigate();
   const cancelButtonRef = useRef();
+
   function closeModal() {
     setIsAddressFormOpen(false);
   }
 
-  function openModal() {
-    setIsAddressFormOpen(true);
-  }
   const [address, setAddress] = useState({
     name: "",
     phone: "",
@@ -37,8 +36,10 @@ export default function AddressForm() {
     state: "",
     zip_code: "",
   });
+
   const { name, phone, street1, street2, state, city, country, zip_code } =
     address;
+
   const handleOnChange = (e) => {
     const { name, value } = e.target;
 
@@ -46,31 +47,17 @@ export default function AddressForm() {
       const countryCode = value;
       setStates(State.getStatesOfCountry(countryCode));
       setCities([]);
-      setAddress((prevAddress) => ({
-        ...prevAddress,
-        [name]: value,
-        state: "",
-        city: "",
-      }));
+      setAddress((prev) => ({ ...prev, [name]: value, state: "", city: "" }));
     } else if (name === "state") {
-      const selectedState = states.find((state) => state.name === value);
+      const selectedState = states.find((s) => s.name === value);
       if (selectedState) {
-        setCities(
-          City.getCitiesOfState(address.country, selectedState.isoCode)
-        );
+        setCities(City.getCitiesOfState(address.country, selectedState.isoCode));
       } else {
         setCities([]);
       }
-      setAddress((prevAddress) => ({
-        ...prevAddress,
-        [name]: value,
-        city: "",
-      }));
+      setAddress((prev) => ({ ...prev, [name]: value, city: "" }));
     } else {
-      setAddress((prevAddress) => ({
-        ...prevAddress,
-        [name]: value,
-      }));
+      setAddress((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -78,21 +65,22 @@ export default function AddressForm() {
     setCountries(Country.getAllCountries());
   }, []);
 
+  const isFormValid = name && phone && street1 && state && city && country && zip_code;
+
   const AddAddress = async (e) => {
     e.preventDefault();
     if (!cookies.access_token) {
       navigate("/signin");
+      return;
     }
     if (!user.email) {
       console.error("User email is missing.");
       return;
     }
 
-    const updatedAddress = {
-      ...address,
-      email: user.email,
-    };
-    console.log(updatedAddress);
+    setSubmitting(true);
+    const updatedAddress = { ...address, email: user.email };
+
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/address/`,
@@ -104,321 +92,274 @@ export default function AddressForm() {
           },
         }
       )
-      .then((response) => {
-        console.log(response.data);
-        toast.success("Address Added", { position: "top-center" });
-        setTimeout(() => {
-          setAddress({
-            name: "",
-            phone: "",
-            street1: "",
-            street2: "",
-            city: "",
-            country: "",
-            state: "",
-            zip_code: "",
-          });
-          setIsAddressFormOpen(false);
-        }, 1000);
+      .then(() => {
+        toast.success("Address added successfully!", { position: "top-center" });
+        setAddress({
+          name: "",
+          phone: "",
+          street1: "",
+          street2: "",
+          city: "",
+          country: "",
+          state: "",
+          zip_code: "",
+        });
+        setTimeout(() => setIsAddressFormOpen(false), 600);
       })
       .catch((error) => {
-        handleError(error.response.data.msg || error.response.data.error || "Error adding address");
+        handleError(
+          error.response?.data?.msg ||
+            error.response?.data?.error ||
+            "Error adding address"
+        );
         console.error(error);
-      });
+      })
+      .finally(() => setSubmitting(false));
   };
 
-  const CreateAndVerifyAddress = async (e) => {
-    e.preventDefault();
-
-    const apiKey = import.meta.env.VITE_EASYPOST_APIKEY;
-    console.log(user);
-    const response = await fetch(
-      "https://api.easypost.com/v2/addresses/create_and_verify",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Basic ${btoa(`${apiKey}:`)}`,
-        },
-        body: JSON.stringify({
-          address: {
-            street1: address.street1,
-            street2: address.street2,
-            city: address.city,
-            state: address.state,
-            zip: address.zip_code,
-            country: address.country,
-            email: user.email,
-            phone: user.phone,
-          },
-        }),
-      }
-    );
-
-    const data = await response.json();
-    if (response.ok) {
-      console.log("Address verified successfully:", data);
-    } else {
-      handleError('Error verifying address')
-      console.error("Error verifying address:", data);
-    }
-  };
+  const inputClass =
+    "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#1A1C1E] text-gray-900 dark:text-white px-4 py-3 text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:border-[#9747FF] focus:ring-2 focus:ring-[#9747FF]/20 focus:outline-none transition-all";
+  const selectClass =
+    "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#1A1C1E] text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-[#9747FF] focus:ring-2 focus:ring-[#9747FF]/20 focus:outline-none transition-all appearance-none";
+  const labelClass =
+    "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5";
 
   return (
-    <>
-      <Transition appear show={isAddressFormOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-10"
-          onClose={closeModal}
-          open={isAddressFormOpen}
-          initialFocus={cancelButtonRef}
-          static
+    <Transition appear show={isAddressFormOpen} as={Fragment}>
+      <Dialog
+        as="div"
+        className="relative z-50"
+        onClose={closeModal}
+        initialFocus={cancelButtonRef}
+      >
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
         >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/25" />
-          </Transition.Child>
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+        </Transition.Child>
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-[#0E0F13]  p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900 dark:text-white"
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 scale-95"
+              enterTo="opacity-100 translate-y-0 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 scale-100"
+              leaveTo="opacity-0 translate-y-4 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-lg transform rounded-2xl bg-white dark:bg-[#0E0F13] shadow-2xl transition-all">
+                <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9747FF]/10">
+                      <MapPinIcon className="h-5 w-5 text-[#9747FF]" />
+                    </div>
+                    <div>
+                      <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Add New Address
+                      </Dialog.Title>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Enter your shipping details below
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="rounded-lg p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
-                    Add New Address
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={AddAddress} className="px-6 py-5 space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="name" className={labelClass}>
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        placeholder="John Doe"
+                        value={name}
+                        onChange={handleOnChange}
+                        required
+                        autoFocus
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="phone" className={labelClass}>
+                        Phone <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="text"
+                        placeholder="10-digit mobile number"
+                        value={phone}
+                        onChange={handleOnChange}
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="street1" className={labelClass}>
+                        Street 1 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="street1"
+                        name="street1"
+                        type="text"
+                        placeholder="123 Main St"
+                        value={street1}
+                        onChange={handleOnChange}
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="street2" className={labelClass}>
+                        Street 2
+                      </label>
+                      <input
+                        id="street2"
+                        name="street2"
+                        type="text"
+                        placeholder="Apt, Suite (optional)"
+                        value={street2}
+                        onChange={handleOnChange}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="country" className={labelClass}>
+                        Country <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="country"
+                        name="country"
+                        value={country}
+                        onChange={handleOnChange}
+                        required
+                        className={selectClass}
+                      >
+                        <option value="">Select Country</option>
+                        {countries.map((c) => (
+                          <option key={c.isoCode} value={c.isoCode}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="state" className={labelClass}>
+                        State <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="state"
+                        name="state"
+                        value={state}
+                        onChange={handleOnChange}
+                        required
+                        className={selectClass}
+                      >
+                        <option value="">Select State</option>
+                        {states.map((s) => (
+                          <option key={s.name} value={s.name}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="city" className={labelClass}>
+                        City <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="city"
+                        name="city"
+                        value={city}
+                        onChange={handleOnChange}
+                        required
+                        className={selectClass}
+                      >
+                        <option value="">Select City</option>
+                        {cities.map((c) => (
+                          <option key={c.name} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="zip_code" className={labelClass}>
+                        ZIP Code <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="zip_code"
+                        name="zip_code"
+                        type="number"
+                        placeholder="12345"
+                        value={zip_code}
+                        onChange={handleOnChange}
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2 pb-1">
                     <button
                       type="button"
-                      className="overflow-hidden"
                       onClick={closeModal}
+                      ref={cancelButtonRef}
+                      className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
-                      <IoCloseOutline className=" text-[23px] cursor-pointer" />
+                      Cancel
                     </button>
-                  </Dialog.Title>
-                  <form onSubmit={AddAddress} className="w-full max-w-lg">
-                    <div className="flex flex-wrap -mx-3 mb-6">
-                      <div className="w-full px-3">
-                        <label
-                          className="block uppercase tracking-wide text-black text-xs font-bold mb-2 dark:text-white"
-                          htmlFor="name"
-                        >
-                          <label className="text-gray-800 dark:text-white font-medium">
-                            Name <span className="text-red-500">*</span>
-                          </label>
-                        </label>
-                        <input
-                          className="appearance-none block w-full bg-gray-200 text-black dark:text-white border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
-                          id="name"
-                          name="name"
-                          type="text"
-                          placeholder="Name"
-                          value={name}
-                          onChange={handleOnChange}
-                          required
-                          autoFocus
-                        />
-                      </div>
-                      <div className="w-full px-3">
-                        <label
-                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
-                          htmlFor="phone"
-                        >
-                          <label className="text-gray-800 dark:text-white font-medium">
-                            Phone <span className="text-red-500">*</span>
-                          </label>
-                        </label>
-                        <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
-                          id="phone"
-                          name="phone"
-                          type="text"
-                          placeholder="10-digit mobile number"
-                          value={phone}
-                          onChange={handleOnChange}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap -mx-3 mb-6">
-                      <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                        <label
-                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
-                          htmlFor="street1"
-                        >
-                          Steet 1
-                        </label>
-                        <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13]"
-                          id="street1"
-                          name="street1"
-                          type="text"
-                          placeholder="Street 1"
-                          value={street1}
-                          onChange={handleOnChange}
-                          required
-                        />
-                      </div>
-                      <div className="w-full md:w-1/2 px-3">
-                        <label
-                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
-                          htmlFor="street2"
-                        >
-                          Street 2
-                        </label>
-                        <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
-                          name="street2"
-                          id="street2"
-                          type="text"
-                          placeholder="Street 2"
-                          value={street2}
-                          onChange={handleOnChange}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex  -mx-3 mb-6">
-                      <div className="w-full px-3">
-                        <label
-                          className="block uppercase tracking-wide text-black dark:text-white text-xs font-bold mb-2"
-                          htmlFor="country"
-                        >
-                          <label className="text-gray-800 dark:text-white font-medium">
-                            Country <span className="text-red-500">*</span>
-                          </label>
-                        </label>
-                        <div className="relative">
-                          <select
-                            className="block appearance-none w-full bg-gray-200 dark:text-white border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
-                            id="country"
-                            name="country"
-                            value={country}
-                            onChange={handleOnChange}
-                            required
-                          >
-                            <option value="">Select Country</option>
-                            {countries.map((country) => (
-                              <option
-                                key={country.isoCode}
-                                value={country.isoCode}
-                              >
-                                {country.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="w-full px-3">
-                        <label
-                          className="block uppercase tracking-wide dark:text-white   text-black text-xs font-bold mb-2"
-                          htmlFor="state"
-                        >
-                          <label className="text-gray-800 dark:text-white font-medium">
-                            State <span className="text-red-500">*</span>
-                          </label>
-                        </label>
-                        <select
-                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
-                          id="state"
-                          name="state"
-                          value={state}
-                          onChange={handleOnChange}
-                          required
-                        >
-                          <option value="">Select State</option>
-                          {states.map((state) => (
-                            <option key={state.name} value={state.name}>
-                              {state.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="flex -mx-3 mb-2">
-                      <div className="w-full px-3">
-                        <label
-                          className="block uppercase tracking-wide dark:text-white  text-black text-xs font-bold mb-2"
-                          htmlFor="city"
-                        >
-                          <label className="text-gray-800 dark:text-white font-medium">
-                            City <span className="text-red-500">*</span>
-                          </label>
-                        </label>
-                        <select
-                          className="block appearance-none w-full dark:text-white bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
-                          id="city"
-                          name="city"
-                          value={city}
-                          onChange={handleOnChange}
-                          required
-                        >
-                          <option value="">Select City</option>
-                          {cities.map((city) => (
-                            <option key={city.name} value={city.name}>
-                              {city.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="w-full px-3">
-                        <label
-                          className="block uppercase tracking-wide dark:text-white text-black text-xs font-bold mb-2"
-                          htmlFor="zip_code"
-                        >
-                          <label className="text-gray-800 dark:text-white font-medium">
-                            ZIP <span className="text-red-500">*</span>
-                          </label>
-                        </label>
-                        <input
-                          className="appearance-none block w-full bg-gray-200 dark:text-white text-black border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-[#0E0F13] focus:border-gray-500"
-                          id="zip_code"
-                          name="zip_code"
-                          type="number"
-                          placeholder="Zip Code"
-                          value={zip_code}
-                          onChange={handleOnChange}
-                          required
-                        />
-                      </div>
-                    </div>
                     <button
-                      disabled={
-                        !name ||
-                        !phone ||
-                        !street1 ||
-                        !state ||
-                        !city ||
-                        !country ||
-                        !zip_code
-                      }
-                      className=" w-full flex items-center justify-center disabled:bg-gray-500 bg-[#6A1BBE]  border-2 border-[#8A2BE2] text-white py-3 rounded-lg mt-6"
+                      type="submit"
+                      disabled={!isFormValid || submitting}
+                      className="flex-1 rounded-lg bg-[#9747FF] px-4 py-3 text-sm font-medium text-white hover:bg-[#8533EE] disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                     >
-                      {" "}
-                      Add
+                      {submitting ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Address"
+                      )}
                     </button>
-                  </form>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
-        </Dialog>
-      </Transition>
-    </>
+        </div>
+      </Dialog>
+    </Transition>
   );
 }
