@@ -90,6 +90,46 @@ const Summary = () => {
     GetAddresses();
   }, [cookies, navigate, removeCookie]);
 
+  const handleOptimisticCancel = (cancelledOrderId) => {
+    setOrder((prev) =>
+      prev ? { ...prev, order_status: "CANCELED" } : prev
+    );
+  };
+
+  const handleReturnOrder = async (orderItemId) => {
+    if (!cookies.access_token) {
+      navigate("/signin");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/api/order/return-order/${orderItemId}/`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${cookies.access_token}`,
+          },
+        }
+      );
+      if (response.status === 202 || response.status === 200) {
+        setOrder((prev) =>
+          prev ? { ...prev, order_status: "RETURN-REQUESTED" } : prev
+        );
+        toast.success(
+          "Return Scheduled! A carrier will arrive at your door tomorrow to collect the package. No printing required\u2014they will bring the label with them.",
+          { position: "top-center", autoClose: 6000 }
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.error || "Failed to initiate return. Please try again.",
+        { position: "top-center", autoClose: 3000 }
+      );
+    }
+  };
+
   if (!order) {
     return null;
   }
@@ -126,7 +166,7 @@ const Summary = () => {
               }}
               className=" cursor-pointer block w-[27px] sm:w-[30px]  dark:text-[#f5f5f5]  top-1.5 "
             />
-            Order Id : {orderId}
+            Order Id : {order.order_number || orderId}
           </h1>
         </div>
         <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-[10%] left-0 z-[0] pointer-events-none hidden lg:block">
@@ -183,12 +223,14 @@ const Summary = () => {
                     <span
                       className={`${order.order_status === "DELIVERED"
                         ? "text-green-500 bg-green-100"
-                        : order.order_status === "PENDING"
+                        : order.order_status === "PENDING" || order.order_status === "RECEIVED" || order.order_status === "PACKED"
                           ? "text-yellow-500 bg-yellow-100"
                           : order.order_status === "CANCELED"
                             ? "text-red-500 bg-red-100"
-                            : "text-gray-500 bg-gray-100" // default styling for unknown status
-                        } bg-black/50 rounded-md px-2 py-1`}
+                            : order.order_status === "RETURN-REQUESTED" || order.order_status === "RETURN-DELIVERED"
+                              ? "text-orange-500 bg-orange-100"
+                              : "text-gray-500 bg-gray-100"
+                        } rounded-md px-2 py-1`}
                     >
                       {order.order_status}
                     </span>
@@ -197,28 +239,27 @@ const Summary = () => {
                 </div>
                 <RatingForm order={order} />
                 <div className=" grid grid-cols-2 col-span-3 sm:col-span-1 sm:flex flex-col justify-evenly sm:justify-center gap-4  w-full h-full sm:p-4 px-2 ">
-                  {
-                    !order.order_status === "DELIVERED" && (
-                      <button
-                        disabled={
-                          order.order_status.toUpperCase() === "SHIPPED" ||
-                          order.order_status.toUpperCase() === "DELIVERED" ||
-                          order.order_status.toUpperCase() === "RETURNED" ||
-                          order.order_status.toUpperCase() === "RETURN-REQUESTED" ||
-                          order.order_status.toUpperCase() === "CANCELED"
-                        }
-                        onClick={() => {
-                          openModal();
-                          setDeleteOrderId(order.id);
-                        }}
-                        className=" disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-400 disabled:bg-transparent bg-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 hover:bg-red-100 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 "
-                      >
-                        {order.order_status === "shipped"
-                          ? "Shipped"
-                          : "Cancel Order"}
-                      </button>
-                    )
-                  }
+                  {["PENDING", "RECEIVED", "PACKED"].includes(
+                    order.order_status.toUpperCase()
+                  ) && (
+                    <button
+                      onClick={() => {
+                        openModal();
+                        setDeleteOrderId(order.id);
+                      }}
+                      className="text-red-600 bg-transparent font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-red-100 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                  {order.order_status.toUpperCase() === "DELIVERED" && (
+                    <button
+                      onClick={() => handleReturnOrder(order.id)}
+                      className="text-orange-600 bg-transparent font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white rounded-md border border-orange-500"
+                    >
+                      Return Order
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       navigate(
@@ -316,6 +357,7 @@ const Summary = () => {
                   orderId={deleteOrderId}
                   setIsOpen={setIsOpen}
                   GetOrders={GetOrder}
+                  onOptimisticCancel={handleOptimisticCancel}
                 />
               )}
             </div>

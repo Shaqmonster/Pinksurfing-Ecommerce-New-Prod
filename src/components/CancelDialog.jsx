@@ -10,6 +10,7 @@ export default function CancelDialog({
   setIsOpen,
   orderId,
   GetOrders,
+  onOptimisticCancel,
 }) {
   const [cookies] = useCookies([]);
   function closeModal() {
@@ -17,8 +18,10 @@ export default function CancelDialog({
   }
 
   const DeleteOrder = () => {
-    console.log(orderId);
-    console.log(cookies.access_token);
+    if (onOptimisticCancel) {
+      onOptimisticCancel(orderId);
+    }
+
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/order/cancel-order/${orderId}/`,
@@ -31,15 +34,25 @@ export default function CancelDialog({
         }
       )
       .then((response) => {
-        // console.log(response.data);
-        toast.success("Order Cancelled", {
-          position: "top-right",
-          autoClose: "3000",
-        });
+        if (response.status === 202) {
+          toast.info("Cancellation Processing...", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        } else {
+          toast.success("Order Cancelled", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        }
         GetOrders();
       })
       .catch((error) => {
         console.error(error);
+        toast.error("Failed to cancel order. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       });
   };
 
