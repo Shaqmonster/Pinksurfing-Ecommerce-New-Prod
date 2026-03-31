@@ -71,6 +71,9 @@ function App() {
   const hideHeaderFooter =
     location.pathname === "/signup" || location.pathname === "/signin" || location.pathname === "/forgotPassword";
 
+  // Footer only on the home page
+  const showFooter = location.pathname === "/";
+
   // Check for existing tokens on first page load
   useEffect(() => {
     const checkAuthentication = () => {
@@ -150,7 +153,7 @@ function App() {
         <Route path="/gigs/:id" element={<GigDetailPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!hideHeaderFooter && <Footer />}
+      {showFooter && <Footer />}
     </main>
   );
 }

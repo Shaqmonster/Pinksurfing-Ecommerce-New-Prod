@@ -569,15 +569,19 @@ const ProductDetailPage = () => {
                 </h1>
 
                 {/* Brand and Category */}
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                    <span className="text-gray-600 dark:text-gray-400">Brand:</span>
-                    <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                    <span className="text-gray-600 dark:text-gray-400">Category:</span>
-                    <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category?.name}</span>
-                  </div>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  {product.brand_name && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                      <span className="text-gray-600 dark:text-gray-400">Brand:</span>
+                      <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
+                    </div>
+                  )}
+                  {product.category?.name && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                      <span className="text-gray-600 dark:text-gray-400">Category:</span>
+                      <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category.name}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Price Section */}
@@ -605,62 +609,94 @@ const ProductDetailPage = () => {
                   </p>
                 </div>
 
-                {/* Attributes Selection */}
-                {/* {Object.entries(attributeArrays2).map(([attributeName, values]) => (
-                  <div key={attributeName} className="space-y-3">
-                    <label className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
-                      Select {attributeName}
-                    </label>
-                    
-                    {attributeName.toLowerCase() === "color" ? (
-                      <div className="flex flex-wrap gap-3">
-                        {values.map((value, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleAttributeSelection(attributeName, value)}
-                            className={`relative w-12 h-12 rounded-full transition-all duration-300 ${
-                              selectedAttributes[attributeName]?.value === value.value
-                                ? "ring-4 ring-purple-500 ring-offset-2 dark:ring-offset-gray-900 scale-110"
-                                : "ring-2 ring-gray-300 dark:ring-gray-600 hover:scale-105"
-                            }`}
-                            style={{ backgroundColor: value.value }}
-                            title={value.value}
-                          >
-                            {selectedAttributes[attributeName]?.value === value.value && (
-                              <svg className="absolute inset-0 m-auto w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-3">
-                        {values.map((value, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleAttributeSelection(attributeName, value)}
-                            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                              selectedAttributes[attributeName]?.value === value.value
-                                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105"
-                                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 hover:scale-105"
-                            }`}
-                          >
-                            {value.value}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))} */}
+                {/* Variants / Attribute Selection */}
+                {Object.keys(attributeArrays2).length > 0 && (
+                  <div className="space-y-4">
+                    {Object.entries(attributeArrays2).map(([attributeName, values]) => (
+                      <div key={attributeName}>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
+                          Select {attributeName}
+                          {selectedAttributes[attributeName] && (
+                            <span className="ml-2 normal-case font-semibold text-purple-600 dark:text-purple-400">
+                              — {selectedAttributes[attributeName].value}
+                              {selectedAttributes[attributeName].additional_price > 0 && (
+                                <span className="text-orange-500 ml-1">
+                                  (+{currency}{selectedAttributes[attributeName].additional_price})
+                                </span>
+                              )}
+                            </span>
+                          )}
+                        </label>
 
-                {/* Description */}
-                <div className="p-6 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Product Description</h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed prose dark:prose-invert max-w-none">
-                    {product?.short_description ? parse(product.short_description) : "No description available."}
+                        {attributeName.toLowerCase() === "color" ? (
+                          /* Color: circular swatches */
+                          <div className="flex flex-wrap gap-3">
+                            {values.map((value, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => handleAttributeSelection(attributeName, value)}
+                                title={value.value}
+                                className={`relative w-10 h-10 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                                  selectedAttributes[attributeName]?.value === value.value
+                                    ? "border-purple-500 ring-2 ring-purple-400 ring-offset-2 dark:ring-offset-gray-900 scale-110"
+                                    : "border-gray-300 dark:border-gray-600"
+                                }`}
+                                style={{ backgroundColor: value.value }}
+                              >
+                                {selectedAttributes[attributeName]?.value === value.value && (
+                                  <svg className="absolute inset-0 m-auto w-5 h-5 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          /* All other variants: pill/chip buttons in a horizontal wrap */
+                          <div className="flex flex-wrap gap-2">
+                            {values.map((value, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => handleAttributeSelection(attributeName, value)}
+                                className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 hover:scale-105 active:scale-95 ${
+                                  selectedAttributes[attributeName]?.value === value.value
+                                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white border-transparent shadow-md"
+                                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400"
+                                }`}
+                              >
+                                {value.value}
+                                {value.additional_price > 0 && (
+                                  <span className="ml-1 text-xs opacity-75">+{currency}{value.additional_price}</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                </div>
+                )}
+
+                {/* Short Description */}
+                {product?.short_description && (
+                  <div className="p-5 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Description</h3>
+                    <div className="
+                      text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+                      [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2
+                      [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2
+                      [&_li]:mb-1 [&_strong]:font-semibold [&_strong]:text-gray-800 dark:[&_strong]:text-gray-200
+                      [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-2
+                      [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2
+                      [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-1
+                      [&_a]:text-purple-600 [&_a]:underline
+                    ">
+                      {parse(product.short_description)}
+                    </div>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -773,6 +809,36 @@ const ProductDetailPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Full Description (long HTML from vendor) */}
+            {product?.description && (
+              <div className="mt-12 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Full Product Details</h2>
+                </div>
+                <div className="px-6 py-6
+                  text-sm text-gray-700 dark:text-gray-300 leading-relaxed
+                  [&_p]:mb-3 [&_p]:leading-relaxed
+                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ul]:space-y-1
+                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_ol]:space-y-1
+                  [&_li]:leading-relaxed
+                  [&_strong]:font-semibold [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                  [&_em]:italic
+                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900 dark:[&_h1]:text-white [&_h1]:mb-3 [&_h1]:mt-4
+                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 dark:[&_h2]:text-white [&_h2]:mb-2 [&_h2]:mt-4
+                  [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-gray-900 dark:[&_h3]:text-white [&_h3]:mb-2 [&_h3]:mt-3
+                  [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-1
+                  [&_blockquote]:border-l-4 [&_blockquote]:border-purple-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 dark:[&_blockquote]:text-gray-400 [&_blockquote]:mb-3
+                  [&_a]:text-purple-600 dark:[&_a]:text-purple-400 [&_a]:underline [&_a]:hover:text-purple-700
+                  [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
+                  [&_th]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:bg-purple-50 dark:[&_th]:bg-purple-900/20 [&_th]:font-semibold [&_th]:border [&_th]:border-gray-200 dark:[&_th]:border-gray-700
+                  [&_td]:px-3 [&_td]:py-2 [&_td]:border [&_td]:border-gray-200 dark:[&_td]:border-gray-700
+                  [&_img]:rounded-xl [&_img]:max-w-full [&_img]:my-3
+                ">
+                  {parse(product.description)}
+                </div>
+              </div>
+            )}
 
             {/* Reviews and Recommendations */}
             <div className="mt-16 space-y-12">
