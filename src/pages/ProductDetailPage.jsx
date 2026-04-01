@@ -609,73 +609,95 @@ const ProductDetailPage = () => {
                   </p>
                 </div>
 
-                {/* Variants / Attribute Selection */}
+                {/* Variants / Attribute Selection
+                    — multi-value attributes → selectable chips
+                    — single-value attributes → read-only info cell
+                    Both laid out in a 2-column responsive grid so the page
+                    doesn't turn into a wall of full-width stacked rows. */}
                 {Object.keys(attributeArrays2).length > 0 && (
-                  <div className="space-y-4">
-                    {Object.entries(attributeArrays2).map(([attributeName, values]) => (
-                      <div key={attributeName}>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
-                          Select {attributeName}
-                          {selectedAttributes[attributeName] && (
-                            <span className="ml-2 normal-case font-semibold text-purple-600 dark:text-purple-400">
-                              — {selectedAttributes[attributeName].value}
-                              {selectedAttributes[attributeName].additional_price > 0 && (
-                                <span className="text-orange-500 ml-1">
-                                  (+{currency}{selectedAttributes[attributeName].additional_price})
-                                </span>
-                              )}
-                            </span>
-                          )}
-                        </label>
+                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+                      <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                        Options &amp; Specifications
+                      </p>
+                    </div>
+                    <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {Object.entries(attributeArrays2).map(([attributeName, values]) => {
+                        const isMultiChoice = values.length > 1;
+                        const isColor = attributeName.toLowerCase() === "color";
 
-                        {attributeName.toLowerCase() === "color" ? (
-                          /* Color: circular swatches */
-                          <div className="flex flex-wrap gap-3">
-                            {values.map((value, index) => (
-                              <button
-                                key={index}
-                                type="button"
-                                onClick={() => handleAttributeSelection(attributeName, value)}
-                                title={value.value}
-                                className={`relative w-10 h-10 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
-                                  selectedAttributes[attributeName]?.value === value.value
-                                    ? "border-purple-500 ring-2 ring-purple-400 ring-offset-2 dark:ring-offset-gray-900 scale-110"
-                                    : "border-gray-300 dark:border-gray-600"
+                        return (
+                          <div
+                            key={attributeName}
+                            className={`flex flex-col gap-1.5 ${isMultiChoice ? "col-span-2 sm:col-span-3" : ""}`}
+                          >
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                              {attributeName}
+                            </span>
+
+                            {isColor ? (
+                              /* Color swatches */
+                              <div className="flex flex-wrap gap-2">
+                                {values.map((value, index) => (
+                                  <button
+                                    key={index}
+                                    type="button"
+                                    onClick={() => handleAttributeSelection(attributeName, value)}
+                                    title={value.value}
+                                    className={`relative w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                                      selectedAttributes[attributeName]?.value === value.value
+                                        ? "border-purple-500 ring-2 ring-purple-400 ring-offset-1 dark:ring-offset-gray-900 scale-110"
+                                        : "border-gray-300 dark:border-gray-600"
+                                    }`}
+                                    style={{ backgroundColor: value.value }}
+                                  >
+                                    {selectedAttributes[attributeName]?.value === value.value && (
+                                      <svg className="absolute inset-0 m-auto w-4 h-4 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : isMultiChoice ? (
+                              /* Multiple choices → selectable chips in a horizontal wrap */
+                              <div className="flex flex-wrap gap-2">
+                                {values.map((value, index) => (
+                                  <button
+                                    key={index}
+                                    type="button"
+                                    onClick={() => handleAttributeSelection(attributeName, value)}
+                                    className={`px-3 py-1 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                                      selectedAttributes[attributeName]?.value === value.value
+                                        ? "bg-[#9747FF] text-white border-transparent shadow-sm"
+                                        : "bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#9747FF] dark:hover:border-[#9747FF] hover:text-[#9747FF]"
+                                    }`}
+                                  >
+                                    {value.value}
+                                    {value.additional_price > 0 && (
+                                      <span className="ml-1 text-xs opacity-75">+{currency}{value.additional_price}</span>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              /* Single value → styled read-only badge */
+                              <span
+                                onClick={() => handleAttributeSelection(attributeName, values[0])}
+                                title="Click to select"
+                                className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-semibold cursor-pointer transition-all border ${
+                                  selectedAttributes[attributeName]?.value === values[0]?.value
+                                    ? "bg-[#9747FF]/15 text-[#9747FF] border-[#9747FF]/40"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-[#9747FF]/50 hover:text-[#9747FF]"
                                 }`}
-                                style={{ backgroundColor: value.value }}
                               >
-                                {selectedAttributes[attributeName]?.value === value.value && (
-                                  <svg className="absolute inset-0 m-auto w-5 h-5 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                  </svg>
-                                )}
-                              </button>
-                            ))}
+                                {values[0]?.value}
+                              </span>
+                            )}
                           </div>
-                        ) : (
-                          /* All other variants: pill/chip buttons in a horizontal wrap */
-                          <div className="flex flex-wrap gap-2">
-                            {values.map((value, index) => (
-                              <button
-                                key={index}
-                                type="button"
-                                onClick={() => handleAttributeSelection(attributeName, value)}
-                                className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 hover:scale-105 active:scale-95 ${
-                                  selectedAttributes[attributeName]?.value === value.value
-                                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white border-transparent shadow-md"
-                                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400"
-                                }`}
-                              >
-                                {value.value}
-                                {value.additional_price > 0 && (
-                                  <span className="ml-1 text-xs opacity-75">+{currency}{value.additional_price}</span>
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 

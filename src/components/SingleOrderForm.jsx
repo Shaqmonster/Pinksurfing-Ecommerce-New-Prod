@@ -201,42 +201,59 @@ export default function SingleOrderForm() {
                         </div>
                       </div>
 
-                      {/* Shipping Speed */}
+                      {/* Shipping Speed — payload value: "standard" | "express" */}
                       <div>
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Shipping Speed
                         </p>
                         <div className="grid grid-cols-2 gap-3">
+                          {/* Standard */}
                           <button
                             type="button"
                             onClick={() => setShippingSpeed("standard")}
-                            className={`rounded-lg border-2 p-3 text-left transition-all ${
+                            className={`rounded-xl border-2 p-3 text-left transition-all ${
                               shippingSpeed === "standard"
-                                ? "border-[#9747FF] bg-purple-50 dark:bg-purple-900/15"
-                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                ? "border-[#9747FF] bg-[#9747FF]/10"
+                                : "border-gray-200 dark:border-gray-700 hover:border-[#9747FF]/50"
                             }`}
                           >
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                              Standard
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                              Economical
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
+                                shippingSpeed === "standard"
+                                  ? "border-[#9747FF] bg-[#9747FF]"
+                                  : "border-gray-400 dark:border-gray-500"
+                              }`} />
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                Standard
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 pl-5">
+                              Economical delivery
                             </p>
                           </button>
+
+                          {/* Express */}
                           <button
                             type="button"
                             onClick={() => setShippingSpeed("express")}
-                            className={`rounded-lg border-2 p-3 text-left transition-all ${
+                            className={`rounded-xl border-2 p-3 text-left transition-all ${
                               shippingSpeed === "express"
-                                ? "border-[#9747FF] bg-purple-50 dark:bg-purple-900/15"
-                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                ? "border-[#9747FF] bg-[#9747FF]/10"
+                                : "border-gray-200 dark:border-gray-700 hover:border-[#9747FF]/50"
                             }`}
                           >
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                              Express
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                              Fastest
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
+                                shippingSpeed === "express"
+                                  ? "border-[#9747FF] bg-[#9747FF]"
+                                  : "border-gray-400 dark:border-gray-500"
+                              }`} />
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                Express
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 pl-5">
+                              Fastest available
                             </p>
                           </button>
                         </div>

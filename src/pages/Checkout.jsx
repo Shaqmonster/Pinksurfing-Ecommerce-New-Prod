@@ -164,11 +164,8 @@ const Checkout = () => {
     }
   }, [addresses]);
 
-  useEffect(() => {
-    if (!loading && addresses.length === 0 && cookies.access_token) {
-      setIsAddressFormOpen(true);
-    }
-  }, [loading, addresses]);
+  // Address form opens only when the user explicitly clicks "Add New" —
+  // NOT automatically on render. Removed the auto-open effect.
 
   return (
     <>
