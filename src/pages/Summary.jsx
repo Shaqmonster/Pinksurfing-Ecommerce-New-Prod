@@ -5,7 +5,7 @@ import { useCookies } from "react-cookie";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { FaStar } from "react-icons/fa";
-import { IoStarOutline } from "react-icons/io5";
+import { IoStar, IoStarOutline } from "react-icons/io5";
 import CancelDialog from "../components/CancelDialog";
 import { toast } from "react-toastify";
 import RatingForm from "../components/RatingForm";
@@ -89,6 +89,17 @@ const Summary = () => {
     GetOrder();
     GetAddresses();
   }, [cookies, navigate, removeCookie]);
+
+  // Fetch ratings for this product once the order (and its product) is loaded
+  useEffect(() => {
+    if (!order?.product?.id) return;
+    axios
+      .get(`${import.meta.env.VITE_SERVER_URL}/api/ratings/get-ratings/${order.product.id}/`, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((res) => setReviews(res.data.ratings_reviews || []))
+      .catch(() => {});
+  }, [order?.product?.id]);
 
   const handleOptimisticCancel = (cancelledOrderId) => {
     setOrder((prev) =>
@@ -285,25 +296,57 @@ const Summary = () => {
               )}
 
             <div className=" h-full w-full col-span-7 lg:col-span-2">
-              {order.order_status.toLowerCase() ===
-                ("delivered" || "returned" || "return-requested") && (
-                  <div className=" bg-green-600 border-2 border-green-700 w-full py-3 lg:py-0  h-full rounded-md flex flex-col dark:text-[#f5f5f5] items-center justify-center">
-                    <h2 className=" font-semibold text-xl text-white">
-                      Rate this Product
-                    </h2>
-                    <p className=" text-[#f5f5f5] mt-0.5 mb-4">
-                      Share your Reviews about this product.
-                    </p>
+              {order.order_status.toLowerCase() === "delivered" && (() => {
+                // Check if this specific order item has already been reviewed
+                const myRating = reviews.find(
+                  (r) => String(r.order_item) === String(order.id)
+                );
+
+                if (myRating) {
+                  // Already rated — display the existing review
+                  return (
+                    <div className="border-2 border-yellow-500 bg-yellow-500/10 w-full py-4 px-4 h-full rounded-md flex flex-col items-center justify-center gap-2">
+                      <h2 className="font-semibold text-lg text-white">Your Review</h2>
+                      {/* Stars (1–7 scale) */}
+                      <div className="flex gap-1">
+                        {Array.from({ length: 7 }, (_, i) => (
+                          <span key={i}>
+                            {myRating.rating >= i + 1
+                              ? <IoStar className="text-yellow-400 text-xl" />
+                              : <IoStarOutline className="text-yellow-400 text-xl" />}
+                          </span>
+                        ))}
+                      </div>
+                      {myRating.title && (
+                        <p className="font-semibold text-white text-sm text-center">{myRating.title}</p>
+                      )}
+                      {myRating.body && (
+                        <p className="text-gray-300 text-xs text-center line-clamp-3">{myRating.body}</p>
+                      )}
+                      <button
+                        onClick={() => setIsRatingFormOpen(true)}
+                        className="mt-1 text-xs text-yellow-400 underline hover:text-yellow-300"
+                      >
+                        Edit Review
+                      </button>
+                    </div>
+                  );
+                }
+
+                // Not yet rated — show the rate button
+                return (
+                  <div className="bg-green-600 border-2 border-green-700 w-full py-3 lg:py-0 h-full rounded-md flex flex-col dark:text-[#f5f5f5] items-center justify-center">
+                    <h2 className="font-semibold text-xl text-white">Rate this Product</h2>
+                    <p className="text-[#f5f5f5] mt-0.5 mb-4">Share your review about this product.</p>
                     <button
-                      onClick={() => {
-                        setIsRatingFormOpen(true);
-                      }}
-                      className=" disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-300 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 px-5 bg-green-600 text-white border-white  hover:text-green-500 hover:bg-white  rounded-md border "
+                      onClick={() => setIsRatingFormOpen(true)}
+                      className="font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 px-5 bg-green-600 text-white border-white hover:text-green-500 hover:bg-white rounded-md border"
                     >
                       Rate This Product
                     </button>
                   </div>
-                )}
+                );
+              })()}
             </div>
 
             <div className=" col-span-7 justify-center flex-col md:flex-row items-stretch w-full ">

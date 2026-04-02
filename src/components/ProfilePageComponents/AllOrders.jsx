@@ -8,11 +8,9 @@ import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
-import Header from "../Header";
 import CancelDialog from "../CancelDialog";
-import RatingForm from '../../components/RatingForm'
 export default function AllOrders() {
-    const { currency, setIsRatingFormOpen, isRatingFormOpen } = useContext(authContext);
+    const { currency } = useContext(authContext);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -228,7 +226,7 @@ export default function AllOrders() {
 
                                                 <div className="w-full sm:flex items-center"
                                                 >
-                                                    <button onClick={() => navigate(`/summary/${order.id}`)}>
+                                                    <button onClick={() => navigate(`/summary/${order.id}`, { state: { fromTab: 4 } })}>
 
                                                         <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden "                           >
                                                             <img
@@ -267,7 +265,7 @@ export default function AllOrders() {
                                                             </span>
                                                         </p>
                                                     </div>
-                                                    <RatingForm order={order} />
+                                                    {/* Rating displayed in the order detail (Summary) page, not here */}
                                                     <div className="flex flex-col mt-2 sm:mt-0 ml-4">
                                                         {order.order_status.toUpperCase() === "CANCELED" ? (
                                                             <>
@@ -296,7 +294,7 @@ export default function AllOrders() {
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <button
+                                                                    <button
                                                                     className="bg-[#8B33FE] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
                                                                     onClick={() => {
                                                                         if (order.order_status === "DELIVERED") {
@@ -304,7 +302,8 @@ export default function AllOrders() {
                                                                             setIsSingleOrderFormOpen(true);
                                                                             setIsProfileOpen(false);
                                                                         } else {
-                                                                            navigate(`/summary/${order.id}`);
+                                                                            // Pass fromTab so pressing Back on Summary restores the Orders tab
+                                                                            navigate(`/summary/${order.id}`, { state: { fromTab: 4 } });
                                                                         }
                                                                     }}
                                                                 >
@@ -329,22 +328,12 @@ export default function AllOrders() {
                                                                 )}
 
                                                                 {order.order_status.toUpperCase() === "DELIVERED" && (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={() => handleReturnOrder(order.id)}
-                                                                            className="text-orange-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white rounded-md border border-orange-500 w-full max-w-[300px] mb-2"
-                                                                        >
-                                                                            Return Order
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                setIsRatingFormOpen(true);
-                                                                            }}
-                                                                            className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                                                                        >
-                                                                            Rate Product
-                                                                        </button>
-                                                                    </>
+                                                                    <button
+                                                                        onClick={() => handleReturnOrder(order.id)}
+                                                                        className="text-orange-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white rounded-md border border-orange-500 w-full max-w-[300px] mb-2"
+                                                                    >
+                                                                        Return Order
+                                                                    </button>
                                                                 )}
                                                             </>
                                                         )}

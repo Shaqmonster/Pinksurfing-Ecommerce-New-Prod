@@ -32,14 +32,14 @@ export function Sidebar() {
     const handleItemClick = (index) => {
         const item = navigationItems[index];
         if (item.route) {
-            navigate(item.route);
+            // Pass the current active tab so pressing Back restores it
+            navigate(item.route, { state: { fromTab: activeIndex } });
             setIsOpen(false);
             return;
         }
         setActiveIndex(index);
         setIsOpen(false);
         setProfileActiveIndex(index);
-        console.log(activeIndex)
     };
 
     // Get active item for mobile display
