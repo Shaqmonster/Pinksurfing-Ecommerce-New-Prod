@@ -184,31 +184,65 @@ export default function AttributeFilterPanel({
             );
         }
 
-        // ── boolean → Yes / No toggle buttons ──
-        if (dataType === "boolean") {
-            const yesActive = attributeFilters[attr.name] === true;
-            const noActive = attributeFilters[attr.name] === false;
+        // ── boolean / bool → toggle switch ──
+        if (dataType === "boolean" || dataType === "bool") {
+            const raw = attributeFilters[attr.name];
+            const isYes = raw === true || raw === "true";
+            const isNo  = raw === false || raw === "false";
+            const isFiltered = isYes || isNo;
 
-            const yesBaseCls = isMobile
-                ? "flex-1 px-3 py-2 text-sm rounded-lg font-medium transition-all duration-200"
-                : "flex-1 px-2 py-1.5 text-xs rounded-lg font-medium transition-all duration-200";
-            const noBaseCls = yesBaseCls;
+            // Cycle: Any → Yes → No → Any
+            const handleToggle = () => {
+                if (!isFiltered) onFilterChange(attr.name, true);
+                else if (isYes)  onFilterChange(attr.name, false);
+                else              onFilterChange(attr.name, "");
+            };
 
-            const yesCls = yesActive
-                ? `${yesBaseCls} bg-green-500 text-white shadow-md`
-                : `${yesBaseCls} ${isMobile ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`;
-            const noCls = noActive
-                ? `${noBaseCls} bg-red-500 text-white shadow-md`
-                : `${noBaseCls} ${isMobile ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`;
+            const trackCls = isYes
+                ? "bg-green-500"
+                : isNo
+                ? "bg-red-400"
+                : isMobile
+                ? "bg-gray-600"
+                : "bg-gray-300 dark:bg-gray-600";
+
+            const thumbPos = isYes ? "translate-x-5" : "translate-x-0.5";
+
+            const labelCls = isYes
+                ? (isMobile ? "text-green-400" : "text-green-600 dark:text-green-400")
+                : isNo
+                ? (isMobile ? "text-red-400" : "text-red-500 dark:text-red-400")
+                : (isMobile ? "text-gray-400" : "text-gray-500 dark:text-gray-400");
 
             return (
-                <div className="flex gap-2">
-                    <button onClick={() => onFilterChange(attr.name, yesActive ? "" : true)} className={yesCls}>
-                        Yes
+                <div className={`flex items-center justify-between ${isMobile ? "py-1" : ""}`}>
+                    {/* Label showing current state */}
+                    <span className={`${isMobile ? "text-sm" : "text-xs"} font-semibold ${labelCls} transition-colors duration-200`}>
+                        {isYes ? "Yes" : isNo ? "No" : "Any"}
+                    </span>
+
+                    {/* Toggle switch */}
+                    <button
+                        type="button"
+                        onClick={handleToggle}
+                        aria-label={`Toggle ${attr.name} filter`}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isMobile ? "focus:ring-offset-gray-800" : "focus:ring-offset-white dark:focus:ring-offset-gray-900"} ${trackCls}`}
+                    >
+                        <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-300 ${thumbPos}`}
+                        />
                     </button>
-                    <button onClick={() => onFilterChange(attr.name, noActive ? "" : false)} className={noCls}>
-                        No
-                    </button>
+
+                    {/* Clear button when a filter is active */}
+                    {isFiltered && (
+                        <button
+                            type="button"
+                            onClick={() => onFilterChange(attr.name, "")}
+                            className={`${isMobile ? "text-xs text-gray-400 hover:text-gray-200" : "text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"} ml-2 transition-colors`}
+                        >
+                            ✕
+                        </button>
+                    )}
                 </div>
             );
         }
