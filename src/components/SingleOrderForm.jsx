@@ -82,7 +82,9 @@ export default function SingleOrderForm() {
         }/`,
         {
           address: addressesId,
-          additional_price: singleOrderProduct.additional_price || 0,
+          // Send the raw variant selections — the backend validates the price
+          // from the DB so the price cannot be manipulated on the client side.
+          selected_variants: singleOrderProduct.selected_variants || [],
           shipping_speed: shippingSpeed,
         },
         {
