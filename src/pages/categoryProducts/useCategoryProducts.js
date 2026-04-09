@@ -7,13 +7,12 @@ import { authContext } from "../../context/authContext";
 import { filterProducts, slugToTitle } from "./utils";
 import { LOCATION_FILTER_CATEGORY_SLUGS } from "./constants";
 import {
-    buildZipCoordMap,
-    collectUniqueZipKeysFromProducts,
     geocodeZipWithFallback,
     inferCountryFromZipShape,
     normalizeZipDigits,
     normalizeZipForCountry,
     productMatchesRadius,
+    resolveCoordinatesForProducts,
 } from "./locationFilterUtils";
 
 /**
@@ -56,12 +55,12 @@ export default function useCategoryProducts() {
     // Location radius filter (cars, real estate, business for sale only)
     const [radiusMiles, setRadiusMiles] = useState(50);
     const [manualZip, setManualZip] = useState("");
-    const [manualCountryIso2, setManualCountryIso2] = useState("us");
     const [includeWithoutZip, setIncludeWithoutZip] = useState(true);
     const [browserCoords, setBrowserCoords] = useState(null);
     const [locationFilterActive, setLocationFilterActive] = useState(false);
     const [anchorCoords, setAnchorCoords] = useState(null);
-    const [zipCoordMap, setZipCoordMap] = useState({});
+    const [productResolvedCoords, setProductResolvedCoords] = useState({});
+    const [appliedPostalKey, setAppliedPostalKey] = useState(null);
     const [locationApplying, setLocationApplying] = useState(false);
     const [locationError, setLocationError] = useState(null);
     const [locationGeoProgress, setLocationGeoProgress] = useState({ done: 0, total: 0 });
@@ -79,7 +78,11 @@ export default function useCategoryProducts() {
         });
         if (isLocationCategory && locationFilterActive && anchorCoords) {
             list = list.filter((p) =>
-                productMatchesRadius(p, anchorCoords, radiusMiles, zipCoordMap, includeWithoutZip)
+                productMatchesRadius(p, anchorCoords, radiusMiles, productResolvedCoords, {
+                    appliedPostalKey,
+                    includeWithoutZip,
+                    includeIfUnresolved: true,
+                })
             );
         }
         return list;
@@ -94,7 +97,8 @@ export default function useCategoryProducts() {
         locationFilterActive,
         anchorCoords,
         radiusMiles,
-        zipCoordMap,
+        productResolvedCoords,
+        appliedPostalKey,
         includeWithoutZip,
     ]);
 
@@ -113,7 +117,8 @@ export default function useCategoryProducts() {
     useEffect(() => {
         setLocationFilterActive(false);
         setAnchorCoords(null);
-        setZipCoordMap({});
+        setProductResolvedCoords({});
+        setAppliedPostalKey(null);
         setBrowserCoords(null);
         setManualZip("");
         setLocationError(null);
@@ -299,7 +304,8 @@ export default function useCategoryProducts() {
     const clearLocationFilter = useCallback(() => {
         setLocationFilterActive(false);
         setAnchorCoords(null);
-        setZipCoordMap({});
+        setProductResolvedCoords({});
+        setAppliedPostalKey(null);
         setBrowserCoords(null);
         setManualZip("");
         setLocationError(null);
@@ -312,34 +318,38 @@ export default function useCategoryProducts() {
         setLocationError(null);
         let anchor = null;
         let label = "";
+        let postalKeyForMatch = null;
         if (browserCoords) {
             anchor = browserCoords;
             label = displayLocationLabel || "Near you";
+            postalKeyForMatch = null;
         } else {
             const z = normalizeZipDigits(manualZip);
             if (!z) {
                 setLocationError("Enter a postal or ZIP code, or use your location.");
                 return;
             }
-            const iso = manualCountryIso2 || inferCountryFromZipShape(z);
+            const iso = inferCountryFromZipShape(z);
             const zn = normalizeZipForCountry(iso, z);
             anchor = await geocodeZipWithFallback(iso, zn);
             if (!anchor) {
-                setLocationError("Could not locate that postal code. Check the code and country.");
+                setLocationError(
+                    "Could not locate that postal code. Try another code or use your location."
+                );
                 return;
             }
             label = zn;
+            postalKeyForMatch = `${iso}|${zn}`;
         }
         setLocationApplying(true);
         setLocationGeoProgress({ done: 0, total: 0 });
         try {
-            const keys = collectUniqueZipKeysFromProducts(shoppingProduct);
-            setLocationGeoProgress({ done: 0, total: keys.length });
-            const map = await buildZipCoordMap(keys, (done, total) => {
+            const resolved = await resolveCoordinatesForProducts(shoppingProduct, (done, total) => {
                 setLocationGeoProgress({ done, total });
             });
             setAnchorCoords(anchor);
-            setZipCoordMap(map);
+            setProductResolvedCoords(resolved);
+            setAppliedPostalKey(postalKeyForMatch);
             setLocationFilterActive(true);
             setDisplayLocationLabel(label);
         } catch (e) {
@@ -347,14 +357,7 @@ export default function useCategoryProducts() {
         } finally {
             setLocationApplying(false);
         }
-    }, [
-        isLocationCategory,
-        browserCoords,
-        manualZip,
-        manualCountryIso2,
-        shoppingProduct,
-        displayLocationLabel,
-    ]);
+    }, [isLocationCategory, browserCoords, manualZip, shoppingProduct, displayLocationLabel]);
 
     const useMyLocation = useCallback(() => {
         setLocationError(null);
@@ -431,8 +434,6 @@ export default function useCategoryProducts() {
         setRadiusMiles,
         manualZip,
         setManualZip,
-        manualCountryIso2,
-        setManualCountryIso2,
         includeWithoutZip,
         setIncludeWithoutZip,
         browserCoords,

@@ -19,8 +19,6 @@ export default function CategorySidebar({
     setRadiusMiles,
     manualZip,
     setManualZip,
-    manualCountryIso2,
-    setManualCountryIso2,
     includeWithoutZip,
     setIncludeWithoutZip,
     browserCoords,
@@ -44,8 +42,6 @@ export default function CategorySidebar({
                     setRadiusMiles={setRadiusMiles}
                     manualZip={manualZip}
                     setManualZip={setManualZip}
-                    manualCountryIso2={manualCountryIso2}
-                    setManualCountryIso2={setManualCountryIso2}
                     includeWithoutZip={includeWithoutZip}
                     setIncludeWithoutZip={setIncludeWithoutZip}
                     browserCoords={browserCoords}

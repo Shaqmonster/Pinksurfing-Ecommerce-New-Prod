@@ -39,8 +39,6 @@ export default function CategoryProducts() {
         setRadiusMiles={hook.setRadiusMiles}
         manualZip={hook.manualZip}
         setManualZip={hook.setManualZip}
-        manualCountryIso2={hook.manualCountryIso2}
-        setManualCountryIso2={hook.setManualCountryIso2}
         includeWithoutZip={hook.includeWithoutZip}
         setIncludeWithoutZip={hook.setIncludeWithoutZip}
         browserCoords={hook.browserCoords}
@@ -93,8 +91,6 @@ export default function CategoryProducts() {
             setRadiusMiles={hook.setRadiusMiles}
             manualZip={hook.manualZip}
             setManualZip={hook.setManualZip}
-            manualCountryIso2={hook.manualCountryIso2}
-            setManualCountryIso2={hook.setManualCountryIso2}
             includeWithoutZip={hook.includeWithoutZip}
             setIncludeWithoutZip={hook.setIncludeWithoutZip}
             browserCoords={hook.browserCoords}
