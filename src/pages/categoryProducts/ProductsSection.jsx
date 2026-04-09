@@ -6,6 +6,7 @@ import { formatFilterDisplayValue, isFilterEmpty } from "./utils";
 
 export default function ProductsSection({
     loading,
+    locationApplying = false,
     filteredProducts,
     currentProducts,
     isCard,
@@ -59,6 +60,12 @@ export default function ProductsSection({
 
     return (
         <>
+            {locationApplying && (
+                <div className="mb-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/25 border border-blue-200 dark:border-blue-800 text-sm text-blue-900 dark:text-blue-100">
+                    Resolving listing postal codes for the distance filter…
+                </div>
+            )}
+
             {/* Active Attribute Filters Tags */}
             {hasActiveFilters(attributeFilters) && (
                 <div className="mb-4 p-3 glass-card rounded-xl">

@@ -5,6 +5,16 @@ import axios from "axios";
 import { dataContext } from "../../context/dataContext";
 import { authContext } from "../../context/authContext";
 import { filterProducts, slugToTitle } from "./utils";
+import { LOCATION_FILTER_CATEGORY_SLUGS } from "./constants";
+import {
+    buildZipCoordMap,
+    collectUniqueZipKeysFromProducts,
+    geocodeZipWithFallback,
+    inferCountryFromZipShape,
+    normalizeZipDigits,
+    normalizeZipForCountry,
+    productMatchesRadius,
+} from "./locationFilterUtils";
 
 /**
  * Custom hook encapsulating all state, data-fetching, and filter logic
@@ -17,6 +27,7 @@ export default function useCategoryProducts() {
     const { currency, isDarkMode } = useContext(authContext);
 
     const categorySlug = slug;
+    const isLocationCategory = LOCATION_FILTER_CATEGORY_SLUGS.includes(categorySlug || "");
 
     // Core state
     const [filterBy, setFilterBy] = useState("");
@@ -42,17 +53,50 @@ export default function useCategoryProducts() {
     const [allowedAttributes, setAllowedAttributes] = useState([]);
     const [attributeFilters, setAttributeFilters] = useState({});
 
+    // Location radius filter (cars, real estate, business for sale only)
+    const [radiusMiles, setRadiusMiles] = useState(50);
+    const [manualZip, setManualZip] = useState("");
+    const [manualCountryIso2, setManualCountryIso2] = useState("us");
+    const [includeWithoutZip, setIncludeWithoutZip] = useState(true);
+    const [browserCoords, setBrowserCoords] = useState(null);
+    const [locationFilterActive, setLocationFilterActive] = useState(false);
+    const [anchorCoords, setAnchorCoords] = useState(null);
+    const [zipCoordMap, setZipCoordMap] = useState({});
+    const [locationApplying, setLocationApplying] = useState(false);
+    const [locationError, setLocationError] = useState(null);
+    const [locationGeoProgress, setLocationGeoProgress] = useState({ done: 0, total: 0 });
+    const [displayLocationLabel, setDisplayLocationLabel] = useState("");
+
     // ---------- Derived / Computed ----------
 
     const filteredProducts = useMemo(() => {
-        return filterProducts(shoppingProduct, {
+        let list = filterProducts(shoppingProduct, {
             minValue,
             maximumValue,
             categoryFilter,
             attributeFilters,
             sortMethod,
         });
-    }, [shoppingProduct, minValue, maximumValue, categoryFilter, sortMethod, attributeFilters]);
+        if (isLocationCategory && locationFilterActive && anchorCoords) {
+            list = list.filter((p) =>
+                productMatchesRadius(p, anchorCoords, radiusMiles, zipCoordMap, includeWithoutZip)
+            );
+        }
+        return list;
+    }, [
+        shoppingProduct,
+        minValue,
+        maximumValue,
+        categoryFilter,
+        sortMethod,
+        attributeFilters,
+        isLocationCategory,
+        locationFilterActive,
+        anchorCoords,
+        radiusMiles,
+        zipCoordMap,
+        includeWithoutZip,
+    ]);
 
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -60,15 +104,22 @@ export default function useCategoryProducts() {
     const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
     // ---------- Effects ----------
-    useEffect(()=>{
-        console.log("allowedAttributes:", allowedAttributes);
-        console.log("attributeFilters:", attributeFilters);
-        console.log("shoppingProduct:", shoppingProduct);
-    },[allowedAttributes, attributeFilters,shoppingProduct]);
     // Reset to page 1 when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy, attributeFilters]);
+    }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy, attributeFilters, locationFilterActive, radiusMiles, includeWithoutZip, anchorCoords]);
+
+    // Reset location filter when switching category
+    useEffect(() => {
+        setLocationFilterActive(false);
+        setAnchorCoords(null);
+        setZipCoordMap({});
+        setBrowserCoords(null);
+        setManualZip("");
+        setLocationError(null);
+        setDisplayLocationLabel("");
+        setLocationGeoProgress({ done: 0, total: 0 });
+    }, [categorySlug]);
 
     // Get allowed attributes from the first product's subcategory.
     // All products in the same subcategory share the same allowed_attributes,
@@ -245,13 +296,96 @@ export default function useCategoryProducts() {
         return Array.from(values).sort();
     }, [shoppingProduct]);
 
+    const clearLocationFilter = useCallback(() => {
+        setLocationFilterActive(false);
+        setAnchorCoords(null);
+        setZipCoordMap({});
+        setBrowserCoords(null);
+        setManualZip("");
+        setLocationError(null);
+        setLocationGeoProgress({ done: 0, total: 0 });
+        setDisplayLocationLabel("");
+    }, []);
+
+    const applyLocationFilter = useCallback(async () => {
+        if (!isLocationCategory) return;
+        setLocationError(null);
+        let anchor = null;
+        let label = "";
+        if (browserCoords) {
+            anchor = browserCoords;
+            label = displayLocationLabel || "Near you";
+        } else {
+            const z = normalizeZipDigits(manualZip);
+            if (!z) {
+                setLocationError("Enter a postal or ZIP code, or use your location.");
+                return;
+            }
+            const iso = manualCountryIso2 || inferCountryFromZipShape(z);
+            const zn = normalizeZipForCountry(iso, z);
+            anchor = await geocodeZipWithFallback(iso, zn);
+            if (!anchor) {
+                setLocationError("Could not locate that postal code. Check the code and country.");
+                return;
+            }
+            label = zn;
+        }
+        setLocationApplying(true);
+        setLocationGeoProgress({ done: 0, total: 0 });
+        try {
+            const keys = collectUniqueZipKeysFromProducts(shoppingProduct);
+            setLocationGeoProgress({ done: 0, total: keys.length });
+            const map = await buildZipCoordMap(keys, (done, total) => {
+                setLocationGeoProgress({ done, total });
+            });
+            setAnchorCoords(anchor);
+            setZipCoordMap(map);
+            setLocationFilterActive(true);
+            setDisplayLocationLabel(label);
+        } catch (e) {
+            setLocationError(e?.message || "Could not match listing locations.");
+        } finally {
+            setLocationApplying(false);
+        }
+    }, [
+        isLocationCategory,
+        browserCoords,
+        manualZip,
+        manualCountryIso2,
+        shoppingProduct,
+        displayLocationLabel,
+    ]);
+
+    const useMyLocation = useCallback(() => {
+        setLocationError(null);
+        if (!navigator.geolocation) {
+            setLocationError("Geolocation is not supported in this browser.");
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setBrowserCoords({
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                });
+                setManualZip("");
+                setDisplayLocationLabel("Near you");
+            },
+            () => {
+                setLocationError("Permission denied or location unavailable.");
+            },
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
+        );
+    }, []);
+
     const clearAllFilters = useCallback(() => {
         setCategoryFilter("all");
         setFilterBy("");
         setMinValue(0);
         setMaximumValue(maxValue);
         setAttributeFilters({});
-    }, [maxValue]);
+        clearLocationFilter();
+    }, [maxValue, clearLocationFilter]);
 
     return {
         // Context values
@@ -261,6 +395,7 @@ export default function useCategoryProducts() {
         // State
         title,
         categorySlug,
+        isLocationCategory,
         loading,
         isCard, setIsCard,
         mobileFiltersOpen, setMobileFiltersOpen,
@@ -290,5 +425,26 @@ export default function useCategoryProducts() {
         removeAttributeFilter,
         getUniqueAttributeValues,
         clearAllFilters,
+
+        // Location filter (subset of categories)
+        radiusMiles,
+        setRadiusMiles,
+        manualZip,
+        setManualZip,
+        manualCountryIso2,
+        setManualCountryIso2,
+        includeWithoutZip,
+        setIncludeWithoutZip,
+        browserCoords,
+        setBrowserCoords,
+        locationFilterActive,
+        locationApplying,
+        locationError,
+        locationGeoProgress,
+        displayLocationLabel,
+        setDisplayLocationLabel,
+        applyLocationFilter,
+        clearLocationFilter,
+        useMyLocation,
     };
 }

@@ -34,6 +34,26 @@ export default function CategoryProducts() {
         onFilterChange={hook.handleAttributeFilterChange}
         clearAttributeFilters={hook.clearAttributeFilters}
         getUniqueAttributeValues={hook.getUniqueAttributeValues}
+        isLocationCategory={hook.isLocationCategory}
+        radiusMiles={hook.radiusMiles}
+        setRadiusMiles={hook.setRadiusMiles}
+        manualZip={hook.manualZip}
+        setManualZip={hook.setManualZip}
+        manualCountryIso2={hook.manualCountryIso2}
+        setManualCountryIso2={hook.setManualCountryIso2}
+        includeWithoutZip={hook.includeWithoutZip}
+        setIncludeWithoutZip={hook.setIncludeWithoutZip}
+        browserCoords={hook.browserCoords}
+        setBrowserCoords={hook.setBrowserCoords}
+        locationFilterActive={hook.locationFilterActive}
+        locationApplying={hook.locationApplying}
+        locationError={hook.locationError}
+        locationGeoProgress={hook.locationGeoProgress}
+        displayLocationLabel={hook.displayLocationLabel}
+        setDisplayLocationLabel={hook.setDisplayLocationLabel}
+        applyLocationFilter={hook.applyLocationFilter}
+        clearLocationFilter={hook.clearLocationFilter}
+        useMyLocation={hook.useMyLocation}
       />
 
       {/* Main Content */}
@@ -68,11 +88,32 @@ export default function CategoryProducts() {
             handleSliderChange={hook.handleSliderChange}
             filterBy={hook.filterBy}
             setFilterBy={hook.setFilterBy}
+            isLocationCategory={hook.isLocationCategory}
+            radiusMiles={hook.radiusMiles}
+            setRadiusMiles={hook.setRadiusMiles}
+            manualZip={hook.manualZip}
+            setManualZip={hook.setManualZip}
+            manualCountryIso2={hook.manualCountryIso2}
+            setManualCountryIso2={hook.setManualCountryIso2}
+            includeWithoutZip={hook.includeWithoutZip}
+            setIncludeWithoutZip={hook.setIncludeWithoutZip}
+            browserCoords={hook.browserCoords}
+            setBrowserCoords={hook.setBrowserCoords}
+            locationFilterActive={hook.locationFilterActive}
+            locationApplying={hook.locationApplying}
+            locationError={hook.locationError}
+            locationGeoProgress={hook.locationGeoProgress}
+            displayLocationLabel={hook.displayLocationLabel}
+            setDisplayLocationLabel={hook.setDisplayLocationLabel}
+            applyLocationFilter={hook.applyLocationFilter}
+            clearLocationFilter={hook.clearLocationFilter}
+            useMyLocation={hook.useMyLocation}
           />
 
           <div className="lg:col-span-4 xl:col-span-5">
             <ProductsSection
               loading={hook.loading}
+              locationApplying={hook.locationApplying}
               filteredProducts={hook.filteredProducts}
               currentProducts={hook.currentProducts}
               isCard={hook.isCard}

@@ -2,6 +2,7 @@ import { Disclosure } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import MultiRangeSlider from "multi-range-slider-react";
 import { QUICK_FILTERS } from "./constants";
+import LocationFilterPanel from "./LocationFilterPanel";
 
 export default function CategorySidebar({
     CategoryOnlyData,
@@ -13,9 +14,54 @@ export default function CategorySidebar({
     handleSliderChange,
     filterBy,
     setFilterBy,
+    isLocationCategory,
+    radiusMiles,
+    setRadiusMiles,
+    manualZip,
+    setManualZip,
+    manualCountryIso2,
+    setManualCountryIso2,
+    includeWithoutZip,
+    setIncludeWithoutZip,
+    browserCoords,
+    setBrowserCoords,
+    locationFilterActive,
+    locationApplying,
+    locationError,
+    locationGeoProgress,
+    displayLocationLabel,
+    setDisplayLocationLabel,
+    applyLocationFilter,
+    clearLocationFilter,
+    useMyLocation,
 }) {
     return (
         <aside className="hidden lg:block space-y-4">
+            {isLocationCategory && (
+                <LocationFilterPanel
+                    variant="desktop"
+                    radiusMiles={radiusMiles}
+                    setRadiusMiles={setRadiusMiles}
+                    manualZip={manualZip}
+                    setManualZip={setManualZip}
+                    manualCountryIso2={manualCountryIso2}
+                    setManualCountryIso2={setManualCountryIso2}
+                    includeWithoutZip={includeWithoutZip}
+                    setIncludeWithoutZip={setIncludeWithoutZip}
+                    browserCoords={browserCoords}
+                    setBrowserCoords={setBrowserCoords}
+                    locationFilterActive={locationFilterActive}
+                    locationApplying={locationApplying}
+                    locationError={locationError}
+                    locationGeoProgress={locationGeoProgress}
+                    displayLocationLabel={displayLocationLabel}
+                    setDisplayLocationLabel={setDisplayLocationLabel}
+                    onApply={applyLocationFilter}
+                    onClear={clearLocationFilter}
+                    onUseMyLocation={useMyLocation}
+                />
+            )}
+
             {/* Subcategories */}
             <div className="glass-card p-4 rounded-xl">
                 <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">

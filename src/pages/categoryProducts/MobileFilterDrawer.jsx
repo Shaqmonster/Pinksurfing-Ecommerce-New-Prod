@@ -4,6 +4,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FunnelIcon } from "@heroicons/react/20/solid";
 import MultiRangeSlider from "multi-range-slider-react";
 import AttributeFilterPanel from "./AttributeFilterPanel";
+import LocationFilterPanel from "./LocationFilterPanel";
 import { SORT_METHODS, hasActiveFilters } from "./constants";
 
 export default function MobileFilterDrawer({
@@ -24,6 +25,26 @@ export default function MobileFilterDrawer({
     onFilterChange,
     clearAttributeFilters,
     getUniqueAttributeValues,
+    isLocationCategory,
+    radiusMiles,
+    setRadiusMiles,
+    manualZip,
+    setManualZip,
+    manualCountryIso2,
+    setManualCountryIso2,
+    includeWithoutZip,
+    setIncludeWithoutZip,
+    browserCoords,
+    setBrowserCoords,
+    locationFilterActive,
+    locationApplying,
+    locationError,
+    locationGeoProgress,
+    displayLocationLabel,
+    setDisplayLocationLabel,
+    applyLocationFilter,
+    clearLocationFilter,
+    useMyLocation,
 }) {
     return (
         <Transition.Root show={open} as={Fragment}>
@@ -66,6 +87,31 @@ export default function MobileFilterDrawer({
                             </div>
 
                             <div className="p-4 space-y-6">
+                                {isLocationCategory && (
+                                    <LocationFilterPanel
+                                        variant="mobile"
+                                        radiusMiles={radiusMiles}
+                                        setRadiusMiles={setRadiusMiles}
+                                        manualZip={manualZip}
+                                        setManualZip={setManualZip}
+                                        manualCountryIso2={manualCountryIso2}
+                                        setManualCountryIso2={setManualCountryIso2}
+                                        includeWithoutZip={includeWithoutZip}
+                                        setIncludeWithoutZip={setIncludeWithoutZip}
+                                        browserCoords={browserCoords}
+                                        setBrowserCoords={setBrowserCoords}
+                                        locationFilterActive={locationFilterActive}
+                                        locationApplying={locationApplying}
+                                        locationError={locationError}
+                                        locationGeoProgress={locationGeoProgress}
+                                        displayLocationLabel={displayLocationLabel}
+                                        setDisplayLocationLabel={setDisplayLocationLabel}
+                                        onApply={applyLocationFilter}
+                                        onClear={clearLocationFilter}
+                                        onUseMyLocation={useMyLocation}
+                                    />
+                                )}
+
                                 {/* Subcategories */}
                                 <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
                                     <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">

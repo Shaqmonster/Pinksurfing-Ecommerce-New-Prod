@@ -1,3 +1,15 @@
+/** Category URL slugs (`/category/:slug`) that support zip/radius "Fetch by location" in the sidebar. */
+export const LOCATION_FILTER_CATEGORY_SLUGS = [
+    "cars",
+    "residential-realestate",
+    "commercial-realestate",
+    "business-for-sale",
+    "business4sale",
+];
+
+/** Radius options (miles), aligned with common marketplace patterns. */
+export const LOCATION_RADIUS_MILES_OPTIONS = [10, 25, 50, 75, 100, 150, 200, 300, 500];
+
 // Sort method options
 export const SORT_METHODS = [
     { name: "Newest", value: "date", icon: "🆕" },
