@@ -1,8 +1,7 @@
-import { MapPinIcon } from "@heroicons/react/24/outline";
+import { MapPinIcon, ViewfinderCircleIcon } from "@heroicons/react/24/outline";
 import { LOCATION_RADIUS_MILES_OPTIONS } from "./constants";
 
 /**
- * Compact location filter (reference: marketplace sidebar) — no title block, minimal vertical space.
  * @param {'desktop' | 'mobile'} variant
  */
 export default function LocationFilterPanel({
@@ -11,19 +10,16 @@ export default function LocationFilterPanel({
     setRadiusMiles,
     manualZip,
     setManualZip,
-    includeWithoutZip,
-    setIncludeWithoutZip,
     browserCoords,
     setBrowserCoords,
     locationFilterActive,
     locationApplying,
     locationError,
     locationGeoProgress,
-    displayLocationLabel,
     setDisplayLocationLabel,
     onApply,
     onClear,
-    onUseMyLocation,
+    onFetchCurrentLocation,
 }) {
     const isMobile = variant === "mobile";
     const cardClass = isMobile
@@ -37,27 +33,35 @@ export default function LocationFilterPanel({
 
     return (
         <div className={cardClass}>
-            {/* Location row: pin + zip */}
-            <div className="flex items-center gap-2 mb-2">
+            {/* 1. Fetch current location — runs filter immediately */}
+            <button
+                type="button"
+                onClick={onFetchCurrentLocation}
+                disabled={locationApplying}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg mb-2 transition-colors ${
+                    isMobile
+                        ? "bg-slate-700/80 hover:bg-slate-600 text-white disabled:opacity-50"
+                        : "bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-white disabled:opacity-50"
+                }`}
+            >
+                <ViewfinderCircleIcon
+                    className={`w-4 h-4 shrink-0 ${isMobile ? "text-cyan-400" : "text-blue-600 dark:text-cyan-400"}`}
+                />
+                <span className="text-[11px] font-semibold text-left leading-tight">Fetch current location</span>
+            </button>
+
+            {/* 2. ZIP / postal */}
+            <div className="flex items-start gap-2 mb-2">
                 <MapPinIcon
-                    className={`w-4 h-4 shrink-0 ${isMobile ? "text-blue-400" : "text-blue-600 dark:text-blue-400"}`}
+                    className={`w-4 h-4 shrink-0 mt-1.5 ${isMobile ? "text-blue-400" : "text-blue-600 dark:text-blue-400"}`}
                 />
                 <div className="flex-1 min-w-0">
-                    <div className={`flex justify-between items-center gap-1 mb-0.5 ${labelCls}`}>
-                        <span className="text-[11px] font-medium">Location</span>
-                        <span className="text-[10px] font-mono truncate max-w-[100px] text-gray-600 dark:text-gray-300">
-                            {locationFilterActive
-                                ? displayLocationLabel || "—"
-                                : browserCoords
-                                  ? "GPS"
-                                  : manualZip || "—"}
-                        </span>
-                    </div>
+                    <label className={`block text-[10px] font-medium mb-0.5 ${labelCls}`}>ZIP / postal</label>
                     <input
                         type="text"
                         inputMode="text"
                         autoComplete="postal-code"
-                        placeholder="ZIP / postal"
+                        placeholder="Enter code"
                         value={manualZip}
                         onChange={(e) => {
                             setManualZip(e.target.value);
@@ -69,8 +73,8 @@ export default function LocationFilterPanel({
                 </div>
             </div>
 
-            {/* Distance — single row */}
-            <div className="flex items-center justify-between gap-2 mb-2">
+            {/* 3. Distance */}
+            <div className="flex items-center justify-between gap-2 mb-3">
                 <span className={`text-[11px] font-medium whitespace-nowrap ${labelCls}`}>Distance</span>
                 <select
                     value={radiusMiles}
@@ -85,33 +89,6 @@ export default function LocationFilterPanel({
                 </select>
             </div>
 
-            {/* Include without ZIP — compact */}
-            <div className={`flex items-center justify-between gap-2 mb-2 ${labelCls}`}>
-                <span className="text-[10px] leading-tight max-w-[58%]">No ZIP on listing</span>
-                <div className="flex items-center gap-3 shrink-0">
-                    <label className="flex items-center gap-1 text-[11px] cursor-pointer">
-                        <input
-                            type="radio"
-                            name={`noZip-${variant}`}
-                            checked={includeWithoutZip}
-                            onChange={() => setIncludeWithoutZip(true)}
-                            className="text-blue-600"
-                        />
-                        Yes
-                    </label>
-                    <label className="flex items-center gap-1 text-[11px] cursor-pointer">
-                        <input
-                            type="radio"
-                            name={`noZip-${variant}`}
-                            checked={!includeWithoutZip}
-                            onChange={() => setIncludeWithoutZip(false)}
-                            className="text-blue-600"
-                        />
-                        No
-                    </label>
-                </div>
-            </div>
-
             {locationError && (
                 <p className="text-[10px] text-red-500 dark:text-red-400 mb-1.5 leading-snug">{locationError}</p>
             )}
@@ -122,24 +99,13 @@ export default function LocationFilterPanel({
                 </p>
             )}
 
-            <div className="flex flex-wrap gap-1.5">
-                <button
-                    type="button"
-                    onClick={onUseMyLocation}
-                    disabled={locationApplying}
-                    className={`flex-1 min-w-[100px] py-1.5 rounded-lg text-[11px] font-semibold ${
-                        isMobile
-                            ? "bg-slate-700 text-white hover:bg-slate-600 disabled:opacity-50"
-                            : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50"
-                    }`}
-                >
-                    Near me
-                </button>
+            {/* 4. Apply + Clear */}
+            <div className="flex gap-2">
                 <button
                     type="button"
                     onClick={onApply}
                     disabled={locationApplying}
-                    className="flex-1 min-w-[72px] py-1.5 rounded-lg text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                    className="flex-1 py-1.5 rounded-lg text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                 >
                     {locationApplying ? "…" : "Apply"}
                 </button>
@@ -148,9 +114,9 @@ export default function LocationFilterPanel({
                         type="button"
                         onClick={onClear}
                         disabled={locationApplying}
-                        className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium ${
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-medium ${
                             isMobile
-                                ? "bg-gray-700 text-gray-200"
+                                ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
                                 : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                         } disabled:opacity-50`}
                     >

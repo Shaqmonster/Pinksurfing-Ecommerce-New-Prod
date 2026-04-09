@@ -30,19 +30,16 @@ export default function MobileFilterDrawer({
     setRadiusMiles,
     manualZip,
     setManualZip,
-    includeWithoutZip,
-    setIncludeWithoutZip,
     browserCoords,
     setBrowserCoords,
     locationFilterActive,
     locationApplying,
     locationError,
     locationGeoProgress,
-    displayLocationLabel,
     setDisplayLocationLabel,
     applyLocationFilter,
+    fetchCurrentLocationAndApply,
     clearLocationFilter,
-    useMyLocation,
 }) {
     return (
         <Transition.Root show={open} as={Fragment}>
@@ -92,19 +89,16 @@ export default function MobileFilterDrawer({
                                         setRadiusMiles={setRadiusMiles}
                                         manualZip={manualZip}
                                         setManualZip={setManualZip}
-                                        includeWithoutZip={includeWithoutZip}
-                                        setIncludeWithoutZip={setIncludeWithoutZip}
                                         browserCoords={browserCoords}
                                         setBrowserCoords={setBrowserCoords}
                                         locationFilterActive={locationFilterActive}
                                         locationApplying={locationApplying}
                                         locationError={locationError}
                                         locationGeoProgress={locationGeoProgress}
-                                        displayLocationLabel={displayLocationLabel}
                                         setDisplayLocationLabel={setDisplayLocationLabel}
                                         onApply={applyLocationFilter}
                                         onClear={clearLocationFilter}
-                                        onUseMyLocation={useMyLocation}
+                                        onFetchCurrentLocation={fetchCurrentLocationAndApply}
                                     />
                                 )}
 

@@ -19,19 +19,16 @@ export default function CategorySidebar({
     setRadiusMiles,
     manualZip,
     setManualZip,
-    includeWithoutZip,
-    setIncludeWithoutZip,
     browserCoords,
     setBrowserCoords,
     locationFilterActive,
     locationApplying,
     locationError,
     locationGeoProgress,
-    displayLocationLabel,
     setDisplayLocationLabel,
     applyLocationFilter,
+    fetchCurrentLocationAndApply,
     clearLocationFilter,
-    useMyLocation,
 }) {
     return (
         <aside className="hidden lg:block space-y-4">
@@ -42,19 +39,16 @@ export default function CategorySidebar({
                     setRadiusMiles={setRadiusMiles}
                     manualZip={manualZip}
                     setManualZip={setManualZip}
-                    includeWithoutZip={includeWithoutZip}
-                    setIncludeWithoutZip={setIncludeWithoutZip}
                     browserCoords={browserCoords}
                     setBrowserCoords={setBrowserCoords}
                     locationFilterActive={locationFilterActive}
                     locationApplying={locationApplying}
                     locationError={locationError}
                     locationGeoProgress={locationGeoProgress}
-                    displayLocationLabel={displayLocationLabel}
                     setDisplayLocationLabel={setDisplayLocationLabel}
                     onApply={applyLocationFilter}
                     onClear={clearLocationFilter}
-                    onUseMyLocation={useMyLocation}
+                    onFetchCurrentLocation={fetchCurrentLocationAndApply}
                 />
             )}
 

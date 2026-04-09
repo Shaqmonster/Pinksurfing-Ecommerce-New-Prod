@@ -39,19 +39,16 @@ export default function CategoryProducts() {
         setRadiusMiles={hook.setRadiusMiles}
         manualZip={hook.manualZip}
         setManualZip={hook.setManualZip}
-        includeWithoutZip={hook.includeWithoutZip}
-        setIncludeWithoutZip={hook.setIncludeWithoutZip}
         browserCoords={hook.browserCoords}
         setBrowserCoords={hook.setBrowserCoords}
         locationFilterActive={hook.locationFilterActive}
         locationApplying={hook.locationApplying}
         locationError={hook.locationError}
         locationGeoProgress={hook.locationGeoProgress}
-        displayLocationLabel={hook.displayLocationLabel}
         setDisplayLocationLabel={hook.setDisplayLocationLabel}
         applyLocationFilter={hook.applyLocationFilter}
+        fetchCurrentLocationAndApply={hook.fetchCurrentLocationAndApply}
         clearLocationFilter={hook.clearLocationFilter}
-        useMyLocation={hook.useMyLocation}
       />
 
       {/* Main Content */}
@@ -91,19 +88,16 @@ export default function CategoryProducts() {
             setRadiusMiles={hook.setRadiusMiles}
             manualZip={hook.manualZip}
             setManualZip={hook.setManualZip}
-            includeWithoutZip={hook.includeWithoutZip}
-            setIncludeWithoutZip={hook.setIncludeWithoutZip}
             browserCoords={hook.browserCoords}
             setBrowserCoords={hook.setBrowserCoords}
             locationFilterActive={hook.locationFilterActive}
             locationApplying={hook.locationApplying}
             locationError={hook.locationError}
             locationGeoProgress={hook.locationGeoProgress}
-            displayLocationLabel={hook.displayLocationLabel}
             setDisplayLocationLabel={hook.setDisplayLocationLabel}
             applyLocationFilter={hook.applyLocationFilter}
+            fetchCurrentLocationAndApply={hook.fetchCurrentLocationAndApply}
             clearLocationFilter={hook.clearLocationFilter}
-            useMyLocation={hook.useMyLocation}
           />
 
           <div className="lg:col-span-4 xl:col-span-5">
