@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "../Loader";
 import { FaEdit, FaCopy, FaCheck } from 'react-icons/fa';
+import { storeUrl, STOREFRONT_BASE } from "../../utils/envUrls";
 
 export default function ProfileDetails() {
     const [isEditing, setIsEditing] = useState(false);
@@ -182,12 +183,10 @@ export default function ProfileDetails() {
     };
 
     const handleCopyStoreLink = () => {
-        const storeUrl = `https://pinksurfing.com/store/${profile?.vendor?.slug}`;
-        navigator.clipboard.writeText(storeUrl).then(() => {
+        const url = storeUrl(profile?.vendor?.slug);
+        navigator.clipboard.writeText(url).then(() => {
             setCopied(true);
-            setTimeout(() => {
-                setCopied(false);
-            }, 3000);
+            setTimeout(() => setCopied(false), 3000);
         });
     };
 
@@ -293,12 +292,12 @@ export default function ProfileDetails() {
                             </p>
                             <div className="w-full sm:w-3/4 mx-auto flex items-center gap-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4">
                                 <a
-                                    href={`https://pinksurfing.com/store/${profile.vendor.slug}`}
+                                    href={storeUrl(profile.vendor.slug)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium text-sm break-all transition duration-200"
                                 >
-                                    pinksurfing.com/store/{profile.vendor.slug}
+                                    {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
                                 </a>
                                 <button
                                     type="button"

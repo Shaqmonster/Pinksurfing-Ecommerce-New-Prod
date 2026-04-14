@@ -31,8 +31,10 @@ const ProductDetailPage = () => {
   const [reviews, setReviews] = useState([]);
   const [activeImage, setActiveImage] = useState("");
   const [updatedPrice, setUpdatedPrice] = useState(null);
-  const attributeArrays = {};
-  const [attributeArrays2, setAttributeArray2] = useState({});
+  // variant attributes (is_variant: true) → selectable options that can change price
+  const [variantAttributeMap, setVariantAttributeMap] = useState({});
+  // spec attributes (is_variant: false) → read-only informational fields
+  const [specAttributeMap, setSpecAttributeMap] = useState({});
   const [viewMainImg, setViewMainImg] = useState(false);
   const [productQty, setProductQty] = useState(1);
   const [selectedAttributes, setSelectedAttributes] = useState({});
@@ -139,17 +141,14 @@ const ProductDetailPage = () => {
   };
 
   const AddtoCart = () => {
-    const additionalPrice = Object.values(selectedAttributes).reduce(
-      (total, attr) => total + (attr.additional_price || 0),
-      0
+    // Send the raw variant selections — the backend validates the price from DB.
+    const selected_variants = Object.entries(selectedAttributes).map(
+      ([name, attr]) => ({ name, value: attr.value })
     );
     axios
       .post(
-        `${import.meta.env.VITE_SERVER_URL
-        }/api/customer/cart/add/${productId}/`,
-        {
-          additional_price: additionalPrice,
-        },
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${productId}/`,
+        { selected_variants },
         {
           headers: {
             "Content-Type": "application/json",
@@ -244,27 +243,40 @@ const ProductDetailPage = () => {
           }
         );
 
-        setProduct(productResponse.data.Products);
-        console.log(productResponse.data);
+        const productData = productResponse.data.Products;
+        setProduct(productData);
         setLoading(false);
         setActiveImage(productResponse.data.Products.image);
 
-        productResponse.data.Products.attributes.forEach((attribute) => {
-          const { name, value, additional_price } = attribute;
-          if (name != "") {
-            if (!attributeArrays[name]) {
-              attributeArrays[name] = [];
-            }
-            const isValueUnique = !attributeArrays[name].some(
-              (item) => item.value === value
-            );
-            if (isValueUnique) {
-              attributeArrays[name].push({ value, additional_price });
-            }
+        // Build a lookup: attribute name (lowercase) → is_variant boolean
+        // from the subcategory's allowed_attributes list.
+        const isVariantLookup = {};
+        const allowedAttrs = productData.subcategory?.allowed_attributes || [];
+        allowedAttrs.forEach((aa) => {
+          if (aa.name) isVariantLookup[aa.name.toLowerCase()] = aa.is_variant;
+        });
+
+        const variantAttrs = {};
+        const specAttrs = {};
+
+        (productData.attributes || []).forEach(({ name, value, additional_price }) => {
+          if (!name) return;
+          const lowerName = name.toLowerCase();
+          // Default to variant=true when not found (preserves existing behavior)
+          const isVariant = isVariantLookup.hasOwnProperty(lowerName)
+            ? isVariantLookup[lowerName]
+            : true;
+
+          const target = isVariant ? variantAttrs : specAttrs;
+          if (!target[name]) target[name] = [];
+          // De-duplicate by value
+          if (!target[name].some((item) => item.value === value)) {
+            target[name].push({ value, additional_price });
           }
         });
 
-        setAttributeArray2(attributeArrays);
+        setVariantAttributeMap(variantAttrs);
+        setSpecAttributeMap(specAttrs);
 
         if (cookies.access_token) {
           const addressId = user.addresses[0]?.id;
@@ -569,15 +581,19 @@ const ProductDetailPage = () => {
                 </h1>
 
                 {/* Brand and Category */}
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                    <span className="text-gray-600 dark:text-gray-400">Brand:</span>
-                    <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                    <span className="text-gray-600 dark:text-gray-400">Category:</span>
-                    <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category?.name}</span>
-                  </div>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  {product.brand_name && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                      <span className="text-gray-600 dark:text-gray-400">Brand:</span>
+                      <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
+                    </div>
+                  )}
+                  {product.category?.name && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                      <span className="text-gray-600 dark:text-gray-400">Category:</span>
+                      <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category.name}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Price Section */}
@@ -605,62 +621,158 @@ const ProductDetailPage = () => {
                   </p>
                 </div>
 
-                {/* Attributes Selection */}
-                {Object.entries(attributeArrays2).map(([attributeName, values]) => (
-                  <div key={attributeName} className="space-y-3">
-                    <label className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
-                      Select {attributeName}
-                    </label>
-                    
-                    {attributeName.toLowerCase() === "color" ? (
-                      <div className="flex flex-wrap gap-3">
-                        {values.map((value, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleAttributeSelection(attributeName, value)}
-                            className={`relative w-12 h-12 rounded-full transition-all duration-300 ${
-                              selectedAttributes[attributeName]?.value === value.value
-                                ? "ring-4 ring-purple-500 ring-offset-2 dark:ring-offset-gray-900 scale-110"
-                                : "ring-2 ring-gray-300 dark:ring-gray-600 hover:scale-105"
-                            }`}
-                            style={{ backgroundColor: value.value }}
-                            title={value.value}
-                          >
-                            {selectedAttributes[attributeName]?.value === value.value && (
-                              <svg className="absolute inset-0 m-auto w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-3">
-                        {values.map((value, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleAttributeSelection(attributeName, value)}
-                            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                              selectedAttributes[attributeName]?.value === value.value
-                                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105"
-                                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 hover:scale-105"
-                            }`}
-                          >
-                            {value.value}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {/* ── SECTION 1: OPTIONS (is_variant=true) — selectable, price-affecting ── */}
+                {Object.keys(variantAttributeMap).length > 0 && (
+                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-[#9747FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                      </svg>
+                      <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                        Options
+                      </p>
+                      {additionalPrice > 0 && (
+                        <span className="ml-auto text-xs font-semibold text-[#9747FF] bg-[#9747FF]/10 px-2 py-0.5 rounded-full">
+                          +{currency}{additionalPrice.toFixed(2)} selected
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 space-y-4">
+                      {Object.entries(variantAttributeMap).map(([attributeName, values]) => {
+                        const isColor = attributeName.toLowerCase() === "color";
+                        const selectedVal = selectedAttributes[attributeName]?.value;
 
-                {/* Description */}
-                <div className="p-6 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Product Description</h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed prose dark:prose-invert max-w-none">
-                    {product?.short_description ? parse(product.short_description) : "No description available."}
+                        return (
+                          <div key={attributeName} className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                {attributeName}
+                              </span>
+                              {selectedVal && (
+                                <span className="text-xs text-[#9747FF] font-medium">
+                                  {selectedVal}
+                                  {selectedAttributes[attributeName]?.additional_price > 0 && (
+                                    <span className="text-gray-400 ml-1">
+                                      (+{currency}{selectedAttributes[attributeName].additional_price})
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+
+                            {isColor ? (
+                              /* Color swatches */
+                              <div className="flex flex-wrap gap-2">
+                                {values.map((v, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => handleAttributeSelection(attributeName, v)}
+                                    title={v.value}
+                                    className={`relative w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                                      selectedVal === v.value
+                                        ? "border-[#9747FF] ring-2 ring-[#9747FF]/40 ring-offset-1 dark:ring-offset-gray-900 scale-110"
+                                        : "border-gray-300 dark:border-gray-600 hover:border-[#9747FF]/50"
+                                    }`}
+                                    style={{ backgroundColor: v.value }}
+                                  >
+                                    {selectedVal === v.value && (
+                                      <svg className="absolute inset-0 m-auto w-4 h-4 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              /* Selectable chips */
+                              <div className="flex flex-wrap gap-2">
+                                {values.map((v, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => handleAttributeSelection(attributeName, v)}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border-2 transition-all duration-200 ${
+                                      selectedVal === v.value
+                                        ? "bg-[#9747FF] text-white border-[#9747FF] shadow-md shadow-[#9747FF]/20"
+                                        : "bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#9747FF] hover:text-[#9747FF] dark:hover:border-[#9747FF] dark:hover:text-[#9747FF]"
+                                    }`}
+                                  >
+                                    {v.value}
+                                    {v.additional_price > 0 && (
+                                      <span className={`ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
+                                        selectedVal === v.value
+                                          ? "bg-white/20 text-white"
+                                          : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                      }`}>
+                                        +{currency}{v.additional_price}
+                                      </span>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* ── SECTION 2: SPECIFICATIONS (is_variant=false) — read-only info grid ── */}
+                {Object.keys(specAttributeMap).length > 0 && (
+                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                        Specifications
+                      </p>
+                    </div>
+                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {Object.entries(specAttributeMap).map(([attrName, values], idx) => {
+                        const displayValue = values.map((v) => v.value).join(", ");
+                        return (
+                          <div
+                            key={attrName}
+                            className={`grid grid-cols-2 gap-3 px-4 py-2.5 text-sm ${
+                              idx % 2 === 0
+                                ? "bg-white dark:bg-transparent"
+                                : "bg-gray-50/60 dark:bg-gray-800/30"
+                            }`}
+                          >
+                            <span className="font-medium text-gray-500 dark:text-gray-400 capitalize">
+                              {attrName}
+                            </span>
+                            <span className="font-semibold text-gray-800 dark:text-gray-100 break-words">
+                              {displayValue}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Short Description */}
+                {product?.short_description && (
+                  <div className="p-5 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Description</h3>
+                    <div className="
+                      text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+                      [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2
+                      [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2
+                      [&_li]:mb-1 [&_strong]:font-semibold [&_strong]:text-gray-800 dark:[&_strong]:text-gray-200
+                      [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-2
+                      [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2
+                      [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-1
+                      [&_a]:text-purple-600 [&_a]:underline
+                    ">
+                      {parse(product.short_description)}
+                    </div>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -696,16 +808,19 @@ const ProductDetailPage = () => {
                           return;
                         }
                         setIsSingleOrderFormOpen(true);
-                        // Pass product with additional price from selected variants
                         setSingleOrderProduct({
                           ...product,
+                          // Displayed prices (optimistic, for UI only)
                           unit_price: finalUnitPrice,
                           mrp: finalMrp,
                           original_unit_price: product.unit_price,
                           original_mrp: product.mrp,
                           additional_price: additionalPrice,
-                          selected_attributes: selectedAttributes,
-                          quantity: productQty
+                          // Variant selections sent to backend for server-side price validation
+                          selected_variants: Object.entries(selectedAttributes).map(
+                            ([name, attr]) => ({ name, value: attr.value })
+                          ),
+                          quantity: productQty,
                         });
                         setIsProfileOpen(false);
                       }}
@@ -773,6 +888,36 @@ const ProductDetailPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Full Description (long HTML from vendor) */}
+            {product?.description && (
+              <div className="mt-12 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Full Product Details</h2>
+                </div>
+                <div className="px-6 py-6
+                  text-sm text-gray-700 dark:text-gray-300 leading-relaxed
+                  [&_p]:mb-3 [&_p]:leading-relaxed
+                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ul]:space-y-1
+                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_ol]:space-y-1
+                  [&_li]:leading-relaxed
+                  [&_strong]:font-semibold [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                  [&_em]:italic
+                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900 dark:[&_h1]:text-white [&_h1]:mb-3 [&_h1]:mt-4
+                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 dark:[&_h2]:text-white [&_h2]:mb-2 [&_h2]:mt-4
+                  [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-gray-900 dark:[&_h3]:text-white [&_h3]:mb-2 [&_h3]:mt-3
+                  [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-1
+                  [&_blockquote]:border-l-4 [&_blockquote]:border-purple-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 dark:[&_blockquote]:text-gray-400 [&_blockquote]:mb-3
+                  [&_a]:text-purple-600 dark:[&_a]:text-purple-400 [&_a]:underline [&_a]:hover:text-purple-700
+                  [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
+                  [&_th]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:bg-purple-50 dark:[&_th]:bg-purple-900/20 [&_th]:font-semibold [&_th]:border [&_th]:border-gray-200 dark:[&_th]:border-gray-700
+                  [&_td]:px-3 [&_td]:py-2 [&_td]:border [&_td]:border-gray-200 dark:[&_td]:border-gray-700
+                  [&_img]:rounded-xl [&_img]:max-w-full [&_img]:my-3
+                ">
+                  {parse(product.description)}
+                </div>
+              </div>
+            )}
 
             {/* Reviews and Recommendations */}
             <div className="mt-16 space-y-12">

@@ -75,7 +75,7 @@ export const subCategories = [
     {
     id: "14",
     name: "Video Games",
-    category: "video-games",
+    category: "videogames",
     image: "/new/viedo_games.jpg",
     extraclass: "w-full h-full",
     link: "/home",
@@ -83,7 +83,7 @@ export const subCategories = [
   {
     id: "12",
     name: "Cars and Trucks",
-    category: "cars-trucks",
+    category: "cars",
     image: "/new/cars_and_trucks.jpg",
     extraclass: "",
     link: "/home",
@@ -92,7 +92,7 @@ export const subCategories = [
     {
     id: "20",
     name: "Residential Real Estate",
-    category: "residential-real-estate",
+    category: "residential-realestate",
     image: "/new/residentail_re.png",
     extraclass: "object-cover",
     link: "/home",
@@ -100,7 +100,7 @@ export const subCategories = [
   {
     id: "21",
     name: "Commercial Real Estate",
-    category: "commercial-real-estate",
+    category: "commercial-realestate",
     image: "/new/commercial_re.png",
     extraclass: "object-cover",
     link: "/home",

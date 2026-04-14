@@ -6,12 +6,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
+import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
-import Header from "../Header";
 import CancelDialog from "../CancelDialog";
-import RatingForm from '../../components/RatingForm'
 export default function AllOrders() {
-    const { currency, setIsRatingFormOpen, isRatingFormOpen } = useContext(authContext);
+    const { currency } = useContext(authContext);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -88,6 +87,54 @@ export default function AllOrders() {
         setIsOpen(true);
     };
 
+    const handleOptimisticCancel = (cancelledOrderId) => {
+        setOrders((prev) =>
+            prev.map((o) =>
+                o.id === cancelledOrderId
+                    ? { ...o, order_status: "CANCELED" }
+                    : o
+            )
+        );
+    };
+
+    const handleReturnOrder = async (orderItemId) => {
+        if (!cookies.access_token) {
+            navigate("/signin");
+            return;
+        }
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/api/order/return-order/${orderItemId}/`,
+                {},
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${cookies.access_token}`,
+                    },
+                }
+            );
+            if (response.status === 202 || response.status === 200) {
+                setOrders((prev) =>
+                    prev.map((o) =>
+                        o.id === orderItemId
+                            ? { ...o, order_status: "RETURN-REQUESTED" }
+                            : o
+                    )
+                );
+                toast.success(
+                    "Return Scheduled! A carrier will arrive at your door tomorrow to collect the package. No printing required\u2014they will bring the label with them.",
+                    { position: "top-center", autoClose: 6000 }
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error(
+                error.response?.data?.error || "Failed to initiate return. Please try again.",
+                { position: "top-center", autoClose: 3000 }
+            );
+        }
+    };
+
     return (
         <>
             <div className="font-sen flex flex-col w-full h-full min-h-screen dark:bg-[#0E0F13] pb-6 px-[2%] 2xl:px-[4.5%] border border-gray-500  rounded-lg p-4">
@@ -146,7 +193,7 @@ export default function AllOrders() {
                                         <div className="flex justify-between items-center p-4 border-b dark:border-white/30">
                                             <div>
                                                 <p className=" text-[12px] sm:text-[15px]">
-                                                    Order ID: {orderId}
+                                                    Order ID: {groupOrdersByOrderId(orders)[orderId][0].order_number || orderId}
                                                 </p>
                                                 <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
                                                     Date of Order:{" "}
@@ -179,7 +226,7 @@ export default function AllOrders() {
 
                                                 <div className="w-full sm:flex items-center"
                                                 >
-                                                    <button onClick={() => navigate(`/summary/${order.id}`)}>
+                                                    <button onClick={() => navigate(`/summary/${order.id}`, { state: { fromTab: 4 } })}>
 
                                                         <div className="w-auto h-32 sm:h-40 rounded-md mb-2 sm:mb-0 overflow-hidden "                           >
                                                             <img
@@ -206,104 +253,90 @@ export default function AllOrders() {
                                                             <span className={
                                                                 order.order_status === "DELIVERED"
                                                                     ? "text-green-600"
-                                                                    : order.order_status === "PENDING"
+                                                                    : order.order_status === "PENDING" || order.order_status === "RECEIVED" || order.order_status === "PACKED"
                                                                         ? "text-yellow-600"
                                                                         : order.order_status === "CANCELED"
                                                                             ? "text-red-600"
-                                                                            : "black" // default color if status is unknown                            
+                                                                            : order.order_status === "RETURN-REQUESTED" || order.order_status === "RETURN-DELIVERED"
+                                                                                ? "text-orange-600"
+                                                                                : "text-blue-600"
                                                             }>
                                                                 {order.order_status}
                                                             </span>
                                                         </p>
                                                     </div>
-                                                    <RatingForm order={order} />
+                                                    {/* Rating displayed in the order detail (Summary) page, not here */}
                                                     <div className="flex flex-col mt-2 sm:mt-0 ml-4">
-                                                        {
-                                                            order.order_status !== "CANCELED" ? (
-                                                                <>
+                                                        {order.order_status.toUpperCase() === "CANCELED" ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setIsSingleOrderFormOpen(true);
+                                                                        setSingleOrderProduct(order.product);
+                                                                        setIsProfileOpen(false);
+                                                                    }}
+                                                                    className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                                                >
+                                                                    Buy Again
+                                                                    <ArrowRightIcon className="inline-block w-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        navigate(
+                                                                            `/product/productDetail/${order.product.slug}?productId=${order.product.id}`
+                                                                        );
+                                                                    }}
+                                                                    className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                                                >
+                                                                    View Product
+                                                                    <ArrowRightIcon className="inline-block w-4" />
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
                                                                     <button
-                                                                        className="bg-[#8B33FE] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                                                                        onClick={() => {
-                                                                            if (order.order_status === "DELIVERED") {
-                                                                                setSingleOrderProduct(order.product);
-                                                                                setIsSingleOrderFormOpen(true);
-                                                                                setIsProfileOpen(false);
-                                                                            } else {
-                                                                                navigate(`/summary/${order.id}`);
-                                                                            }
-                                                                        }}>
-                                                                        {
-                                                                            order.order_status === "DELIVERED"
-                                                                                ? "Buy again"
-                                                                                : "Track Order"
-                                                                        }
-
-                                                                        <ArrowRightIcon className="inline-block w-4" />
-                                                                    </button>
-                                                                    {
-                                                                        order.order_status !== "DELIVERED" ? (
-                                                                            <button
-                                                                                disabled={
-                                                                                    order.order_status.toUpperCase() === "SHIPPED" ||
-                                                                                    order.order_status.toUpperCase() ===
-                                                                                    "DELIVERED" ||
-                                                                                    order.order_status.toUpperCase() === "RETURNED" ||
-                                                                                    order.order_status.toUpperCase() ===
-                                                                                    "RETURN-REQUESTED" ||
-                                                                                    order.order_status.toUpperCase() === "CANCELED"
-                                                                                }
-                                                                                onClick={() => {
-                                                                                    openModal();
-                                                                                    setDeleteOrderId(order.id);
-                                                                                }}
-                                                                                className="disabled:text-gray-400 disabled:hover:bg-transparent disabled:border-gray-300 text-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-red-100 dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 w-full max-w-[300px]"
-                                                                            >
-                                                                                {order.order_status === "shipped"
-                                                                                    ? "Shipped"
-                                                                                    : "Cancel Order"}
-                                                                            </button>
-                                                                        ) : (
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    console.log('clicked')
-                                                                                    setIsRatingFormOpen(true);
-                                                                                    console.log(isRatingFormOpen)
-                                                                                }}
-                                                                                className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                                                                            >
-                                                                                Rate Product
-                                                                            </button>
-                                                                        )
-                                                                    }
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setIsSingleOrderFormOpen(true);
+                                                                    className="bg-[#8B33FE] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                                                    onClick={() => {
+                                                                        if (order.order_status === "DELIVERED") {
                                                                             setSingleOrderProduct(order.product);
+                                                                            setIsSingleOrderFormOpen(true);
                                                                             setIsProfileOpen(false);
+                                                                        } else {
+                                                                            // Pass fromTab so pressing Back on Summary restores the Orders tab
+                                                                            navigate(`/summary/${order.id}`, { state: { fromTab: 4 } });
                                                                         }
-                                                                        }
-                                                                        className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
-                                                                    >
-                                                                        Buy Again
-                                                                        <ArrowRightIcon className="inline-block w-4" />
-                                                                    </button>
+                                                                    }}
+                                                                >
+                                                                    {order.order_status === "DELIVERED"
+                                                                        ? "Buy again"
+                                                                        : "Track Order"}
+                                                                    <ArrowRightIcon className="inline-block w-4" />
+                                                                </button>
+
+                                                                {["PENDING", "RECEIVED", "PACKED"].includes(
+                                                                    order.order_status.toUpperCase()
+                                                                ) && (
                                                                     <button
                                                                         onClick={() => {
-                                                                            navigate(
-                                                                                `/product/productDetail/${order.product.slug}?productId=${order.product.id}`
-                                                                            );
+                                                                            openModal();
+                                                                            setDeleteOrderId(order.id);
                                                                         }}
-                                                                        className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                                                        className="text-red-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-red-100 dark:hover:bg-red-600 dark:hover:text-white rounded-md border border-red-500 w-full max-w-[300px]"
                                                                     >
-                                                                        View Product
-                                                                        <ArrowRightIcon className="inline-block w-4" />
+                                                                        Cancel Order
                                                                     </button>
-                                                                </>
-                                                            )
-                                                        }
+                                                                )}
+
+                                                                {order.order_status.toUpperCase() === "DELIVERED" && (
+                                                                    <button
+                                                                        onClick={() => handleReturnOrder(order.id)}
+                                                                        className="text-orange-600 font-medium text-sm sm:text-[16px] py-2 sm:py-2.5 hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white rounded-md border border-orange-500 w-full max-w-[300px] mb-2"
+                                                                    >
+                                                                        Return Order
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -324,6 +357,7 @@ export default function AllOrders() {
                                 orderId={deleteOrderId}
                                 setIsOpen={setIsOpen}
                                 GetOrders={GetOrders}
+                                onOptimisticCancel={handleOptimisticCancel}
                             />
                         )}
                     </>

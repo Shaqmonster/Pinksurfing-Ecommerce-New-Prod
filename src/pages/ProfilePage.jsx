@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useLocation } from "react-router-dom";
 import { Sidebar } from "../components/ProfilePageComponents/ProfileSidebar";
 import OrderDetails from "../components/ProfilePageComponents/OrderDetails";
 import { dataContext } from "../context/dataContext";
@@ -11,9 +12,16 @@ import ProfileUserWallet from "../components/ProfilePageComponents/ProfileUserWa
 import AllOrders from "../components/ProfilePageComponents/AllOrders";
 
 export default function ProfilePage() {
+  const location = useLocation();
   const { profileActiveIndex, setProfileActiveIndex } = React.useContext(dataContext);
+
   React.useEffect(() => {
-    setProfileActiveIndex(0);
+    // If the user navigated back from a sub-page (e.g. /summary/:id),
+    // restore the tab they came from. Otherwise default to the Profile tab (0).
+    const fromTab = location.state?.fromTab;
+    setProfileActiveIndex(typeof fromTab === "number" ? fromTab : 0);
+    // Clear the navigation state so a page refresh goes to tab 0
+    window.history.replaceState({}, document.title);
   }, []);
 
   const profileComponents = {

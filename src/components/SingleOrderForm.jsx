@@ -6,8 +6,13 @@ import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import OrderConfirm from "./OrderConfirm";
-import { IoClose } from "react-icons/io5";
-import { PencilIcon } from "@heroicons/react/24/outline";
+import {
+  XMarkIcon,
+  MapPinIcon,
+  PlusIcon,
+  CheckIcon,
+  ShoppingBagIcon,
+} from "@heroicons/react/24/outline";
 import AddressForm from "./AddressForm";
 import PaymentOptionsModal from "../pages/PaymentOptionsModal";
 
@@ -29,16 +34,12 @@ export default function SingleOrderForm() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [order_id, setOrderId] = useState();
   const [loading, setLoading] = useState(false);
+  const [shippingSpeed, setShippingSpeed] = useState("standard");
   const navigate = useNavigate();
+
   function closeModal() {
     setIsSingleOrderFormOpen(false);
   }
-  let [profile, setProfile] = useState({
-    customer_email: "",
-    customer_phone: "",
-    date_registered: "",
-    is_verified: "",
-  });
 
   const GetAddresses = async () => {
     if (!cookies.access_token) {
@@ -57,13 +58,13 @@ export default function SingleOrderForm() {
           : Object.values(response.data.addresses).filter(
               (value) => value !== null && value !== undefined
             );
-
         setAddresses(addressesArray);
       })
       .catch((error) => {
         console.error(error);
       });
   };
+
   const PlaceSingleOrder = async () => {
     if (!cookies.access_token) {
       navigate("/signin");
@@ -81,7 +82,10 @@ export default function SingleOrderForm() {
         }/`,
         {
           address: addressesId,
-          additional_price: singleOrderProduct.additional_price || 0,
+          // Send the raw variant selections — the backend validates the price
+          // from the DB so the price cannot be manipulated on the client side.
+          selected_variants: singleOrderProduct.selected_variants || [],
+          shipping_speed: shippingSpeed,
         },
         {
           headers: {
@@ -97,15 +101,18 @@ export default function SingleOrderForm() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.Status || error.response.data.error || "An error occurred", {
-          position: "top-center",
-          autoClose: 3000,
-        });
+        toast.error(
+          error.response?.data?.Status ||
+            error.response?.data?.error ||
+            "An error occurred",
+          { position: "top-center", autoClose: 3000 }
+        );
       })
       .finally(() => {
         setLoading(false);
       });
   };
+
   useEffect(() => {
     GetAddresses();
   }, [cookies, isAddressFormOpen, navigate, removeCookie]);
@@ -125,7 +132,7 @@ export default function SingleOrderForm() {
         <Transition appear show={isSingleOrderFormOpen} as={Fragment}>
           <Dialog
             as="div"
-            className={`${isDarkMode && "dark"} relative z-10`}
+            className={`${isDarkMode && "dark"} relative z-50`}
             onClose={closeModal}
           >
             <Transition.Child
@@ -137,138 +144,240 @@ export default function SingleOrderForm() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black/25" />
+              <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
             </Transition.Child>
 
             <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-2 sm:p-4 text-center">
+              <div className="flex min-h-full items-center justify-center p-3 sm:p-4">
                 <Transition.Child
                   as={Fragment}
                   enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
+                  enterFrom="opacity-0 translate-y-4 scale-95"
+                  enterTo="opacity-100 translate-y-0 scale-100"
                   leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
+                  leaveFrom="opacity-100 translate-y-0 scale-100"
+                  leaveTo="opacity-0 translate-y-4 scale-95"
                 >
-                  <Dialog.Panel className="w-full sm:max-w-md transform overflow-hidden bg-white dark:bg-[#0E0F13] rounded-2xl p-4 sm:p-6 text-left align-middle shadow-xl transition-all">
-                        <Dialog.Title
-                          as="h3"
-                          className="text-lg mb-7 flex items-center justify-between font-medium leading-6 text-gray-900 dark:text-white "
-                        >
-                          Select Address of Delivery
-                          <IoClose
-                            className=" cursor-pointer"
-                            onClick={() => {
-                              closeModal();
-                            }}
-                          />
-                        </Dialog.Title>
-                        <div className="mt-8 space-y-3 rounded-lg border text-black dark:text-white dark:bg-[#0E0F13] bg-white px-2 py-4 sm:px-6">
-                          <div className="flex flex-row items-center rounded-lg bg-white dark:bg-[#0E0F13] sm:flex-row">
-                            <img
-                              className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                              src={`${singleOrderProduct.image1}`}
-                              // src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=htmlFormat&fit=crop&w=500&q=60"
-                              alt=""
-                            />
-                            <div className="flex lg:w-full capitalize flex-col px-4 py-4">
-                              <span className="font-semibold">
-                                {singleOrderProduct.name}
-                              </span>
-                              <span className="float-right text-black dark:text-white">
-                                {/* Quantity : {singleOrderProduct.quantity} */}
-                              </span>
-                              <p className="mt-auto text-md font-semibold">
-                                {currency}
-                                {singleOrderProduct.unit_price}
-                              </p>
-                              {singleOrderProduct.additional_price > 0 && (
-                                <p className="text-[13px] text-gray-500 dark:text-gray-400">
-                                  (includes {currency}{singleOrderProduct.additional_price} variant)
-                                </p>
-                              )}
-                            </div>
-                          </div>
+                  <Dialog.Panel className="w-full sm:max-w-md transform rounded-2xl bg-white dark:bg-[#0E0F13] shadow-2xl transition-all">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9747FF]/10">
+                          <ShoppingBagIcon className="h-[18px] w-[18px] text-[#9747FF]" />
                         </div>
-                        <p className="mt-2 text-lg flex text-gray-900  dark:text-white items-center font-medium">
-                          Shipping Address{" "}
-                          <PencilIcon
-                            onClick={() => {
-                              setIsAddressFormOpen(true);
-                            }}
-                            className=" ml-3 cursor-pointer w-[19px] "
-                          />
-                        </p>
+                        <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Quick Order
+                        </Dialog.Title>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={closeModal}
+                        className="rounded-lg p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <XMarkIcon className="h-5 w-5" />
+                      </button>
+                    </div>
 
-                        <form className="mt-5 gap-6  flex flex-col overflow-y-auto border-l overflow-x-hidden border-white/90 p-1 h-[170px] justify-between">
-                          {addresses?.slice().map((address, index) => {
-                            return (
-                              <div
-                                key={address.id + index + address.zip_code}
-                                className={`relative w-full h-fit ${
-                                  addressesId === address.id
-                                    ? "border-2 border-blue-400 rounded-md"
-                                    : "border border-gray-300 rounded-md"
-                                }`}
-                                onClick={() => {
-                                  setAddressesId(address.id);
-                                }}
-                              >
-                                <span
-                                  className={`absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 ${
-                                    addressesId === address.id
-                                      ? "border-blue-400"
-                                      : "border-gray-300"
-                                  } bg-white dark:bg-black`}
-                                ></span>
-                                <label
-                                  className=" border-gray-700  w-full flex cursor-pointer select-none rounded-md border p-4"
-                                  htmlFor="radio_2"
+                    <div className="px-5 py-4 space-y-5">
+                      {/* Product Preview */}
+                      <div className="flex items-center gap-4 rounded-xl border border-gray-100 dark:border-gray-800 p-3">
+                        <img
+                          className="h-20 w-20 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+                          src={`${singleOrderProduct.image1}`}
+                          alt={singleOrderProduct.name}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white capitalize truncate">
+                            {singleOrderProduct.name}
+                          </p>
+                          <p className="text-lg font-bold text-[#9747FF] mt-1">
+                            {currency}
+                            {singleOrderProduct.unit_price}
+                          </p>
+                          {singleOrderProduct.additional_price > 0 && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              includes {currency}
+                              {singleOrderProduct.additional_price} variant
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Shipping Speed — payload value: "standard" | "express" */}
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Shipping Speed
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* Standard */}
+                          <button
+                            type="button"
+                            onClick={() => setShippingSpeed("standard")}
+                            className={`rounded-xl border-2 p-3 text-left transition-all ${
+                              shippingSpeed === "standard"
+                                ? "border-[#9747FF] bg-[#9747FF]/10"
+                                : "border-gray-200 dark:border-gray-700 hover:border-[#9747FF]/50"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
+                                shippingSpeed === "standard"
+                                  ? "border-[#9747FF] bg-[#9747FF]"
+                                  : "border-gray-400 dark:border-gray-500"
+                              }`} />
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                Standard
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 pl-5">
+                              Economical delivery
+                            </p>
+                          </button>
+
+                          {/* Express */}
+                          <button
+                            type="button"
+                            onClick={() => setShippingSpeed("express")}
+                            className={`rounded-xl border-2 p-3 text-left transition-all ${
+                              shippingSpeed === "express"
+                                ? "border-[#9747FF] bg-[#9747FF]/10"
+                                : "border-gray-200 dark:border-gray-700 hover:border-[#9747FF]/50"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
+                                shippingSpeed === "express"
+                                  ? "border-[#9747FF] bg-[#9747FF]"
+                                  : "border-gray-400 dark:border-gray-500"
+                              }`} />
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                Express
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 pl-5">
+                              Fastest available
+                            </p>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Address Section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <MapPinIcon className="w-4 h-4 text-[#9747FF]" />
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Delivery Address
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setIsAddressFormOpen(true)}
+                            className="flex items-center gap-1 text-xs font-medium text-[#9747FF] hover:text-[#8533EE] transition-colors"
+                          >
+                            <PlusIcon className="w-3.5 h-3.5" />
+                            Add New
+                          </button>
+                        </div>
+
+                        {addresses.length > 0 ? (
+                          <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                            {addresses.map((address, index) => {
+                              const isSelected = addressesId === address.id;
+                              return (
+                                <div
+                                  key={address.id + index + address.zip_code}
+                                  onClick={() => setAddressesId(address.id)}
+                                  className={`relative cursor-pointer rounded-xl p-3.5 transition-all ${
+                                    isSelected
+                                      ? "border-2 border-[#9747FF] bg-purple-50 dark:bg-purple-900/10"
+                                      : "border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
+                                  }`}
                                 >
-                                  <div className=" sm:ml-5 flex items-center text-black dark:text-white justify-between w-[80%] overflow-hidden sm:w-[83%]">
-                                    <div className=" flex flex-col">
-                                      <span className="mt-2 font-semibold">
-                                        Address - {index + 1}{" "}
-                                      </span>
-                                      <p className="text-slate-900 dark:text-white overflow-hidden overflow-ellipsis text-sm leading-6">
-                                        {address.street1},{address.street2},
-                                        <span className=" block">
-                                          {address.city},{address.state},
-                                        </span>
-                                        <span className=" block">
-                                          {address.country}, zip code :{" "}
-                                          {address.zip_code}
-                                        </span>
+                                  <div className="flex items-start gap-3">
+                                    <div
+                                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                                        isSelected
+                                          ? "border-[#9747FF] bg-[#9747FF]"
+                                          : "border-gray-300 dark:border-gray-600"
+                                      }`}
+                                    >
+                                      {isSelected && (
+                                        <CheckIcon className="h-3 w-3 text-white" />
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {address.name || `Address ${index + 1}`}
+                                      </p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                                        {address.street1}
+                                        {address.street2
+                                          ? `, ${address.street2}`
+                                          : ""}
+                                        <br />
+                                        {address.city}, {address.state},{" "}
+                                        {address.country} - {address.zip_code}
                                       </p>
                                     </div>
                                   </div>
-                                </label>
-                              </div>
-                            );
-                          })}
-                        </form>
-                        <div className="mt-5 flex items-center justify-between">
-                          <button
-                            type="button"
-                            className="w-full py-2.5 bg-[#6A1BBE] hover:bg-[#572a88] font-semibold rounded-md text-white flex items-center justify-center"
-                            onClick={PlaceSingleOrder}
-                            disabled={loading}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => setIsAddressFormOpen(true)}
+                            className="cursor-pointer rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-[#9747FF] dark:hover:border-[#9747FF] p-6 flex flex-col items-center justify-center transition-colors"
                           >
-                            {loading && (
-                              <img
-                                src="/loading.svg"
-                                alt="loading"
-                                className="mr-2 w-[20px] h-[20px] sm:w-[30px] sm:h-[30px] object-contain"
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9747FF]/10 mb-2">
+                              <MapPinIcon className="h-5 w-5 text-[#9747FF]" />
+                            </div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              No address yet
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                              Tap to add a shipping address
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Place Order Button */}
+                      <button
+                        type="button"
+                        onClick={PlaceSingleOrder}
+                        disabled={loading || !addressesId}
+                        className="w-full rounded-xl bg-[#9747FF] hover:bg-[#8533EE] disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-3 transition-colors flex items-center justify-center gap-2"
+                      >
+                        {loading ? (
+                          <>
+                            <svg
+                              className="animate-spin h-4 w-4"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
                               />
-                            )}
-                            <span>
-                              {loading
-                                ? "Processing..."
-                                : "Continue to Payment"}
-                            </span>
-                          </button>
-                        </div>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                              />
+                            </svg>
+                            Processing...
+                          </>
+                        ) : (
+                          "Continue to Payment"
+                        )}
+                      </button>
+                    </div>
                   </Dialog.Panel>
                 </Transition.Child>
               </div>
