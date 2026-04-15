@@ -489,86 +489,91 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Sub Categories Section */}
-        <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-10 bg-white/5 border-y border-white/10">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
+        {/* Browse by Category — responsive grid tuned for 6 primary categories */}
+        <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-10 sm:py-12 bg-white/5 border-y border-white/10 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none" aria-hidden />
+          <div className="relative max-w-6xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-center">
               <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Browse by Category
               </span>
             </h2>
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-lg mx-auto">
+              Explore listings across our active categories
+            </p>
 
-            {/* Mobile: Grid Layout */}
-            <div className="block md:hidden">
-              <div className="grid grid-cols-3 gap-4">
-                {subCategories.map((item) => (
-                  <div
+            <div
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 justify-items-stretch"
+              role="list"
+            >
+              {subCategories.map((item, index) => {
+                const imgSrc = item.image || item.image2;
+                const isSoon = Boolean(item.coming_soon);
+                const handleClick = () => {
+                  if (isSoon) {
+                    toast.info("This category is coming soon!", { position: "top-right", autoClose: 2200 });
+                    return;
+                  }
+                  setCategory(String(item.category).toLowerCase());
+                  navigate(`/category/${String(item.category).toLowerCase()}`);
+                };
+
+                return (
+                  <motion.div
                     key={item.id}
-                    onClick={() => {
-                      if (item.coming_soon) {
-                        console.log("Coming Soon");
-                        return;
-                      } else {
-                        setCategory(item.category.toLowerCase());
-                        navigate(`/category/${item.category.toLowerCase()}`);
-                      }
-                    }}
-                    className={`cursor-pointer group ${item.coming_soon ? 'opacity-75' : ''}`}
+                    role="listitem"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.36) }}
+                    className={`min-w-0 ${isSoon ? "opacity-90" : ""}`}
                   >
-                    <div className="flex flex-col items-center">
-                      <div className="w-20 h-20 mb-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-white/10 flex items-center justify-center overflow-hidden group-hover:border-purple-500/50 transition-colors relative">
+                    <button
+                      type="button"
+                      onClick={handleClick}
+                      className={`
+                        group w-full text-left rounded-2xl overflow-hidden
+                        border border-white/10 bg-[#14141c]/80 backdrop-blur-sm
+                        shadow-lg shadow-black/20
+                        transition-all duration-300 ease-out
+                        hover:border-purple-400/40 hover:shadow-xl hover:shadow-purple-500/15
+                        hover:-translate-y-1 hover:scale-[1.02]
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]
+                        ${isSoon ? "cursor-default" : "cursor-pointer active:scale-[0.98]"}
+                      `}
+                    >
+                      <div className="relative aspect-square w-full overflow-hidden">
+                        <div
+                          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-[1] opacity-90 group-hover:opacity-100 transition-opacity"
+                          aria-hidden
+                        />
+                        <div
+                          className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-pink-600/0 group-hover:from-purple-500/10 group-hover:to-pink-600/10 z-[2] transition-all duration-300"
+                          aria-hidden
+                        />
                         <img
-                          src={item.image}
+                          src={imgSrc}
                           alt={item.name}
-                          className={`w-full h-full object-contain p-2 ${item.extraclass || ''}`}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                           loading="lazy"
                         />
-                        {item.coming_soon && (
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm">
-                            <span className="text-white text-xs font-bold text-center px-1">Coming Soon</span>
+                        {isSoon && (
+                          <div className="absolute inset-0 z-[3] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+                            <span className="px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-[10px] sm:text-xs font-bold text-white tracking-wide">
+                              Coming soon
+                            </span>
                           </div>
                         )}
+                        <div className="absolute bottom-0 left-0 right-0 z-[4] p-2 sm:p-3 pt-8 sm:pt-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                          <p className="text-[11px] sm:text-xs lg:text-sm font-semibold text-white text-center leading-tight line-clamp-2 drop-shadow-md group-hover:text-purple-100 transition-colors">
+                            {item.name}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-300 text-xs text-center font-medium line-clamp-2">
-                        {item.name}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Desktop: Grid Layout */}
-            <div className="hidden md:grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-              {subCategories.map((item) => (
-                <div
-                  key={item.id}
-                    onClick={() => {
-                      if (item.coming_soon) {
-                        console.log("Coming Soon");
-                        return;
-                      } else {
-                        setCategory(item.category.toLowerCase());
-                        navigate(`/category/${item.category.toLowerCase()}`);
-                      }
-                    }}
-                  className="cursor-pointer group hover:-translate-y-1 transition-transform duration-200"
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="w-full aspect-square mb-2 rounded-xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-colors bg-[#1a1a24]/50 flex items-center justify-center">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className={`w-full h-full object-contain p-2 ${item.extraclass || ''}`}
-                        loading="lazy"
-                      />
-                    </div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-300 text-center group-hover:text-purple-300 transition-colors">
-                      {item.name}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                    </button>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
