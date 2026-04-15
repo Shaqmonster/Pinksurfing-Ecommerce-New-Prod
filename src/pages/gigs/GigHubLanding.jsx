@@ -307,26 +307,6 @@ const GigHubLanding = () => {
         </div>
       </section>
 
-      {/* ── TRUST STATS ── */}
-      <section className="py-10 px-4 border-y border-white/5 bg-white/2">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6">
-          {TRUST_STATS.map((stat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="text-center"
-            >
-              <p className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                {stat.value}
-              </p>
-              <p className="text-white/40 text-sm mt-1">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
 
       {/* ── BROWSE BY CATEGORY ── */}
       {categories.length > 0 && (
