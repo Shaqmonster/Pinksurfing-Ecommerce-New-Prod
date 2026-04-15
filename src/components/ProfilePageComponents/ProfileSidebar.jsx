@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { NavigationItem } from "./NavigationItem";
 import { navigationItems } from "../../utils/ProfileItems";
 import { dataContext } from "../../context/dataContext";
+import { authContext } from "../../context/authContext";
 
 export function Sidebar() {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(0);
     const sidebarRef = React.useRef(null);
-    const {setProfileActiveIndex} = React.useContext(dataContext);
+    const { setProfileActiveIndex } = React.useContext(dataContext);
+    const { Logout } = React.useContext(authContext);
     
     // Close sidebar when clicking outside
     React.useEffect(() => {
@@ -31,6 +33,11 @@ export function Sidebar() {
 
     const handleItemClick = (index) => {
         const item = navigationItems[index];
+        if (item.action === "logout") {
+            Logout();
+            setIsOpen(false);
+            return;
+        }
         if (item.route) {
             // Pass the current active tab so pressing Back restores it
             navigate(item.route, { state: { fromTab: activeIndex } });

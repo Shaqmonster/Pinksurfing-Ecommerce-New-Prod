@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
@@ -11,7 +11,7 @@ export const dataContext = createContext();
 export const DataProvider = ({ children }) => {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
-  const { search,setUser,Logout } = useContext(authContext);
+  const { search, setUser } = useContext(authContext);
 
   // UseStates -------------------------------------------------------------------
   let [searchedProducts, setSearchedProducts] = useState([]);
@@ -25,11 +25,6 @@ export const DataProvider = ({ children }) => {
   });
   // toast functions ------------------------------------------------------------
   const [profileActiveIndex, setProfileActiveIndex] = useState(0);
-  useEffect(()=>{
-    if(profileActiveIndex === 6){
-        Logout();     
-    }
-  },[profileActiveIndex])
   const handleError = (err) => {
     console.error("Error occurred",err);
     toast.error(err, {
