@@ -9,6 +9,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import OrderConfirm from "../components/OrderConfirm";
 import PaymentOptionsModal from "./PaymentOptionsModal";
+import { formatMoney } from "../utils/formatMoney";
 
 
 const Checkout = () => {
@@ -285,10 +286,12 @@ const Checkout = () => {
                     </span>
                     <p className="mt-auto text-lg font-bold">
                       {currency}
-                      {product.additional_price > 0
-                        ? Number(product.product.unit_price) +
-                        Number(product.additional_price)
-                        : product.product.unit_price}
+                      {formatMoney(
+                        product.additional_price > 0
+                          ? Number(product.product.unit_price) +
+                              Number(product.additional_price)
+                          : Number(product.product.unit_price)
+                      )}
                     </p>
                     {product.additional_price > 0 && (
                       <p className="text-[14px] sm:text-[14.5px] text-gray-200 whitespace-normal">
@@ -421,7 +424,7 @@ const Checkout = () => {
                 </p>
                 <p className="font-semibold text-gray-900 dark:text-[#f5f5f5]">
                   {currency}
-                  {subTotal}
+                  {formatMoney(subTotal)}
                 </p>
               </div>
               {/* <div className="flex items-center justify-between">
@@ -439,7 +442,7 @@ const Checkout = () => {
               </p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-[#f5f5f5]">
                 {currency}
-                {subTotal}
+                {formatMoney(subTotal)}
               </p>
             </div>
           </div>

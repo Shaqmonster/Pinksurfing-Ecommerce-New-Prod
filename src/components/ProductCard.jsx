@@ -8,6 +8,7 @@ import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { IoStarOutline, IoCart } from "react-icons/io5";
 import Stars from "./Stars";
+import { formatMoney } from "../utils/formatMoney";
 const ProductCard = ({ product, isCard }) => {
   const [cookies] = useCookies([]);
   const navigate = useNavigate();
@@ -295,11 +296,13 @@ const ProductCard = ({ product, isCard }) => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-              {currency}{product.unit_price}
+              {currency}
+              {formatMoney(product.unit_price)}
             </p>
             {product.mrp !== product.unit_price && (
               <p className="text-sm text-gray-400 line-through">
-                {currency}{product.mrp}
+                {currency}
+                {formatMoney(product.mrp)}
               </p>
             )}
           </div>

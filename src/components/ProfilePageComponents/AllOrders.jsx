@@ -9,6 +9,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import CancelDialog from "../CancelDialog";
+import { formatMoney } from "../../utils/formatMoney";
 export default function AllOrders() {
     const { currency } = useContext(authContext);
     const [orders, setOrders] = useState([]);
@@ -211,8 +212,10 @@ export default function AllOrders() {
                                                 </p>
                                                 <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
                                                     Total Price: {currency}{" "}
-                                                    {calculateTotalPrice(
-                                                        groupOrdersByOrderId(orders)[orderId]
+                                                    {formatMoney(
+                                                        calculateTotalPrice(
+                                                            groupOrdersByOrderId(orders)[orderId]
+                                                        )
                                                     )}
                                                 </p>
                                             </div>
@@ -241,7 +244,7 @@ export default function AllOrders() {
                                                             {order.product.name}
                                                         </p>
                                                         <p className="font-medium mb-2 text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
-                                                            Price: {currency} {order.total_price}
+                                                            Price: {currency} {formatMoney(order.total_price)}
                                                         </p>
                                                     </div>
                                                     <div className="flex flex-col ml-4 sm:flex-grow">

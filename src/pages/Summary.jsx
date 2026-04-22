@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import RatingForm from "../components/RatingForm";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import TrackingTimeline from "../components/TrackingTimeline";
+import { formatMoney } from "../utils/formatMoney";
 
 const Summary = () => {
   const { user, isRatingFormOpen, currency, setIsRatingFormOpen } =
@@ -213,7 +214,7 @@ const Summary = () => {
                     {/* {order.product.description} */}
                   </p>
                   <p className=" font-medium mb-2 text-[14px] sm:text-[15px]">
-                    Total Price : {currency} {order.total_price}
+                    Total Price : {currency} {formatMoney(order.total_price)}
                   </p>
                 </div>
                 <div className=" flex flex-col -mb-2 sm:mb-0 w-full h-full p-4 px-2 sm:px-6 col-span-3 sm:col-span-1 ">
@@ -361,7 +362,7 @@ const Summary = () => {
                     </p>
                     <p className="text-base dark:text-gray-300 leading-4 text-gray-600">
                       {currency}
-                      {order.total_price}
+                      {formatMoney(order.total_price)}
                     </p>
                   </div>
                   <div className="flex justify-between items-center w-full">
@@ -370,7 +371,7 @@ const Summary = () => {
                     </p>
                     <p className="text-base dark:text-gray-300 leading-4 text-gray-600">
                       -{currency}
-                      {order.shipping_price || "0.00"}
+                      {formatMoney(order.shipping_price || 0)}
                     </p>
                   </div>
                   {/* <div className="flex justify-between items-center w-full">
@@ -388,8 +389,9 @@ const Summary = () => {
                   </p>
                   <p className="text-base dark:text-gray-300 font-semibold leading-4 text-gray-600">
                     {currency}{" "}
-                    {Number(order.total_price) +
-                      Number(order.shipping_price || 0)}
+                    {formatMoney(
+                      Number(order.total_price) + Number(order.shipping_price || 0)
+                    )}
                   </p>
                 </div>
               </div>
@@ -424,7 +426,8 @@ const Summary = () => {
                           Payment Protected
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                          Your payment of {currency}{Number(order.held_in_escrow).toFixed(2)} is held securely until your order is fulfilled. 
+                          Your payment of {currency}
+                          {formatMoney(order.held_in_escrow)} is held securely until your order is fulfilled. 
                           This protects you from any issues with your purchase.
                         </p>
                       </div>

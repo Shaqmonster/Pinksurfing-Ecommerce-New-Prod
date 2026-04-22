@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
+import { formatMoney } from "../utils/formatMoney";
 
 export default function Wishlist() {
   const { isWishlistOpen, isDarkMode, setIsWishlistOpen } =
@@ -253,7 +254,7 @@ export default function Wishlist() {
                                         <div className="flex flex-col item-center justify-between sm:mt-1">
                                           <h1 className="text-gray-700 dark:text-[#f5f5f5] font-semibold text-base sm:text-md">
                                             {currency}
-                                            {product.unit_price}
+                                            {formatMoney(product.unit_price)}
                                           </h1>
                                           <div className=" w-full flex sm:gap-1 items-center sm:mt-2 ">
                                             <button
