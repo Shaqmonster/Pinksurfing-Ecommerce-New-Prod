@@ -581,17 +581,6 @@ const Home = () => {
         {/* Featured Products Section */}
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-12">
           <div className="max-w-7xl mx-auto">
-            {/* Section Header */}
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                  Elevate Style With Latest Collection
-                </span>
-              </h2>
-              <p className="text-gray-400 text-base max-w-2xl mx-auto">
-                Each piece is crafted to enhance your fashion statement.
-              </p>
-            </div>
 
             {/* Category Tabs */}
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8">
