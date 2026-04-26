@@ -19,6 +19,7 @@ import ImageZoom from "../components/ProductPageComponents/ZoomImage";
 import parse from "html-react-parser";
 import { data } from "autoprefixer";
 import Stars from '../components/Stars'
+import { formatMoney } from "../utils/formatMoney";
 
 
 const ProductDetailPage = () => {
@@ -601,13 +602,13 @@ const ProductDetailPage = () => {
                   <div className="flex items-baseline gap-4 flex-wrap">
                     <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                       {currency}
-                      {finalUnitPrice.toFixed(2)}
+                      {formatMoney(finalUnitPrice)}
                     </span>
                     
                     {discountPercentage !== "0.00" && Number(discountPercentage) > 0 && (
                       <>
                         <span className="text-2xl font-semibold text-gray-400 line-through">
-                          {currency}{finalMrp.toFixed(2)}
+                          {currency}{formatMoney(finalMrp)}
                         </span>
                         <span className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full">
                           Save {discountPercentage}%
@@ -633,7 +634,7 @@ const ProductDetailPage = () => {
                       </p>
                       {additionalPrice > 0 && (
                         <span className="ml-auto text-xs font-semibold text-[#9747FF] bg-[#9747FF]/10 px-2 py-0.5 rounded-full">
-                          +{currency}{additionalPrice.toFixed(2)} selected
+                          +{currency}{formatMoney(additionalPrice)} selected
                         </span>
                       )}
                     </div>
@@ -653,7 +654,7 @@ const ProductDetailPage = () => {
                                   {selectedVal}
                                   {selectedAttributes[attributeName]?.additional_price > 0 && (
                                     <span className="text-gray-400 ml-1">
-                                      (+{currency}{selectedAttributes[attributeName].additional_price})
+                                      (+{currency}{formatMoney(selectedAttributes[attributeName].additional_price)})
                                     </span>
                                   )}
                                 </span>
@@ -705,7 +706,7 @@ const ProductDetailPage = () => {
                                           ? "bg-white/20 text-white"
                                           : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                                       }`}>
-                                        +{currency}{v.additional_price}
+                                        +{currency}{formatMoney(v.additional_price)}
                                       </span>
                                     )}
                                   </button>

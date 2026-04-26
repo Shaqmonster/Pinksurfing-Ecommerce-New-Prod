@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { formatMoney } from "../../utils/formatMoney";
 
 const YouMightAlsoLike = ({ allProducts, productId, currency }) => {
   if (!allProducts || allProducts.length <= 1) {
@@ -61,12 +62,12 @@ const YouMightAlsoLike = ({ allProducts, productId, currency }) => {
                 </p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                    {currency}{Number(product.unit_price).toFixed(2)}
+                    {currency}{formatMoney(product.unit_price)}
                   </span>
                   {discountPercentage > 0 && (
                     <>
                       <span className="text-sm text-gray-400 line-through">
-                        {currency}{Number(product.mrp).toFixed(2)}
+                        {currency}{formatMoney(product.mrp)}
                       </span>
                     </>
                   )}

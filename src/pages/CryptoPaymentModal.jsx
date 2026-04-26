@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { IoClose } from "react-icons/io5";
 import { useCookies } from "react-cookie";
+import { formatMoney } from "../utils/formatMoney";
 
 const CryptoPaymentModal = ({
   order_id,
@@ -242,10 +243,12 @@ const CryptoPaymentModal = ({
             </p>
             <p className="text-sm text-gray-300 dark:text-gray-400 mb-4">
               Cost: $
-              {singleOrderProduct.additional_price > 0
-                ? Number(singleOrderProduct.unit_price) +
-                  Number(singleOrderProduct.additional_price)
-                : singleOrderProduct?.unit_price}
+              {formatMoney(
+                singleOrderProduct.additional_price > 0
+                  ? Number(singleOrderProduct.unit_price) +
+                    Number(singleOrderProduct.additional_price)
+                  : Number(singleOrderProduct?.unit_price ?? 0)
+              )}
             </p>
           </div>
         ) : (
@@ -263,10 +266,12 @@ const CryptoPaymentModal = ({
               </p>
               <p className="text-sm text-gray-300 dark:text-gray-400 mb-4">
                 Cost: $
-                {product.additional_price > 0
-                  ? Number(product.product.unit_price) +
-                    Number(product.additional_price)
-                  : product.product.unit_price}
+                {formatMoney(
+                  product.additional_price > 0
+                    ? Number(product.product.unit_price) +
+                      Number(product.additional_price)
+                    : Number(product.product.unit_price)
+                )}
               </p>
             </div>
           ))

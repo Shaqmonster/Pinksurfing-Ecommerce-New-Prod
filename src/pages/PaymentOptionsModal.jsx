@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { XMarkIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 
+import { formatMoney } from "../utils/formatMoney";
+
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -258,7 +260,7 @@ const PaymentOptionsModal = ({
                 {itemCount} item{itemCount !== 1 ? "s" : ""}
               </span>
               <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${subTotal.toFixed(2)}
+                ${formatMoney(subTotal)}
               </span>
             </div>
           </div>

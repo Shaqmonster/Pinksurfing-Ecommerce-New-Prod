@@ -10,6 +10,7 @@ import { authContext } from "../context/authContext";
 import Header from "./Header";
 import CancelDialog from "./CancelDialog";
 import RatingForm from '../components/RatingForm'
+import { formatMoney } from "../utils/formatMoney";
 export default function Orders() {
   const { currency, setIsRatingFormOpen, isRatingFormOpen } = useContext(authContext);
   const [orders, setOrders] = useState([]);
@@ -164,8 +165,10 @@ export default function Orders() {
                         </p>
                         <p className="font-medium text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
                           Total Price: {currency}{" "}
-                          {calculateTotalPrice(
-                            groupOrdersByOrderId(orders)[orderId]
+                          {formatMoney(
+                            calculateTotalPrice(
+                              groupOrdersByOrderId(orders)[orderId]
+                            )
                           )}
                         </p>
                       </div>
@@ -194,7 +197,7 @@ export default function Orders() {
                               {order.product.name}
                             </p>
                             <p className="font-medium mb-2 text-black/80 dark:text-[#f5f5f5] text-[14px] sm:text-[15px]">
-                              Price: {currency} {order.total_price}
+                              Price: {currency} {formatMoney(order.total_price)}
                             </p>
                           </div>
                           <div className="flex flex-col ml-4 sm:flex-grow">

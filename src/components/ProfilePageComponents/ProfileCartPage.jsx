@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { dataContext } from "../../context/dataContext";
 import { IoRemoveCircle } from "react-icons/io5";
+import { formatMoney } from "../../utils/formatMoney";
 
 export default function ProfileCartPage() {
     const { isCartOpen, setIsCartOpen, currency, isDarkMode } =
@@ -182,10 +183,12 @@ export default function ProfileCartPage() {
                                                                     </h3>
                                                                     <p className="ml-4">
                                                                         {currency}{" "}
-                                                                        {product.additional_price > 0
-                                                                            ? Number(product.product.unit_price) +
-                                                                            Number(product.additional_price)
-                                                                            : product.product.unit_price}
+                                                                        {formatMoney(
+                                                                            product.additional_price > 0
+                                                                                ? Number(product.product.unit_price) +
+                                                                                  Number(product.additional_price)
+                                                                                : Number(product.product.unit_price)
+                                                                        )}
                                                                     </p>
                                                                 </div>
                                                                 <p className="mt-1 text-[13.4px] sm:text-sm text-gray-500 whitespace-normal">
@@ -331,7 +334,7 @@ export default function ProfileCartPage() {
                                         <p>Subtotal</p>
                                         <p>
                                             {currency}
-                                            {subTotal}
+                                            {formatMoney(subTotal)}
                                         </p>
                                     </div>
                                     <p className="mt-0.5 text-sm text-gray-500">
