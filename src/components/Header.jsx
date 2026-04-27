@@ -180,7 +180,7 @@ const Header = () => {
 
   return (
     <>
-      <CategoriesMobile />
+      {/* <CategoriesMobile /> */}
       {user && (
         <>
           <Cart />
@@ -425,7 +425,7 @@ const Header = () => {
             </motion.div>
 
             {/* Shop by Categories Button */}
-            <motion.div
+            {/* <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsMobileCategoryOpen(!isMobileCategoryOpen)}
@@ -433,7 +433,7 @@ const Header = () => {
               title="Shop by Categories"
             >
               <IoMenuOutline className="text-xl sm:text-2xl text-purple-200 hover:text-white transition-colors" />
-            </motion.div>
+            </motion.div> */}
           </div>
         </div>
       </motion.div>

@@ -10,7 +10,7 @@ import Wishlist from "./components/Wishlist";
 import { authContext } from "./context/authContext";
 import Checkout from "./pages/Checkout";
 import Orders from "./components/Orders";
-import CategoriesMobile from "./components/CategoriesMobile";
+// import CategoriesMobile from "./components/CategoriesMobile";
 import SearchPage from "./pages/SearchPage";
 import Shop from "./pages/Shop";
 import VendorDetailsForm from "./components/VendorDetailsForm";
