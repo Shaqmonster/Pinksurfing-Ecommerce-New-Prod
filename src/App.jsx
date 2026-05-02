@@ -1,0 +1,161 @@
+import React, { useContext, useEffect } from "react";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
+import Home from "./pages/Home";
+import Signup from "./pages/Signup";
+import Signin from "./pages/Signin";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import "react-toastify/dist/ReactToastify.css";
+import Cart from "./components/Cart";
+import Wishlist from "./components/Wishlist";
+import { authContext } from "./context/authContext";
+import Checkout from "./pages/Checkout";
+import Orders from "./components/Orders";
+import CategoriesMobile from "./components/CategoriesMobile";
+import SearchPage from "./pages/SearchPage";
+import Shop from "./pages/Shop";
+import VendorDetailsForm from "./components/VendorDetailsForm";
+import ShopByCategory from "./pages/ShopByCategory";
+import Filter from "./pages/FilterPage";
+import SingleOrderForm from "./components/SingleOrderForm";
+import ForgotPassword from "./pages/ForgotPassword";
+import SubCategories from "./pages/SubCategories";
+import Summary from "./pages/Summary";
+import Completion from "./components/Completion";
+import OrderConfirm from "./components/OrderConfirm";
+import OrderFailed from "./components/OrderFailed";
+import ShoppingMallNew from "./pages/ShoppingMallNew";
+import UserOnSiteWallet from "./components/UserWallet";
+import ProfilePage from "./pages/ProfilePage";
+import ShopByStore from "./pages/ShopByStore";
+import StoreProducts from "./pages/StoreProducts";
+import NotFound from "./pages/404Page";
+import ScrollToTop from "./components/ScrollToTop";
+import Contact from "./pages/ContactUs";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
+import CategoryProducts from "./pages/CategoryProducts";
+import ComingSoon from "./pages/ComingSoon";
+import { getCookie, setCookie } from "./utils/cookie";
+import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
+import CreateBidPage from "./pages/CreateBidPage";
+import MyBidsPage from "./pages/MyBidsPage";
+import BidsLandingPage from "./pages/bids/BidsLandingPage";
+import BidsMarketplace from "./pages/bids/BidsMarketplace";
+import BidRequestDetail from "./pages/bids/BidRequestDetail";
+import MyOffersPage from "./pages/bids/MyOffersPage";
+import GigsPage from "./pages/gigs/GigsPage";
+import GigDetailPage from "./pages/gigs/GigDetailPage";
+import CreateGigPage from "./pages/gigs/CreateGigPage";
+import MyGigOrders from "./pages/gigs/MyGigOrders";
+import GigOrderSuccess from "./pages/gigs/GigOrderSuccess";
+import GigOrderCancel from "./pages/gigs/GigOrderCancel";
+import GigHubLanding from "./pages/gigs/GigHubLanding";
+import GigHubDashboard from "./pages/gigs/GigHubDashboard";
+import GigMessages from "./pages/gigs/GigMessages";
+import GigOrderDetail from "./pages/gigs/GigOrderDetail";
+
+function App() {
+  const {
+    isCartOpen,
+    isDarkMode,
+    openDrawer,
+    isWishlistOpen,
+    isVendorFormOpen,
+    isSingleOrderFormOpen,
+    isMobileCategoryOpen,
+    authToken,
+    setAuthToken,
+  } = useContext(authContext);
+
+  const location = useLocation();
+  const hideHeaderFooter =
+    location.pathname === "/signup" || location.pathname === "/signin" || location.pathname === "/forgotPassword";
+
+  // Footer only on the home page
+  const showFooter = location.pathname === "/";
+
+  // Check for existing tokens on first page load
+  useEffect(() => {
+    const checkAuthentication = () => {
+      const cookieAccess = getCookie("access_token");
+      if (cookieAccess) {
+        console.log("Tokens found in localStorage,setting auth token");
+        setAuthToken(cookieAccess);
+      }
+    };
+
+    checkAuthentication();
+  }, []); // Run only once on mount
+
+  const cookieAccess = getCookie("access_token");
+
+  // If an access token cookie exists, redirect away from auth pages
+  // useEffect(() => {
+  //   const protectedPaths = ["/signup", "/signin", "/forgotPassword"];
+  //   if (cookieAccess && protectedPaths.includes(location.pathname)) {
+  //     // Use replace so the back button doesn't go back to the auth page
+  //     window.location.replace("/");
+  //   }
+  // }, [cookieAccess, location.pathname]);
+
+  return (
+    <main className={`${isDarkMode && "dark"} `}>
+      <ScrollToTop />
+      {!hideHeaderFooter && <Header />}
+      <Routes>
+        {/* Auth routes — redirect to home if already logged in */}
+        <Route path="/signup" element={cookieAccess ? <Navigate to="/" replace /> : <Signup />} />
+        <Route path="/signin" element={cookieAccess ? <Navigate to="/" replace /> : <Signin />} />
+        <Route path="/forgotPassword" element={cookieAccess ? <Navigate to="/" replace /> : <ForgotPassword />} />
+
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/search" element={<SearchPage />} />
+        {/* <Route path="/shoppingMall/:category" element={<ShoppingMallNew />} /> */}
+        <Route path="/shoppingMall" element={<ShoppingMallwithStores />} />
+        <Route path="/shopByCategory" element={<ShopByCategory />} />
+        <Route path="/shopByStore" element={<ShopByStore />} />
+        <Route path="/store/:slug" element={<StoreProducts />} />
+        <Route path="/subCategories" element={<SubCategories />} />
+        <Route path="/category/:slug" element={<CategoryProducts />} />
+        <Route path="/coming-soon" element={<ComingSoon />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/summary/:orderId" element={<Summary />} />
+        <Route
+          path="/product/productDetail/:slug"
+          element={<ProductDetailPage />}
+        />
+        <Route path="/success" element={<OrderConfirm />} />
+        <Route path="/payment_failed" element={<OrderFailed />} />
+        <Route path="/completion" element={<Completion />} />
+        <Route path="/userwallet" element={<UserOnSiteWallet />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/create-bid" element={<CreateBidPage />} />
+        <Route path="/my-bids" element={<MyBidsPage />} />
+        {/* Bids Marketplace */}
+        <Route path="/bids" element={<BidsLandingPage />} />
+        <Route path="/bids/marketplace" element={<BidsMarketplace />} />
+        <Route path="/bids/requests/:id" element={<BidRequestDetail />} />
+        <Route path="/bids/my-offers" element={<MyOffersPage />} />
+        {/* GigHub integrated routes */}
+        <Route path="/gighub" element={<GigHubLanding />} />
+        <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
+        <Route path="/gighub/messages" element={<GigMessages />} />
+
+        {/* Gigs routes — static paths before dynamic :id */}
+        <Route path="/gigs" element={<GigsPage />} />
+        <Route path="/gigs/create" element={<CreateGigPage />} />
+        <Route path="/gigs/orders" element={<MyGigOrders />} />
+        <Route path="/gigs/orders/success" element={<GigOrderSuccess />} />
+        <Route path="/gigs/orders/cancel" element={<GigOrderCancel />} />
+        <Route path="/gigs/orders/:id" element={<GigOrderDetail />} />
+        <Route path="/gigs/:id" element={<GigDetailPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      {showFooter && <Footer />}
+    </main>
+  );
+}
+
+export default App;
