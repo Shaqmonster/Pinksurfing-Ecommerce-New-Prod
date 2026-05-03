@@ -1,21 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { HiHome, HiPhone } from "react-icons/hi2";
 import { MdEmail } from "react-icons/md";
 import { motion } from "framer-motion";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Contact = () => {
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = "marketing@pinksurfing.com";
-    const subject = encodeURIComponent(e.target.subject.value);
-    const body = encodeURIComponent(
-      `Name: ${e.target.name.value}\nEmail: ${e.target.email.value}\nMessage: ${e.target.message.value}`
-    );
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+    const subject = e.target.subject.value;
+    const message = e.target.message.value;
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/contact-us/`,
+        { name, email, subject, message }
+      );
+      if (response.status === 200) {
+        toast.success(response.data.status || "Message sent successfully!", {
+          position: "top-center",
+        });
+        e.target.reset();
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to send message. Please try again.",
+        { position: "top-center" }
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const containerVariants = {
@@ -117,9 +141,12 @@ const Contact = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full md:w-auto px-8 py-4 bg-[#FF7004] hover:bg-[#e66503] text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-colors duration-200 uppercase tracking-wider text-sm"
+                disabled={loading}
+                className={`w-full md:w-auto px-8 py-4 bg-[#FF7004] hover:bg-[#e66503] text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-colors duration-200 uppercase tracking-wider text-sm ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Send Message
+                {loading ? "Sending..." : "Send Message"}
               </motion.button>
             </form>
           </motion.div>
