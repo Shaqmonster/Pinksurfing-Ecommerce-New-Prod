@@ -52,11 +52,11 @@ export default function ProfilePage() {
           </filter>
         </defs>
       </svg>
-      <div className="flex sm:gap-20 gap-5 px-10 md:px-16 lg:px-20 xl:px-20 pt-10 pb-20 min-h-screen text-sm text-gray-200 bg-[#0E0F13] max-sm:flex-col max-sm:p-5">
-        <div className="sidebar-container flex-shrink-0">
+      <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12 px-6 md:px-12 lg:px-16 pt-12 pb-24 min-h-screen text-gray-200 bg-[#0E0F13] relative z-[1]">
+        <div className="sidebar-container flex-shrink-0 lg:sticky lg:top-12 self-start">
           <Sidebar />
         </div>
-        <div className="overflow-hidden flex-1 bg-[#0E0F13] rounded">
+        <div className="flex-1 min-w-0 transition-all duration-500">
           {profileComponents[profileActiveIndex] || null}
         </div>
       </div>

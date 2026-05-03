@@ -141,231 +141,160 @@ export default function ProfileCartPage() {
     }
 
     return (
-
         <div className="font-sen">
-            <div className=" overflow-hidden">
-                <div className="border border-gray-500  rounded-lg pt-2 ">
-                            <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-[#0E0F13]   ">
-                                <div className="flex-1    px-4 py-6 sm:px-6">
-                                    <div className="flex  items-start  justify-between">
-                                        <div className="text-lg font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                            Shopping cart
-                                        </div>
-                                    </div>
+            <div className="overflow-hidden">
+                <div className="bg-[#0E0F13]/40 backdrop-blur-md border border-white/5 rounded-3xl p-6 lg:p-10 shadow-2xl">
+                    <div className="flex h-full flex-col">
+                        <div className="flex-1">
+                            <div className="flex items-end justify-between mb-8">
+                                <h2 className="text-3xl font-extrabold text-white tracking-tight">
+                                    Shopping Cart
+                                </h2>
+                                <span className="text-sm font-medium text-gray-500">
+                                    {cartProducts.length} {cartProducts.length === 1 ? 'Item' : 'Items'}
+                                </span>
+                            </div>
 
-                                    <div className="mt-8 ">
-                                        <div className="flow-root ">
-                                            <ul
-                                                role="list"
-                                                className="-my-6 divide-y  divide-gray-200"
-                                            >
-                                                {cartProducts.map((product, index) => (
-                                                    <li
-                                                        key={product.product.id + index}
-                                                        className="flex items-center py-6 dark:border-white"
-                                                    >
-                                                        <div className=" h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                                                            <img
-                                                                src={`${product.product.image1}`}
-                                                                // src="/signin.jpg"
-                                                                alt={product.product.imageAlt}
-                                                                className="h-full w-full object-cover object-center"
-                                                            />
+                            <div className="mt-4">
+                                <div className="flow-root">
+                                    <ul role="list" className="divide-y divide-white/5">
+                                        {cartProducts.map((product, index) => (
+                                            <li key={product.product.id + index} className="flex py-8 group transition-all duration-300">
+                                                <div className="h-24 w-24 sm:h-32 sm:w-32 flex-shrink-0 overflow-hidden rounded-2xl border border-white/5 group-hover:border-purple-500/30 transition-colors">
+                                                    <img
+                                                        src={`${product.product.image1}`}
+                                                        alt={product.product.imageAlt}
+                                                        className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                                                    />
+                                                </div>
+
+                                                <div className="ml-6 flex flex-1 flex-col">
+                                                    <div>
+                                                        <div className="flex justify-between text-lg font-bold text-white tracking-tight">
+                                                            <h3>
+                                                                <a href={product.product.href} className="hover:text-purple-400 transition-colors">
+                                                                    {product.product.name}
+                                                                </a>
+                                                            </h3>
+                                                            <p className="ml-4 text-purple-400">
+                                                                {currency}{" "}
+                                                                {formatMoney(
+                                                                    product.additional_price > 0
+                                                                        ? Number(product.product.unit_price) + Number(product.additional_price)
+                                                                        : Number(product.product.unit_price)
+                                                                )}
+                                                            </p>
                                                         </div>
-
-                                                        <div className="ml-4  flex flex-1 flex-col">
-                                                            <div>
-                                                                <div className="flex justify-between text-[15px] sm:text-base font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                                                    <h3 className="whitespace-normal">
-                                                                        <a href={product.product.href}>
-                                                                            {product.product.name.length > 17 ? `${product.product.name.slice(0, 17)}...` : product.product.name}
-                                                                        </a>
-                                                                    </h3>
-                                                                    <p className="ml-4">
-                                                                        {currency}{" "}
-                                                                        {formatMoney(
-                                                                            product.additional_price > 0
-                                                                                ? Number(product.product.unit_price) +
-                                                                                  Number(product.additional_price)
-                                                                                : Number(product.product.unit_price)
-                                                                        )}
-                                                                    </p>
-                                                                </div>
-                                                                <p className="mt-1 text-[13.4px] sm:text-sm text-gray-500 whitespace-normal">
-                                                                    {htmlToText(
-                                                                        product.product.short_description
-                                                                    ).slice(0, 10)}
-                                                                    {product.product.short_description
-                                                                        .length > 10
-                                                                        ? "..."
-                                                                        : ""}
-                                                                </p>
-                                                                <p className="text-[12.4px] sm:text-[13px] text-gray-500 whitespace-normal">
-                                                                    {/* Additional Price: {currency}
-                                    {product.additional_price > 0 ? product.additional_price : product.product.unit_price} */}
-                                                                </p>
-
-                                                                {/* )} */}
-                                                            </div>
-                                                            <div className="flex flex-1 items-end justify-between text-sm">
-                                                                <div className="text-gray-500">
-                                                                    {/* Qty {product.quantity} */}
-                                                                    {/* increment / decrement --------------------------------------------------------------------------------- */}
-                                                                    <form className="max-w-xs flex items-center gap-2 mx-auto">
-                                                                        <label
-                                                                            htmlFor="counter-input"
-                                                                            className=" block mb-1 text-xs font-medium text-gray-900 dark:text-[#f5f5f5]"
-                                                                        >
-                                                                            Qty:
-                                                                        </label>
-                                                                        <div className="relative flex items-center">
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    if (product.quantity === 1) {
-                                                                                        return RemoveCartProduct(
-                                                                                            product.product.id
-                                                                                        );
-                                                                                    }
-                                                                                    DecrementQty(product.product.id);
-                                                                                }}
-                                                                                type="button"
-                                                                                id="decrement-button"
-                                                                                data-input-counter-decrement="counter-input"
-                                                                                className="flex-shrink-0 bg-gray-200 dark:bg-black disabled:hidden  inline-flex items-center justify-center border border-gray-300 rounded-md h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                                                                            >
-                                                                                <svg
-                                                                                    className="w-2.5 h-2.5 text-gray-900 dark:text-[#f5f5f5] "
-                                                                                    aria-hidden="true"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    fill="none"
-                                                                                    viewBox="0 0 18 2"
-                                                                                >
-                                                                                    <path
-                                                                                        stroke="currentColor"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth="2"
-                                                                                        d="M1 1h16"
-                                                                                    />
-                                                                                </svg>
-                                                                            </button>
-                                                                            <span
-                                                                                type="text"
-                                                                                id="counter-input"
-                                                                                className="flex-shrink-0 px-3 text-gray-900 dark:text-[#f5f5f5] border-0 bg-transparent text-sm font-normal focus:outline-none focus:ring-0 max-w-[2.5rem] text-center"
-                                                                            >
-                                                                                {product.quantity}
-                                                                            </span>
-                                                                            <button
-                                                                                disabled={
-                                                                                    product.quantity ===
-                                                                                    product.product.quantity
-                                                                                }
-                                                                                onClick={() => {
-                                                                                    IncrementQty(product.product.id);
-                                                                                }}
-                                                                                type="button"
-                                                                                id="increment-button"
-                                                                                data-input-counter-increment="counter-input"
-                                                                                className="flex-shrink-0 disabled:hidden  bg-gray-200 dark:bg-black  inline-flex items-center justify-center border border-gray-300 rounded-md h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                                                                            >
-                                                                                <svg
-                                                                                    className="w-2.5 h-2.5 text-gray-900 dark:text-[#f5f5f5]"
-                                                                                    aria-hidden="true"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    fill="none"
-                                                                                    viewBox="0 0 18 18"
-                                                                                >
-                                                                                    <path
-                                                                                        stroke="currentColor"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth="2"
-                                                                                        d="M9 1v16M1 9h16"
-                                                                                    />
-                                                                                </svg>
-                                                                            </button>
-                                                                        </div>
-                                                                    </form>{" "}
-                                                                </div>
-
-                                                                <div className="flex">
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            RemoveCartProduct(product.product.id);
-                                                                        }}
-                                                                        type="button"
-                                                                        className="font-medium text-[13px] sm:text-sm text-[#fff] hover:text-purple-600"
-                                                                    >
-                                                                        Remove
-                                                                    </button>
-                                                                </div>
+                                                        <p className="mt-2 text-sm text-gray-500 line-clamp-2">
+                                                            {htmlToText(product.product.short_description)}
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div className="flex flex-1 items-end justify-between text-sm mt-4">
+                                                        <div className="flex items-center gap-4 bg-white/5 px-3 py-2 rounded-xl border border-white/5">
+                                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</span>
+                                                            <div className="flex items-center gap-3">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (product.quantity === 1) return RemoveCartProduct(product.product.id);
+                                                                        DecrementQty(product.product.id);
+                                                                    }}
+                                                                    type="button"
+                                                                    className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-white transition-colors"
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <span className="text-sm font-bold text-white min-w-[20px] text-center">
+                                                                    {product.quantity}
+                                                                </span>
+                                                                <button
+                                                                    disabled={product.quantity === product.product.quantity}
+                                                                    onClick={() => IncrementQty(product.product.id)}
+                                                                    type="button"
+                                                                    className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-white transition-colors disabled:opacity-30"
+                                                                >
+                                                                    +
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                {cartProducts.length === 0 && (
-                                    <div className=" w-full dark:bg-[#0E0F13] h-full flex   flex-col items-center justify-center">
-                                        <img
-                                            className=" w-[60%] sm:w-[55%] object-contain "
-                                            src="/cartEmpty.svg"
-                                        />
-                                        <p className=" text-[16px] sm:text-[17px] dark:text-white mt-1 font-semibold">
-                                            Your Cart is Empty
-                                        </p>
-                                        <button
-                                            onClick={() => {
-                                                navigate("/shoppingMall/all");
-                                                setIsCartOpen(false);
-                                            }}
-                                            className=" bg-[#6A1BBE]   px-3 text-sm sm:text-base py-1.5 rounded-md text-white mt-2"
-                                        >
-                                            Shop Now{" "}
-                                        </button>
-                                    </div>
-                                )}
 
-                                <div className="border-t border-gray-200 px-4 py-2 sm:py-6 sm:px-6">
-                                    <div className="flex justify-between text-base font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                        <p>Subtotal</p>
-                                        <p>
-                                            {currency}
-                                            {formatMoney(subTotal)}
-                                        </p>
-                                    </div>
-                                    <p className="mt-0.5 text-sm text-gray-500">
-                                        Shipping and taxes calculated at checkout.
-                                    </p>
-                                    <div className=" mt-2 sm:mt-6">
-                                        <Link to="/checkout">
-                                            <button
-                                                onClick={() => setIsCartOpen(false)}
-                                                disabled={cartProducts.length === 0}
-                                                className="flex items-center justify-center rounded-md border border-transparent bg-[#6A1BBE]  disabled:bg-gray-500 w-full px-6 py-3 textsm sm:text-base font-medium text-white shadow-sm hover:bg-[#5e2d92]"
-                                            >
-                                                Checkout
-                                            </button>
-                                        </Link>
-                                    </div>
-                                    <div className=" mt-2 sm:mt-6 flex justify-center text-center text-sm text-gray-500">
-                                        <p>
-                                            or
-                                            <button
-                                                type="button"
-                                                className="font-medium ml-1  text-[#6040ca]  hover:text-[#7b62cd]  "
-                                                onClick={() => setIsCartOpen(false)}
-                                            >
-                                                Continue Shopping
-                                                <span aria-hidden="true"> &rarr;</span>
-                                            </button>
-                                        </p>
-                                    </div>
+                                                        <button
+                                                            onClick={() => RemoveCartProduct(product.product.id)}
+                                                            className="text-xs font-bold text-red-400/70 hover:text-red-400 uppercase tracking-widest transition-colors"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
+                        </div>
+
+                        {cartProducts.length === 0 && (
+                            <div className="py-20 flex flex-col items-center justify-center space-y-6">
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full"></div>
+                                    <img
+                                        className="relative w-48 sm:w-64 object-contain opacity-80"
+                                        src="/cartEmpty.svg"
+                                        alt="Empty Cart"
+                                    />
+                                </div>
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-2xl font-bold text-white">Your cart is empty</h3>
+                                    <p className="text-gray-500 max-w-xs mx-auto">
+                                        Looks like you haven't added anything to your cart yet.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        navigate("/shoppingMall/all");
+                                        setIsCartOpen(false);
+                                    }}
+                                    className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-bold rounded-2xl shadow-xl shadow-purple-500/20 hover:scale-105 transition-all duration-300 uppercase tracking-widest text-xs"
+                                >
+                                    Start Shopping
+                                </button>
+                            </div>
+                        )}
+
+                        {cartProducts.length > 0 && (
+                            <div className="mt-10 pt-10 border-t border-white/5">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                    <div className="space-y-1">
+                                        <div className="flex items-baseline gap-4">
+                                            <p className="text-gray-500 font-medium">Subtotal</p>
+                                            <p className="text-3xl font-extrabold text-white">
+                                                {currency}{formatMoney(subTotal)}
+                                            </p>
+                                        </div>
+                                        <p className="text-xs text-gray-500">
+                                            Shipping and taxes calculated at checkout.
+                                        </p>
+                                    </div>
+                                    <Link to="/checkout" className="w-full sm:w-auto">
+                                        <button
+                                            onClick={() => setIsCartOpen(false)}
+                                            className="w-full sm:px-12 py-5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-black rounded-2xl shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-sm"
+                                        >
+                                            Checkout
+                                        </button>
+                                    </Link>
+                                </div>
+                                <div className="mt-8 text-center">
+                                    <button
+                                        onClick={() => navigate("/shoppingMall/all")}
+                                        className="text-xs font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest"
+                                    >
+                                        or Continue Shopping &rarr;
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
