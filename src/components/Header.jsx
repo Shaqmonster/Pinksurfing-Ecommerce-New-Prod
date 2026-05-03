@@ -43,6 +43,7 @@ const Header = () => {
     setSearch,
     isMobileCategoryOpen,
     setIsMobileCategoryOpen,
+    Logout,
   } = useContext(authContext);
   const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
     useContext(dataContext);
@@ -196,7 +197,7 @@ const Header = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-40 bg-[#0E0F13]/90 backdrop-blur-2xl w-full py-3 border-b border-white/5"
+        className="sticky top-0 z-40 bg-white/[0.03] backdrop-blur-3xl w-full py-4 border-b border-white/5 shadow-2xl"
       >
         <div className="max-w-[1600px] mx-auto flex items-center justify-between px-6 md:px-12 lg:px-16 text-white gap-8">
           {/* Logo */}
@@ -246,6 +247,12 @@ const Header = () => {
                 <FaGavel />
                 Bids
               </Link>
+              <Link
+                to="/contact-us"
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all"
+              >
+                Help & Support
+              </Link>
             </div>
 
             {/* Icons Section */}
@@ -291,6 +298,15 @@ const Header = () => {
                   </span>
                 </div>
               </motion.div>
+
+              {user && (
+                <button
+                  onClick={Logout}
+                  className="hidden md:block px-4 py-2 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-widest border border-white/5 hover:border-white/20 rounded-xl transition-all"
+                >
+                  Logout
+                </button>
+              )}
             </div>
           </div>
         </div>

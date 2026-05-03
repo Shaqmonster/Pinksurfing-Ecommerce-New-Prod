@@ -162,7 +162,7 @@ export default function AllOrders() {
                     <div className="hidden md:flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
                         <ShoppingBagIcon className="w-5 h-5 text-purple-400" />
                         <span className="text-xs font-black text-white tracking-widest uppercase">
-                            {orders.length} Global Orders
+                            {Object.keys(groupOrdersByOrderId(orders)).filter(id => !groupOrdersByOrderId(orders)[id].some(o => o.order_status.toUpperCase() === "PENDING")).length} Global Orders
                         </span>
                     </div>
                 </div>
@@ -290,7 +290,6 @@ export default function AllOrders() {
                         {orders.length === 0 && (
                             <div className="py-32 flex flex-col items-center justify-center space-y-10">
                                 <div className="relative">
-                                    <div className="absolute inset-0 bg-purple-500/10 blur-[100px] rounded-full"></div>
                                     <ShoppingBagIcon className="relative text-white/10 text-8xl" />
                                 </div>
                                 <div className="text-center space-y-3">

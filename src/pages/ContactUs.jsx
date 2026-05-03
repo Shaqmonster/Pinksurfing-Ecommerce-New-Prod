@@ -171,8 +171,8 @@ const Contact = () => {
                     <div>
                       <h4 className="font-bold text-lg">Office Address</h4>
                       <p className="text-slate-500 dark:text-slate-400">
-                        840 West El Camino Suite 180,<br />
-                        Mountain View, CA 94040
+                        136 s linhaven circle<br />
+                        anaheim ca 92804
                       </p>
                     </div>
                   </div>

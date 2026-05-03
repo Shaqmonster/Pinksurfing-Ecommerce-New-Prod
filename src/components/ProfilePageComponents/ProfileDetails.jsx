@@ -42,6 +42,8 @@ export default function ProfileDetails() {
         is_vendor: false,
     });
 
+    const [initialData, setInitialData] = useState(null);
+
     const {
         customer_phone,
         customer_profile_picture,
@@ -120,6 +122,7 @@ export default function ProfileDetails() {
             })
             .then((response) => {
                 setProfile(response.data);
+                setInitialData(response.data);
                 console.log(response.data);
             })
             .catch((error) => {
@@ -205,7 +208,6 @@ export default function ProfileDetails() {
                     <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none"></div>
                     
                     <div className="relative">
-                        <div className="absolute -inset-4 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-full blur-[20px] opacity-20 animate-pulse"></div>
                         <div className="relative w-44 h-44 md:w-52 md:h-52 overflow-hidden rounded-full border-[6px] border-white/5 shadow-2xl">
                             <img
                                 src={
@@ -220,13 +222,6 @@ export default function ProfileDetails() {
 
                     <div className="flex-1 text-center md:text-left space-y-6">
                         <div className="space-y-2">
-                            <motion.p 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="text-purple-400 text-[10px] font-black uppercase tracking-[0.4em] leading-none"
-                            >
-                                Premium Member
-                            </motion.p>
                             <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9]">
                                 {first_name} <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-purple-500/50">
@@ -322,23 +317,20 @@ export default function ProfileDetails() {
                             )}
                         </div>
 
-                        <div className="pt-12 flex flex-col sm:flex-row items-center gap-8 border-t border-white/5 mt-12">
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                type="submit"
-                                className="w-full sm:w-auto px-16 py-6 bg-white text-black font-black rounded-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-purple-50 active:bg-gray-200"
-                            >
-                                Commit Changes
-                            </motion.button>
-                            <button
-                                type="button"
-                                onClick={() => navigate(-1)}
-                                className="w-full sm:w-auto px-16 py-6 bg-transparent border border-white/10 hover:border-white/30 text-white/40 hover:text-white font-black rounded-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs"
-                            >
-                                Revert
-                            </button>
-                        </div>
+                        {initialData && JSON.stringify(profile) !== JSON.stringify(initialData) && (
+                            <div className="pt-12 flex flex-col sm:flex-row items-center gap-8 border-t border-white/5 mt-12">
+                                <motion.button
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    type="submit"
+                                    className="w-full sm:w-auto px-16 py-6 bg-white text-black font-black rounded-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-purple-50 active:bg-gray-200"
+                                >
+                                    Save Changes
+                                </motion.button>
+                            </div>
+                        )}
                     </form>
                 </div>
 

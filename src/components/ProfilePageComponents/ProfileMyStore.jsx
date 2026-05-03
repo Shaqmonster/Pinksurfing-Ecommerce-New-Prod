@@ -26,21 +26,7 @@ export default function ProfileMyStore() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {[
-                            { title: "Inventory Mastery", desc: "Advanced real-time tracking and logistics automation." },
-                            { title: "Global Intelligence", desc: "Deep analytics and market insights at your fingertips." },
-                            { title: "Secure Liquidity", desc: "Instant payments and enterprise-grade financial security." },
-                            { title: "Brand Exposure", desc: "Reach a curated audience of high-value global customers." }
-                        ].map((feature, i) => (
-                            <div key={i} className="bg-white/5 border border-white/5 p-8 rounded-3xl hover:bg-white/[0.08] transition-all duration-500 group/item">
-                                <h3 className="text-white font-black uppercase tracking-widest text-xs mb-3 group-hover/item:text-purple-400 transition-colors">{feature.title}</h3>
-                                <p className="text-white/30 text-sm font-medium leading-relaxed">{feature.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="pt-8 flex flex-col items-center space-y-8 border-t border-white/5">
+                    <div className="pt-8 flex flex-col items-center space-y-8">
                         <div className="text-center space-y-2">
                             <p className="text-white font-black uppercase tracking-[0.2em] text-[10px]">Merchant Onboarding</p>
                             <p className="text-white/20 text-sm font-medium">Ready to deploy? Initialize your storefront in minutes.</p>
