@@ -104,6 +104,11 @@ export const updateGig = (token, gigId, details, packages = [], mediaFiles = [])
   });
 };
 
+export const updateGigJson = (token, gigId, payload) =>
+  axios.patch(`${BASE_URL}/api/gigs/${gigId}/`, payload, {
+    headers: { ...authHeader(token), "Content-Type": "application/json" },
+  });
+
 export const deleteGig = (token, gigId) =>
   axios.delete(`${BASE_URL}/api/gigs/${gigId}/`, {
     headers: authHeader(token),

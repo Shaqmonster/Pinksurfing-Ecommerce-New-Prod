@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
   createGig,
+  updateGigJson,
   addGigPackage,
   addGigMedia,
+  getGig,
   getGigCategories,
   getGigSubcategories,
 } from "../../api/gigs";
@@ -64,16 +66,41 @@ const CreateGigPage = () => {
   const [mediaFiles, setMediaFiles] = useState([]);
   const [mediaPreviews, setMediaPreviews] = useState([]);
 
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
+
   useEffect(() => {
-    // if (!cookies.access_token) {
-    //   toast.error("Please sign in to create a gig.");
-    //   navigate("/signin");
-    //   return;
-    // }
     getGigCategories()
-      .then((res) => setCategories(res.data.results))
+      .then((res) => setCategories(res.data.results || res.data))
       .catch(() => {});
-  }, []);
+
+    if (editId) {
+      getGig(editId).then((res) => {
+        const gig = res.data;
+        setDetails({
+          id: gig.id,
+          title: gig.title,
+          description: gig.description,
+          category: gig.category || "",
+          subcategory: gig.subcategory || "",
+          status: gig.status,
+        });
+
+        if (gig.packages && gig.packages.length > 0) {
+          setPackages((prev) =>
+            prev.map((p) => {
+              const match = gig.packages.find((sp) => sp.tier === p.tier);
+              return match ? { ...match, enabled: true } : p;
+            })
+          );
+        }
+
+        if (gig.media_files && gig.media_files.length > 0) {
+          setMediaPreviews(gig.media_files.map((m) => m.file));
+        }
+      }).catch(() => toast.error("Failed to load gig for editing."));
+    }
+  }, [editId]);
 
   useEffect(()=> {
     console.log("categories:", categories, subcategories);
@@ -156,36 +183,47 @@ const CreateGigPage = () => {
       if (details.category) gigDetails.category = Number(details.category);
       if (details.subcategory) gigDetails.subcategory = Number(details.subcategory);
 
-      // 1. Create basic gig
-      const res = await createGig(cookies.access_token, gigDetails);
-      const gigId = res.data.id;
+      const activePkgs = packages.filter((p) => p.enabled).map((p) => ({
+        tier: p.tier,
+        title: p.title || undefined,
+        description: p.description,
+        price: p.price,
+        delivery_days: Number(p.delivery_days),
+        revisions: Number(p.revisions),
+      }));
 
-      // 2. Add Packages sequentially
-      const activePkgs = packages.filter((p) => p.enabled);
-      for (const p of activePkgs) {
-        await addGigPackage(cookies.access_token, gigId, {
-          tier: p.tier,
-          title: p.title || undefined,
-          description: p.description,
-          price: p.price,
-          delivery_days: Number(p.delivery_days),
-          revisions: Number(p.revisions),
+      let finalGigId = editId;
+
+      if (editId) {
+        // Update existing gig using JSON (handles nested packages correctly)
+        await updateGigJson(cookies.access_token, editId, {
+          ...gigDetails,
+          packages: activePkgs,
         });
+      } else {
+        // Create basic gig
+        const res = await createGig(cookies.access_token, gigDetails);
+        finalGigId = res.data.id;
+
+        // Add Packages sequentially for creation
+        for (const p of activePkgs) {
+          await addGigPackage(cookies.access_token, finalGigId, p);
+        }
       }
 
-      // 3. Add Media files sequentially
+      // Add NEW Media files sequentially
       for (let i = 0; i < mediaFiles.length; i++) {
-        await addGigMedia(cookies.access_token, gigId, mediaFiles[i], i === 0);
+        await addGigMedia(cookies.access_token, finalGigId, mediaFiles[i], i === 0 && !editId);
       }
 
-      toast.success("Gig published successfully!");
-      navigate(`/gigs/${gigId}`);
+      toast.success(editId ? "Gig updated successfully!" : "Gig published successfully!");
+      navigate(`/gigs/${finalGigId}`);
     } catch (err) {
       const errData = err?.response?.data;
       const msg =
         errData?.detail ||
         (typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
-        "Failed to create gig.";
+        "Failed to save gig.";
       toast.error(msg);
     } finally {
       setSubmitting(false);
