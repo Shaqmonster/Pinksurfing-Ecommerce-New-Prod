@@ -198,12 +198,14 @@ export default function ProfileDetails() {
                 {isLoading && <Loader />}
             </div>
 
-            <div className="w-full max-w-5xl mx-auto space-y-16 pb-20">
-                {/* Header Section - Pushed Out */}
-                <div className="bg-[#0E0F13] shadow-[20px_20px_40px_#050505,-15px_-15px_30px_#17181c] p-10 md:p-14 rounded-[3rem] flex flex-col md:flex-row items-center gap-10">
+            <div className="w-full max-w-5xl mx-auto space-y-8 pb-20">
+                {/* Header Section - Clean Modern */}
+                <div className="bg-[#15161A] border border-white/5 p-10 md:p-12 rounded-[2rem] shadow-2xl flex flex-col md:flex-row items-center gap-10 relative overflow-hidden">
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-500/5 blur-[100px] rounded-full"></div>
+                    
                     <div className="relative">
-                        <div className="absolute -inset-4 bg-[#0E0F13] rounded-full shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c]"></div>
-                        <div className="relative w-36 h-36 md:w-44 md:h-44 overflow-hidden rounded-full border-[6px] border-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c]">
+                        <div className="absolute -inset-1 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-full blur opacity-20"></div>
+                        <div className="relative w-36 h-36 md:w-44 md:h-44 overflow-hidden rounded-full border-4 border-[#0E0F13] shadow-2xl">
                             <img
                                 src={
                                     profile.customer_profile_picture ||
@@ -216,30 +218,33 @@ export default function ProfileDetails() {
                     </div>
 
                     <div className="flex-1 text-center md:text-left space-y-4">
-                        <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter uppercase leading-none">
-                            {first_name} <span className="text-purple-500">{last_name}</span>
-                        </h2>
-                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                            <span className="px-5 py-2 rounded-2xl bg-[#0E0F13] shadow-[4px_4px_8px_#050505,-4px_-4px_8px_#17181c] text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        <div className="space-y-1">
+                            <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em]">Official Profile</p>
+                            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter uppercase leading-tight">
+                                {first_name} <span className="text-purple-500">{last_name}</span>
+                            </h2>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                            <span className="px-5 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                                 Joined {new Date(profile.date_registered).getFullYear()}
                             </span>
-                            <span className="px-5 py-2 rounded-2xl bg-[#0E0F13] shadow-[4px_4px_8px_#050505,-4px_-4px_8px_#17181c] text-[10px] font-black uppercase tracking-widest text-purple-400">
-                                {is_vendor ? 'Official Vendor' : 'Verified Customer'}
+                            <span className="px-5 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[10px] font-bold uppercase tracking-widest text-purple-400">
+                                {is_vendor ? 'Verified Vendor' : 'Customer'}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {/* Form Section - Pushed Out */}
-                <div className="bg-[#0E0F13] shadow-[20px_20px_40px_#050505,-15px_-15px_30px_#17181c] p-10 md:p-14 rounded-[3rem]">
+                {/* Form Section - Clean Modern */}
+                <div className="bg-[#15161A] border border-white/5 p-10 md:p-14 rounded-[2.5rem] shadow-2xl">
                     <form onSubmit={UpdateProfile} className="space-y-12">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
                                     First Name
                                 </label>
                                 <input
-                                    className="w-full bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8 text-white font-bold border-none outline-none focus:text-purple-400 transition-all duration-300 placeholder:text-white/10"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white font-bold outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/10"
                                     name="first_name"
                                     type="text"
                                     placeholder="First Name"
@@ -250,11 +255,11 @@ export default function ProfileDetails() {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
                                     Last Name
                                 </label>
                                 <input
-                                    className="w-full bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8 text-white font-bold border-none outline-none focus:text-purple-400 transition-all duration-300 placeholder:text-white/10"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white font-bold outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/10"
                                     name="last_name"
                                     type="text"
                                     placeholder="Last Name"
@@ -265,11 +270,11 @@ export default function ProfileDetails() {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
                                     Phone Number
                                 </label>
                                 <input
-                                    className="w-full bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8 text-white font-bold border-none outline-none focus:text-purple-400 transition-all duration-300 placeholder:text-white/10"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white font-bold outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/10"
                                     id="customer_phone"
                                     name="customer_phone"
                                     type="text"
@@ -283,10 +288,10 @@ export default function ProfileDetails() {
                             {/* Store Link Section */}
                             {profile?.vendor?.slug && (
                                 <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
                                         Your Store Link
                                     </label>
-                                    <div className="flex items-center gap-4 bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8">
+                                    <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl py-5 px-8 group hover:border-purple-500/30 transition-all duration-300">
                                         <a
                                             href={storeUrl(profile.vendor.slug)}
                                             target="_blank"
@@ -310,14 +315,14 @@ export default function ProfileDetails() {
                         <div className="pt-10 flex flex-col sm:flex-row items-center gap-6">
                             <button
                                 type="submit"
-                                className="w-full sm:w-auto px-12 py-5 bg-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] text-white font-black rounded-2xl transition-all duration-200 uppercase tracking-widest text-xs hover:text-purple-400"
+                                className="w-full sm:w-auto px-12 py-5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-black rounded-2xl transition-all duration-300 uppercase tracking-widest text-xs shadow-xl shadow-purple-500/20 active:scale-95"
                             >
                                 Save Changes
                             </button>
                             <button
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="w-full sm:w-auto px-12 py-5 bg-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] text-gray-500 font-black rounded-2xl transition-all duration-200 uppercase tracking-widest text-xs hover:text-white"
+                                className="w-full sm:w-auto px-12 py-5 bg-white/5 border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white font-black rounded-2xl transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
                             >
                                 Go Back
                             </button>
@@ -326,14 +331,14 @@ export default function ProfileDetails() {
                 </div>
 
                 {!profile.is_vendor && (
-                    <div className="bg-[#0E0F13] shadow-[15px_15px_30px_#050505,-10px_-10px_20px_#17181c] p-10 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-10">
+                    <div className="bg-[#15161A] border border-purple-500/10 p-10 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-10">
                         <div className="space-y-3 text-center md:text-left">
                             <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Start Selling Premium</h3>
                             <p className="text-gray-500 text-sm font-medium">Join our elite network of vendors and reach global customers.</p>
                         </div>
                         <button
                             type="button"
-                            className="px-10 py-5 bg-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] text-purple-400 font-black rounded-2xl transition-all duration-200 uppercase tracking-widest text-xs"
+                            className="px-10 py-5 bg-white text-black font-black rounded-2xl transition-all duration-300 uppercase tracking-widest text-xs hover:bg-gray-200 active:scale-95"
                             onClick={() => {}}
                         >
                             Become a Vendor
@@ -343,4 +348,5 @@ export default function ProfileDetails() {
             </div>
         </>
     );
+
 }
