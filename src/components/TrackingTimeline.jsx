@@ -107,7 +107,8 @@ const TrackingTimeline = ({ orderItemId }) => {
       } catch (err) {
         console.error("Failed to fetch tracking data:", err);
         setError(
-          err.response?.data?.message ||
+          err.response?.data?.error ||
+            err.response?.data?.message ||
             err.response?.data?.detail ||
             "Unable to load tracking information."
         );
