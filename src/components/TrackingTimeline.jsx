@@ -134,14 +134,36 @@ const TrackingTimeline = ({ orderItemId }) => {
     const isNotShipped = error.toLowerCase().includes("not been shipped");
     if (isNotShipped) {
       return (
-        <div className="p-12 md:p-20 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/10">
-            <FaBox className="text-4xl text-purple-400/50" />
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/5 p-12 md:p-20 flex flex-col items-center text-center group">
+          {/* Decorative Background Glows */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-pink-500/10 rounded-full blur-[60px] pointer-events-none" />
+          
+          <div className="relative mb-10">
+            <div className="w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl backdrop-blur-xl group-hover:scale-110 transition-transform duration-500">
+              <div className="relative">
+                <FaBox className="text-4xl text-purple-400/80" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-[#0E0F13] animate-pulse" />
+              </div>
+            </div>
+            {/* Pulsing ring around icon */}
+            <div className="absolute inset-0 w-24 h-24 rounded-3xl border border-purple-500/20 animate-ping [animation-duration:3s]" />
           </div>
-          <h4 className="text-2xl font-black uppercase tracking-tight mb-4">Preparing for Shipment</h4>
-          <p className="text-gray-400 text-sm max-w-sm leading-relaxed">
-            The vendor is currently preparing your package. Live tracking information will appear here once the shipment is processed.
-          </p>
+
+          <h4 className="text-3xl font-black uppercase tracking-tighter mb-4 bg-gradient-to-r from-white via-white/80 to-white/60 bg-clip-text text-transparent">
+            Item Has Not Shipped Yet
+          </h4>
+          
+          <div className="space-y-4 max-w-sm">
+            <p className="text-gray-400 text-sm leading-relaxed">
+              The vendor is currently preparing your package for dispatch. We'll update this timeline with live tracking data as soon as the carrier receives the item.
+            </p>
+            
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full">
+              <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Processing at warehouse</span>
+            </div>
+          </div>
         </div>
       );
     }
@@ -189,20 +211,30 @@ const TrackingTimeline = ({ orderItemId }) => {
         </div>
 
         {isPending ? (
-          <div className="p-12 md:p-20 flex flex-col items-center text-center">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/10">
-              <IoTimeOutline className="text-4xl text-amber-400" />
+          <div className="relative overflow-hidden p-12 md:p-20 flex flex-col items-center text-center group">
+            {/* Decorative Background Glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-500/5 rounded-full blur-[80px] pointer-events-none" />
+            
+            <div className="relative mb-10">
+              <div className="w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl backdrop-blur-xl group-hover:scale-110 transition-transform duration-500">
+                <IoTimeOutline className="text-4xl text-amber-400/80" />
+              </div>
+              <div className="absolute inset-0 w-24 h-24 rounded-3xl border border-amber-500/20 animate-ping [animation-duration:4s]" />
             </div>
-            <h4 className="text-2xl font-black uppercase tracking-tight mb-4">Awaiting Carrier Scan</h4>
+
+            <h4 className="text-3xl font-black uppercase tracking-tighter mb-4 bg-gradient-to-r from-white via-white/80 to-white/60 bg-clip-text text-transparent">
+              Awaiting Carrier Scan
+            </h4>
             <p className="text-gray-400 text-sm max-w-sm leading-relaxed mb-8">
               Your package is prepared and ready. Once the carrier processes the initial scan, live updates will appear here.
             </p>
+            
             {tracking.tracking_url && (
               <a
                 href={tracking.tracking_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-3.5 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all flex items-center gap-2"
+                className="relative z-10 px-8 py-3.5 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all flex items-center gap-2"
               >
                 <IoOpenOutline className="text-lg" />
                 Track on Website
