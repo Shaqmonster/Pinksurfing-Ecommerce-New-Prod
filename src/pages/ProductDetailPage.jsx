@@ -41,6 +41,7 @@ const ProductDetailPage = () => {
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [loading, setLoading] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("story");
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
   const rawProductId = searchParams.get("productId");
@@ -843,92 +844,95 @@ const ProductDetailPage = () => {
                   </div>
                 </div>
 
-                {/* ── SECTION 3: SPECIFICATIONS (is_variant=false) — collapsible grid ── */}
-                {Object.keys(specAttributeMap).length > 0 && (
-                  <div className="relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
-                    <button 
-                      onClick={() => setIsSpecsOpen(!isSpecsOpen)}
-                      className="w-full flex items-center justify-between p-8 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-500">
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                          </svg>
-                        </div>
-                        <div className="text-left">
-                          <h3 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Product Specifications</h3>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">View Details & Attributes</p>
-                        </div>
-                      </div>
-                      <div className={`w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isSpecsOpen ? 'rotate-180' : ''}`}>
-                        <FaChevronDown className="w-4 h-4 text-gray-500" />
-                      </div>
-                    </button>
+                {/* ── SECTION 3: PRODUCT INFO TABS (Story & Specs) ── */}
+                <div className="relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
+                  {/* Tab Navigation */}
+                  <div className="flex border-b border-gray-100 dark:border-white/5">
+                    {[
+                      { id: "story", label: "Product Story", icon: "✨" },
+                      { id: "specs", label: "Specifications", icon: "📋" }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 flex items-center justify-center gap-3 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative ${
+                          activeTab === tab.id 
+                            ? "text-purple-600 dark:text-purple-400" 
+                            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        }`}
+                      >
+                        <span className="text-sm">{tab.icon}</span>
+                        {tab.label}
+                        {activeTab === tab.id && (
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600 animate-fadeIn"></div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
 
-                    <div className={`px-8 pb-10 transition-all duration-500 ease-in-out ${isSpecsOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8 pt-6 border-t border-gray-100 dark:border-white/5">
-                        {Object.entries(specAttributeMap).map(([attrName, values]) => {
-                          const displayValue = values.map((v) => v.value).join(", ");
-                          const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
-                          const isTrue = displayValue.toLowerCase() === "true";
-                          
-                          return (
-                            <div key={attrName} className="flex flex-col gap-1.5 group">
-                              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 group-hover:text-purple-500 transition-colors">
-                                {attrName}
-                              </span>
+                  {/* Tab Content */}
+                  <div className="p-8">
+                    {activeTab === "story" ? (
+                      <div className="animate-fadeIn">
+                        {product?.short_description ? (
+                          <div className="
+                            text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+                            [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+                            [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
+                            [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                            [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
+                            [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
+                            [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+                            [&_a]:text-purple-600 [&_a]:underline transition-all
+                          ">
+                            {parse(product.short_description)}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic py-8 text-center">No additional story details available.</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="animate-fadeIn">
+                        {Object.keys(specAttributeMap).length > 0 ? (
+                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
+                            {Object.entries(specAttributeMap).map(([attrName, values]) => {
+                              const displayValue = values.map((v) => v.value).join(", ");
+                              const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
+                              const isTrue = displayValue.toLowerCase() === "true";
                               
-                              <div className="flex items-center gap-3">
-                                {isBoolean ? (
-                                  <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                                    isTrue 
-                                      ? "bg-green-500/10 text-green-500 border border-green-500/20" 
-                                      : "bg-gray-100 dark:bg-white/5 text-gray-400"
-                                  }`}>
-                                    <span className={`w-1 h-1 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-400"}`} />
-                                    {isTrue ? "Yes" : "No"}
+                              return (
+                                <div key={attrName} className="flex flex-col gap-1.5 group">
+                                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 group-hover:text-purple-500 transition-colors">
+                                    {attrName}
+                                  </span>
+                                  
+                                  <div className="flex items-center gap-3">
+                                    {isBoolean ? (
+                                      <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                                        isTrue 
+                                          ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+                                          : "bg-gray-100 dark:bg-white/5 text-gray-400"
+                                      }`}>
+                                        <span className={`w-1 h-1 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-400"}`} />
+                                        {isTrue ? "Yes" : "No"}
+                                      </div>
+                                    ) : (
+                                      <p className="text-[13px] font-bold text-gray-900 dark:text-gray-100 leading-tight">
+                                        {displayValue}
+                                      </p>
+                                    )}
                                   </div>
-                                ) : (
-                                  <p className="text-[13px] font-bold text-gray-900 dark:text-gray-100 leading-tight">
-                                    {displayValue}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic py-8 text-center">No technical specifications available.</p>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
-
-                {/* Short Description */}
-                {product?.short_description && (
-                  <div className="relative overflow-hidden p-8 bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl group">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                        <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                        </svg>
-                      </div>
-                      <h3 className="text-base font-black uppercase tracking-tight text-gray-900 dark:text-white">Product Story</h3>
-                    </div>
-                    
-                    <div className="
-                      text-sm text-gray-600 dark:text-gray-400 leading-relaxed
-                      [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
-                      [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
-                      [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                      [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-                      [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-                      [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
-                      [&_a]:text-purple-600 [&_a]:underline transition-all
-                    ">
-                      {parse(product.short_description)}
-                    </div>
-                  </div>
-                )}
+                </div>
 
                 </div>
               </div>
