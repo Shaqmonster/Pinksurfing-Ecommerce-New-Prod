@@ -208,7 +208,7 @@ const Header = () => {
               className="flex items-center"
             >
               <img 
-                src="https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/vendor/store_images/DALLE_2025-01-28.webp" 
+                src="/logo.jpg" 
                 className="w-12 h-12 rounded-full ring-2 ring-white/10 shadow-2xl transition-all duration-500 hover:ring-purple-500/50" 
                 alt="PinkSurfing Logo"
               />
@@ -281,7 +281,7 @@ const Header = () => {
                   className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
                 >
                   <img
-                    src="https://avatars.githubusercontent.com/u/499550?v=4"
+                    src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
                     alt="avatar"
                     className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
                   />
