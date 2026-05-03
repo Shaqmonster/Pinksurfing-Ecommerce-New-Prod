@@ -42,6 +42,7 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("story");
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
   const rawProductId = searchParams.get("productId");
@@ -874,58 +875,21 @@ const ProductDetailPage = () => {
                   <div className="p-8">
                     {activeTab === "story" ? (
                       <div className="animate-fadeIn">
-                        <div className={`relative transition-all duration-700 ease-in-out ${!isStoryExpanded ? "max-h-[300px] overflow-hidden" : "max-h-[5000px]"}`}>
-                          {product?.short_description && (
-                            <div className="
-                              text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6
-                              [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
-                              [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
-                              [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                              [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-                              [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-                              [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
-                              [&_a]:text-purple-600 [&_a]:underline transition-all
-                            ">
-                              {parse(product.short_description)}
-                            </div>
-                          )}
-
-                          {product?.description && (
-                            <div className="
-                              text-sm text-gray-600 dark:text-gray-400 leading-relaxed
-                              [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
-                              [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
-                              [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                              [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-                              [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-                              [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
-                              [&_a]:text-purple-600 [&_a]:underline transition-all
-                            ">
-                              {parse(product.description)}
-                            </div>
-                          )}
-
-                          {!isStoryExpanded && (product?.description || product?.short_description) && (
-                            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-[#111218] to-transparent pointer-events-none"></div>
-                          )}
-                        </div>
-
-                        {(product?.description || product?.short_description) && (
-                          <button
-                            onClick={() => setIsStoryExpanded(!isStoryExpanded)}
-                            className="mt-6 text-[10px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400 hover:text-purple-700 transition-colors flex items-center gap-2"
-                          >
-                            {isStoryExpanded ? "Show Less" : "Read Full Story"}
-                            <div className={`transition-transform duration-300 ${isStoryExpanded ? "rotate-180" : ""}`}>
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </div>
-                          </button>
-                        )}
-                        
-                        {!product?.description && !product?.short_description && (
-                          <p className="text-sm text-gray-500 italic py-8 text-center">No additional story details available.</p>
+                        {product?.short_description ? (
+                          <div className="
+                            text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+                            [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+                            [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
+                            [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                            [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
+                            [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
+                            [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+                            [&_a]:text-purple-600 [&_a]:underline transition-all
+                          ">
+                            {parse(product.short_description)}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic py-8 text-center">No product story available.</p>
                         )}
                       </div>
                     ) : (
@@ -971,6 +935,45 @@ const ProductDetailPage = () => {
                   </div>
                 </div>
 
+                {/* ── SECTION 4: COLLAPSIBLE PRODUCT DETAILS ── */}
+                {product?.description && (
+                  <div className="mt-8 relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
+                    <button
+                      onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
+                      className="w-full flex items-center justify-between p-8 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 text-purple-500">
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                          </svg>
+                        </div>
+                        <div className="text-left">
+                          <h3 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Product Details</h3>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Comprehensive Overview</p>
+                        </div>
+                      </div>
+                      <div className={`w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isDetailsExpanded ? 'rotate-180' : ''}`}>
+                        <FaChevronDown className="w-4 h-4 text-gray-500" />
+                      </div>
+                    </button>
+
+                    <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isDetailsExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                      <div className="pt-4 border-t border-gray-100 dark:border-white/5
+                        text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+                        [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+                        [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
+                        [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                        [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
+                        [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
+                        [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+                        [&_a]:text-purple-600 [&_a]:underline transition-all
+                      ">
+                        {parse(product.description)}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 </div>
               </div>
 
