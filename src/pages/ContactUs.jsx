@@ -71,7 +71,7 @@ const Contact = () => {
           {/* Form Section */}
           <motion.div variants={itemVariants} className="space-y-8">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-[#FF7004] to-[#ff9d52] bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
                 Let's make something unique together
               </h1>
               <p className="text-lg text-slate-500 dark:text-slate-400 max-w-md">
@@ -91,7 +91,7 @@ const Contact = () => {
                     type="text"
                     required
                     placeholder="John Doe"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-[#FF7004] dark:focus:border-[#FF7004] focus:ring-1 focus:ring-[#FF7004] outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-purple-500 dark:focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600"
                   />
                 </div>
                 <div className="space-y-2">
@@ -104,7 +104,7 @@ const Contact = () => {
                     type="email"
                     required
                     placeholder="john@example.com"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-[#FF7004] dark:focus:border-[#FF7004] focus:ring-1 focus:ring-[#FF7004] outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-purple-500 dark:focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600"
                   />
                 </div>
               </div>
@@ -119,7 +119,7 @@ const Contact = () => {
                   type="text"
                   required
                   placeholder="What are we building?"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-[#FF7004] dark:focus:border-[#FF7004] focus:ring-1 focus:ring-[#FF7004] outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-purple-500 dark:focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600"
                 />
               </div>
 
@@ -133,7 +133,7 @@ const Contact = () => {
                   required
                   placeholder="Tell us more about your project..."
                   rows="5"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-[#FF7004] dark:focus:border-[#FF7004] focus:ring-1 focus:ring-[#FF7004] outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-purple-500 dark:focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 resize-none"
                 />
               </div>
 
@@ -142,7 +142,7 @@ const Contact = () => {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className={`w-full md:w-auto px-8 py-4 bg-[#FF7004] hover:bg-[#e66503] text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-colors duration-200 uppercase tracking-wider text-sm ${
+                className={`w-full md:w-auto px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold rounded-xl shadow-lg shadow-purple-500/20 transition-all duration-200 uppercase tracking-wider text-sm ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -154,7 +154,7 @@ const Contact = () => {
           {/* Info Section */}
           <motion.div variants={itemVariants} className="lg:pl-8">
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF7004] to-[#ff9d52] rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-400 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
               <div className="relative p-8 md:p-12 rounded-3xl bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl space-y-10">
                 <div className="space-y-4">
                   <h2 className="text-3xl font-bold">Contact Us</h2>
@@ -165,7 +165,7 @@ const Contact = () => {
 
                 <div className="space-y-8">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg bg-orange-500/10 text-[#FF7004]">
+                    <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400">
                       <HiHome className="text-2xl" />
                     </div>
                     <div>
@@ -178,14 +178,14 @@ const Contact = () => {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg bg-orange-500/10 text-[#FF7004]">
+                    <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400">
                       <MdEmail className="text-2xl" />
                     </div>
                     <div>
                       <h4 className="font-bold text-lg">Email Us</h4>
                       <a 
                         href="mailto:marketing@pinksurfing.com"
-                        className="text-slate-500 dark:text-slate-400 hover:text-[#FF7004] transition-colors"
+                        className="text-slate-500 dark:text-slate-400 hover:text-purple-400 transition-colors"
                       >
                         marketing@pinksurfing.com
                       </a>
