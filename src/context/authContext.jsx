@@ -163,7 +163,7 @@ export const AuthProvider = ({ children }) => {
         // Store new access token in both cookie and localStorage
         setCookie("access_token", newAccessToken, {
           path: "/",
-          expires: new Date(Date.now() + 7 * 60 * 60 * 1000),
+          expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
           secure: true,
           sameSite: "strict",
         });

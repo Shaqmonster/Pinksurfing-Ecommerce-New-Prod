@@ -342,7 +342,7 @@ const Header = () => {
             </AnimatePresence>
  */}
             {/* GigHub Marketplace */}
-            {/* <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/gighub"
                 className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all whitespace-nowrap"
@@ -350,10 +350,10 @@ const Header = () => {
                 <FaBriefcase className="text-xs" />
                 GigHub
               </Link>
-            </motion.div> */}
+            </motion.div>
 
             {/* Bids Marketplace */}
-            {/* <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/bids"
                 className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 text-white text-xs font-semibold transition-all shadow-md hover:shadow-pink-500/30 whitespace-nowrap"
@@ -361,11 +361,14 @@ const Header = () => {
                 <FaGavel className="text-xs" />
                 <span className="hidden sm:inline">Bids</span>
               </Link>
-            </motion.div> */}
+            </motion.div>
 
             {/* User Actions */}
             {user && (
               <div className="flex items-center gap-2 sm:gap-3">
+                <Link to="/contact" className="hidden lg:flex items-center gap-1.5 text-white/70 hover:text-white text-xs font-medium transition-colors">
+                   Help & Support
+                </Link>
                 <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
                   <FaHeart
                     onClick={() => {
