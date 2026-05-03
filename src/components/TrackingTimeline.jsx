@@ -131,6 +131,20 @@ const TrackingTimeline = ({ orderItemId }) => {
   }
 
   if (error) {
+    const isNotShipped = error.toLowerCase().includes("not been shipped");
+    if (isNotShipped) {
+      return (
+        <div className="p-12 md:p-20 flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/10">
+            <FaBox className="text-4xl text-purple-400/50" />
+          </div>
+          <h4 className="text-2xl font-black uppercase tracking-tight mb-4">Preparing for Shipment</h4>
+          <p className="text-gray-400 text-sm max-w-sm leading-relaxed">
+            The vendor is currently preparing your package. Live tracking information will appear here once the shipment is processed.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="w-full bg-rose-500/5 border border-rose-500/20 rounded-[2.5rem] p-10 text-center">
         <p className="text-rose-400 text-sm font-medium tracking-tight">{error}</p>

@@ -24,6 +24,7 @@ const Summary = () => {
   let [deleteOrderId, setDeleteOrderId] = useState("");
   let [orderStatus, setOrderStatus] = useState("");
   const [reviews, setReviews] = useState([]);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const navigate = useNavigate();
   const { orderId } = useParams();
@@ -128,8 +129,6 @@ const Summary = () => {
 
   return (
     <div className="min-h-screen bg-[#0E0F13] text-white selection:bg-purple-500/30">
-      <Header />
-      
       {/* Background Glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full" />
@@ -176,11 +175,22 @@ const Summary = () => {
                 <div className="flex-1 p-8 md:p-10 flex flex-col">
                   <div className="flex-1">
                     <h2 className="text-2xl font-black tracking-tight mb-2 uppercase">{order.product.name}</h2>
-                    <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 mb-6">
-                      {order.product.description}
-                    </p>
+                    <div>
+                      <div 
+                        className={`text-gray-400 text-sm leading-relaxed mb-2 transition-all duration-300 ${isDescriptionExpanded ? "" : "line-clamp-2"}`}
+                        dangerouslySetInnerHTML={{ __html: order.product.description }}
+                      />
+                      {order.product.description?.length > 150 && (
+                        <button 
+                          onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                          className="text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                          {isDescriptionExpanded ? "Read Less —" : "Read More +"}
+                        </button>
+                      )}
+                    </div>
                     
-                    <div className="grid grid-cols-2 gap-8 mb-8">
+                    <div className="grid grid-cols-2 gap-8 mb-8 mt-8">
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Quantity</p>
                         <p className="text-xl font-bold">x{order.quantity}</p>
@@ -221,7 +231,7 @@ const Summary = () => {
             </div>
 
             {/* Tracking Section */}
-            {order.order_status && ["SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(order.order_status.toUpperCase().replace(/\s+/g, "_")) && (
+            {order.order_status && ["RECEIVED", "PACKED", "SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(order.order_status.toUpperCase().replace(/\s+/g, "_")) && (
               <div className="bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">Shipment Progress</h3>
                 <TrackingTimeline orderItemId={orderId} />
