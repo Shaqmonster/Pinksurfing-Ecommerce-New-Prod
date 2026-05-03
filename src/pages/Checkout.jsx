@@ -267,41 +267,53 @@ const Checkout = () => {
           <p className="text-gray-400">
             Check your items. And select a suitable shipping method.
           </p>
-          <div className="mt-8 space-y-3 rounded-lg  w-[95vw] sm:w-full max-h-[340px] overflow-y-auto  border bg-white dark:bg-[#0E0F13]  sm:py-4 sm:px-6">
-            {cartProducts.map((product) => {
-              return (
-                <div className="flex flex-row items-center rounded-lg bg-white dark:bg-[#0E0F13] sm:flex-row">
-                  <img
-                    className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                    src={`${product.product.image1}`}
-                    // src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=htmlFormat&fit=crop&w=500&q=60"
-                    alt=""
-                  />
-                  <div className="flex lg:w-full flex-col px-4 py-4">
-                    <span className="font-semibold">
-                      {product.product.name}
-                    </span>
-                    <span className="float-right text-gray-400">
-                      Quantity: {product.quantity}
-                    </span>
-                    <p className="mt-auto text-lg font-bold">
-                      {currency}
-                      {formatMoney(
-                        product.additional_price > 0
-                          ? Number(product.product.unit_price) +
-                              Number(product.additional_price)
-                          : Number(product.product.unit_price)
-                      )}
-                    </p>
-                    {product.additional_price > 0 && (
-                      <p className="text-[14px] sm:text-[14.5px] text-gray-200 whitespace-normal">
-                        {/* Additional Price: {currency} {product.additional_price} */}
-                      </p>
-                    )}
-                  </div>
+          <div className="mt-8 space-y-6 rounded-lg w-[95vw] sm:w-full max-h-[450px] overflow-y-auto border border-gray-100 dark:border-white/5 bg-white dark:bg-[#0E0F13] sm:py-6 sm:px-6">
+            {Object.entries(
+              cartProducts.reduce((acc, item) => {
+                const vendorId = item.product.vendor.id;
+                if (!acc[vendorId]) {
+                  acc[vendorId] = {
+                    vendorName: item.product.vendor.store_name || "Unknown Store",
+                    items: []
+                  };
+                }
+                acc[vendorId].items.push(item);
+                return acc;
+              }, {})
+            ).map(([vendorId, group]) => (
+              <div key={vendorId} className="space-y-4 border-b border-gray-100 dark:border-white/5 last:border-0 pb-6 last:pb-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Order from {group.vendorName}</h3>
                 </div>
-              );
-            })}
+                {group.items.map((product) => (
+                  <div key={product.id} className="flex flex-row items-center rounded-xl bg-white/5 p-3 sm:flex-row">
+                    <img
+                      className="h-20 w-24 rounded-lg border border-white/10 object-cover object-center"
+                      src={`${product.product.image1}`}
+                      alt={product.product.name}
+                    />
+                    <div className="flex lg:w-full flex-col px-4">
+                      <span className="font-semibold text-sm">
+                        {product.product.name}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        Quantity: {product.quantity}
+                      </span>
+                      <p className="mt-2 text-base font-bold text-purple-400">
+                        {currency}
+                        {formatMoney(
+                          product.additional_price > 0
+                            ? Number(product.product.unit_price) +
+                                Number(product.additional_price)
+                            : Number(product.product.unit_price)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
 
           <p className="mt-8 text-lg font-medium">Shipping Speed</p>

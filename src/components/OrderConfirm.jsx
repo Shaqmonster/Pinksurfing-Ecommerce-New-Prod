@@ -13,6 +13,7 @@ const OrderConfirm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const vendorId = searchParams.get("vendorId");
   const [countdown, setCountdown] = useState(REDIRECT_DELAY);
 
   useEffect(() => {
@@ -40,23 +41,37 @@ const OrderConfirm = () => {
         </div>
 
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Payment Successful!
+          {vendorId ? "Vendor Payment Successful!" : "Payment Successful!"}
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-base mb-6 leading-relaxed">
-          Thank you for shopping at PinkSurfing.{" "}
-          Your order has been placed and is being prepared for shipment.
-          A confirmation email has been sent to you.
+          {vendorId 
+            ? "Your payment for this vendor's items has been confirmed. If your cart has items from other vendors, please complete those payments as well."
+            : "Thank you for shopping at PinkSurfing. Your order has been placed and is being prepared for shipment."}
         </p>
 
         {/* Order reference */}
-        {orderId && (
+        {(orderId || vendorId) && (
           <div className="mb-6 rounded-xl bg-gray-50 dark:bg-[#1a1b21] border border-gray-200 dark:border-gray-700 px-5 py-4">
-            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">
-              Order Reference
-            </p>
-            <p className="text-sm font-mono font-semibold text-gray-700 dark:text-gray-200 break-all">
-              {orderId}
-            </p>
+            {orderId && (
+              <div className="mb-2">
+                <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">
+                  Order Reference
+                </p>
+                <p className="text-sm font-mono font-semibold text-gray-700 dark:text-gray-200 break-all">
+                  {orderId}
+                </p>
+              </div>
+            )}
+            {vendorId && (
+              <div>
+                <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">
+                  Vendor Reference
+                </p>
+                <p className="text-sm font-mono font-semibold text-gray-700 dark:text-gray-200 break-all">
+                  {vendorId}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
