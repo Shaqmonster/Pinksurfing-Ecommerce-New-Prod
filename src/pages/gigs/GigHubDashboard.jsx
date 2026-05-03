@@ -310,13 +310,13 @@ const SellerTab = ({ workerProfile, sellerOrders, myGigs, loadingOrders, loading
 
                       <div className="flex flex-wrap gap-2">
                         <Link
-                          to={`/gigs/${gig.id}`}
+                          to={`/gigs/${gig.gig_id || gig.id}`}
                           className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white/50 text-xs hover:bg-white/10 transition-all"
                         >
                           <IoEyeOutline className="text-sm" /> View
                         </Link>
                         <button
-                          onClick={() => navigate(`/gigs/create?edit=${gig.id}`)}
+                          onClick={() => navigate(`/gigs/create?edit=${gig.gig_id || gig.id}`)}
                           className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs hover:bg-purple-500/20 transition-all"
                         >
                           <IoPencilOutline className="text-sm" /> Edit

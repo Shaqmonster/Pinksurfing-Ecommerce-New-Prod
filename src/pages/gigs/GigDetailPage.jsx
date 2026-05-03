@@ -291,7 +291,7 @@ const GigDetailPage = () => {
                 <img
                   src={images[activeImageIdx]?.file}
                   alt={gig.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 {images.length > 1 && (
                   <>
@@ -337,7 +337,7 @@ const GigDetailPage = () => {
                       i === activeImageIdx ? "border-purple-500" : "border-white/10 hover:border-white/20"
                     }`}
                   >
-                    <img src={img.file} alt="" className="w-full h-full object-cover" />
+                    <img src={img.file} alt="" className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>

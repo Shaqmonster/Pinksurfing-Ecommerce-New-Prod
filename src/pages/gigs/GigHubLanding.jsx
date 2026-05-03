@@ -99,7 +99,7 @@ const GigCard = ({ gig }) => {
           <img
             src={mainImage.file}
             alt={gig.title}
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
