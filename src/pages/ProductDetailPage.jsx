@@ -7,7 +7,7 @@ import Header from "../components/Header";
 import axios from "axios";
 import { FaCopy, FaFacebook, FaFontAwesome, FaPinterest, FaShare, FaTwitter } from "react-icons/fa";
 import OrderConfirm from "../components/OrderConfirm";
-import { FaHeart, FaStar, FaTruck } from "react-icons/fa";
+import { FaHeart, FaStar, FaTruck, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { dataContext } from "../context/dataContext";
 import { authContext } from "../context/authContext";
 import { IoClose, IoStarOutline, IoCart } from "react-icons/io5";
@@ -40,6 +40,7 @@ const ProductDetailPage = () => {
   const [productQty, setProductQty] = useState(1);
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
   const rawProductId = searchParams.get("productId");
@@ -744,93 +745,8 @@ const ProductDetailPage = () => {
                   </div>
                 )}
 
-                {/* ── SECTION 2: SPECIFICATIONS (is_variant=false) — high-fidelity grid ── */}
-                {Object.keys(specAttributeMap).length > 0 && (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 px-2">
-                      <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                        <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Technical Details</h3>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Core Specifications & Attributes</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {Object.entries(specAttributeMap).map(([attrName, values]) => {
-                        const displayValue = values.map((v) => v.value).join(", ");
-                        const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
-                        const isTrue = displayValue.toLowerCase() === "true";
-                        
-                        return (
-                          <div
-                            key={attrName}
-                            className="group relative overflow-hidden bg-white dark:bg-gray-900/40 border border-gray-100 dark:border-white/5 rounded-[1.5rem] p-5 transition-all duration-300 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10"
-                          >
-                            <div className="relative z-10">
-                              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-2 group-hover:text-blue-500 transition-colors">
-                                {attrName}
-                              </p>
-                              
-                              <div className="flex items-center gap-3">
-                                {isBoolean ? (
-                                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest ${
-                                    isTrue 
-                                      ? "bg-green-500/10 text-green-500 border border-green-500/20" 
-                                      : "bg-gray-500/10 text-gray-400 border border-gray-500/10"
-                                  }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${isTrue ? "bg-green-500 animate-pulse" : "bg-gray-500"}`} />
-                                    {isTrue ? "Yes" : "No"}
-                                  </div>
-                                ) : (
-                                  <p className="text-sm font-bold text-gray-900 dark:text-white group-hover:translate-x-1 transition-transform">
-                                    {displayValue}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* Subtle background decoration */}
-                            <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Short Description */}
-                {product?.short_description && (
-                  <div className="relative overflow-hidden p-8 bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl group">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                        <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                        </svg>
-                      </div>
-                      <h3 className="text-base font-black uppercase tracking-tight text-gray-900 dark:text-white">Product Story</h3>
-                    </div>
-                    
-                    <div className="
-                      text-sm text-gray-600 dark:text-gray-400 leading-relaxed
-                      [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
-                      [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
-                      [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                      [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-                      [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-                      [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
-                      [&_a]:text-purple-600 [&_a]:underline transition-all
-                    ">
-                      {parse(product.short_description)}
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-6 pt-8">
+                {/* ── SECTION 2: ACTION ZONE ── */}
+                <div className="flex flex-col gap-6 py-8">
                   <div className="flex flex-col xl:flex-row gap-4">
                     <button
                       onClick={() => {
@@ -926,6 +842,100 @@ const ProductDetailPage = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* ── SECTION 3: SPECIFICATIONS (is_variant=false) — collapsible grid ── */}
+                {Object.keys(specAttributeMap).length > 0 && (
+                  <div className="relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
+                    <button 
+                      onClick={() => setIsSpecsOpen(!isSpecsOpen)}
+                      className="w-full flex items-center justify-between p-8 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-500">
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                        </div>
+                        <div className="text-left">
+                          <h3 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Product Specifications</h3>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">View Details & Attributes</p>
+                        </div>
+                      </div>
+                      <div className={`w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isSpecsOpen ? 'rotate-180' : ''}`}>
+                        <FaChevronDown className="w-4 h-4 text-gray-500" />
+                      </div>
+                    </button>
+
+                    <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isSpecsOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-white/5">
+                        {Object.entries(specAttributeMap).map(([attrName, values]) => {
+                          const displayValue = values.map((v) => v.value).join(", ");
+                          const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
+                          const isTrue = displayValue.toLowerCase() === "true";
+                          
+                          return (
+                            <div
+                              key={attrName}
+                              className="group relative overflow-hidden bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-[1.5rem] p-5 transition-all duration-300 hover:border-blue-500/30"
+                            >
+                              <div className="relative z-10">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-2 group-hover:text-blue-500 transition-colors">
+                                  {attrName}
+                                </p>
+                                
+                                <div className="flex items-center gap-3">
+                                  {isBoolean ? (
+                                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest ${
+                                      isTrue 
+                                        ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+                                        : "bg-gray-500/10 text-gray-400 border border-gray-500/10"
+                                    }`}>
+                                      <span className={`w-1.5 h-1.5 rounded-full ${isTrue ? "bg-green-500 animate-pulse" : "bg-gray-500"}`} />
+                                      {isTrue ? "Yes" : "No"}
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white group-hover:translate-x-1 transition-transform">
+                                      {displayValue}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Short Description */}
+                {product?.short_description && (
+                  <div className="relative overflow-hidden p-8 bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl group">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                        <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                        </svg>
+                      </div>
+                      <h3 className="text-base font-black uppercase tracking-tight text-gray-900 dark:text-white">Product Story</h3>
+                    </div>
+                    
+                    <div className="
+                      text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+                      [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+                      [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
+                      [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                      [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
+                      [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
+                      [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+                      [&_a]:text-purple-600 [&_a]:underline transition-all
+                    ">
+                      {parse(product.short_description)}
+                    </div>
+                  </div>
+                )}
+
                 </div>
               </div>
 
