@@ -1,5 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useContext, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { authContext } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
