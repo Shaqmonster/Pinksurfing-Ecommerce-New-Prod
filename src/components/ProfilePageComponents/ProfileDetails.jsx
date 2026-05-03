@@ -198,157 +198,153 @@ export default function ProfileDetails() {
                 {isLoading && <Loader />}
             </div>
 
-            <div className="flex flex-col items-center justify-center w-full max-w-2xl mx-auto p-4 sm:p-6 font-sen border border-gray-500  rounded-lg  ">
-                <div className="w-full  mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center ">My Profile</h2>
-                </div>
-
-                <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                    <span className="font-normal">Registered on: </span>
-                    <span className="font-medium">{new Date(profile.date_registered).toDateString()}</span>
-                </div>
-
-                <div className="flex items-center justify-center w-full mb-8">
-                    <div className="relative w-24 h-24 overflow-hidden rounded-full border-2 border-gray-200 dark:border-gray-700 shadow-md">
-                        <img
-                            src={
-                                profile.customer_profile_picture ||
-                                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
-                            }
-                            alt="Profile"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                </div>
-
-                <form onSubmit={UpdateProfile} className="w-full space-y-6">
-                    <div className="flex flex-col w-full">
-                        <label
-                            className="block text-xs font-bold uppercase text-center tracking-wider text-gray-700 dark:text-gray-300 mb-2"
-                            htmlFor="first_name"
-                        >
-                            First Name
-                        </label>
-                        <input
-                            className="w-full sm:w-3/4 mx-auto appearance-none bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
-                            name="first_name"
-                            id="first_name"
-                            type="text"
-                            placeholder="First Name"
-                            value={first_name}
-                            onChange={handleOnChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="flex flex-col w-full">
-                        <label
-                            className="block text-xs font-bold uppercase text-center tracking-wider text-gray-700 dark:text-gray-300 mb-2"
-                            htmlFor="last_name"
-                        >
-                            Last Name
-                        </label>
-                        <input
-                            className="w-full sm:w-3/4 mx-auto appearance-none bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
-                            name="last_name"
-                            id="last_name"
-                            type="text"
-                            placeholder="Last Name"
-                            value={last_name}
-                            onChange={handleOnChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="flex flex-col w-full">
-                        <label
-                            className="block text-xs font-bold uppercase text-center tracking-wider text-gray-700 dark:text-gray-300 mb-2"
-                            htmlFor="customer_phone"
-                        >
-                            Phone Number
-                        </label>
-                        <input
-                            className="w-full sm:w-3/4 mx-auto appearance-none bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
-                            id="customer_phone"
-                            name="customer_phone"
-                            type="text"
-                            placeholder="Phone Number"
-                            value={customer_phone}
-                            onChange={handleOnChange}
-                            required
-                        />
-                    </div>
-
-                    {/* Store Link - Only show if vendor slug exists */}
-                    {profile?.vendor?.slug && (
-                        <div className="flex flex-col w-full">
-                            <label
-                                className="block text-xs font-bold uppercase text-center tracking-wider text-gray-700 dark:text-gray-300 mb-2"
-                            >
-                                Your Store Link
-                            </label>
-                            <p className="text-xs text-center text-gray-500 dark:text-gray-400 mb-2">
-                                You can use this as a clickable link to your store.
-                            </p>
-                            <div className="w-full sm:w-3/4 mx-auto flex items-center gap-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-3 px-4">
-                                <a
-                                    href={storeUrl(profile.vendor.slug)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium text-sm break-all transition duration-200"
-                                >
-                                    {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
-                                </a>
-                                <button
-                                    type="button"
-                                    onClick={handleCopyStoreLink}
-                                    className="flex-shrink-0 p-2 text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 transition duration-200"
-                                    title={copied ? "Copied!" : "Copy to clipboard"}
-                                >
-                                    {copied ? (
-                                        <FaCheck className="w-4 h-4 text-green-500" />
-                                    ) : (
-                                        <FaCopy className="w-4 h-4" />
-                                    )}
-                                </button>
-                            </div>
+            <div className="w-full max-w-4xl mx-auto space-y-12 pb-12">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row items-center gap-8 bg-white/5 backdrop-blur-xl border border-white/5 p-8 md:p-12 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[80px] rounded-full group-hover:bg-purple-500/20 transition-all duration-700"></div>
+                    
+                    <div className="relative">
+                        <div className="absolute -inset-2 bg-gradient-to-r from-purple-600 to-purple-400 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+                        <div className="relative w-32 h-32 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-[#0E0F13] shadow-2xl">
+                            <img
+                                src={
+                                    profile.customer_profile_picture ||
+                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
+                                }
+                                alt="Profile"
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            />
                         </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-                        <button
-                            type="submit"
-                            className="w-full sm:w-auto bg-gradient-to-r from-[#6D00FB] to-[#9747FF] hover:from-[#5C00D6] hover:to-[#8639E8] text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 ease-in-out transform hover:-translate-y-1"
-                        >
-                            Save Changes
-                        </button>
-                        <button
-                            type="button"
-                            className="w-full sm:w-auto bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 ease-in-out transform hover:-translate-y-1"
-                            onClick={toggleEdit}
-                        >
-                            Cancel
-                        </button>
                     </div>
-                </form>
+
+                    <div className="flex-1 text-center md:text-left space-y-2">
+                        <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase">
+                            {first_name} {last_name}
+                        </h2>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                            <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                Member since {new Date(profile.date_registered).getFullYear()}
+                            </span>
+                            <span className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] font-bold uppercase tracking-widest text-purple-400">
+                                {is_vendor ? 'Vendor' : 'Customer'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Form Section */}
+                <div className="bg-[#0E0F13] border border-white/5 p-8 md:p-12 rounded-[2rem] shadow-2xl">
+                    <form onSubmit={UpdateProfile} className="space-y-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                    First Name
+                                </label>
+                                <input
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/20"
+                                    name="first_name"
+                                    type="text"
+                                    placeholder="Enter your first name"
+                                    value={first_name}
+                                    onChange={handleOnChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                    Last Name
+                                </label>
+                                <input
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/20"
+                                    name="last_name"
+                                    type="text"
+                                    placeholder="Enter your last name"
+                                    value={last_name}
+                                    onChange={handleOnChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                    Phone Number
+                                </label>
+                                <input
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/20"
+                                    id="customer_phone"
+                                    name="customer_phone"
+                                    type="text"
+                                    placeholder="Enter your phone number"
+                                    value={customer_phone}
+                                    onChange={handleOnChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Store Link Section */}
+                            {profile?.vendor?.slug && (
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                        Your Store Link
+                                    </label>
+                                    <div className="flex items-center gap-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl py-4 px-6 group transition-all duration-300 hover:border-purple-500/30">
+                                        <a
+                                            href={storeUrl(profile.vendor.slug)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 text-purple-400 font-bold text-sm truncate"
+                                        >
+                                            {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
+                                        </a>
+                                        <button
+                                            type="button"
+                                            onClick={handleCopyStoreLink}
+                                            className="p-2 text-gray-500 hover:text-white transition-colors"
+                                        >
+                                            {copied ? <FaCheck className="w-4 h-4 text-green-500" /> : <FaCopy className="w-4 h-4" />}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="pt-10 flex flex-col sm:flex-row items-center gap-4">
+                            <button
+                                type="submit"
+                                className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-black rounded-2xl shadow-2xl shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-xs"
+                            >
+                                Save Profile Changes
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => navigate(-1)}
+                                className="w-full sm:w-auto px-10 py-5 bg-white/5 text-gray-400 font-bold rounded-2xl hover:bg-white/10 hover:text-white transition-all duration-300 uppercase tracking-widest text-xs"
+                            >
+                                Go Back
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
                 {!profile.is_vendor && (
-                    <div className="w-full mt-8">
+                    <div className="bg-gradient-to-r from-purple-900/20 to-transparent border border-purple-500/20 p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div className="space-y-2 text-center md:text-left">
+                            <h3 className="text-xl font-bold text-white">Want to start selling?</h3>
+                            <p className="text-gray-500 text-sm">Join our network of vendors and reach thousands of customers.</p>
+                        </div>
                         <button
                             type="button"
-                            className="w-full sm:w-3/4 mx-auto bg-gradient-to-r from-[#6D00FB] to-[#9747FF] hover:from-[#5C00D6] hover:to-[#8639E8] text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 ease-in-out transform hover:-translate-y-1 flex items-center justify-center"
+                            className="px-8 py-4 bg-white text-[#0E0F13] font-black rounded-xl hover:bg-gray-200 transition-all duration-300 uppercase tracking-widest text-xs"
                             onClick={() => {
-                                // You'll need to implement this function
-                                // setIsVendorFormOpen(true);
-                                // setIsProfilePopupOpen(false);
+                                // Implement vendor navigation
                             }}
                         >
-                            <span>Become a vendor</span>
+                            Become a Vendor
                         </button>
                     </div>
                 )}
             </div>
-
         </>
     );
 }
