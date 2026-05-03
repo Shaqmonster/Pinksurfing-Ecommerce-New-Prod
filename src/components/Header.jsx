@@ -55,6 +55,7 @@ const Header = () => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const searchInputRef = React.useRef(null);
 
@@ -274,40 +275,128 @@ const Header = () => {
               )}
 
               <div className="flex items-center gap-4">
-                <motion.div 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate("/profile")}
-                  className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
-                >
-                  <img
-                    src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
-                    alt="avatar"
-                    className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
+                {/* Mobile Search & Menu Triggers */}
+                <div className="flex md:hidden items-center gap-4 border-l border-white/10 pl-4">
+                  <IoSearchSharp 
+                    className="text-2xl text-gray-400 cursor-pointer hover:text-white transition-colors" 
+                    onClick={() => setShowMobileSearch(true)} 
                   />
-                  <div className="hidden sm:flex flex-col">
-                    <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1">
-                      {user?.first_name}
-                    </span>
-                    <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
-                      Account
-                    </span>
-                  </div>
-                </motion.div>
+                  <IoMenuOutline 
+                    className="text-3xl text-white cursor-pointer hover:text-purple-400 transition-colors" 
+                    onClick={() => setIsMobileMenuOpen(true)} 
+                  />
+                </div>
 
-                {user && (
-                  <button
-                    onClick={Logout}
-                    className="hidden md:block px-6 py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.2em] border border-white/5 hover:border-white/20 rounded-2xl transition-all duration-300 bg-white/[0.02] hover:bg-white/[0.05]"
+                <div className="hidden md:flex items-center gap-4">
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/profile")}
+                    className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
                   >
-                    Logout
-                  </button>
-                )}
+                    <img
+                      src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
+                      alt="avatar"
+                      className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
+                    />
+                    <div className="hidden sm:flex flex-col">
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1">
+                        {user?.first_name}
+                      </span>
+                      <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
+                        Account
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {user && (
+                    <button
+                      onClick={Logout}
+                      className="px-6 py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.2em] border border-white/5 hover:border-white/20 rounded-2xl transition-all duration-300 bg-white/[0.02] hover:bg-white/[0.05]"
+                    >
+                      Logout
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </motion.div>
+
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed inset-0 z-[100] bg-[#0E0F13]/95 backdrop-blur-2xl md:hidden flex flex-col"
+          >
+            <div className="flex justify-between items-center p-8 border-b border-white/5">
+              <img src="/logo.jpg" className="w-10 h-10 rounded-full ring-2 ring-white/10" alt="Logo" />
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10"
+              >
+                <IoClose className="text-2xl text-white" />
+              </button>
+            </div>
+
+            <nav className="flex-1 flex flex-col p-8 gap-6 overflow-y-auto">
+              <Link 
+                to="/gighub" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
+              >
+                GigHub
+              </Link>
+              <Link 
+                to="/bids" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
+              >
+                Bids
+              </Link>
+              <Link 
+                to="/contact" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                Support
+              </Link>
+              
+              <div className="mt-auto flex flex-col gap-4">
+                <Link 
+                  to="/profile" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/10"
+                >
+                  <img
+                    src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
+                    alt="avatar"
+                    className="w-12 h-12 rounded-2xl object-cover ring-1 ring-white/10"
+                  />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{user?.first_name}</p>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">View Profile</p>
+                  </div>
+                </Link>
+
+                {user && (
+                  <button
+                    onClick={() => { Logout(); setIsMobileMenuOpen(false); }}
+                    className="w-full py-6 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-3xl text-red-400 text-[10px] font-black uppercase tracking-[0.3em] transition-all"
+                  >
+                    Logout Session
+                  </button>
+                )}
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Search Overlay */}
       <AnimatePresence>
