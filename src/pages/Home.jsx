@@ -82,8 +82,6 @@ const Home = () => {
     { id: 3, name: "Buyer's Choice" },
     { id: 4, name: "Pinksurfing finds" },
   ];
-  const awsS3BaseUrl =
-    "https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/";
 
   // Initialize countries on component mount
   useEffect(() => {

@@ -197,9 +197,9 @@ const Header = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-40 bg-white/[0.03] backdrop-blur-3xl w-full py-4 border-b border-white/5 shadow-2xl"
+        className="sticky top-0 z-40 bg-[#0E0F13]/60 backdrop-blur-3xl w-full py-5 border-b border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)]"
       >
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-6 md:px-12 lg:px-16 text-white gap-8">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between px-8 md:px-16 text-white gap-10">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
             <motion.div 
@@ -208,59 +208,55 @@ const Header = () => {
               className="flex items-center"
             >
               <img 
-                src="logo.jpg" 
-                className="w-10 h-10 rounded-full ring-1 ring-white/10 shadow-2xl" 
+                src="https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/vendor/store_images/DALLE_2025-01-28.webp" 
+                className="w-12 h-12 rounded-full ring-2 ring-white/10 shadow-2xl transition-all duration-500 hover:ring-purple-500/50" 
                 alt="PinkSurfing Logo"
               />
             </motion.div>
           </Link>
 
-          {/* Search Bar - Minimalist Integrated */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl relative group">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <IoSearchSharp className="text-gray-500 group-focus-within:text-purple-400 transition-colors" />
+          {/* Search Bar - Stealth Integrated */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl relative group">
+            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+              <IoSearchSharp className="text-gray-500 group-focus-within:text-purple-400 transition-colors text-lg" />
             </div>
             <input
               type="text"
-              placeholder="Search premium products..."
+              placeholder="Search the marketplace..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl outline-none text-white placeholder-gray-600 focus:bg-white/10 focus:border-purple-500/50 transition-all text-sm"
+              className="w-full pl-14 pr-6 py-3.5 bg-white/[0.03] border border-white/5 rounded-2xl outline-none text-white placeholder-gray-600 focus:bg-white/[0.07] focus:border-purple-500/30 transition-all duration-500 text-sm font-medium tracking-tight"
             />
           </form>
 
-          {/* Right Section - Grouped Actions */}
-          <div className="flex items-center gap-3 md:gap-6">
-            {/* Action Buttons */}
-            <div className="hidden lg:flex items-center gap-2">
+          {/* Right Section - Unified Premium Actions */}
+          <div className="flex items-center gap-8">
+            <div className="hidden xl:flex items-center gap-3">
               <Link
                 to="/gighub"
-                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all"
+                className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
               >
-                <FaBriefcase className="text-gray-400" />
                 GigHub
               </Link>
               <Link
                 to="/bids"
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-purple-500/20"
+                className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
               >
-                <FaGavel />
                 Bids
               </Link>
               <Link
-                to="/contact-us"
-                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all"
+                to="/contact"
+                className="px-6 py-3 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 rounded-2xl text-purple-300 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
               >
                 Help & Support
               </Link>
             </div>
 
-            {/* Icons Section */}
-            <div className="flex items-center gap-4 border-l border-white/10 pl-3 md:pl-6">
+            <div className="flex items-center gap-6 border-l border-white/10 pl-8">
               {user && (
-                <>
+                <div className="flex items-center gap-6">
                   <div className="relative group cursor-pointer" onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}>
-                    <FaHeart className="text-lg text-gray-500 hover:text-pink-500 transition-all duration-300 transform group-hover:scale-110" />
+                    <FaHeart className="text-xl text-gray-500 hover:text-pink-500 transition-all duration-300 transform group-hover:scale-110" />
                   </div>
                   
                   <div 
@@ -274,39 +270,40 @@ const Header = () => {
                       </span>
                     )}
                   </div>
-                </>
-              )}
-
-              {/* Profile Chip - Clean Modern */}
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/profile")}
-                className="flex items-center cursor-pointer gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all pl-1.5 pr-4"
-              >
-                <img
-                  src="https://avatars.githubusercontent.com/u/499550?v=4"
-                  alt="avatar"
-                  className="w-8 h-8 rounded-xl object-cover ring-1 ring-white/10 shadow-lg"
-                />
-                <div className="hidden sm:flex flex-col">
-                  <span className="text-[10px] font-black text-white uppercase tracking-tighter">
-                    {user?.first_name}
-                  </span>
-                  <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none">
-                    Account
-                  </span>
                 </div>
-              </motion.div>
-
-              {user && (
-                <button
-                  onClick={Logout}
-                  className="hidden md:block px-4 py-2 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-widest border border-white/5 hover:border-white/20 rounded-xl transition-all"
-                >
-                  Logout
-                </button>
               )}
+
+              <div className="flex items-center gap-4">
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/profile")}
+                  className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
+                >
+                  <img
+                    src="https://avatars.githubusercontent.com/u/499550?v=4"
+                    alt="avatar"
+                    className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
+                  />
+                  <div className="hidden sm:flex flex-col">
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1">
+                      {user?.first_name}
+                    </span>
+                    <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
+                      Account
+                    </span>
+                  </div>
+                </motion.div>
+
+                {user && (
+                  <button
+                    onClick={Logout}
+                    className="hidden md:block px-6 py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.2em] border border-white/5 hover:border-white/20 rounded-2xl transition-all duration-300 bg-white/[0.02] hover:bg-white/[0.05]"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
