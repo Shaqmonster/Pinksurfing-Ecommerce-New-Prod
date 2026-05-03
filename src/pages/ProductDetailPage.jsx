@@ -866,34 +866,31 @@ const ProductDetailPage = () => {
                       </div>
                     </button>
 
-                    <div className={`px-8 pb-6 transition-all duration-500 ease-in-out ${isSpecsOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1 pt-4 border-t border-gray-100 dark:border-white/5">
+                    <div className={`px-8 pb-10 transition-all duration-500 ease-in-out ${isSpecsOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8 pt-6 border-t border-gray-100 dark:border-white/5">
                         {Object.entries(specAttributeMap).map(([attrName, values]) => {
                           const displayValue = values.map((v) => v.value).join(", ");
                           const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
                           const isTrue = displayValue.toLowerCase() === "true";
                           
                           return (
-                            <div
-                              key={attrName}
-                              className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-white/[0.02] last:border-0 md:last:border-b"
-                            >
-                              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">
+                            <div key={attrName} className="flex flex-col gap-1.5 group">
+                              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 group-hover:text-purple-500 transition-colors">
                                 {attrName}
                               </span>
                               
                               <div className="flex items-center gap-3">
                                 {isBoolean ? (
-                                  <div className={`flex items-center gap-2 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                  <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
                                     isTrue 
-                                      ? "bg-green-500/10 text-green-500" 
-                                      : "bg-gray-500/10 text-gray-400"
+                                      ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+                                      : "bg-gray-100 dark:bg-white/5 text-gray-400"
                                   }`}>
-                                    <span className={`w-1 h-1 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-500"}`} />
+                                    <span className={`w-1 h-1 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-400"}`} />
                                     {isTrue ? "Yes" : "No"}
                                   </div>
                                 ) : (
-                                  <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
+                                  <p className="text-[13px] font-bold text-gray-900 dark:text-gray-100 leading-tight">
                                     {displayValue}
                                   </p>
                                 )}
