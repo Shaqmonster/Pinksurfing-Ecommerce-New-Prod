@@ -196,247 +196,108 @@ const Header = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-40 glass bg-gradient-to-r from-purple-900/95 via-purple-800/95 to-pink-600/95 backdrop-blur-xl w-full py-3 sm:py-4 shadow-xl border-b border-white/10"
+        className="sticky top-0 z-40 bg-[#0E0F13]/80 backdrop-blur-2xl w-full py-3 border-b border-white/5"
       >
-        <div className="flex items-center justify-between px-[2%] sm:px-[3%] text-white">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-6 md:px-12 lg:px-16 text-white gap-8">
           {/* Logo */}
-          <Link to="/">
+          <Link to="/" className="flex-shrink-0">
             <motion.div 
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center"
             >
-              <motion.img 
+              <img 
                 src="logo.jpg" 
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg ring-2 ring-white/20" 
+                className="w-10 h-10 rounded-full ring-1 ring-white/10 shadow-2xl" 
                 alt="PinkSurfing Logo"
-                transition={{ duration: 0.6 }}
               />
             </motion.div>
           </Link>
 
-          {/* Right Section - All Actions */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Search Bar - Desktop */}
-            <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-xl mx-4">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-400 transition-all text-sm"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:text-purple-300 transition-colors"
-                >
-                  <IoSearchSharp className="text-xl" />
-                </button>
-              </div>
-            </form>
+          {/* Search Bar - Center Integrated */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl relative group">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <IoSearchSharp className="text-gray-500 group-focus-within:text-purple-400 transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search premium products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-12 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl outline-none text-white placeholder-gray-500 focus:bg-white/10 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all text-sm"
+            />
+          </form>
 
-            {/* Mobile Search Icon */}
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="md:hidden"
-            >
-              <IoSearchSharp
-                onClick={() => setShowMobileSearch(true)}
-                className="text-2xl text-white cursor-pointer"
-              />
-            </motion.div>
-
-            {/* Language & Currency - Compact */}
-            {/* <div className="hidden sm:flex items-center gap-2">
-              <select className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-xs px-2 py-1.5 hover:bg-white/20 transition-all cursor-pointer">
-                <option className="bg-purple-900 text-white">EN</option>
-              </select>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-xs px-2 py-1.5 hover:bg-white/20 transition-all cursor-pointer"
-              >
-                {Object.keys(currencyOptions).map((code) => (
-                  <option key={code} value={currencyOptions[code].symbol} className="bg-purple-900 text-white">
-                    {code}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-            {/* Wallet Section */}
-            {/* <AnimatePresence>
-              {isWalletOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-lg px-2 sm:px-3 py-1.5 border border-white/20"
-                >
-                  <p className="text-white text-xs font-semibold">
-                    {selectedCurrency === "MYBIZ" ? "MYBIZ" : selectedCurrency}
-                  </p>
-                  <motion.p 
-                    key={walletBalance}
-                    initial={{ scale: 1.2, color: "#fbbf24" }}
-                    animate={{ scale: 1, color: "#ffffff" }}
-                    className="text-white font-bold text-xs sm:text-sm"
-                  >
-                    ${walletBalance}
-                  </motion.p>
-                  
-                  <select
-                    className="bg-black/30 text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded border border-white/20 outline-none cursor-pointer"
-                    value={selectedCurrency}
-                    onChange={(e) => setSelectedCurrency(e.target.value)}
-                  >
-                    <option value="BTC">BTC</option>
-                    <option value="ETH">ETH</option>
-                    <option value="USDT">USDT</option>
-                    <option value="MYBIZ">MYBIZ</option>
-                  </select>
-                  
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <QRCode
-                      value={getWalletAddress()}
-                      className="cursor-pointer rounded"
-                      size={24}
-                      onClick={handleWalletClick}
-                    />
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence> */}
-
-            {/* QR Code Modal */}
-            {/* <AnimatePresence>
-              {showQRCode && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50"
-                  onClick={closeQRCode}
-                >
-                  <motion.div 
-                    initial={{ scale: 0.8, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    exit={{ scale: 0.8, y: 20 }}
-                    className="glass bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-2xl"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="bg-white p-4 rounded-2xl shadow-inner">
-                      <QRCode value={getWalletAddress()} size={256} />
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={closeQRCode}
-                      className="mt-6 w-full py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-red-500/50 transition-all"
-                    >
-                      Close
-                    </motion.button>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
- */}
-            {/* GigHub Marketplace */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          {/* Right Section - Grouped Actions */}
+          <div className="flex items-center gap-3 md:gap-6">
+            {/* Action Buttons */}
+            <div className="hidden lg:flex items-center gap-2">
               <Link
                 to="/gighub"
-                className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all whitespace-nowrap"
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all"
               >
-                <FaBriefcase className="text-xs" />
+                <FaBriefcase className="text-gray-400" />
                 GigHub
               </Link>
-            </motion.div>
-
-            {/* Bids Marketplace */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/bids"
-                className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 text-white text-xs font-semibold transition-all shadow-md hover:shadow-pink-500/30 whitespace-nowrap"
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-purple-500/20"
               >
-                <FaGavel className="text-xs" />
-                <span className="hidden sm:inline">Bids</span>
+                <FaGavel />
+                Bids
               </Link>
-            </motion.div>
+            </div>
 
-            {/* User Actions */}
-            {user && (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link to="/contact" className="hidden lg:flex items-center gap-1.5 text-white/70 hover:text-white text-xs font-medium transition-colors">
-                   Help & Support
-                </Link>
-                <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-                  <FaHeart
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      setIsWishlistOpen(true);
-                    }}
-                    className="cursor-pointer text-lg sm:text-xl text-pink-300 hover:text-pink-400 transition-colors"
-                  />
-                </motion.div>
-                
-                <motion.div 
-                  whileHover={{ scale: 1.1 }} 
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    setIsCartOpen(true);
-                  }}
-                  className="relative cursor-pointer"
-                >
-                  <motion.span 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="bg-gradient-to-r from-pink-500 to-purple-500 px-1.5 py-0.5 absolute -top-2 -right-2 text-white text-[9px] sm:text-[10px] font-bold rounded-full shadow-lg"
+            {/* Icons Section */}
+            <div className="flex items-center gap-4 border-l border-white/10 pl-3 md:pl-6">
+              {/* Mobile Search Icon */}
+              <IoSearchSharp
+                onClick={() => setShowMobileSearch(true)}
+                className="md:hidden text-2xl text-gray-400 cursor-pointer hover:text-white transition-colors"
+              />
+
+              {user && (
+                <>
+                  <div className="relative group cursor-pointer" onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}>
+                    <FaHeart className="text-lg text-gray-400 hover:text-pink-500 transition-all duration-300 transform group-hover:scale-110" />
+                  </div>
+                  
+                  <div 
+                    className="relative group cursor-pointer"
+                    onClick={() => { setIsProfileOpen(false); setIsCartOpen(true); }}
                   >
-                    {cartProducts.length}
-                  </motion.span>
-                  <IoCart className="cursor-pointer text-xl sm:text-2xl text-purple-200 hover:text-purple-300 transition-colors" />
-                </motion.div>
-              </div>
-            )}
+                    <IoCart className="text-2xl text-gray-400 group-hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
+                    {cartProducts.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-purple-600 text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full ring-2 ring-[#0E0F13]">
+                        {cartProducts.length}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
 
-            {/* Profile Section */}
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/profile")}
-              className="flex items-center cursor-pointer gap-2 bg-white/10 backdrop-blur-md px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
-            >
-              {user.img ? (
-                <motion.img
-                  whileHover={{ scale: 1.1 }}
+              {/* Profile - Integrated Minimalist */}
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate("/profile")}
+                className="flex items-center cursor-pointer gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all pl-1.5 pr-4"
+              >
+                <img
                   src="https://avatars.githubusercontent.com/u/499550?v=4"
                   alt="avatar"
-                  className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full ring-2 ring-white/30 shadow-lg"
+                  className="w-8 h-8 rounded-xl object-cover ring-1 ring-white/10"
                 />
-              ) : (
-                <IoPersonCircleOutline className="text-2xl sm:text-3xl text-purple-200" />
-              )}
-              {user && (
                 <div className="hidden sm:flex flex-col">
-                  <p className="text-[10px] text-white/60 leading-tight">Hello</p>
-                  <span className="text-xs font-semibold text-white leading-tight">
+                  <span className="text-[10px] font-black text-white uppercase tracking-tighter">
                     {user?.first_name}
                   </span>
+                  <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none">
+                    Account
+                  </span>
                 </div>
-              )}
-            </motion.div>
-
-            {/* Shop by Categories Button */}
-            {/* <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsMobileCategoryOpen(!isMobileCategoryOpen)}
-              className="flex items-center justify-center cursor-pointer bg-white/10 backdrop-blur-md p-2 sm:p-2.5 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
-              title="Shop by Categories"
-            >
-              <IoMenuOutline className="text-xl sm:text-2xl text-purple-200 hover:text-white transition-colors" />
-            </motion.div> */}
+              </motion.div>
+            </div>
           </div>
         </div>
       </motion.div>
