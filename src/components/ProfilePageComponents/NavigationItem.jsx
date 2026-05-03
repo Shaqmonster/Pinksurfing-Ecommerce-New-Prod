@@ -18,16 +18,20 @@ export function NavigationItem({ icon, label, isActive, altText, tabIndex = 0 })
             {isActive && (
                 <motion.div 
                     layoutId="activeTabBackground"
-                    className="absolute inset-0 bg-white/5 rounded-xl border border-white/10"
+                    className="absolute inset-0 bg-white/[0.08] backdrop-blur-md rounded-2xl border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.1)]"
                 />
             )}
             
-            <img
-                src={icon}
-                alt={altText}
-                className={`object-contain w-5 aspect-square relative z-10 transition-all duration-200 ${isActive ? 'brightness-125 scale-110' : 'opacity-50 group-hover:opacity-100'}`}
-            />
-            <div className={`text-sm font-bold relative z-10 transition-colors duration-200 ${isActive ? 'text-purple-400' : 'text-gray-400 group-hover:text-gray-200'}`}>{label}</div>
+            <div className="relative z-10 flex items-center gap-4 w-full">
+                <img
+                    src={icon}
+                    alt={altText}
+                    className={`object-contain w-5 h-5 transition-all duration-500 ${isActive ? 'brightness-200 scale-110 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'opacity-40 group-hover:opacity-100'}`}
+                />
+                <div className={`text-[13px] font-bold tracking-tight transition-all duration-500 ${isActive ? 'text-white translate-x-1' : 'text-white/40 group-hover:text-white/80'}`}>
+                    {label}
+                </div>
+            </div>
         </motion.div>
     );
 }

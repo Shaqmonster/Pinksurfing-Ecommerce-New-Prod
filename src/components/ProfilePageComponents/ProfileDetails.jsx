@@ -198,53 +198,62 @@ export default function ProfileDetails() {
                 {isLoading && <Loader />}
             </div>
 
-            <div className="w-full max-w-5xl mx-auto space-y-8 pb-20">
-                {/* Header Section - Clean Modern */}
-                <div className="bg-[#15161A] border border-white/5 p-10 md:p-12 rounded-[2rem] shadow-2xl flex flex-col md:flex-row items-center gap-10 relative overflow-hidden">
-                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-500/5 blur-[100px] rounded-full"></div>
+            <div className="w-full max-w-6xl mx-auto space-y-12 pb-32">
+                {/* Header Section - Statement Glass */}
+                <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 p-12 md:p-16 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center gap-12 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none"></div>
                     
                     <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-full blur opacity-20"></div>
-                        <div className="relative w-36 h-36 md:w-44 md:h-44 overflow-hidden rounded-full border-4 border-[#0E0F13] shadow-2xl">
+                        <div className="absolute -inset-4 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-full blur-[20px] opacity-20 animate-pulse"></div>
+                        <div className="relative w-44 h-44 md:w-52 md:h-52 overflow-hidden rounded-full border-[6px] border-white/5 shadow-2xl">
                             <img
                                 src={
                                     profile.customer_profile_picture ||
                                     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
                                 }
                                 alt="Profile"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                         </div>
                     </div>
 
-                    <div className="flex-1 text-center md:text-left space-y-4">
-                        <div className="space-y-1">
-                            <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em]">Official Profile</p>
-                            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter uppercase leading-tight">
-                                {first_name} <span className="text-purple-500">{last_name}</span>
+                    <div className="flex-1 text-center md:text-left space-y-6">
+                        <div className="space-y-2">
+                            <motion.p 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-purple-400 text-[10px] font-black uppercase tracking-[0.4em] leading-none"
+                            >
+                                Premium Member
+                            </motion.p>
+                            <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9]">
+                                {first_name} <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-purple-500/50">
+                                    {last_name}
+                                </span>
                             </h2>
                         </div>
-                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                            <span className="px-5 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                            <div className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/40">
                                 Joined {new Date(profile.date_registered).getFullYear()}
-                            </span>
-                            <span className="px-5 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[10px] font-bold uppercase tracking-widest text-purple-400">
-                                {is_vendor ? 'Verified Vendor' : 'Customer'}
-                            </span>
+                            </div>
+                            <div className="px-6 py-2.5 rounded-2xl bg-purple-600/20 border border-purple-500/20 text-[10px] font-black uppercase tracking-widest text-purple-300">
+                                {is_vendor ? 'Official Vendor' : 'Verified Profile'}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Form Section - Clean Modern */}
-                <div className="bg-[#15161A] border border-white/5 p-10 md:p-14 rounded-[2.5rem] shadow-2xl">
-                    <form onSubmit={UpdateProfile} className="space-y-12">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/* Form Section - Clean Minimalist */}
+                <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 p-12 md:p-20 rounded-[3.5rem] shadow-2xl">
+                    <form onSubmit={UpdateProfile} className="space-y-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
-                                    First Name
+                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
+                                    Identity / First Name
                                 </label>
                                 <input
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white font-bold outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/10"
+                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 text-white font-bold text-lg outline-none focus:bg-white/[0.06] focus:border-purple-500/40 transition-all duration-500 placeholder:text-white/5"
                                     name="first_name"
                                     type="text"
                                     placeholder="First Name"
@@ -255,11 +264,11 @@ export default function ProfileDetails() {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
-                                    Last Name
+                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
+                                    Identity / Last Name
                                 </label>
                                 <input
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white font-bold outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/10"
+                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 text-white font-bold text-lg outline-none focus:bg-white/[0.06] focus:border-purple-500/40 transition-all duration-500 placeholder:text-white/5"
                                     name="last_name"
                                     type="text"
                                     placeholder="Last Name"
@@ -270,11 +279,11 @@ export default function ProfileDetails() {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
-                                    Phone Number
+                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
+                                    Secure Contact / Phone
                                 </label>
                                 <input
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white font-bold outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/10"
+                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 text-white font-bold text-lg outline-none focus:bg-white/[0.06] focus:border-purple-500/40 transition-all duration-500 placeholder:text-white/5"
                                     id="customer_phone"
                                     name="customer_phone"
                                     type="text"
@@ -288,61 +297,65 @@ export default function ProfileDetails() {
                             {/* Store Link Section */}
                             {profile?.vendor?.slug && (
                                 <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
-                                        Your Store Link
+                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
+                                        Marketplace Presence
                                     </label>
-                                    <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl py-5 px-8 group hover:border-purple-500/30 transition-all duration-300">
+                                    <div className="flex items-center gap-6 bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 group hover:bg-white/[0.05] transition-all duration-500">
                                         <a
                                             href={storeUrl(profile.vendor.slug)}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex-1 text-purple-400 font-bold text-sm truncate hover:text-purple-300 transition-colors"
+                                            className="flex-1 text-purple-400 font-bold text-base truncate hover:text-purple-300 transition-colors"
                                         >
                                             {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
                                         </a>
                                         <button
                                             type="button"
                                             onClick={handleCopyStoreLink}
-                                            className="p-2 text-gray-500 hover:text-white transition-colors"
+                                            className="p-3 bg-white/5 rounded-xl text-white/40 hover:text-white hover:bg-white/10 transition-all"
                                         >
-                                            {copied ? <FaCheck className="w-4 h-4 text-green-500" /> : <FaCopy className="w-4 h-4" />}
+                                            {copied ? <FaCheck className="w-5 h-5 text-green-500" /> : <FaCopy className="w-5 h-5" />}
                                         </button>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="pt-10 flex flex-col sm:flex-row items-center gap-6">
-                            <button
+                        <div className="pt-12 flex flex-col sm:flex-row items-center gap-8 border-t border-white/5 mt-12">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 type="submit"
-                                className="w-full sm:w-auto px-12 py-5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-black rounded-2xl transition-all duration-300 uppercase tracking-widest text-xs shadow-xl shadow-purple-500/20 active:scale-95"
+                                className="w-full sm:w-auto px-16 py-6 bg-white text-black font-black rounded-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-purple-50 active:bg-gray-200"
                             >
-                                Save Changes
-                            </button>
+                                Commit Changes
+                            </motion.button>
                             <button
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="w-full sm:w-auto px-12 py-5 bg-white/5 border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white font-black rounded-2xl transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
+                                className="w-full sm:w-auto px-16 py-6 bg-transparent border border-white/10 hover:border-white/30 text-white/40 hover:text-white font-black rounded-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs"
                             >
-                                Go Back
+                                Revert
                             </button>
                         </div>
                     </form>
                 </div>
 
                 {!profile.is_vendor && (
-                    <div className="bg-[#15161A] border border-purple-500/10 p-10 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-10">
-                        <div className="space-y-3 text-center md:text-left">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Start Selling Premium</h3>
-                            <p className="text-gray-500 text-sm font-medium">Join our elite network of vendors and reach global customers.</p>
+                    <div className="bg-gradient-to-r from-purple-600/10 via-transparent to-transparent border border-white/5 p-12 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-12">
+                        <div className="space-y-4 text-center md:text-left">
+                            <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Elevate to Merchant Status</h3>
+                            <p className="text-white/30 text-base font-medium max-w-md">Unlock specialized marketplace tools and reach our global community.</p>
                         </div>
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             type="button"
-                            className="px-10 py-5 bg-white text-black font-black rounded-2xl transition-all duration-300 uppercase tracking-widest text-xs hover:bg-gray-200 active:scale-95"
+                            className="px-12 py-5 bg-purple-600 text-white font-black rounded-2xl transition-all duration-500 uppercase tracking-widest text-xs shadow-xl shadow-purple-500/20"
                             onClick={() => {}}
                         >
-                            Become a Vendor
-                        </button>
+                            Apply Now
+                        </motion.button>
                     </div>
                 )}
             </div>
