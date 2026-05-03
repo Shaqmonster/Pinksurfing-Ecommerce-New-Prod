@@ -17,17 +17,17 @@ export function NavigationItem({ icon, label, isActive, altText, tabIndex = 0 })
         >
             {isActive && (
                 <motion.div 
-                    layoutId="activeTabGlow"
-                    className="absolute inset-0 bg-purple-500/10 rounded-xl blur-sm"
+                    layoutId="activeTabInset"
+                    className="absolute inset-0 bg-[#0E0F13] rounded-xl shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c]"
                 />
             )}
             
             <img
                 src={icon}
                 alt={altText}
-                className={`object-contain w-5 aspect-square relative z-10 transition-all duration-200 ${isActive ? 'brightness-110' : 'opacity-70 group-hover:opacity-100'}`}
+                className={`object-contain w-5 aspect-square relative z-10 transition-all duration-200 ${isActive ? 'brightness-125' : 'opacity-60 group-hover:opacity-100'}`}
             />
-            <div className={`text-sm font-medium relative z-10 ${isActive ? 'font-semibold' : ''}`}>{label}</div>
+            <div className={`text-sm font-bold relative z-10 ${isActive ? 'text-purple-400' : 'text-gray-400 group-hover:text-gray-200'}`}>{label}</div>
         </motion.div>
     );
 }

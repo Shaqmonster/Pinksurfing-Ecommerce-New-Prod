@@ -198,53 +198,51 @@ export default function ProfileDetails() {
                 {isLoading && <Loader />}
             </div>
 
-            <div className="w-full max-w-4xl mx-auto space-y-12 pb-12">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row items-center gap-8 bg-white/5 backdrop-blur-xl border border-white/5 p-8 md:p-12 rounded-[2rem] shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[80px] rounded-full group-hover:bg-purple-500/20 transition-all duration-700"></div>
-                    
+            <div className="w-full max-w-5xl mx-auto space-y-16 pb-20">
+                {/* Header Section - Pushed Out */}
+                <div className="bg-[#0E0F13] shadow-[20px_20px_40px_#050505,-15px_-15px_30px_#17181c] p-10 md:p-14 rounded-[3rem] flex flex-col md:flex-row items-center gap-10">
                     <div className="relative">
-                        <div className="absolute -inset-2 bg-gradient-to-r from-purple-600 to-purple-400 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                        <div className="relative w-32 h-32 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-[#0E0F13] shadow-2xl">
+                        <div className="absolute -inset-4 bg-[#0E0F13] rounded-full shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c]"></div>
+                        <div className="relative w-36 h-36 md:w-44 md:h-44 overflow-hidden rounded-full border-[6px] border-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c]">
                             <img
                                 src={
                                     profile.customer_profile_picture ||
                                     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
                                 }
                                 alt="Profile"
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                className="w-full h-full object-cover"
                             />
                         </div>
                     </div>
 
-                    <div className="flex-1 text-center md:text-left space-y-2">
-                        <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase">
-                            {first_name} {last_name}
+                    <div className="flex-1 text-center md:text-left space-y-4">
+                        <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter uppercase leading-none">
+                            {first_name} <span className="text-purple-500">{last_name}</span>
                         </h2>
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                            <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                                Member since {new Date(profile.date_registered).getFullYear()}
+                            <span className="px-5 py-2 rounded-2xl bg-[#0E0F13] shadow-[4px_4px_8px_#050505,-4px_-4px_8px_#17181c] text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                Joined {new Date(profile.date_registered).getFullYear()}
                             </span>
-                            <span className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] font-bold uppercase tracking-widest text-purple-400">
-                                {is_vendor ? 'Vendor' : 'Customer'}
+                            <span className="px-5 py-2 rounded-2xl bg-[#0E0F13] shadow-[4px_4px_8px_#050505,-4px_-4px_8px_#17181c] text-[10px] font-black uppercase tracking-widest text-purple-400">
+                                {is_vendor ? 'Official Vendor' : 'Verified Customer'}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {/* Form Section */}
-                <div className="bg-[#0E0F13] border border-white/5 p-8 md:p-12 rounded-[2rem] shadow-2xl">
-                    <form onSubmit={UpdateProfile} className="space-y-10">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                {/* Form Section - Pushed Out */}
+                <div className="bg-[#0E0F13] shadow-[20px_20px_40px_#050505,-15px_-15px_30px_#17181c] p-10 md:p-14 rounded-[3rem]">
+                    <form onSubmit={UpdateProfile} className="space-y-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
                                     First Name
                                 </label>
                                 <input
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/20"
+                                    className="w-full bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8 text-white font-bold border-none outline-none focus:text-purple-400 transition-all duration-300 placeholder:text-white/10"
                                     name="first_name"
                                     type="text"
-                                    placeholder="Enter your first name"
+                                    placeholder="First Name"
                                     value={first_name}
                                     onChange={handleOnChange}
                                     required
@@ -252,14 +250,14 @@ export default function ProfileDetails() {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
                                     Last Name
                                 </label>
                                 <input
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/20"
+                                    className="w-full bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8 text-white font-bold border-none outline-none focus:text-purple-400 transition-all duration-300 placeholder:text-white/10"
                                     name="last_name"
                                     type="text"
-                                    placeholder="Enter your last name"
+                                    placeholder="Last Name"
                                     value={last_name}
                                     onChange={handleOnChange}
                                     required
@@ -267,15 +265,15 @@ export default function ProfileDetails() {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
                                     Phone Number
                                 </label>
                                 <input
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 placeholder:text-white/20"
+                                    className="w-full bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8 text-white font-bold border-none outline-none focus:text-purple-400 transition-all duration-300 placeholder:text-white/10"
                                     id="customer_phone"
                                     name="customer_phone"
                                     type="text"
-                                    placeholder="Enter your phone number"
+                                    placeholder="Phone Number"
                                     value={customer_phone}
                                     onChange={handleOnChange}
                                     required
@@ -285,15 +283,15 @@ export default function ProfileDetails() {
                             {/* Store Link Section */}
                             {profile?.vendor?.slug && (
                                 <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2">
                                         Your Store Link
                                     </label>
-                                    <div className="flex items-center gap-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl py-4 px-6 group transition-all duration-300 hover:border-purple-500/30">
+                                    <div className="flex items-center gap-4 bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl py-5 px-8">
                                         <a
                                             href={storeUrl(profile.vendor.slug)}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex-1 text-purple-400 font-bold text-sm truncate"
+                                            className="flex-1 text-purple-400 font-bold text-sm truncate hover:text-purple-300 transition-colors"
                                         >
                                             {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
                                         </a>
@@ -309,17 +307,17 @@ export default function ProfileDetails() {
                             )}
                         </div>
 
-                        <div className="pt-10 flex flex-col sm:flex-row items-center gap-4">
+                        <div className="pt-10 flex flex-col sm:flex-row items-center gap-6">
                             <button
                                 type="submit"
-                                className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-black rounded-2xl shadow-2xl shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-xs"
+                                className="w-full sm:w-auto px-12 py-5 bg-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] text-white font-black rounded-2xl transition-all duration-200 uppercase tracking-widest text-xs hover:text-purple-400"
                             >
-                                Save Profile Changes
+                                Save Changes
                             </button>
                             <button
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="w-full sm:w-auto px-10 py-5 bg-white/5 text-gray-400 font-bold rounded-2xl hover:bg-white/10 hover:text-white transition-all duration-300 uppercase tracking-widest text-xs"
+                                className="w-full sm:w-auto px-12 py-5 bg-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] text-gray-500 font-black rounded-2xl transition-all duration-200 uppercase tracking-widest text-xs hover:text-white"
                             >
                                 Go Back
                             </button>
@@ -328,17 +326,15 @@ export default function ProfileDetails() {
                 </div>
 
                 {!profile.is_vendor && (
-                    <div className="bg-gradient-to-r from-purple-900/20 to-transparent border border-purple-500/20 p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="space-y-2 text-center md:text-left">
-                            <h3 className="text-xl font-bold text-white">Want to start selling?</h3>
-                            <p className="text-gray-500 text-sm">Join our network of vendors and reach thousands of customers.</p>
+                    <div className="bg-[#0E0F13] shadow-[15px_15px_30px_#050505,-10px_-10px_20px_#17181c] p-10 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-10">
+                        <div className="space-y-3 text-center md:text-left">
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Start Selling Premium</h3>
+                            <p className="text-gray-500 text-sm font-medium">Join our elite network of vendors and reach global customers.</p>
                         </div>
                         <button
                             type="button"
-                            className="px-8 py-4 bg-white text-[#0E0F13] font-black rounded-xl hover:bg-gray-200 transition-all duration-300 uppercase tracking-widest text-xs"
-                            onClick={() => {
-                                // Implement vendor navigation
-                            }}
+                            className="px-10 py-5 bg-[#0E0F13] shadow-[8px_8px_16px_#050505,-8px_-8px_16px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] text-purple-400 font-black rounded-2xl transition-all duration-200 uppercase tracking-widest text-xs"
+                            onClick={() => {}}
                         >
                             Become a Vendor
                         </button>

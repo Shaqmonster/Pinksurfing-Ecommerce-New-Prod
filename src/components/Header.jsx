@@ -196,52 +196,52 @@ const Header = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-40 bg-[#0E0F13]/80 backdrop-blur-2xl w-full py-3 border-b border-white/5"
+        className="sticky top-0 z-40 bg-[#0E0F13] w-full py-4 shadow-[0px_10px_30px_#050505]"
       >
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-6 md:px-12 lg:px-16 text-white gap-8">
-          {/* Logo */}
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-6 md:px-12 lg:px-16 text-white gap-10">
+          {/* Logo - Pushed Out */}
           <Link to="/" className="flex-shrink-0">
             <motion.div 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center"
+              className="p-1 bg-[#0E0F13] rounded-full shadow-[6px_6px_12px_#050505,-6px_-6px_12px_#17181c]"
             >
               <img 
                 src="logo.jpg" 
-                className="w-10 h-10 rounded-full ring-1 ring-white/10 shadow-2xl" 
+                className="w-10 h-10 rounded-full" 
                 alt="PinkSurfing Logo"
               />
             </motion.div>
           </Link>
 
-          {/* Search Bar - Center Integrated */}
+          {/* Search Bar - Pressed In */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl relative group">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <IoSearchSharp className="text-gray-500 group-focus-within:text-purple-400 transition-colors" />
+            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+              <IoSearchSharp className="text-gray-600 group-focus-within:text-purple-500 transition-colors" />
             </div>
             <input
               type="text"
               placeholder="Search premium products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl outline-none text-white placeholder-gray-500 focus:bg-white/10 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all text-sm"
+              className="w-full pl-14 pr-6 py-3 bg-[#0E0F13] shadow-[inset_6px_6px_12px_#050505,inset_-6px_-6px_12px_#17181c] rounded-2xl outline-none text-white font-bold placeholder-gray-700 focus:text-purple-400 transition-all text-sm border-none"
             />
           </form>
 
           {/* Right Section - Grouped Actions */}
-          <div className="flex items-center gap-3 md:gap-6">
-            {/* Action Buttons */}
-            <div className="hidden lg:flex items-center gap-2">
+          <div className="flex items-center gap-6">
+            {/* Action Buttons - Pushed Out */}
+            <div className="hidden lg:flex items-center gap-4">
               <Link
                 to="/gighub"
-                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all"
+                className="flex items-center gap-2 bg-[#0E0F13] shadow-[6px_6px_12px_#050505,-6px_-6px_12px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] rounded-xl px-5 py-2.5 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-purple-400"
               >
-                <FaBriefcase className="text-gray-400" />
+                <FaBriefcase className="text-xs" />
                 GigHub
               </Link>
               <Link
                 to="/bids"
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 border border-white/10 rounded-xl px-4 py-2 text-white text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-purple-500/20"
+                className="flex items-center gap-2 bg-[#0E0F13] shadow-[6px_6px_12px_#050505,-6px_-6px_12px_#17181c] active:shadow-[inset_4px_4px_8px_#050505,inset_-4px_-4px_8px_#17181c] rounded-xl px-5 py-2.5 text-purple-500 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-purple-400"
               >
                 <FaGavel />
                 Bids
@@ -249,26 +249,20 @@ const Header = () => {
             </div>
 
             {/* Icons Section */}
-            <div className="flex items-center gap-4 border-l border-white/10 pl-3 md:pl-6">
-              {/* Mobile Search Icon */}
-              <IoSearchSharp
-                onClick={() => setShowMobileSearch(true)}
-                className="md:hidden text-2xl text-gray-400 cursor-pointer hover:text-white transition-colors"
-              />
-
+            <div className="flex items-center gap-6 border-l border-gray-800 pl-6">
               {user && (
                 <>
-                  <div className="relative group cursor-pointer" onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}>
-                    <FaHeart className="text-lg text-gray-400 hover:text-pink-500 transition-all duration-300 transform group-hover:scale-110" />
+                  <div className="relative group cursor-pointer p-2 bg-[#0E0F13] shadow-[4px_4px_8px_#050505,-4px_-4px_8px_#17181c] active:shadow-[inset_2px_2px_4px_#050505,inset_-2px_-2px_4px_#17181c] rounded-xl" onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}>
+                    <FaHeart className="text-lg text-gray-600 hover:text-pink-500 transition-colors" />
                   </div>
                   
                   <div 
-                    className="relative group cursor-pointer"
+                    className="relative group cursor-pointer p-2 bg-[#0E0F13] shadow-[4px_4px_8px_#050505,-4px_-4px_8px_#17181c] active:shadow-[inset_2px_2px_4px_#050505,inset_-2px_-2px_4px_#17181c] rounded-xl"
                     onClick={() => { setIsProfileOpen(false); setIsCartOpen(true); }}
                   >
-                    <IoCart className="text-2xl text-gray-400 group-hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
+                    <IoCart className="text-xl text-gray-600 group-hover:text-purple-400 transition-colors" />
                     {cartProducts.length > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-purple-600 text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full ring-2 ring-[#0E0F13]">
+                      <span className="absolute -top-1 -right-1 bg-purple-600 text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-[2px_2px_4px_rgba(0,0,0,0.5)]">
                         {cartProducts.length}
                       </span>
                     )}
@@ -276,24 +270,24 @@ const Header = () => {
                 </>
               )}
 
-              {/* Profile - Integrated Minimalist */}
+              {/* Profile - Pushed Out Chip */}
               <motion.div 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate("/profile")}
-                className="flex items-center cursor-pointer gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all pl-1.5 pr-4"
+                className="flex items-center cursor-pointer gap-4 bg-[#0E0F13] shadow-[6px_6px_12px_#050505,-6px_-6px_12px_#17181c] p-2 rounded-[1.2rem] transition-all pl-2 pr-5"
               >
                 <img
                   src="https://avatars.githubusercontent.com/u/499550?v=4"
                   alt="avatar"
-                  className="w-8 h-8 rounded-xl object-cover ring-1 ring-white/10"
+                  className="w-9 h-9 rounded-xl object-cover shadow-[2px_2px_4px_rgba(0,0,0,0.3)]"
                 />
                 <div className="hidden sm:flex flex-col">
                   <span className="text-[10px] font-black text-white uppercase tracking-tighter">
                     {user?.first_name}
                   </span>
-                  <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none">
-                    Account
+                  <span className="text-[8px] text-purple-500 font-bold uppercase tracking-[0.2em] leading-none">
+                    Verified
                   </span>
                 </div>
               </motion.div>

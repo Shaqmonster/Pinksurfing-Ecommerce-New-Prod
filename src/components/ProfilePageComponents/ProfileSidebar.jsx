@@ -125,15 +125,15 @@ export function Sidebar() {
 
             {/* Desktop: Full Sidebar */}
             <div className="max-md:hidden">
-                <div className="bg-[#0E0F13] rounded-3xl border border-white/5 shadow-2xl overflow-hidden min-w-[240px] w-[280px]">
+                <div className="bg-[#0E0F13] rounded-[2.5rem] shadow-[15px_15px_30px_#050505,-10px_-10px_20px_#17181c] overflow-hidden min-w-[240px] w-[280px]">
                     {/* Sidebar Header */}
-                    <div className="px-8 py-8">
+                    <div className="px-10 py-10">
                         <h3 className="text-xl font-black text-white tracking-tighter uppercase">My Account</h3>
-                        <p className="text-[10px] text-gray-500 mt-1 font-bold uppercase tracking-widest">Dashboard & Settings</p>
+                        <p className="text-[10px] text-purple-400 mt-1 font-bold uppercase tracking-[0.2em]">Dashboard</p>
                     </div>
                     
                     {/* Navigation Items */}
-                    <div className="pb-6 px-2 space-y-1">
+                    <div className="pb-8 px-4 space-y-2">
                         {navigationItems.map((item, index) => (
                             <div key={item.label} onClick={() => handleItemClick(index)}>
                                 <NavigationItem
