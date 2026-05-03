@@ -866,8 +866,8 @@ const ProductDetailPage = () => {
                       </div>
                     </button>
 
-                    <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isSpecsOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-white/5">
+                    <div className={`px-8 pb-6 transition-all duration-500 ease-in-out ${isSpecsOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1 pt-4 border-t border-gray-100 dark:border-white/5">
                         {Object.entries(specAttributeMap).map(([attrName, values]) => {
                           const displayValue = values.map((v) => v.value).join(", ");
                           const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
@@ -876,31 +876,28 @@ const ProductDetailPage = () => {
                           return (
                             <div
                               key={attrName}
-                              className="group relative overflow-hidden bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-[1.5rem] p-5 transition-all duration-300 hover:border-blue-500/30"
+                              className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-white/[0.02] last:border-0 md:last:border-b"
                             >
-                              <div className="relative z-10">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-2 group-hover:text-blue-500 transition-colors">
-                                  {attrName}
-                                </p>
-                                
-                                <div className="flex items-center gap-3">
-                                  {isBoolean ? (
-                                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest ${
-                                      isTrue 
-                                        ? "bg-green-500/10 text-green-500 border border-green-500/20" 
-                                        : "bg-gray-500/10 text-gray-400 border border-gray-500/10"
-                                    }`}>
-                                      <span className={`w-1.5 h-1.5 rounded-full ${isTrue ? "bg-green-500 animate-pulse" : "bg-gray-500"}`} />
-                                      {isTrue ? "Yes" : "No"}
-                                    </div>
-                                  ) : (
-                                    <p className="text-sm font-bold text-gray-900 dark:text-white group-hover:translate-x-1 transition-transform">
-                                      {displayValue}
-                                    </p>
-                                  )}
-                                </div>
+                              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">
+                                {attrName}
+                              </span>
+                              
+                              <div className="flex items-center gap-3">
+                                {isBoolean ? (
+                                  <div className={`flex items-center gap-2 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                    isTrue 
+                                      ? "bg-green-500/10 text-green-500" 
+                                      : "bg-gray-500/10 text-gray-400"
+                                  }`}>
+                                    <span className={`w-1 h-1 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-500"}`} />
+                                    {isTrue ? "Yes" : "No"}
+                                  </div>
+                                ) : (
+                                  <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
+                                    {displayValue}
+                                  </p>
+                                )}
                               </div>
-                              <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
                             </div>
                           );
                         })}
