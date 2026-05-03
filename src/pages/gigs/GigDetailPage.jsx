@@ -147,7 +147,7 @@ const GigDetailPage = () => {
     }
   };
 
-  const images = gig?.media_files?.filter((m) => m.media_type === "image") || [];
+  const images = gig?.media_files || [];
   const prevImage = () => setActiveImageIdx((i) => (i === 0 ? images.length - 1 : i - 1));
   const nextImage = () => setActiveImageIdx((i) => (i === images.length - 1 ? 0 : i + 1));
 

@@ -5,7 +5,9 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
-  createGigFull,
+  createGig,
+  addGigPackage,
+  addGigMedia,
   getGigCategories,
   getGigSubcategories,
 } from "../../api/gigs";
@@ -154,26 +156,30 @@ const CreateGigPage = () => {
       if (details.category) gigDetails.category = Number(details.category);
       if (details.subcategory) gigDetails.subcategory = Number(details.subcategory);
 
-      const activePkgs = packages
-        .filter((p) => p.enabled)
-        .map((p) => ({
+      // 1. Create basic gig
+      const res = await createGig(cookies.access_token, gigDetails);
+      const gigId = res.data.id;
+
+      // 2. Add Packages sequentially
+      const activePkgs = packages.filter((p) => p.enabled);
+      for (const p of activePkgs) {
+        await addGigPackage(cookies.access_token, gigId, {
           tier: p.tier,
           title: p.title || undefined,
           description: p.description,
           price: p.price,
           delivery_days: Number(p.delivery_days),
           revisions: Number(p.revisions),
-        }));
+        });
+      }
 
-      const res = await createGigFull(
-        cookies.access_token,
-        gigDetails,
-        activePkgs,
-        mediaFiles
-      );
+      // 3. Add Media files sequentially
+      for (let i = 0; i < mediaFiles.length; i++) {
+        await addGigMedia(cookies.access_token, gigId, mediaFiles[i], i === 0);
+      }
 
       toast.success("Gig published successfully!");
-      navigate(`/gigs/${res.data.id}`);
+      navigate(`/gigs/${gigId}`);
     } catch (err) {
       const errData = err?.response?.data;
       const msg =
@@ -274,10 +280,14 @@ const CreateGigPage = () => {
             <textarea
               name="description"
               value={details.description}
-              onChange={handleDetailChange}
+              onChange={(e) => {
+                handleDetailChange(e);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
               placeholder="Describe your service in detail — what you offer, your process, what buyers can expect…"
               rows={5}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none"
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all overflow-hidden resize-none min-h-[120px]"
             />
                 </div>
 
@@ -408,10 +418,14 @@ const CreateGigPage = () => {
                         />
                         <textarea
                           value={pkg.description}
-                          onChange={(e) => updatePkg(pkg.tier, "description", e.target.value)}
+                          onChange={(e) => {
+                            updatePkg(pkg.tier, "description", e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
                           placeholder="Describe what's included in this package…"
                           rows={2}
-                          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
+                          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all overflow-hidden resize-none min-h-[60px]"
                         />
                         <div className="grid grid-cols-3 gap-3">
                           <div className="space-y-1">
