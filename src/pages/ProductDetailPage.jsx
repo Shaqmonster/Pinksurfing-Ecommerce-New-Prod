@@ -40,8 +40,8 @@ const ProductDetailPage = () => {
   const [productQty, setProductQty] = useState(1);
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [loading, setLoading] = useState(false);
-  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("story");
+  const [isStoryExpanded, setIsStoryExpanded] = useState(false);
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
   const rawProductId = searchParams.get("productId");
@@ -874,20 +874,57 @@ const ProductDetailPage = () => {
                   <div className="p-8">
                     {activeTab === "story" ? (
                       <div className="animate-fadeIn">
-                        {product?.short_description ? (
-                          <div className="
-                            text-sm text-gray-600 dark:text-gray-400 leading-relaxed
-                            [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
-                            [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
-                            [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                            [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-                            [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-                            [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
-                            [&_a]:text-purple-600 [&_a]:underline transition-all
-                          ">
-                            {parse(product.short_description)}
-                          </div>
-                        ) : (
+                        <div className={`relative transition-all duration-700 ease-in-out ${!isStoryExpanded ? "max-h-[300px] overflow-hidden" : "max-h-[5000px]"}`}>
+                          {product?.short_description && (
+                            <div className="
+                              text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6
+                              [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+                              [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
+                              [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                              [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
+                              [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
+                              [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+                              [&_a]:text-purple-600 [&_a]:underline transition-all
+                            ">
+                              {parse(product.short_description)}
+                            </div>
+                          )}
+
+                          {product?.description && (
+                            <div className="
+                              text-sm text-gray-600 dark:text-gray-400 leading-relaxed
+                              [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+                              [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
+                              [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                              [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
+                              [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
+                              [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+                              [&_a]:text-purple-600 [&_a]:underline transition-all
+                            ">
+                              {parse(product.description)}
+                            </div>
+                          )}
+
+                          {!isStoryExpanded && (product?.description || product?.short_description) && (
+                            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-[#111218] to-transparent pointer-events-none"></div>
+                          )}
+                        </div>
+
+                        {(product?.description || product?.short_description) && (
+                          <button
+                            onClick={() => setIsStoryExpanded(!isStoryExpanded)}
+                            className="mt-6 text-[10px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400 hover:text-purple-700 transition-colors flex items-center gap-2"
+                          >
+                            {isStoryExpanded ? "Show Less" : "Read Full Story"}
+                            <div className={`transition-transform duration-300 ${isStoryExpanded ? "rotate-180" : ""}`}>
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                          </button>
+                        )}
+                        
+                        {!product?.description && !product?.short_description && (
                           <p className="text-sm text-gray-500 italic py-8 text-center">No additional story details available.</p>
                         )}
                       </div>
@@ -927,7 +964,7 @@ const ProductDetailPage = () => {
                             })}
                           </div>
                         ) : (
-                          <p className="text-sm text-gray-500 italic py-8 text-center">No technical specifications available.</p>
+                          <p className="text-sm text-gray-500 italic py-8 text-center">No specifications available.</p>
                         )}
                       </div>
                     )}
@@ -937,35 +974,6 @@ const ProductDetailPage = () => {
                 </div>
               </div>
 
-            {/* Full Description (long HTML from vendor) */}
-            {product?.description && (
-              <div className="mt-12 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Full Product Details</h2>
-                </div>
-                <div className="px-6 py-6
-                  text-sm text-gray-700 dark:text-gray-300 leading-relaxed
-                  [&_p]:mb-3 [&_p]:leading-relaxed
-                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ul]:space-y-1
-                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_ol]:space-y-1
-                  [&_li]:leading-relaxed
-                  [&_strong]:font-semibold [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                  [&_em]:italic
-                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900 dark:[&_h1]:text-white [&_h1]:mb-3 [&_h1]:mt-4
-                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 dark:[&_h2]:text-white [&_h2]:mb-2 [&_h2]:mt-4
-                  [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-gray-900 dark:[&_h3]:text-white [&_h3]:mb-2 [&_h3]:mt-3
-                  [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-1
-                  [&_blockquote]:border-l-4 [&_blockquote]:border-purple-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 dark:[&_blockquote]:text-gray-400 [&_blockquote]:mb-3
-                  [&_a]:text-purple-600 dark:[&_a]:text-purple-400 [&_a]:underline [&_a]:hover:text-purple-700
-                  [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
-                  [&_th]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:bg-purple-50 dark:[&_th]:bg-purple-900/20 [&_th]:font-semibold [&_th]:border [&_th]:border-gray-200 dark:[&_th]:border-gray-700
-                  [&_td]:px-3 [&_td]:py-2 [&_td]:border [&_td]:border-gray-200 dark:[&_td]:border-gray-700
-                  [&_img]:rounded-xl [&_img]:max-w-full [&_img]:my-3
-                ">
-                  {parse(product.description)}
-                </div>
-              </div>
-            )}
 
             {/* Reviews and Recommendations */}
             <div className="mt-16 space-y-12">
