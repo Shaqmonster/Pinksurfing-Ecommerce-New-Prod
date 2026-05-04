@@ -10,7 +10,7 @@ export default function CategoryProducts() {
   const { slug } = useParams();
 
   // ── Business for Sale gets its own premium marketplace UI ──
-  if (slug === "business4sale") {
+  if (slug === "business4sale" || slug === "business-for-sale") {
     return <BusinessForSale />;
   }
 
