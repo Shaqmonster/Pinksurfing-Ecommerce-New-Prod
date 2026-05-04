@@ -1,3 +1,5 @@
+import { useParams } from "react-router-dom";
+import BusinessForSale from "./BusinessForSale";
 import useCategoryProducts from "./categoryProducts/useCategoryProducts";
 import MobileFilterDrawer from "./categoryProducts/MobileFilterDrawer";
 import CategoryHeader from "./categoryProducts/CategoryHeader";
@@ -5,6 +7,13 @@ import CategorySidebar from "./categoryProducts/CategorySidebar";
 import ProductsSection from "./categoryProducts/ProductsSection";
 
 export default function CategoryProducts() {
+  const { slug } = useParams();
+
+  // ── Business for Sale gets its own premium marketplace UI ──
+  if (slug === "business4sale") {
+    return <BusinessForSale />;
+  }
+
   const hook = useCategoryProducts();
 
   return (
