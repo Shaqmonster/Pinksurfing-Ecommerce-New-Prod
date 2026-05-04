@@ -79,9 +79,24 @@ const PaymentOptionsModal = ({
       window.location.href = response.data.payment_link;
     } catch (error) {
       console.error("Payment error:", error);
-      toast.error(error.response?.data?.error || "This vendor might not have connected their Square account yet.", {
+      let errorMessage = "Payment setup incomplete for this vendor.";
+      const errorCode = error.response?.data?.square_error_code;
+      const errorDetails = error.response?.data?.details;
+      
+      if (error.response?.status === 403 && errorCode === "INSUFFICIENT_SCOPES") {
+        errorMessage = "This vendor needs to reconnect their Square account with the correct permissions. Please notify the vendor.";
+      } else if (errorCode === "INSUFFICIENT_SCOPES") {
+        errorMessage = `Permission error: ${errorDetails || "Vendor account needs reauthorization."}`;
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response?.data?.details || errorMessage;
+      } else {
+        errorMessage = error.response?.data?.error || errorMessage;
+      }
+      
+      toast.error(errorMessage, {
         position: "top-center"
       });
+
     } finally {
       setLoadingVendorId(null);
     }
