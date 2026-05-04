@@ -53,7 +53,7 @@ const smartLabel = (s) => {
 
 const BusinessForSale = () => {
   const hook = useCategoryProducts();
-  const { filteredProducts, loading } = hook;
+  const { filteredProducts } = hook;
 
   const [kw, setKw] = useState("");
   const [industry, setIndustry] = useState("");
@@ -138,20 +138,18 @@ const BusinessForSale = () => {
     <div className="min-h-screen bg-[#070707] text-white font-['Plus_Jakarta_Sans'] pt-20 selection:bg-pink-500/30 relative">
       <div className="max-w-[1600px] mx-auto px-6 py-6 relative z-10">
         
-        {/* Header Section - Refined & Compact */}
+        {/* Header Section */}
         <div className="mb-10">
           <div className="text-[9px] font-black uppercase tracking-[0.4em] text-pink-500 mb-4 flex items-center gap-3">
             <span className="w-8 h-[1px] bg-pink-500/30"></span>
             Pinksurfing Marketplace
           </div>
-          <div className="flex items-center gap-5">
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter uppercase font-['Syne'] leading-none">
-              Business for Sale
-            </h1>
-          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tighter uppercase font-['Syne'] leading-none">
+            Business for Sale
+          </h1>
         </div>
 
-        {/* Search Panel - High Density */}
+        {/* Search Panel */}
         <div className="bg-[#0f0f0f] rounded-2xl border border-white/5 shadow-xl overflow-hidden mb-10">
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-end">
@@ -194,10 +192,48 @@ const BusinessForSale = () => {
               <div className="space-y-2"><label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Growth</label><select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" value={growth} onChange={(e) => setGrowth(e.target.value)}><option value="Any Trend">Any Trend</option><option>↑ Growing</option></select></div>
               <div className="space-y-2"><label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Sale Type</label><select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" value={saleType} onChange={(e) => setSaleType(e.target.value)}><option value="Any">Any</option></select></div>
             </div>
+
+            {/* Advanced Toggle */}
+            <button onClick={() => setIsAdvOpen(!isAdvOpen)} className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-all pt-2">
+              <IoFilterOutline className="text-pink-500" /> Advanced Filters
+              {isAdvOpen ? <IoChevronUp className="text-[10px]" /> : <IoChevronDown className="text-[10px]" />}
+            </button>
+
+            <AnimatePresence>
+              {isAdvOpen && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-6 mt-6 border-t border-white/5">
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">EBITDA</label>
+                      <div className="flex gap-2">
+                        <input className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none" placeholder="Min" />
+                        <input className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none" placeholder="Max" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Years Operating</label>
+                      <select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none"><option>Any</option></select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Team Size</label>
+                      <select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none"><option>Any</option></select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Qualifiers</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["SBA", "Seller Fin", "Remote"].map(q => (
+                          <button key={q} className="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[7px] font-black uppercase hover:bg-pink-500/10 hover:border-pink-500/30 transition-all">{q}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* Smart Match Bar - Compact */}
+        {/* Smart Match Bar */}
         <div className="flex items-center gap-2 mb-12 overflow-x-auto no-scrollbar pb-1">
           <span className="text-[7px] font-black uppercase tracking-widest text-gray-600 mr-2">Smart Match:</span>
           {[
@@ -215,21 +251,7 @@ const BusinessForSale = () => {
           ))}
         </div>
 
-        {/* Results Info */}
-        <div className="flex items-center justify-between mb-6 px-1">
-          <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-            Showing <span className="text-white font-black">{displayData.length}</span> Businesses
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-[#111] rounded-lg p-0.5 border border-white/5">
-              {["grid", "list"].map(v => (
-                <button key={v} onClick={() => setView(v)} className={`px-3 py-1 rounded-md text-[7px] font-black uppercase tracking-widest ${view === v ? "bg-[#222] text-purple-400" : "text-gray-600"}`}>{v}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Grid - High Density 4 Columns */}
+        {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           <AnimatePresence>
             {displayData.map((biz, idx) => (
@@ -255,7 +277,7 @@ const BusinessForSale = () => {
                       <div className="text-[6px] font-black uppercase tracking-widest text-gray-700">EBITDA</div>
                     </div>
                     <div className="bg-[#111] rounded-lg py-3 text-center space-y-1">
-                      <div className="text-[10px] font-black text-white font-['Syne']">{multi(biz.asking, biz.ebitda)}</div>
+                      <div className="text-[10px] font-black text-white font-['Syne']">{fmt(biz.asking)}</div>
                       <div className="text-[6px] font-black uppercase tracking-widest text-gray-700">Multiple</div>
                     </div>
                   </div>
