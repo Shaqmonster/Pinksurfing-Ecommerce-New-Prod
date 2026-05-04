@@ -27,6 +27,8 @@ import { toast } from "react-toastify";
 import { currencyOptions } from "../utils/CurrencyList";
 import ProfilePopup from "./ProfilePopup";
 
+const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
+
 const Header = () => {
   const [cookies] = useCookies(["token", "refresh"]);
   const {
@@ -61,7 +63,7 @@ const Header = () => {
   const lastPart = pathParts[pathParts.length - 1];
 
   const updateWalletBalance = useCallback(async () => {
-    if (!cookies.access_token) return;
+    if (!enableAuthWallet || !cookies.access_token) return;
     try {
       const addresses = await fetchWalletAddresses();
       if (addresses.length > 0) {
@@ -69,7 +71,11 @@ const Header = () => {
         setWalletBalance(balance);
       }
     } catch (error) {
-      console.error("Failed to update wallet balance:", error);
+      const status = error?.response?.status;
+      // Local/dev often has no auth-wallet profile yet; avoid console spam.
+      if (status !== 400) {
+        console.error("Failed to update wallet balance:", error);
+      }
     }
   }, [cookies.access_token]);
 
@@ -133,6 +139,7 @@ const Header = () => {
   };
 
   useEffect(() => {
+    if (!enableAuthWallet) return;
     updateWalletBalance();
   }, [updateWalletBalance]);
 

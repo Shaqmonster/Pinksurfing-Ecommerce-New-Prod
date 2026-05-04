@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
+import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard";
+import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
+import { useInAppWallet } from "../../context/inAppWalletContext";
 import {
   getMyGigOrders,
   getMyGigs,
@@ -52,6 +55,75 @@ const STATUS_CONFIG = {
     color: "text-red-400 bg-red-500/10 border-red-500/30",
     dot: "bg-red-400",
   },
+};
+
+const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
+  const recentBuyer = [...buyerOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+  const recentSeller = [...sellerOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+
+  const statusLabel = (s) => STATUS_CONFIG[s]?.label || "In Progress";
+
+  return (
+    <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4 sm:p-5 mb-6">
+      <h3 className="text-white font-bold text-base sm:text-lg mb-1">Order Center (Simple View)</h3>
+      <p className="text-white/45 text-xs sm:text-sm mb-4">
+        Quick view of what you bought and what you need to deliver.
+      </p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+          <p className="text-white/70 text-sm font-semibold mb-2">As Buyer (orders you placed)</p>
+          {recentBuyer.length === 0 ? (
+            <p className="text-white/40 text-xs">No buyer orders yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {recentBuyer.map((o) => (
+                <Link
+                  key={`simple-b-${o.id}`}
+                  to={`/gigs/orders/${o.id}`}
+                  className="flex items-center justify-between rounded-lg border border-white/10 p-2 hover:bg-white/[0.03]"
+                >
+                  <div className="min-w-0">
+                    <p className="text-white text-xs font-semibold truncate">{o.gig?.title || `Order #${o.id}`}</p>
+                    <p className="text-white/45 text-[11px]">#{o.id} • {statusLabel(o.status)}</p>
+                  </div>
+                  <div className="text-right ml-3">
+                    <p className="text-white/80 text-xs font-semibold">${parseFloat(o.total_price || 0).toFixed(2)}</p>
+                    <p className="text-white/35 text-[11px]">you paid</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+          <p className="text-white/70 text-sm font-semibold mb-2">As Seller (orders you fulfill)</p>
+          {recentSeller.length === 0 ? (
+            <p className="text-white/40 text-xs">No seller orders yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {recentSeller.map((o) => (
+                <Link
+                  key={`simple-s-${o.id}`}
+                  to={`/gigs/orders/${o.id}`}
+                  className="flex items-center justify-between rounded-lg border border-white/10 p-2 hover:bg-white/[0.03]"
+                >
+                  <div className="min-w-0">
+                    <p className="text-white text-xs font-semibold truncate">{o.gig?.title || `Order #${o.id}`}</p>
+                    <p className="text-white/45 text-[11px]">#{o.id} • {statusLabel(o.status)}</p>
+                  </div>
+                  <div className="text-right ml-3">
+                    <p className="text-emerald-300 text-xs font-semibold">${parseFloat(o.seller_net_earnings || 0).toFixed(2)}</p>
+                    <p className="text-white/35 text-[11px]">you receive</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // ── BUYER TAB ──────────────────────────────────────────────────────────────
@@ -180,6 +252,9 @@ const SellerTab = ({ workerProfile, sellerOrders, myGigs, loadingOrders, loading
   ).length;
 
   const completedOrders = sellerOrders.filter((o) => o.status === "completed").length;
+  const pendingEarnings = sellerOrders
+    .filter((o) => ["pending_requirements", "in_progress", "delivered"].includes(o.status))
+    .reduce((sum, o) => sum + parseFloat(o.seller_net_earnings || 0), 0);
 
   const handleDeleteGig = async (gigId) => {
     if (!window.confirm("Are you sure you want to delete this gig?")) return;
@@ -390,6 +465,71 @@ const SellerTab = ({ workerProfile, sellerOrders, myGigs, loadingOrders, loading
           </div>
         )}
       </div>
+
+      {/* Earnings + order review */}
+      <div>
+        <h3 className="text-white font-bold text-lg mb-4">Freelancer Earnings & Order Review</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
+            <p className="text-white/40 text-xs">Received (completed orders)</p>
+            <p className="text-emerald-300 font-bold text-2xl mt-1">${totalEarnings.toFixed(2)}</p>
+          </div>
+          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
+            <p className="text-white/40 text-xs">Pending from active orders</p>
+            <p className="text-amber-300 font-bold text-2xl mt-1">${pendingEarnings.toFixed(2)}</p>
+          </div>
+          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
+            <p className="text-white/40 text-xs">Total seller orders</p>
+            <p className="text-white font-bold text-2xl mt-1">{sellerOrders.length}</p>
+          </div>
+        </div>
+
+        {loadingOrders ? (
+          <div className="space-y-3">
+            {[1, 2].map((i) => <div key={i} className="bg-[#13131a] rounded-2xl p-5 animate-pulse h-20" />)}
+          </div>
+        ) : sellerOrders.length === 0 ? (
+          <div className="text-center py-10 bg-[#13131a] border border-white/5 rounded-2xl">
+            <p className="text-white/40 text-sm">No seller orders yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sellerOrders.map((order) => {
+              const statusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.in_progress;
+              return (
+                <Link
+                  key={`seller-review-${order.id}`}
+                  to={`/gigs/orders/${order.id}`}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[#13131a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold line-clamp-1 mb-1">
+                      {order.gig?.title || `Order #${order.id}`}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className={`px-2 py-0.5 rounded-full border ${statusCfg.color}`}>
+                        {statusCfg.label}
+                      </span>
+                      <span className="text-white/30">Order #{order.id}</span>
+                      <span className="text-white/30">{new Date(order.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+                    <div className="text-right">
+                      <p className="text-white/30">Gig total</p>
+                      <p className="text-white/80 font-semibold">${parseFloat(order.gig_price || 0).toFixed(2)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white/30">You get (net)</p>
+                      <p className="text-emerald-300 font-semibold">${parseFloat(order.seller_net_earnings || 0).toFixed(2)}</p>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -400,6 +540,7 @@ const GigHubDashboard = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
+  const { address: inAppAddress } = useInAppWallet();
 
   const [activeTab, setActiveTab] = useState("buying");
   const [workerProfile, setWorkerProfile] = useState(null);
@@ -529,6 +670,9 @@ const GigHubDashboard = () => {
         </div>
 
         {/* Tab content */}
+        <SimpleOrderCenter buyerOrders={buyerOrders} sellerOrders={sellerOrders} />
+
+        {/* Tab content */}
         <AnimatePresence mode="wait">
           {activeTab === "buying" ? (
             <motion.div
@@ -536,7 +680,10 @@ const GigHubDashboard = () => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
+              className="space-y-6"
             >
+              <InAppWalletBalanceCard compact />
+              <WalletTxHistoryCard address={inAppAddress} title="Buyer Wallet Transactions" />
               <BuyerTab orders={buyerOrders} loading={loadingOrders} refetch={fetchOrders} />
             </motion.div>
           ) : (
@@ -545,7 +692,10 @@ const GigHubDashboard = () => {
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
+              className="space-y-6"
             >
+              <InAppWalletBalanceCard compact />
+              <WalletTxHistoryCard address={inAppAddress} title="Seller Wallet Transactions" />
               <SellerTab
                 workerProfile={workerProfile}
                 sellerOrders={sellerOrders}

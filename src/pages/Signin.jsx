@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Cookies from "js-cookie";
 import { dataContext } from "../context/dataContext.jsx";
 import { IoEyeSharp } from "react-icons/io5";
 import { IoIosEyeOff } from "react-icons/io";
@@ -19,7 +18,7 @@ const Signin = () => {
   const [passwordError, setPasswordError] = useState("");
   const { handleError, handleSuccess } = useContext(dataContext);
   const { setIsProfileOpen } = useContext(authContext);
-  const [cookies, setCookie] = useCookies(["token", "refresh"]);
+  const [_cookies, setCookie] = useCookies(["access_token", "refresh_token"]);
   const [inputValue, setInputValue] = useState({
     email: "",
     password: "",
@@ -82,19 +81,22 @@ const Signin = () => {
         { headers: { Authorization: `Bearer ${data.access}` } }
       );
       if (customerResponse.status === 200 || customerResponse.status === 201) {
-        // const expirationDateAccessToken = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-        // const expirationDateRefreshToken = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-  
-        // setCookie("access_token", data.access, {
-        //   path: "/",
-        //   expires: expirationDateAccessToken,
-        // });
-        // setCookie("refresh_token", data.refresh, {
-        //   path: "/",
-        //   expires: expirationDateRefreshToken,
-        // });
-        // localStorage.setItem("refresh", data.refresh);
-        // localStorage.setItem("access", data.access);
+        const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        const cookieOptions = {
+          path: "/",
+          secure: !isLocalhost,
+          sameSite: isLocalhost ? "lax" : "strict",
+        };
+
+        setCookie("access_token", data.access, {
+          ...cookieOptions,
+          expires: new Date(Date.now() + 60 * 60 * 1000),
+        });
+        setCookie("refresh_token", data.refresh, {
+          ...cookieOptions,
+          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+        localStorage.setItem("access_token", data.access);
   
         setUser(data);
         setIsProfileOpen(false);
