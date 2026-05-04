@@ -51,12 +51,6 @@ const smartLabel = (s) => {
   return m[s] || s.toUpperCase();
 };
 
-const growthClass = (g) => {
-  if (g && g.includes("↑")) return "text-green-500 bg-green-500/10 border-green-500/20";
-  if (g && g.includes("↓")) return "text-red-500 bg-red-500/10 border-red-500/20";
-  return "text-gray-500 bg-gray-500/10 border-gray-500/20";
-};
-
 const BusinessForSale = () => {
   const hook = useCategoryProducts();
   const { filteredProducts, loading } = hook;
@@ -66,16 +60,12 @@ const BusinessForSale = () => {
   const [pmin, setPmin] = useState("");
   const [pmax, setPmax] = useState("");
   const [state, setState] = useState("");
-  const [rmin, setRmin] = useState("");
-  const [rmax, setRmax] = useState("");
   const [zip, setZip] = useState("");
   const [radius, setRadius] = useState("");
   const [growth, setGrowth] = useState("");
   const [saleType, setSaleType] = useState("");
   
   const [isAdvOpen, setIsAdvOpen] = useState(false);
-  const [emin, setEmin] = useState("");
-  const [emax, setEmax] = useState("");
   const [activeSmarts, setActiveSmarts] = useState(new Set());
   const [saved, setSaved] = useState(new Set());
   const [displayData, setDisplayData] = useState([]);
@@ -85,7 +75,6 @@ const BusinessForSale = () => {
   const mapProduct = (p) => {
     const attrs = p.product_attributes || p.attributes || [];
     const getAttr = (name) => attrs.find(a => a.name?.toLowerCase() === name.toLowerCase())?.value || "";
-    
     return {
       id: p.id,
       slug: p.slug || p.id,
@@ -124,161 +113,93 @@ const BusinessForSale = () => {
 
   const runFilters = useCallback(() => {
     const baseData = filteredProducts.length > 0 ? filteredProducts.map(mapProduct) : DATA;
-    
     let result = baseData.filter((l) => {
       if (kw && !l.title.toLowerCase().includes(kw.toLowerCase()) && !l.industry.toLowerCase().includes(kw.toLowerCase())) return false;
       if (industry && l.industry !== industry) return false;
       if (pmin && l.asking < parseFloat(pmin)) return false;
       if (pmax && l.asking > parseFloat(pmax)) return false;
       if (state && state !== "Any State" && l.state !== state) return false;
-      if (rmin && l.revenue < parseFloat(rmin)) return false;
-      if (rmax && l.revenue > parseFloat(rmax)) return false;
       if (growth && growth !== "Any Trend" && l.growth !== growth) return false;
       if (saleType && saleType !== "Any" && l.sale_type !== saleType) return false;
-      if (emin && l.ebitda < parseFloat(emin)) return false;
-      if (emax && l.ebitda > parseFloat(emax)) return false;
-      
       if (activeSmarts.size > 0 && ![...activeSmarts].some((s) => l.smart.includes(s))) return false;
-      
       return true;
     });
 
     if (sort === "price-asc") result.sort((a, b) => a.asking - b.asking);
     else if (sort === "price-desc") result.sort((a, b) => b.asking - a.asking);
-    else if (sort === "revenue-desc") result.sort((a, b) => b.revenue - a.revenue);
-
     setDisplayData(result);
-  }, [filteredProducts, kw, industry, pmin, pmax, state, rmin, rmax, growth, saleType, emin, emax, activeSmarts, sort]);
+  }, [filteredProducts, kw, industry, pmin, pmax, state, growth, saleType, activeSmarts, sort]);
 
   useEffect(() => {
     runFilters();
   }, [runFilters]);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white font-['Plus_Jakarta_Sans'] pt-24 selection:bg-pink-500/30 relative overflow-hidden">
-      {/* Dynamic Background Glows */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[150px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-pink-600/10 rounded-full blur-[150px] animate-pulse [animation-delay:2s]"></div>
-      </div>
-
-      <div className="max-w-[1800px] mx-auto px-6 py-8 relative z-10">
+    <div className="min-h-screen bg-[#070707] text-white font-['Plus_Jakarta_Sans'] pt-20 selection:bg-pink-500/30 relative">
+      <div className="max-w-[1600px] mx-auto px-6 py-6 relative z-10">
         
-        {/* Header Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-16"
-        >
-          <div className="text-[10px] font-black uppercase tracking-[0.5em] text-pink-500 mb-6 ml-1 flex items-center gap-3">
-            <span className="w-12 h-[1px] bg-pink-500/30"></span>
+        {/* Header Section - Refined & Compact */}
+        <div className="mb-10">
+          <div className="text-[9px] font-black uppercase tracking-[0.4em] text-pink-500 mb-4 flex items-center gap-3">
+            <span className="w-8 h-[1px] bg-pink-500/30"></span>
             Pinksurfing Marketplace
           </div>
-          <div className="flex items-center gap-6 mb-6">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-white/10 flex items-center justify-center backdrop-blur-xl shadow-2xl shadow-purple-500/10">
-              <IoBusinessOutline className="text-4xl text-white" />
-            </div>
-            <h1 className="text-6xl sm:text-8xl font-black tracking-[-0.06em] uppercase font-['Syne'] leading-none text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
+          <div className="flex items-center gap-5">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter uppercase font-['Syne'] leading-none">
               Business for Sale
             </h1>
           </div>
-          <p className="text-gray-400 max-w-2xl text-base font-medium leading-relaxed ml-1 opacity-80">
-            Acquire established, cash-flowing businesses across every industry. Filtered and verified opportunities for strategic acquirers.
-          </p>
-        </motion.div>
+        </div>
 
-        {/* Search Panel - Modern Stealth Design */}
-        <div className="bg-[#0c0c0c]/80 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden mb-16">
-          <div className="p-10 space-y-10">
-            {/* Top Row */}
-            <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr_1.2fr_1fr_1.2fr_auto] gap-8 items-end">
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Search</label>
-                <div className="relative group">
-                  <IoSearchSharp className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-pink-500 transition-colors" />
-                  <input 
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm focus:bg-white/[0.05] focus:border-white/20 outline-none transition-all placeholder:text-gray-700 font-medium"
-                    placeholder="Industry, keyword, business name..."
-                    value={kw}
-                    onChange={(e) => setKw(e.target.value)}
-                  />
+        {/* Search Panel - High Density */}
+        <div className="bg-[#0f0f0f] rounded-2xl border border-white/5 shadow-xl overflow-hidden mb-10">
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-end">
+              <div className="space-y-2">
+                <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Search</label>
+                <div className="relative">
+                  <IoSearchSharp className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
+                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none focus:bg-white/[0.06] transition-all font-medium" placeholder="Industry, name..." value={kw} onChange={(e) => setKw(e.target.value)} />
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Industry</label>
-                <select className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-sm outline-none appearance-none cursor-pointer hover:bg-white/[0.05] transition-all font-medium" value={industry} onChange={(e) => setIndustry(e.target.value)}>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Industry</label>
+                <select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium appearance-none cursor-pointer" value={industry} onChange={(e) => setIndustry(e.target.value)}>
                   <option value="">All Industries</option>
-                  <option>SaaS / Tech</option><option>Healthcare</option><option>E-commerce</option>
+                  <option>Healthcare</option><option>Tech</option>
                 </select>
               </div>
-
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Asking Price</label>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Asking Price</label>
                 <div className="flex items-center gap-2">
-                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-4 text-sm outline-none placeholder:text-gray-700 font-medium" placeholder="Min $" type="number" value={pmin} onChange={(e) => setPmin(e.target.value)} />
-                  <span className="text-gray-800 font-bold">−</span>
-                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-4 text-sm outline-none placeholder:text-gray-700 font-medium" placeholder="Max $" type="number" value={pmax} onChange={(e) => setPmax(e.target.value)} />
+                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" placeholder="Min" value={pmin} onChange={(e) => setPmin(e.target.value)} />
+                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" placeholder="Max" value={pmax} onChange={(e) => setPmax(e.target.value)} />
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">State</label>
-                <select className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-sm outline-none appearance-none cursor-pointer font-medium" value={state} onChange={(e) => setState(e.target.value)}>
-                  <option value="Any State">Any State</option><option>California</option><option>Texas</option><option>New York</option>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">State</label>
+                <select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium appearance-none" value={state} onChange={(e) => setState(e.target.value)}>
+                  <option value="Any State">Any State</option>
                 </select>
               </div>
-
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Annual Revenue</label>
-                <div className="flex items-center gap-2">
-                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-4 text-sm outline-none placeholder:text-gray-700 font-medium" placeholder="Min $" type="number" value={rmin} onChange={(e) => setRmin(e.target.value)} />
-                  <span className="text-gray-800 font-bold">−</span>
-                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-4 text-sm outline-none placeholder:text-gray-700 font-medium" placeholder="Max $" type="number" value={rmax} onChange={(e) => setRmax(e.target.value)} />
-                </div>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Revenue</label>
+                <input className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" placeholder="Min" />
               </div>
-
-              <button onClick={runFilters} className="px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:brightness-110 active:scale-95 shadow-lg shadow-pink-500/20">Search</button>
+              <button onClick={runFilters} className="px-8 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl text-white text-[9px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Search</button>
             </div>
-
-            {/* Second Row */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-8 border-t border-white/[0.03]">
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1 flex items-center gap-2"><IoLocationOutline className="text-pink-500" /> Zip Code</label>
-                <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-sm outline-none font-medium placeholder:text-gray-700" placeholder="e.g. 90210" value={zip} onChange={(e) => setZip(e.target.value)} />
-              </div>
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Radius</label>
-                <select className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-sm outline-none appearance-none cursor-pointer font-medium" value={radius} onChange={(e) => setRadius(e.target.value)}>
-                  <option value="">Any Distance</option>
-                  {[10, 25, 50, 100, 250, 500].map(r => (<option key={r} value={r}>{r} Miles</option>))}
-                </select>
-              </div>
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Growth Trend</label>
-                <select className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-sm outline-none appearance-none cursor-pointer font-medium" value={growth} onChange={(e) => setGrowth(e.target.value)}>
-                  <option value="Any Trend">Any Trend</option><option>↑ Growing</option><option>→ Stable</option>
-                </select>
-              </div>
-              <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Sale Type</label>
-                <select className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-sm outline-none appearance-none cursor-pointer font-medium" value={saleType} onChange={(e) => setSaleType(e.target.value)}>
-                  <option value="Any">Any</option><option>Asset Sale</option><option>Stock Sale</option>
-                </select>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-6 border-t border-white/[0.03]">
+              <div className="space-y-2"><label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Zip Code</label><input className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" placeholder="90210" value={zip} onChange={(e) => setZip(e.target.value)} /></div>
+              <div className="space-y-2"><label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Radius</label><select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" value={radius} onChange={(e) => setRadius(e.target.value)}><option value="">Any</option><option>25 Miles</option></select></div>
+              <div className="space-y-2"><label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Growth</label><select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" value={growth} onChange={(e) => setGrowth(e.target.value)}><option value="Any Trend">Any Trend</option><option>↑ Growing</option></select></div>
+              <div className="space-y-2"><label className="text-[8px] font-black uppercase tracking-widest text-gray-500">Sale Type</label><select className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 px-3 text-xs outline-none font-medium" value={saleType} onChange={(e) => setSaleType(e.target.value)}><option value="Any">Any</option></select></div>
             </div>
-
-            {/* Advanced Toggle */}
-            <button onClick={() => setIsAdvOpen(!isAdvOpen)} className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-white transition-all pt-4">
-              <IoFilterOutline className="text-pink-500" /> Advanced Filters
-              {isAdvOpen ? <IoChevronUp className="text-xs" /> : <IoChevronDown className="text-xs" />}
-            </button>
           </div>
         </div>
 
-        {/* Smart Match Strips */}
-        <div className="flex items-center gap-3 mb-16 overflow-x-auto no-scrollbar pb-2">
-          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-600 mr-2 whitespace-nowrap">Smart Match:</span>
+        {/* Smart Match Bar - Compact */}
+        <div className="flex items-center gap-2 mb-12 overflow-x-auto no-scrollbar pb-1">
+          <span className="text-[7px] font-black uppercase tracking-widest text-gray-600 mr-2">Smart Match:</span>
           {[
             { id: "owner-operator-friendly", label: "Owner-Operator", icon: "👤" },
             { id: "strong-cash-flow", label: "Strong Cash Flow", icon: "💸" },
@@ -287,92 +208,64 @@ const BusinessForSale = () => {
             { id: "turnaround", label: "Turnaround", icon: "🔄" },
             { id: "ai-automatable", label: "AI-Automatable", icon: "🤖" },
             { id: "undervalued", label: "Undervalued", icon: "📊" },
-            { id: "healthcare-compliance", label: "HC Compliant", icon: "🏥" },
           ].map(s => (
-            <button key={s.id} onClick={() => toggleSmart(s.id)} className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-[9px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap ${activeSmarts.has(s.id) ? "bg-white text-black border-white" : "bg-[#111] border-white/5 text-gray-500 hover:border-white/20"}`}>
+            <button key={s.id} onClick={() => toggleSmart(s.id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[8px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap ${activeSmarts.has(s.id) ? "bg-white text-black border-white" : "bg-[#111] border-white/5 text-gray-600 hover:border-white/15"}`}>
               <span>{s.icon}</span> {s.label}
             </button>
           ))}
         </div>
 
-        {/* Results Bar */}
-        <div className="bg-[#111] rounded-3xl border border-white/5 p-6 mb-8 flex items-center justify-between">
-          <div className="text-xs text-gray-500 font-medium tracking-tight">
-            Showing <span className="text-white font-black">{displayData.length}</span> verified businesses
+        {/* Results Info */}
+        <div className="flex items-center justify-between mb-6 px-1">
+          <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+            Showing <span className="text-white font-black">{displayData.length}</span> Businesses
           </div>
-          <div className="flex items-center gap-8">
-            <div className="flex items-center bg-black rounded-xl p-1 border border-white/5">
-              {["grid", "list", "liner"].map(v => (
-                <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] transition-all ${view === v ? "bg-[#222] text-purple-400" : "text-gray-600 hover:text-white"}`}>{v}</button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center bg-[#111] rounded-lg p-0.5 border border-white/5">
+              {["grid", "list"].map(v => (
+                <button key={v} onClick={() => setView(v)} className={`px-3 py-1 rounded-md text-[7px] font-black uppercase tracking-widest ${view === v ? "bg-[#222] text-purple-400" : "text-gray-600"}`}>{v}</button>
               ))}
-            </div>
-            <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.3em]">
-              <span className="text-gray-600">Sort:</span>
-              <select className="bg-transparent text-white outline-none cursor-pointer" value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="newest">Newest</option>
-                <option value="price-asc">Price Low</option>
-                <option value="price-desc">Price High</option>
-              </select>
             </div>
           </div>
         </div>
 
-        {/* Grid Display */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {/* Grid - High Density 4 Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           <AnimatePresence>
             {displayData.map((biz, idx) => (
-              <motion.div 
-                key={biz.id} 
-                initial={{ opacity: 0, y: 30 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="group bg-[#090909] rounded-[3rem] border border-white/5 hover:border-purple-500/40 transition-all duration-700 relative overflow-hidden shadow-2xl hover:shadow-purple-500/10"
-              >
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 via-transparent to-pink-600/0 group-hover:from-purple-600/5 group-hover:to-pink-600/5 transition-all duration-700 opacity-0 group-hover:opacity-100"></div>
-
-                <div className="p-10 flex flex-col h-full relative z-10">
-                  <div className="flex justify-between items-start mb-8">
-                    <div className="px-4 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-white/60 text-[8px] font-black uppercase tracking-[0.2em] group-hover:border-purple-500/30 transition-colors">{biz.industry}</div>
-                    <button onClick={() => toggleSave(biz.id)} className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-gray-600 hover:bg-pink-500/20 hover:text-pink-500 transition-all active:scale-90">
-                      {saved.has(biz.id) ? <IoHeart className="text-xl text-pink-500" /> : <IoHeartOutline className="text-xl" />}
+              <motion.div key={biz.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="group bg-[#0c0c0c] rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all duration-300 relative overflow-hidden">
+                <div className="p-5 flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="px-3 py-1 rounded-md bg-white/5 text-white/40 text-[7px] font-black uppercase tracking-widest">{biz.industry}</div>
+                    <button onClick={() => toggleSave(biz.id)} className="text-gray-700 hover:text-pink-500 transition-all">
+                      {saved.has(biz.id) ? <IoHeart className="text-pink-500 text-sm" /> : <IoHeartOutline className="text-sm" />}
                     </button>
                   </div>
-
-                  <div className="text-5xl font-black text-pink-500 tracking-[-0.07em] font-['Syne'] mb-6 uppercase leading-none drop-shadow-2xl">
-                    {fmt(biz.asking)}
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white tracking-tight leading-snug mb-3 group-hover:text-purple-400 transition-colors min-h-[3.5rem] line-clamp-2">{biz.title}</h3>
-                  <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] mb-10 opacity-60">
-                    <IoLocationOutline className="text-pink-500 text-base" /> {biz.city}, {biz.state}
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/5 mb-10 group-hover:border-white/10 transition-colors">
-                    <div className="bg-white/[0.02] rounded-xl py-5 px-2 text-center space-y-2 border border-transparent group-hover:border-white/5">
-                      <div className="text-[13px] font-black text-white font-['Syne'] tracking-tighter">{fmt(biz.revenue)}</div>
-                      <div className="text-[7px] font-black uppercase tracking-[0.2em] text-gray-600">Revenue</div>
+                  <div className="text-2xl font-black text-pink-500 tracking-tighter font-['Syne'] mb-4 uppercase">{fmt(biz.asking)}</div>
+                  <h3 className="text-sm font-bold text-white tracking-tight mb-1 line-clamp-1 group-hover:text-pink-400 transition-colors">{biz.title}</h3>
+                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-widest mb-6"><IoLocationOutline /> {biz.city}, {biz.state}</div>
+                  
+                  <div className="grid grid-cols-3 gap-1 bg-black/40 rounded-xl p-1 mb-6">
+                    <div className="bg-[#111] rounded-lg py-3 text-center space-y-1">
+                      <div className="text-[10px] font-black text-white font-['Syne']">{fmt(biz.revenue)}</div>
+                      <div className="text-[6px] font-black uppercase tracking-widest text-gray-700">Revenue</div>
                     </div>
-                    <div className="bg-white/[0.02] rounded-xl py-5 px-2 text-center space-y-2 border border-transparent group-hover:border-white/5">
-                      <div className="text-[13px] font-black text-white font-['Syne'] tracking-tighter">{fmt(biz.ebitda)}</div>
-                      <div className="text-[7px] font-black uppercase tracking-[0.2em] text-gray-600">EBITDA</div>
+                    <div className="bg-[#111] rounded-lg py-3 text-center space-y-1 border-x border-white/5">
+                      <div className="text-[10px] font-black text-white font-['Syne']">{fmt(biz.ebitda)}</div>
+                      <div className="text-[6px] font-black uppercase tracking-widest text-gray-700">EBITDA</div>
                     </div>
-                    <div className="bg-white/[0.02] rounded-xl py-5 px-2 text-center space-y-2 border border-transparent group-hover:border-white/5">
-                      <div className="text-[13px] font-black text-white font-['Syne'] tracking-tighter">{multi(biz.asking, biz.ebitda)}</div>
-                      <div className="text-[7px] font-black uppercase tracking-[0.2em] text-gray-600">Multiple</div>
+                    <div className="bg-[#111] rounded-lg py-3 text-center space-y-1">
+                      <div className="text-[10px] font-black text-white font-['Syne']">{multi(biz.asking, biz.ebitda)}</div>
+                      <div className="text-[6px] font-black uppercase tracking-widest text-gray-700">Multiple</div>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between mt-auto pt-8 border-t border-white/5">
-                    <div className="flex gap-3">
-                      <button className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-gray-500 hover:bg-white/10 hover:text-white transition-all active:scale-95 shadow-xl">
-                        <IoAddOutline className="text-2xl" />
-                      </button>
-                      <button className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-white/5 flex items-center justify-center text-purple-400 hover:brightness-125 transition-all active:scale-95 shadow-xl">
-                        <IoArrowForwardOutline className="text-xl" />
-                      </button>
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                    <div className="flex gap-2">
+                      <button className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-600 hover:bg-white/10 hover:text-white transition-all"><IoAddOutline /></button>
+                      <button className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400"><IoArrowForwardOutline /></button>
                     </div>
-                    <Link to={`/product/productDetail/${biz.slug}`} className="px-6 py-3 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-pink-500 hover:text-white transition-all shadow-2xl">View Details</Link>
+                    <Link to={`/product/productDetail/${biz.slug}`} className="text-[8px] font-black uppercase tracking-widest text-pink-500 hover:text-white transition-colors">Details →</Link>
                   </div>
                 </div>
               </motion.div>
@@ -380,11 +273,6 @@ const BusinessForSale = () => {
           </AnimatePresence>
         </div>
       </div>
-
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
 };
