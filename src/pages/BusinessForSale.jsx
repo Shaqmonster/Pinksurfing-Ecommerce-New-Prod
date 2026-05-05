@@ -105,7 +105,7 @@ const BusinessForSale = () => {
   }, [runFilters]);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white font-['Plus_Jakarta_Sans'] pt-16">
+    <div className="min-h-screen bg-[#070707] text-white font-['Plus_Jakarta_Sans',sans-serif] pt-16">
       <div className="max-w-[1800px] mx-auto px-8 py-4">
         
         {/* Breadcrumb & Header */}
@@ -115,7 +115,7 @@ const BusinessForSale = () => {
           </div>
           <div className="flex items-center gap-4 mb-2">
             <IoBusinessOutline className="text-3xl text-white/80" />
-            <h1 className="text-4xl font-extrabold tracking-tight font-['Syne']">Business for Sale</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight font-['Raleway',sans-serif]">Business for Sale</h1>
           </div>
           <p className="text-gray-500 text-xs">Acquire established businesses across every industry.</p>
         </div>
@@ -218,7 +218,7 @@ const BusinessForSale = () => {
                     </button>
                   </div>
 
-                  <div className="text-2xl font-bold text-[#e8237a] tracking-tight font-['Syne'] mb-1">{fmt(biz.asking)}</div>
+                  <div className="text-2xl font-bold text-[#e8237a] tracking-tight font-['Raleway',sans-serif] mb-1">{fmt(biz.asking)}</div>
                   <h3 className="text-[13px] font-bold text-white leading-tight mb-2 line-clamp-2 h-[2.2rem] group-hover:text-[#e8237a] transition-colors">{biz.title}</h3>
                   <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-medium mb-4">
                     <IoLocationOutline className="text-pink-500" /> {biz.city}, {biz.state}
