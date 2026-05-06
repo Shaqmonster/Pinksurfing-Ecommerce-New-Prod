@@ -110,7 +110,11 @@ const CreateGigPage = () => {
       getGigSubcategories(details.category)
         .then((res) => {
           const data = res.data.results || res.data;
-          setSubcategories(Array.isArray(data) ? data : []);
+          // Fallback local filter in case backend filtering is not live/working
+          const filtered = Array.isArray(data) 
+            ? data.filter(s => String(s.category) === String(details.category))
+            : [];
+          setSubcategories(filtered);
         })
         .catch(() => setSubcategories([]));
     } else {
