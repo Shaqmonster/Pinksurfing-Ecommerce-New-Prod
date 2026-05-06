@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
-import { getGig, createGigOrder, createStripeCheckoutSession } from "../../api/gigs";
+import { getGig, createGigOrder, createSquareGigCheckoutSession } from "../../api/gigs";
 import GigSellerChatModal from "../../components/gigs/GigSellerChatModal";
 import {
   IoStarSharp,
@@ -133,12 +133,12 @@ const GigDetailPage = () => {
         addons: selectedAddons.map((a) => a.id),
       });
       const order = orderRes.data;
-      const sessionRes = await createStripeCheckoutSession(cookies.access_token, order.id);
+      const sessionRes = await createSquareGigCheckoutSession(cookies.access_token, order.id);
       const { url } = sessionRes.data;
       if (url) {
         window.location.href = url;
       } else {
-        toast.error("Failed to create Stripe session.");
+        toast.error("Failed to create Square payment link.");
       }
     } catch (err) {
       const msg = err?.response?.data?.detail || err?.response?.data?.error || "Purchase failed.";
@@ -735,7 +735,7 @@ const GigDetailPage = () => {
                   {/* Trust badges */}
                   <div className="mt-4 space-y-2">
                     {[
-                      { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Stripe" },
+                      { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Square" },
                       { icon: <IoRefreshOutline className="text-blue-400" />, text: "Revisions as specified" },
                       { icon: <IoCheckmarkCircle className="text-purple-400" />, text: "Money-back guarantee" },
                     ].map((item, i) => (

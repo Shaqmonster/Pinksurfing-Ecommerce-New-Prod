@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
@@ -25,6 +26,7 @@ import {
   IoStorefrontOutline,
 } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
+import { FiCreditCard } from "react-icons/fi";
 
 const STATUS_CONFIG = {
   pending_requirements: {
@@ -170,6 +172,33 @@ const SellerTab = ({ workerProfile, sellerOrders, myGigs, loadingOrders, loading
   const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
   const [deletingId, setDeletingId] = useState(null);
+  const [onboardingLoading, setOnboardingLoading] = useState(false);
+
+  const handleSquareOnboarding = async () => {
+    if (!workerProfile?.vendor_id) {
+      toast.error("Seller account setup incomplete.");
+      return;
+    }
+    setOnboardingLoading(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/api/payments/square/onboarding-link/${workerProfile.vendor_id}/`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${cookies.access_token}`,
+          },
+        }
+      );
+      if (response.data?.action_url) {
+        window.location.href = response.data.action_url;
+      }
+    } catch (error) {
+      toast.error("Failed to get Square onboarding link.");
+    } finally {
+      setOnboardingLoading(false);
+    }
+  };
 
   const totalEarnings = sellerOrders
     .filter((o) => o.status === "completed")
@@ -234,6 +263,52 @@ const SellerTab = ({ workerProfile, sellerOrders, myGigs, loadingOrders, loading
             <p className="text-white/25 text-xs mt-0.5">{card.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* Payouts & Square Connection */}
+      <div className="bg-[#13131a] border border-white/5 rounded-2xl p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl">
+              <FiCreditCard />
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg">Payouts & Square</h3>
+              <p className="text-white/40 text-sm">Receive your gig earnings directly to your Square account.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${
+              workerProfile?.square_connected 
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+                : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+            }`}>
+              {workerProfile?.square_connected ? "Square Connected" : "Square Not Linked"}
+            </div>
+            <button
+              onClick={handleSquareOnboarding}
+              disabled={onboardingLoading}
+              className="px-6 py-2.5 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-all text-sm flex items-center gap-2 disabled:opacity-50"
+            >
+              {onboardingLoading ? (
+                <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+              ) : (
+                <FiCreditCard />
+              )}
+              {workerProfile?.square_connected ? "Reconnect Square" : "Connect Square"}
+            </button>
+          </div>
+        </div>
+        {!workerProfile?.square_connected && (
+          <div className="mt-4 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-3">
+            <IoAlertCircleOutline className="text-amber-400 text-lg flex-shrink-0 mt-0.5" />
+            <p className="text-amber-400/80 text-xs leading-relaxed">
+              To accept payments for your gigs, you must connect a Square account. 
+              Earnings will be deposited into your account minus the platform fees.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* My Gigs section */}

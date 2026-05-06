@@ -135,6 +135,13 @@ export const createStripeCheckoutSession = (token, orderId) =>
     { headers: { ...authHeader(token), "Content-Type": "application/json" } }
   );
 
+export const createSquareGigCheckoutSession = (token, orderId) =>
+  axios.post(
+    `${BASE_URL}/api/gig-orders/payments/create-square-payment-link/${orderId}/`,
+    {},
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
+
 export const getMyGigOrders = (token) =>
   axios.get(`${BASE_URL}/api/gig-orders/`, {
     headers: authHeader(token),

@@ -28,36 +28,43 @@ import {
 import { FaBriefcase } from "react-icons/fa";
 
 const STATUS_STEPS = [
-  { key: "pending_requirements", label: "Order Placed", icon: <FaBriefcase /> },
-  { key: "in_progress", label: "In Progress", icon: <IoTimeOutline /> },
-  { key: "delivered", label: "Delivered", icon: <IoCloudUploadOutline /> },
-  { key: "completed", label: "Completed", icon: <IoCheckmarkCircle /> },
+  { key: "pending_payment", label: "Payment", icon: <IoWalletOutline className="text-base" /> },
+  { key: "pending_requirements", label: "Requirements", icon: <IoDocumentTextOutline className="text-base" /> },
+  { key: "in_progress", label: "In Progress", icon: <IoTimeOutline className="text-base" /> },
+  { key: "delivered", label: "Delivered", icon: <IoCloudUploadOutline className="text-base" /> },
+  { key: "completed", label: "Completed", icon: <IoCheckmarkCircle className="text-base" /> },
 ];
 
 const STATUS_CONFIG = {
+  pending_payment: {
+    label: "Awaiting Payment",
+    color: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+    dot: "bg-amber-400",
+    stepIndex: 0,
+  },
   pending_requirements: {
     label: "Awaiting Requirements",
     color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/30",
     dot: "bg-yellow-400",
-    stepIndex: 0,
+    stepIndex: 1,
   },
   in_progress: {
     label: "In Progress",
     color: "text-blue-400 bg-blue-500/10 border-blue-500/30",
     dot: "bg-blue-400",
-    stepIndex: 1,
+    stepIndex: 2,
   },
   delivered: {
     label: "Delivered - Review Required",
     color: "text-purple-400 bg-purple-500/10 border-purple-500/30",
     dot: "bg-purple-400",
-    stepIndex: 2,
+    stepIndex: 3,
   },
   completed: {
     label: "Completed",
     color: "text-green-400 bg-green-500/10 border-green-500/30",
     dot: "bg-green-400",
-    stepIndex: 3,
+    stepIndex: 4,
   },
   cancelled: {
     label: "Cancelled",
@@ -655,7 +662,7 @@ const GigOrderDetail = () => {
             <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
               <div className="space-y-2">
                 {[
-                  { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Stripe" },
+                  { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Square" },
                   { icon: <IoCheckmarkCircle className="text-blue-400" />, text: "Money-back guarantee" },
                   { icon: <IoAlertCircleOutline className="text-yellow-400" />, text: "Dispute resolution available" },
                 ].map((item, i) => (
