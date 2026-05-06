@@ -108,7 +108,10 @@ const CreateGigPage = () => {
   useEffect(() => {
     if (details.category) {
       getGigSubcategories(details.category)
-        .then((res) => setSubcategories(res.data.results))
+        .then((res) => {
+          const data = res.data.results || res.data;
+          setSubcategories(Array.isArray(data) ? data : []);
+        })
         .catch(() => setSubcategories([]));
     } else {
       setSubcategories([]);
@@ -335,12 +338,15 @@ const CreateGigPage = () => {
               <select
                 name="category"
                 value={details.category}
-                onChange={(e) => setDetails((prev) => ({ ...prev, category: e.target.selectedOptions[0]?.id || e.target.value }))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDetails((prev) => ({ ...prev, category: val, subcategory: "" }));
+                }}
                 className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24]"
               >
                 <option value="">Select category…</option>
                 {categories.length > 0  && categories.map((c) => (
-                  <option key={c.id} id={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -349,13 +355,13 @@ const CreateGigPage = () => {
               <select
                 name="subcategory"
                 value={details.subcategory}
-                onChange={(e) => setDetails((prev) => ({ ...prev, subcategory: e.target.selectedOptions[0]?.id || e.target.value }))}
+                onChange={(e) => setDetails((prev) => ({ ...prev, subcategory: e.target.value }))}
                 disabled={!details.category || subcategories.length === 0}
                 className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-40"
               >
                 <option value="">Select subcategory…</option>
                 {subcategories.length > 0 && subcategories.map((s) => (
-                  <option key={s.id} id={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
             </div>

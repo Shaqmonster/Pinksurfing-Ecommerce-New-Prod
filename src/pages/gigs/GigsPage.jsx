@@ -173,7 +173,14 @@ const GigsPage = () => {
   }, [filters, setSearchParams]);
 
   const applyFilter = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [key]: value, page: 1 };
+      // Reset subcategory if category changes
+      if (key === "category_slug") {
+        newFilters.subcategory_slug = "";
+      }
+      return newFilters;
+    });
   };
 
   const handleSearch = () => {
@@ -278,6 +285,20 @@ const GigsPage = () => {
                     className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-purple-500 transition-all [&>option]:bg-[#1a1a24]">
                     <option value="">All Categories</option>
                     {categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-white/50 text-xs">Subcategory</label>
+                  <select 
+                    value={filters.subcategory_slug} 
+                    onChange={(e) => applyFilter("subcategory_slug", e.target.value)}
+                    disabled={!filters.category_slug || !activeCategory?.subcategories?.length}
+                    className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-purple-500 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-30"
+                  >
+                    <option value="">All Subcategories</option>
+                    {activeCategory?.subcategories?.map((s) => (
+                      <option key={s.id} value={s.slug}>{s.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="space-y-1">
