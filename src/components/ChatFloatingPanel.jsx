@@ -23,6 +23,7 @@ const ChatFloatingPanel = ({ isOpen, onClose }) => {
   const [messageInput, setMessageInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [otherUserStatus, setOtherUserStatus] = useState({ isOnline: false, lastSeen: null });
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
   const myEmail = user?.email || "";
@@ -57,15 +58,32 @@ const ChatFloatingPanel = ({ isOpen, onClose }) => {
   const connectWs = (convId) => {
     if (wsRef.current) wsRef.current.close();
     const ws = new WebSocket(`${getWsBaseUrl()}/ws/chat/${convId}/`);
+    
+    ws.onopen = () => {
+      // Send identity to mark as online
+      ws.send(JSON.stringify({ type: "identity", email: myEmail }));
+    };
+
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      const newMsg = {
-        id: data.message_id,
-        content: data.message,
-        sender: { email: data.sender_email, username: data.sender_username },
-        created_at: data.created_at
-      };
-      setMessages((prev) => [...prev, newMsg]);
+      
+      if (data.type === "user_status") {
+        const other = otherUser(activeConv);
+        if (data.email === other?.email) {
+          setOtherUserStatus({ isOnline: data.is_online, lastSeen: data.last_seen });
+        }
+        return;
+      }
+
+      if (data.type === "message" || !data.type) {
+        const newMsg = {
+          id: data.message_id,
+          content: data.message,
+          sender: { email: data.sender_email, username: data.sender_username },
+          created_at: data.created_at
+        };
+        setMessages((prev) => [...prev, newMsg]);
+      }
     };
     wsRef.current = ws;
   };
@@ -78,6 +96,10 @@ const ChatFloatingPanel = ({ isOpen, onClose }) => {
 
   const selectConversation = (conv) => {
     setActiveConv(conv);
+    const other = otherUser(conv);
+    if (other) {
+      setOtherUserStatus({ isOnline: other.is_online, lastSeen: other.last_seen });
+    }
     fetchMessages(conv.id);
     connectWs(conv.id);
   };
@@ -125,7 +147,18 @@ const ChatFloatingPanel = ({ isOpen, onClose }) => {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white">{otherUser(activeConv)?.username}</p>
-                    <p className="text-[10px] text-green-500 font-medium">Online</p>
+                    {otherUserStatus.isOnline ? (
+                      <p className="text-[10px] text-green-500 font-medium flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        Online
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-gray-500 font-medium">
+                        {otherUserStatus.lastSeen 
+                          ? `Last seen ${new Date(otherUserStatus.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                          : "Offline"}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
