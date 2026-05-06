@@ -175,14 +175,14 @@ const SellerTab = ({ workerProfile, sellerOrders, myGigs, loadingOrders, loading
   const [onboardingLoading, setOnboardingLoading] = useState(false);
 
   const handleSquareOnboarding = async () => {
-    if (!workerProfile?.vendor_id) {
+    if (!workerProfile?.id) {
       toast.error("Seller account setup incomplete.");
       return;
     }
     setOnboardingLoading(true);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/api/payments/square/onboarding-link/${workerProfile.vendor_id}/`,
+        `${import.meta.env.VITE_SERVER_URL}/api/payments/square/onboarding-link/${workerProfile.id}/?type=gigworker`,
         {},
         {
           headers: {
