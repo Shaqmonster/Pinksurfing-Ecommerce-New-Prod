@@ -24,6 +24,7 @@ import {
   IoShieldCheckmarkOutline,
   IoStarSharp,
   IoAttachOutline,
+  IoWalletOutline,
 } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
 
