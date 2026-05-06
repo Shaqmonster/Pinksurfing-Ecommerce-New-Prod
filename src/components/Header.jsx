@@ -26,6 +26,7 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { currencyOptions } from "../utils/CurrencyList";
 import ProfilePopup from "./ProfilePopup";
+import ChatFloatingPanel from "./ChatFloatingPanel";
 
 const Header = () => {
   const [cookies] = useCookies(["token", "refresh"]);
@@ -56,6 +57,7 @@ const Header = () => {
   const [loading, setLoading] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const navigate = useNavigate();
   const searchInputRef = React.useRef(null);
 
@@ -190,6 +192,7 @@ const Header = () => {
           <SingleOrderForm />
           <VendorDetailsForm />
           <ProfilePopup />
+          <ChatFloatingPanel isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
         </>
       )}
       
@@ -272,9 +275,13 @@ const Header = () => {
                     )}
                   </div>
 
-                  <Link to="/gighub/messages" className="relative group cursor-pointer">
+                  <div 
+                    className="relative group cursor-pointer"
+                    onClick={() => { setIsProfileOpen(false); setIsChatOpen(!isChatOpen); }}
+                  >
                     <IoChatbubbleOutline className="text-2xl text-gray-500 hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
-                  </Link>
+                    <span className="absolute -top-1 -right-1 bg-red-500 w-2 h-2 rounded-full ring-2 ring-[#0E0F13] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
               )}
 
