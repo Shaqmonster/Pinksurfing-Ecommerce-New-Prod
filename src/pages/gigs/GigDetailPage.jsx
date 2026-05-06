@@ -85,6 +85,7 @@ const GigDetailPage = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [chatOpen, setChatOpen] = useState(false);
+  const isOwner = user?.email === gig?.worker?.email;
 
   useEffect(() => {
     setLoading(true);
@@ -586,22 +587,28 @@ const GigDetailPage = () => {
                 <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5 text-center">
                   <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Pricing</p>
                   <p className="text-white/40 text-sm mb-4">No packages listed yet. Contact the seller for a custom quote.</p>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      if (!cookies.access_token) {
-                        toast.error("Please sign in to message this seller.");
-                        navigate("/signin");
-                        return;
-                      }
-                      setChatOpen(true);
-                    }}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
-                  >
-                    <IoChatbubbleOutline className="text-base" />
-                    Request a Quote
-                  </motion.button>
+                  {!isOwner ? (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        if (!cookies.access_token) {
+                          toast.error("Please sign in to message this seller.");
+                          navigate("/signin");
+                          return;
+                        }
+                        setChatOpen(true);
+                      }}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
+                    >
+                      <IoChatbubbleOutline className="text-base" />
+                      Request a Quote
+                    </motion.button>
+                  ) : (
+                    <div className="py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white/40 text-xs italic text-center">
+                      This is your listing.
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -696,22 +703,28 @@ const GigDetailPage = () => {
                     </div>
                   </div>
 
-                  <motion.button
-                    whileHover={{ scale: purchasing ? 1 : 1.02 }}
-                    whileTap={{ scale: purchasing ? 1 : 0.98 }}
-                    onClick={handleBuy}
-                    disabled={purchasing || !selectedPkg}
-                    className="mt-4 w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                  >
-                    {purchasing ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Processing…
-                      </>
-                    ) : (
-                      "Continue to Checkout"
-                    )}
-                  </motion.button>
+                  {!isOwner ? (
+                    <motion.button
+                      whileHover={{ scale: purchasing ? 1 : 1.02 }}
+                      whileTap={{ scale: purchasing ? 1 : 0.98 }}
+                      onClick={handleBuy}
+                      disabled={purchasing || !selectedPkg}
+                      className="mt-4 w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    >
+                      {purchasing ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Processing…
+                        </>
+                      ) : (
+                        "Continue to Checkout"
+                      )}
+                    </motion.button>
+                  ) : (
+                    <div className="mt-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white/30 text-xs italic text-center">
+                      Listing Owner: Self-checkout disabled
+                    </div>
+                  )}
 
                   {!user && (
                     <p className="text-center text-white/30 text-xs mt-2">
@@ -780,23 +793,28 @@ const GigDetailPage = () => {
                   )}
                 </div>
 
-                {/* Message Seller */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    if (!cookies.access_token) {
-                      toast.error("Please sign in to message this seller.");
-                      navigate("/signin");
-                      return;
-                    }
-                    setChatOpen(true);
-                  }}
-                  className="mt-4 w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 transition-all flex items-center justify-center gap-2"
-                >
-                  <IoChatbubbleOutline className="text-base" />
-                  Message Seller
-                </motion.button>
+                {!isOwner ? (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      if (!cookies.access_token) {
+                        toast.error("Please sign in to message this seller.");
+                        navigate("/signin");
+                        return;
+                      }
+                      setChatOpen(true);
+                    }}
+                    className="mt-4 w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <IoChatbubbleOutline className="text-base" />
+                    Message Seller
+                  </motion.button>
+                ) : (
+                  <div className="mt-4 py-2.5 text-center text-white/20 text-xs italic bg-white/[0.02] rounded-xl border border-white/5">
+                    Viewing your own gig
+                  </div>
+                )}
               </div>
             </div>
           </div>

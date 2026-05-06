@@ -61,12 +61,12 @@ const ProductDetailPage = () => {
     setAdditionalAttribute,
   } = useContext(dataContext);
   const {
-    user,
-    setSingleOrderProduct,
-    setIsSingleOrderFormOpen,
     setIsProfileOpen,
+    isProfileOpen,
     currency,
   } = useContext(authContext);
+
+  const isOwner = user?.email === product?.vendor?.email;
 
   const handleCopy = () => {
     const currentURL = window.location.href;
@@ -249,6 +249,7 @@ const ProductDetailPage = () => {
 
         const productData = productResponse.data.Products;
         setProduct(productData);
+        const isOwner = user?.email === productData.vendor?.email;
         setLoading(false);
         setActiveImage(productResponse.data.Products.image);
 
@@ -750,28 +751,34 @@ const ProductDetailPage = () => {
                 {/* ── SECTION 2: ACTION ZONE ── */}
                 <div className="flex flex-col gap-6 py-8">
                   <div className="flex flex-col xl:flex-row gap-4">
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          toast.error("You are not Signed In", { position: "top-right" });
-                          sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                          setIsProfileOpen(true);
-                          setTimeout(() => setIsProfileOpen(false), 10000);
-                          return;
-                        }
-                        AddtoCart();
-                      }}
-                      disabled={product.quantity === 0}
-                      className="flex-1 group relative px-8 py-5 bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
-                    >
-                      <span className="relative z-10 flex items-center justify-center gap-3">
-                        <IoCart size={18} />
-                        Add to bag
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    </button>
+                    {!isOwner ? (
+                      <button
+                        onClick={() => {
+                          if (!user) {
+                            toast.error("You are not Signed In", { position: "top-right" });
+                            sessionStorage.setItem("redirectAfterLogin", window.location.href);
+                            setIsProfileOpen(true);
+                            setTimeout(() => setIsProfileOpen(false), 10000);
+                            return;
+                          }
+                          AddtoCart();
+                        }}
+                        disabled={product.quantity === 0}
+                        className="flex-1 group relative px-8 py-5 bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
+                      >
+                        <span className="relative z-10 flex items-center justify-center gap-3">
+                          <IoCart size={18} />
+                          Add to bag
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      </button>
+                    ) : (
+                      <div className="flex-1 px-8 py-5 bg-white/5 border border-white/10 rounded-2xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
+                        Your Product
+                      </div>
+                    )}
 
-                    {product.quantity > 0 && (
+                    {!isOwner && product.quantity > 0 && (
                       <button
                         onClick={() => {
                           if (!user) {

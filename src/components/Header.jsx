@@ -20,7 +20,7 @@ import QRCode from "qrcode.react";
 // icons-------------------------------------------------------------
 import { MdOutlineWbSunny } from "react-icons/md";
 import { IoIosMoon } from "react-icons/io";
-import { IoCart, IoMenuOutline, IoPersonCircleOutline, IoSearchSharp, IoClose } from "react-icons/io5";
+import { IoCart, IoMenuOutline, IoPersonCircleOutline, IoSearchSharp, IoClose, IoChatbubbleOutline } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
@@ -271,6 +271,10 @@ const Header = () => {
                       </span>
                     )}
                   </div>
+
+                  <Link to="/gighub/messages" className="relative group cursor-pointer">
+                    <IoChatbubbleOutline className="text-2xl text-gray-500 hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
+                  </Link>
                 </div>
               )}
 
@@ -365,6 +369,13 @@ const Header = () => {
                 className="text-4xl font-black uppercase tracking-tighter text-purple-400 hover:text-purple-300 transition-colors"
               >
                 Support
+              </Link>
+              <Link 
+                to="/gighub/messages" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
+              >
+                Messages
               </Link>
               
               <div className="mt-auto flex flex-col gap-4">
