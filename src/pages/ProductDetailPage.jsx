@@ -956,12 +956,14 @@ const ProductDetailPage = () => {
                     {product?.short_description ? (
                       <div className="
                         text-[16px] text-gray-800 dark:text-white leading-relaxed
-                        [&_p]:mb-6 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
+                        [&_p]:mb-6 [&_p]:text-gray-800 dark:[&_p]:text-white
+                        [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
                         [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6
-                        [&_li]:mb-3 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                        [&_h1]:text-3xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-6
-                        [&_h2]:text-2xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-6
-                        [&_h3]:text-xl [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-4
+                        [&_li]:mb-3 [&_li]:text-gray-800 dark:[&_li]:text-white
+                        [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                        [&_h1]:text-3xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-6 [&_h1]:text-gray-900 dark:[&_h1]:text-white
+                        [&_h2]:text-2xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-6 [&_h2]:text-gray-900 dark:[&_h2]:text-white
+                        [&_h3]:text-xl [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-4 [&_h3]:text-gray-900 dark:[&_h3]:text-white
                         [&_a]:text-purple-600 [&_a]:underline transition-all
                       ">
                         {parse(product.short_description)}

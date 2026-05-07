@@ -43,15 +43,16 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
 
         <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isDetailsExpanded ? 'max-h-[5000px] opacity-100 text-white' : 'max-h-0 opacity-0 overflow-hidden'}`}>
           <div className="pt-6 border-t border-gray-100 dark:border-white/5
-            text-sm sm:text-base leading-relaxed 
-            [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+            text-sm sm:text-base leading-relaxed text-gray-800 dark:text-white
+            [&_p]:mb-4 [&_p]:text-gray-800 dark:[&_p]:text-white
+            [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
-            [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-            [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-            [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-            [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+            [&_li]:mb-2 [&_li]:text-gray-800 dark:[&_li]:text-white
+            [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+            [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4 [&_h1]:text-gray-900 dark:[&_h1]:text-white
+            [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4 [&_h2]:text-gray-900 dark:[&_h2]:text-white
+            [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2 [&_h3]:text-gray-900 dark:[&_h3]:text-white
             [&_a]:text-purple-600 [&_a]:underline transition-all
-            text-white
           ">
             {product?.description ? parse(product.description) : "No description available."}
           </div>
