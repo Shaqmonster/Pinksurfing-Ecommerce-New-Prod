@@ -175,6 +175,13 @@ export const completeOrder = (token, orderId) =>
     { headers: { ...authHeader(token), "Content-Type": "application/json" } }
   );
 
+export const disputeOrder = (token, orderId, disputeReason) =>
+  axios.post(
+    `${BASE_URL}/api/gig-orders/${orderId}/dispute/`,
+    { dispute_reason: disputeReason },
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
+
 export const cancelOrder = (token, orderId) =>
   axios.post(
     `${BASE_URL}/api/gig-orders/${orderId}/cancel/`,

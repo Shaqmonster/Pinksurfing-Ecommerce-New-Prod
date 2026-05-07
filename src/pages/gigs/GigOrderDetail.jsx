@@ -11,6 +11,7 @@ import {
   completeOrder,
   cancelOrder,
   createConversation,
+  disputeOrder,
 } from "../../api/gigs";
 import {
   IoTimeOutline,
@@ -72,6 +73,12 @@ const STATUS_CONFIG = {
     color: "text-red-400 bg-red-500/10 border-red-500/30",
     dot: "bg-red-400",
     stepIndex: -1,
+  },
+  disputed: {
+    label: "Disputed",
+    color: "text-red-400 bg-red-500/10 border-red-500/30",
+    dot: "bg-red-400",
+    stepIndex: 3,
   },
 };
 
@@ -252,6 +259,64 @@ const DeliveryModal = ({ onClose, onSubmit, submitting }) => {
   );
 };
 
+// Dispute Modal (for buyer)
+const DisputeModal = ({ onClose, onSubmit, submitting }) => {
+  const [reason, setReason] = useState("");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#13131a] border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+      >
+        <h3 className="text-white font-bold text-lg mb-1 text-red-400">Raise a Dispute</h3>
+        <p className="text-white/40 text-sm mb-5">Please detail your complaint. This will be sent directly to admin for review.</p>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-white/70 text-sm font-medium">Reason for Dispute</label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={5}
+              placeholder="Explain what is wrong with the delivery..."
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-red-400 transition-all resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/20 transition-all">
+            Cancel
+          </button>
+          <motion.button
+            whileHover={{ scale: submitting ? 1 : 1.02 }}
+            whileTap={{ scale: submitting ? 1 : 0.98 }}
+            onClick={() => onSubmit(reason)}
+            disabled={submitting || reason.trim().length < 10}
+            className="flex-[2] py-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-red-500/30 disabled:opacity-50 transition-all"
+          >
+            {submitting ? (
+              <><span className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />Submitting…</>
+            ) : (
+              "Submit Dispute"
+            )}
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 // Main component
 const GigOrderDetail = () => {
   const { id } = useParams();
@@ -263,8 +328,10 @@ const GigOrderDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showRequirementsModal, setShowRequirementsModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [submittingReq, setSubmittingReq] = useState(false);
   const [submittingDelivery, setSubmittingDelivery] = useState(false);
+  const [submittingDispute, setSubmittingDispute] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -344,6 +411,20 @@ const GigOrderDetail = () => {
       toast.error(err?.response?.data?.error || "Failed to cancel order.");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleDispute = async (reason) => {
+    try {
+      setSubmittingDispute(true);
+      await disputeOrder(cookies.access_token, id, reason);
+      toast.success("Dispute raised successfully. Admin will review your case.");
+      setShowDisputeModal(false);
+      fetchOrder();
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to submit dispute.");
+    } finally {
+      setSubmittingDispute(false);
     }
   };
 
@@ -557,16 +638,33 @@ const GigOrderDetail = () => {
 
                 {/* BUYER: accept delivery */}
                 {isBuyer && order.status === "delivered" && (
-                  <motion.button
-                    whileHover={{ scale: actionLoading ? 1 : 1.02 }}
-                    whileTap={{ scale: actionLoading ? 1 : 0.98 }}
-                    onClick={handleComplete}
-                    disabled={actionLoading}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-semibold hover:bg-green-500/20 transition-all disabled:opacity-50"
-                  >
-                    {actionLoading ? <span className="w-4 h-4 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" /> : <IoCheckmarkCircle />}
-                    Accept Delivery
-                  </motion.button>
+                  <div className="w-full mb-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-amber-400/80 text-xs flex items-start gap-2">
+                    <IoAlertCircleOutline className="text-base flex-shrink-0 mt-0.5" />
+                    <p>Please review your delivery. If no action is taken within 3 days, this order will be automatically accepted.</p>
+                  </div>
+                )}
+                {isBuyer && order.status === "delivered" && (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: actionLoading ? 1 : 1.02 }}
+                      whileTap={{ scale: actionLoading ? 1 : 0.98 }}
+                      onClick={handleComplete}
+                      disabled={actionLoading}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-semibold hover:bg-green-500/20 transition-all disabled:opacity-50"
+                    >
+                      {actionLoading ? <span className="w-4 h-4 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" /> : <IoCheckmarkCircle />}
+                      Accept Delivery
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowDisputeModal(true)}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-semibold hover:bg-red-500/20 transition-all"
+                    >
+                      <IoAlertCircleOutline />
+                      Raise Dispute
+                    </motion.button>
+                  </>
                 )}
 
                 {/* Cancel (buyer or seller for active orders) */}
@@ -594,6 +692,13 @@ const GigOrderDetail = () => {
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                     <IoCloseCircle />
                     Order Cancelled
+                  </div>
+                )}
+                
+                {order.status === "disputed" && (
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                    <IoAlertCircleOutline />
+                    Order Disputed - Under Admin Review
                   </div>
                 )}
               </div>
@@ -703,6 +808,13 @@ const GigOrderDetail = () => {
             onClose={() => setShowDeliveryModal(false)}
             onSubmit={handleDeliver}
             submitting={submittingDelivery}
+          />
+        )}
+        {showDisputeModal && (
+          <DisputeModal
+            onClose={() => setShowDisputeModal(false)}
+            onSubmit={handleDispute}
+            submitting={submittingDispute}
           />
         )}
       </AnimatePresence>
