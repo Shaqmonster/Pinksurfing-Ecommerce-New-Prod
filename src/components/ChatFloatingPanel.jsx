@@ -125,6 +125,22 @@ const ChatFloatingPanel = ({ isOpen, onClose }) => {
 
   const otherUser = (conv) => conv.participants?.find(p => p.email !== myEmail);
 
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
+  const handleBack = () => {
+    setActiveConv(null);
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -138,7 +154,7 @@ const ChatFloatingPanel = ({ isOpen, onClose }) => {
           <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
             {activeConv ? (
               <div className="flex items-center gap-3">
-                <button onClick={() => setActiveConv(null)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                <button onClick={handleBack} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
                   <IoChevronBackOutline className="text-xl text-gray-400" />
                 </button>
                 <div className="flex items-center gap-3">
