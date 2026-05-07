@@ -43,7 +43,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
 
         <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isDetailsExpanded ? 'max-h-[5000px] opacity-100 text-white' : 'max-h-0 opacity-0 overflow-hidden'}`}>
           <div className="pt-6 border-t border-gray-100 dark:border-white/5
-            text-sm sm:text-base leading-relaxed text-gray-600 dark:text-gray-300 
+            text-sm sm:text-base leading-relaxed 
             [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
             [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
@@ -51,6 +51,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
             [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
             [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
             [&_a]:text-purple-600 [&_a]:underline transition-all
+            text-white
           ">
             {product?.description ? parse(product.description) : "No description available."}
           </div>
