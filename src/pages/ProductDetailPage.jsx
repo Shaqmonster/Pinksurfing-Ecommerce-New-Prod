@@ -487,6 +487,41 @@ const ProductDetailPage = () => {
     }
   }, []);
 
+  const formatTextToParagraphs = (text) => {
+    if (!text) return "No description available.";
+    
+    // If text already contains HTML tags, let parse handle it
+    if (/<[a-z][\s\S]*>/i.test(text)) {
+      return parse(text);
+    }
+
+    // Naively split text into sentences by ". "
+    const sentences = text.split(/(?<=\.)\s+/);
+    
+    // Group into paragraphs of ~3-4 sentences
+    const paragraphs = [];
+    let currentParagraph = [];
+    
+    sentences.forEach((sentence, index) => {
+      currentParagraph.push(sentence);
+      if (currentParagraph.length >= 3 || index === sentences.length - 1) {
+        paragraphs.push(currentParagraph.join(" "));
+        currentParagraph = [];
+      }
+    });
+
+    return (
+      <div className="space-y-6">
+        {paragraphs.map((para, idx) => (
+          <p key={idx} className="text-justify text-[15px] sm:text-[16px] leading-[1.8] text-gray-800 dark:text-white dark:[&_*]:!text-white font-medium tracking-wide">
+            {para}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
+
   return (
     <>
       {orderConfirm && <OrderConfirm />}
@@ -966,9 +1001,9 @@ const ProductDetailPage = () => {
                         [&_h3]:text-xl [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-4
                         [&_a]:text-purple-600 [&_a]:underline transition-all
                       ">
-
-                        {parse(product.short_description)}
+                        {formatTextToParagraphs(product?.short_description)}
                       </div>
+
                     ) : (
                       <p className="text-sm text-gray-500 italic py-12 text-center">No product story available.</p>
                     )}

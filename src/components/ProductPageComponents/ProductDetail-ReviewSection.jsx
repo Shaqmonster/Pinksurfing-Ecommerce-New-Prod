@@ -17,6 +17,40 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
       )
     );
 
+  const formatTextToParagraphs = (text) => {
+    if (!text) return "No description available.";
+    
+    // If text already contains HTML tags, let parse handle it
+    if (/<[a-z][\s\S]*>/i.test(text)) {
+      return parse(text);
+    }
+
+    // Naively split text into sentences by ". "
+    const sentences = text.split(/(?<=\.)\s+/);
+    
+    // Group into paragraphs of ~3-4 sentences
+    const paragraphs = [];
+    let currentParagraph = [];
+    
+    sentences.forEach((sentence, index) => {
+      currentParagraph.push(sentence);
+      if (currentParagraph.length >= 3 || index === sentences.length - 1) {
+        paragraphs.push(currentParagraph.join(" "));
+        currentParagraph = [];
+      }
+    });
+
+    return (
+      <div className="space-y-6">
+        {paragraphs.map((para, idx) => (
+          <p key={idx} className="text-justify text-[15px] sm:text-[16px] leading-[1.8] text-gray-800 dark:text-white dark:[&_*]:!text-white font-medium tracking-wide">
+            {para}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <section className="space-y-10" id="product-details">
       {/* Redesigned Collapsible Details */}
@@ -54,8 +88,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
             [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
             [&_a]:text-purple-600 [&_a]:underline transition-all
           ">
-
-            {product?.description ? parse(product.description) : "No description available."}
+            {formatTextToParagraphs(product?.description)}
           </div>
         </div>
       </div>
