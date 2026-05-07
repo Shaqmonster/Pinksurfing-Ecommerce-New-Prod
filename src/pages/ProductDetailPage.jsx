@@ -20,6 +20,21 @@ import parse from "html-react-parser";
 import { data } from "autoprefixer";
 import Stars from '../components/Stars'
 import { formatMoney } from "../utils/formatMoney";
+import { formatDistanceToNow } from "date-fns";
+import { 
+  FaBed, 
+  FaBath, 
+  FaRulerCombined, 
+  FaChartLine, 
+  FaMoneyBillWave, 
+  FaClock, 
+  FaBuilding, 
+  FaMapMarkerAlt, 
+  FaCalendarAlt,
+  FaPhoneAlt,
+  FaEnvelope
+} from "react-icons/fa";
+import { IoInformationCircleOutline } from "react-icons/io5";
 
 
 const ProductDetailPage = () => {
@@ -68,6 +83,32 @@ const ProductDetailPage = () => {
   } = useContext(authContext);
 
   const isOwner = user?.email === product?.vendor?.email;
+
+  // ── CATEGORY DETECTION ──
+  const categorySlug = product?.category?.slug || "";
+  const isResidential = categorySlug === "residential-realestate";
+  const isCommercial = categorySlug === "commercial-realestate";
+  const isRealEstate = isResidential || isCommercial;
+  const isBusiness = categorySlug === "business4sale" || categorySlug === "business-for-sale";
+  const isSpecialized = isRealEstate || isBusiness;
+
+  // ── ATTRIBUTE MAPPING ──
+  const getAttr = (name) => {
+    const lowerName = name.toLowerCase();
+    // Check attributes array directly for speed and reliability
+    const attr = (product?.attributes || []).find(a => a.name?.toLowerCase() === lowerName);
+    return attr?.value || "";
+  };
+
+  const beds = getAttr("bedrooms") || getAttr("beds");
+  const baths = getAttr("bathrooms") || getAttr("baths");
+  const sqft = getAttr("square_feet") || getAttr("sqft") || getAttr("size");
+  const lotSize = getAttr("lot_size");
+  const yearBuilt = getAttr("year_built");
+  const capRate = getAttr("cap_rate");
+  const revenue = getAttr("annual revenue");
+  const ebitda = getAttr("ebitda");
+  const daysOnMarket = product.created_at ? formatDistanceToNow(new Date(product.created_at)) : null;
 
   const handleCopy = () => {
     const currentURL = window.location.href;
@@ -501,314 +542,344 @@ const ProductDetailPage = () => {
               <span className="text-gray-900 dark:text-white font-medium">{product.name}</span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16">
-              {/* Left Column - Image Gallery */}
-              <div className="space-y-4 animate-slideInLeft">
-                {/* Main Image */}
-                <div className="relative group bg-white dark:bg-gray-900/50 rounded-2xl overflow-hidden shadow-2xl border border-purple-100 dark:border-purple-900/30 backdrop-blur-sm">
-                  <div className="aspect-square flex items-center justify-center p-8 bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-900/50 dark:to-purple-950/30">
-                    <img
-                      className="w-full h-full object-contain cursor-crosshair transition-transform duration-500 group-hover:scale-105"
-                      src={activeImage || product.image1}
-                      alt={product.name}
-                      onMouseOut={() => setViewMainImg(false)}
-                      onMouseMove={handleMouseMove}
-                    />
-                  </div>
-                  
-                  {/* Image Overlay Icons */}
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="p-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-transform">
-                      <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Stock Badge */}
-                  {product.quantity > 0 ? (
-                    <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg animate-bounce">
-                      In Stock
-                    </div>
-                  ) : (
-                    <div className="absolute top-4 left-4 px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
-                      Out of Stock
-                    </div>
-                  )}
-
-                  {/* Discount Badge */}
-                  {discountPercentage !== "0.00" && (
-                    <div className="absolute bottom-4 left-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full shadow-lg">
-                      {discountPercentage}% OFF
-                    </div>
-                  )}
-                </div>
-
-                {/* Thumbnail Gallery */}
-                <div className="grid grid-cols-4 gap-3">
-                  {[product.image1, product.image2, product.image3, product.image4].filter(Boolean).map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveImage(img)}
-                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-105 ${
-                        activeImage === img
-                          ? "ring-4 ring-purple-500 shadow-xl scale-105"
-                          : "ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-purple-300 dark:hover:ring-purple-700"
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt={`Product view ${index + 1}`}
-                        className="w-full h-full object-cover bg-white dark:bg-gray-900"
-                      />
-                      {activeImage === img && (
-                        <div className="absolute inset-0 bg-purple-500/20 backdrop-blur-[1px]"></div>
+            {/* Premium Listing Header (Real Estate/Business) */}
+            {isSpecialized && (
+              <div className="mb-10 space-y-4 animate-fadeIn">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-purple-500/20">
+                        {isBusiness ? "Business For Sale" : (isResidential ? "Residential" : "Commercial")}
+                      </span>
+                      {daysOnMarket && (
+                        <span className="px-3 py-1 bg-white/10 dark:bg-white/5 border border-white/10 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5">
+                          <FaClock className="text-purple-500" /> {daysOnMarket} on market
+                        </span>
                       )}
-                    </button>
-                  ))}
+                    </div>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white tracking-tighter leading-[0.95]">
+                      {product.name}
+                    </h1>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                      <FaMapMarkerAlt className="text-purple-500" />
+                      <span>{getAttr("city") || product.city}{getAttr("state") ? `, ${getAttr("state")}` : ""} {getAttr("zip") || product.zip_code}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-start md:items-end gap-1">
+                    <div className="text-5xl md:text-6xl font-black text-purple-600 tracking-tighter">
+                      {currency}{formatMoney(finalUnitPrice)}
+                    </div>
+                    <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                      Est. {currency}{formatMoney(finalUnitPrice / 180)}/mo
+                    </div>
+                  </div>
                 </div>
+
+                {/* Specs Strip */}
+                <div className="grid grid-cols-2 md:flex md:items-center gap-4 md:gap-8 p-6 bg-white/50 dark:bg-white/[0.03] backdrop-blur-3xl rounded-3xl border border-white/20 dark:border-white/5 shadow-xl">
+                  {isRealEstate ? (
+                    <>
+                      {beds && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                            <FaBed size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{beds}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Beds</div>
+                          </div>
+                        </div>
+                      )}
+                      {baths && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <FaBath size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{baths}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Baths</div>
+                          </div>
+                        </div>
+                      )}
+                      {sqft && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+                            <FaRulerCombined size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{formatMoney(sqft).replace("$", "")}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Sqft</div>
+                          </div>
+                        </div>
+                      )}
+                      {capRate && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                            <FaChartLine size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{capRate}%</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Cap Rate</div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {revenue && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+                            <FaMoneyBillWave size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(revenue)}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Revenue</div>
+                          </div>
+                        </div>
+                      )}
+                      {ebitda && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <FaChartLine size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(ebitda)}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">EBITDA</div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <div className="ml-auto hidden md:flex items-center gap-2 px-4 py-2 bg-purple-600/10 border border-purple-500/20 rounded-2xl text-purple-600 text-[10px] font-black uppercase tracking-widest">
+                    <IoInformationCircleOutline size={16} /> Verified Listing
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={`grid grid-cols-1 ${isSpecialized ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-8 lg:gap-12`}>
+              {/* Left Column - Image Gallery */}
+              <div className={`${isSpecialized ? "lg:col-span-2" : ""} space-y-4 animate-slideInLeft`}>
+                {isSpecialized ? (
+                  /* Premium Grid Gallery */
+                  <div className="grid grid-cols-4 grid-rows-2 gap-3 aspect-[16/10]">
+                    <div className="col-span-3 row-span-2 relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+                      <img 
+                        src={activeImage || product.image1} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        alt="Property main"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    </div>
+                    <div className="col-span-1 row-span-1 relative group rounded-2xl overflow-hidden shadow-lg border border-white/10">
+                      <img 
+                        src={product.image2 || product.image1} 
+                        className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" 
+                        onClick={() => setActiveImage(product.image2)}
+                        alt="view 2"
+                      />
+                    </div>
+                    <div className="col-span-1 row-span-1 relative group rounded-2xl overflow-hidden shadow-lg border border-white/10">
+                      <img 
+                        src={product.image3 || product.image1} 
+                        className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" 
+                        onClick={() => setActiveImage(product.image3)}
+                        alt="view 3"
+                      />
+                      {(!product.image4 && !product.image3) && (
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold uppercase">
+                          +12 Photos
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard E-commerce Gallery */
+                  <>
+                    <div className="relative group bg-white dark:bg-gray-900/50 rounded-2xl overflow-hidden shadow-2xl border border-purple-100 dark:border-purple-900/30 backdrop-blur-sm">
+                      <div className="aspect-square flex items-center justify-center p-8 bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-900/50 dark:to-purple-950/30">
+                        <img
+                          className="w-full h-full object-contain cursor-crosshair transition-transform duration-500 group-hover:scale-105"
+                          src={activeImage || product.image1}
+                          alt={product.name}
+                          onMouseOut={() => setViewMainImg(false)}
+                          onMouseMove={handleMouseMove}
+                        />
+                      </div>
+                      
+                      {/* Stock Badge */}
+                      {product.quantity > 0 ? (
+                        <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg animate-bounce">
+                          In Stock
+                        </div>
+                      ) : (
+                        <div className="absolute top-4 left-4 px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                          Out of Stock
+                        </div>
+                      )}
+
+                      {/* Discount Badge */}
+                      {discountPercentage !== "0.00" && (
+                        <div className="absolute bottom-4 left-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full shadow-lg">
+                          {discountPercentage}% OFF
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Thumbnail Gallery */}
+                    <div className="grid grid-cols-4 gap-3">
+                      {[product.image1, product.image2, product.image3, product.image4].filter(Boolean).map((img, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setActiveImage(img)}
+                          className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-105 ${
+                            activeImage === img
+                              ? "ring-4 ring-purple-500 shadow-xl scale-105"
+                              : "ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-purple-300 dark:hover:ring-purple-700"
+                          }`}
+                        >
+                          <img
+                            src={img}
+                            alt={`Product view ${index + 1}`}
+                            className="w-full h-full object-cover bg-white dark:bg-gray-900"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Right Column - Product Info */}
               <div className="space-y-6 animate-slideInRight">
-                {/* Rating and Reviews */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <Stars stars={averageRating} />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {averageRating.toFixed(1)} ({reviews.length} reviews)
-                  </span>
-                </div>
-
-                {/* Product Title */}
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                  {product.name}
-                </h1>
-
-                {/* Brand and Category */}
-                <div className="flex flex-wrap gap-3 text-sm">
-                  {product.brand_name && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                      <span className="text-gray-600 dark:text-gray-400">Brand:</span>
-                      <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
-                    </div>
-                  )}
-                  {product.category?.name && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                      <span className="text-gray-600 dark:text-gray-400">Category:</span>
-                      <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category.name}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Price Section */}
-                <div className="relative overflow-hidden p-8 bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl group">
-                  {/* Decorative Glow */}
-                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-purple-500/20 transition-all duration-700"></div>
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-purple-500">Premium Choice</span>
+                {isSpecialized ? (
+                  /* Specialized Action Panel */
+                  <div className="space-y-6">
+                    <div className="p-8 bg-[#111]/80 dark:bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-2xl">
+                      <h3 className="text-lg font-black text-white uppercase tracking-widest mb-6 border-b border-white/5 pb-4 flex items-center gap-3">
+                        <FaEnvelope className="text-purple-500" /> Interested?
+                      </h3>
+                      <div className="space-y-4">
+                        <button 
+                          onClick={() => toast.info("Contacting Agent...", { position: "top-right" })}
+                          className="w-full py-5 bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl shadow-xl shadow-purple-600/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                        >
+                          <FaPhoneAlt /> Contact {isBusiness ? "Broker" : "Agent"}
+                        </button>
+                        <button 
+                          onClick={() => toast.info("Scheduling Tour...", { position: "top-right" })}
+                          className="w-full py-5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-3"
+                        >
+                          <FaCalendarAlt /> {isBusiness ? "Request Financials" : "Schedule a Tour"}
+                        </button>
                       </div>
-                      {discountPercentage !== "0.00" && Number(discountPercentage) > 0 && (
-                        <div className="px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Limited Offer</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-baseline gap-4 flex-wrap">
-                      <span className="text-5xl sm:text-6xl font-black tracking-tighter text-gray-900 dark:text-white">
-                        {currency}{formatMoney(finalUnitPrice)}
-                      </span>
                       
-                      {discountPercentage !== "0.00" && Number(discountPercentage) > 0 && (
-                        <div className="flex flex-col">
-                          <span className="text-xl font-bold text-gray-400 line-through decoration-orange-500/50">
-                            {currency}{formatMoney(finalMrp)}
-                          </span>
-                          <span className="text-sm font-black text-orange-500 uppercase tracking-tighter">
-                            {discountPercentage}% Savings
-                          </span>
+                      <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Listing Agent</span>
+                          <span className="text-xs font-black text-white">{product.vendor?.name || "Premium Brokerage"}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Property ID</span>
+                          <span className="text-xs font-black text-white">#PS-{product.id?.slice(-6).toUpperCase()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-white/10 transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                          <FaHeart size={20} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-black text-white uppercase tracking-widest">Save Listing</div>
+                          <div className="text-[10px] text-gray-500">Add to your favorites</div>
+                        </div>
+                      </div>
+                      <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-purple-500 group-hover:border-purple-500 transition-all">
+                        <FaShare className="text-white text-xs" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard E-commerce Info */
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <Stars stars={averageRating} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {averageRating.toFixed(1)} ({reviews.length} reviews)
+                      </span>
+                    </div>
+
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+                      {product.name}
+                    </h1>
+
+                    <div className="flex flex-wrap gap-3 text-sm">
+                      {product.brand_name && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                          <span className="text-gray-600 dark:text-gray-400">Brand:</span>
+                          <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
+                        </div>
+                      )}
+                      {product.category?.name && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                          <span className="text-gray-600 dark:text-gray-400">Category:</span>
+                          <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category.name}</span>
                         </div>
                       )}
                     </div>
-                    
-                    <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                        Inclusive of all taxes & duties
-                      </p>
-                      <div className="flex items-center gap-2 text-green-500">
-                        <FaTruck className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Free Shipping</span>
+
+                    {/* Standard Price Section */}
+                    <div className="relative overflow-hidden p-8 bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl group">
+                      <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-purple-500/20 transition-all duration-700"></div>
+                      <div className="relative z-10">
+                        <div className="flex items-baseline gap-4 flex-wrap">
+                          <span className="text-5xl sm:text-6xl font-black tracking-tighter text-gray-900 dark:text-white">
+                            {currency}{formatMoney(finalUnitPrice)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* ── SECTION 1: OPTIONS (is_variant=true) — selectable, price-affecting ── */}
-                {Object.keys(variantAttributeMap).length > 0 && (
-                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#9747FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                      </svg>
-                      <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                        Options
-                      </p>
-                      {additionalPrice > 0 && (
-                        <span className="ml-auto text-xs font-semibold text-[#9747FF] bg-[#9747FF]/10 px-2 py-0.5 rounded-full">
-                          +{currency}{formatMoney(additionalPrice)} selected
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-4 space-y-4">
-                      {Object.entries(variantAttributeMap).map(([attributeName, values]) => {
-                        const isColor = attributeName.toLowerCase() === "color";
-                        const selectedVal = selectedAttributes[attributeName]?.value;
-
-                        return (
-                          <div key={attributeName} className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                                {attributeName}
-                              </span>
-                              {selectedVal && (
-                                <span className="text-xs text-[#9747FF] font-medium">
-                                  {selectedVal}
-                                  {selectedAttributes[attributeName]?.additional_price > 0 && (
-                                    <span className="text-gray-400 ml-1">
-                                      (+{currency}{formatMoney(selectedAttributes[attributeName].additional_price)})
-                                    </span>
-                                  )}
-                                </span>
-                              )}
-                            </div>
-
-                            {isColor ? (
-                              /* Color swatches */
-                              <div className="flex flex-wrap gap-2">
-                                {values.map((v, idx) => (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => handleAttributeSelection(attributeName, v)}
-                                    className={`group relative w-12 h-12 rounded-xl transition-all duration-300 ${
-                                      selectedVal === v.value
-                                        ? "ring-4 ring-[#9747FF] ring-offset-2 scale-110"
-                                        : "hover:scale-110"
-                                    }`}
-                                    title={v.value}
-                                  >
-                                    <div
-                                      className="w-full h-full rounded-lg shadow-inner border border-black/10"
-                                      style={{ backgroundColor: v.value.toLowerCase() }}
-                                    ></div>
-                                    {v.additional_price > 0 && (
-                                      <div className="absolute -top-2 -right-2 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
-                                        +{currency}{formatMoney(v.additional_price)}
-                                      </div>
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              /* Selectable chips */
-                              <div className="flex flex-wrap gap-2">
-                                {values.map((v, idx) => (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => handleAttributeSelection(attributeName, v)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border-2 transition-all duration-200 ${
-                                      selectedVal === v.value
-                                        ? "bg-[#9747FF] text-white border-[#9747FF] shadow-md shadow-[#9747FF]/20"
-                                        : "bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#9747FF] hover:text-[#9747FF] dark:hover:border-[#9747FF] dark:hover:text-[#9747FF]"
-                                    }`}
-                                  >
-                                    {v.value}
-                                    {v.additional_price > 0 && (
-                                      <span className={`ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
-                                        selectedVal === v.value
-                                          ? "bg-white/20 text-white"
-                                          : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                      }`}>
-                                        +{currency}{formatMoney(v.additional_price)}
-                                      </span>
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
+                    {/* Standard Action Zone */}
+                    <div className="flex flex-col gap-6 py-8">
+                      <div className="flex flex-col xl:flex-row gap-4">
+                        {!isOwner ? (
+                          <button
+                            onClick={() => {
+                              if (!user) {
+                                toast.error("You are not Signed In", { position: "top-right" });
+                                sessionStorage.setItem("redirectAfterLogin", window.location.href);
+                                setIsProfileOpen(true);
+                                setTimeout(() => setIsProfileOpen(false), 10000);
+                                return;
+                              }
+                              AddtoCart();
+                            }}
+                            disabled={product.quantity === 0}
+                            className="flex-1 group relative px-8 py-5 bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
+                          >
+                            <span className="relative z-10 flex items-center justify-center gap-3">
+                              <IoCart size={18} />
+                              Add to bag
+                            </span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                          </button>
+                        ) : (
+                          <div className="flex-1 px-8 py-5 bg-white/5 border border-white/10 rounded-2xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
+                            Your Product
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* ── SECTION 2: ACTION ZONE ── */}
-                <div className="flex flex-col gap-6 py-8">
-                  <div className="flex flex-col xl:flex-row gap-4">
-                    {!isOwner ? (
-                      <button
-                        onClick={() => {
-                          if (!user) {
-                            toast.error("You are not Signed In", { position: "top-right" });
-                            sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                            setIsProfileOpen(true);
-                            setTimeout(() => setIsProfileOpen(false), 10000);
-                            return;
-                          }
-                          AddtoCart();
-                        }}
-                        disabled={product.quantity === 0}
-                        className="flex-1 group relative px-8 py-5 bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
-                      >
-                        <span className="relative z-10 flex items-center justify-center gap-3">
-                          <IoCart size={18} />
-                          Add to bag
-                        </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      </button>
-                    ) : (
-                      <div className="flex-1 px-8 py-5 bg-white/5 border border-white/10 rounded-2xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
-                        Your Product
+                        )}
                       </div>
-                    )}
-
-                    {!isOwner && product.quantity > 0 && (
-                      <button
-                        onClick={() => {
-                          if (!user) {
-                            toast.error("You are not Signed In", { position: "top-right" });
-                            sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                            setIsProfileOpen(true);
-                            setTimeout(() => setIsProfileOpen(false), 10000);
-                            return;
-                          }
-                          setIsSingleOrderFormOpen(true);
-                          setSingleOrderProduct({
-                            ...product,
-                            unit_price: finalUnitPrice,
-                            mrp: finalMrp,
-                            original_unit_price: product.unit_price,
-                            original_mrp: product.mrp,
-                            additional_price: additionalPrice,
-                            selected_variants: Object.entries(selectedAttributes).map(
-                              ([name, attr]) => ({ name, value: attr.value })
-                            ),
-                            quantity: productQty,
-                          });
-                        }}
-                        className="flex-1 px-8 py-5 bg-purple-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all duration-500 hover:bg-purple-700 hover:shadow-2xl hover:shadow-purple-500/20 active:scale-95 shadow-xl"
-                      >
-                        Buy Now — {currency}{formatMoney(finalUnitPrice)}
-                      </button>
-                    )}
-                  </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
 
                   <div className="flex items-center justify-between p-6 bg-white dark:bg-gray-900/40 rounded-2xl border border-gray-100 dark:border-white/5 shadow-lg">
                     <button
@@ -851,7 +922,6 @@ const ProductDetailPage = () => {
                       </div>
                     ))}
                   </div>
-                </div>
 
                 {/* ── SECTION 3: PRODUCT INFO TABS (Story & Specs) ── */}
                 <div className="relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
@@ -943,9 +1013,6 @@ const ProductDetailPage = () => {
                   </div>
                 </div>
 
-                </div>
-              </div>
-
 
             {/* Reviews and Recommendations */}
             <div className="mt-16 space-y-12">
@@ -961,7 +1028,7 @@ const ProductDetailPage = () => {
         )}
       </section>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes slideInLeft {
           from {
             opacity: 0;
@@ -1004,7 +1071,7 @@ const ProductDetailPage = () => {
         .animate-fadeIn {
           animation: fadeIn 0.8s ease-out;
         }
-      `}</style>
+      `}} />
     </>
   );
 };
