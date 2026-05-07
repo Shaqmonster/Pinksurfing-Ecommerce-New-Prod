@@ -756,7 +756,7 @@ const ProductDetailPage = () => {
                 {isSpecialized ? (
                   /* Specialized Action Panel */
                   <div className="space-y-6">
-                    <div className="p-8 bg-[#111]/80 dark:bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-2xl">
+                    <div className="p-8 bg-[#111]/90 dark:bg-[#111]/90 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-2xl">
                       <h3 className="text-lg font-black text-white uppercase tracking-widest mb-6 border-b border-white/5 pb-4 flex items-center gap-3">
                         <FaEnvelope className="text-purple-500" /> Interested?
                       </h3>
@@ -924,7 +924,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* SECTION 3: PRODUCT INFO TABS (Story & Specs) */}
-            <div className="mt-16 relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
+            <div className="mt-16 relative overflow-hidden bg-white dark:bg-[#111]/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-100 dark:border-white/10 shadow-xl transition-all duration-500">
                   {/* Tab Navigation */}
                   <div className="flex border-b border-gray-100 dark:border-white/5">
                     {[
@@ -955,7 +955,7 @@ const ProductDetailPage = () => {
                   <div className="animate-fadeIn max-w-4xl mx-auto">
                     {product?.short_description ? (
                       <div className="
-                        text-[15px] text-gray-600 dark:text-gray-300 leading-relaxed
+                        text-[16px] text-gray-800 dark:text-gray-100 leading-relaxed
                         [&_p]:mb-6 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
                         [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6
                         [&_li]:mb-3 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
