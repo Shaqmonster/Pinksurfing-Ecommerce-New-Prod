@@ -32,7 +32,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
               </svg>
             </div>
             <div className="text-left">
-              <h2 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Product Details</h2>
+              <h2 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Description</h2>
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Comprehensive Overview</p>
             </div>
           </div>
