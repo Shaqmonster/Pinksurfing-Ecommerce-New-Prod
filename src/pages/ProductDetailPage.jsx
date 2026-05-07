@@ -660,7 +660,7 @@ const ProductDetailPage = () => {
 
             <div className={`grid grid-cols-1 ${isSpecialized ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-8 lg:gap-12`}>
               {/* Left Column - Image Gallery */}
-              <div className={`${isSpecialized ? "lg:col-span-2" : ""} space-y-4 animate-slideInLeft`}>
+              <div className={`${isSpecialized ? "lg:col-span-2" : "lg:col-span-1"} space-y-4 animate-slideInLeft`}>
                 {isSpecialized ? (
                   /* Premium Grid Gallery */
                   <div className="grid grid-cols-4 grid-rows-2 gap-3 aspect-[16/10]">
@@ -846,7 +846,7 @@ const ProductDetailPage = () => {
                     </div>
 
                     {/* Standard Action Zone */}
-                    <div className="flex flex-col gap-6 py-8">
+                    <div className="flex flex-col gap-4 py-4">
                       <div className="flex flex-col xl:flex-row gap-4">
                         {!isOwner ? (
                           <button
@@ -861,19 +861,61 @@ const ProductDetailPage = () => {
                               AddtoCart();
                             }}
                             disabled={product.quantity === 0}
-                            className="flex-1 group relative px-8 py-5 bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
+                            className="flex-1 group relative px-8 py-4 bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl"
                           >
                             <span className="relative z-10 flex items-center justify-center gap-3">
-                              <IoCart size={18} />
+                              <IoCart size={16} />
                               Add to bag
                             </span>
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                           </button>
                         ) : (
-                          <div className="flex-1 px-8 py-5 bg-white/5 border border-white/10 rounded-2xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
+                          <div className="flex-1 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
                             Your Product
                           </div>
                         )}
+                      </div>
+
+                      <div className="flex items-center justify-between p-5 bg-white dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-white/5 shadow-md">
+                        <button
+                          onClick={handleWishlistClick}
+                          className="flex items-center gap-3 group"
+                        >
+                          <FaHeart
+                            id={`heart-${product.id}`}
+                            className={`transition-all duration-300 text-xl group-hover:scale-125 ${
+                              wishlistProducts.find((i) => i.id === product.id)
+                                ? "text-red-500 animate-pulse"
+                                : "text-gray-400 group-hover:text-red-400"
+                            }`}
+                          />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 group-hover:text-purple-600 transition-colors">
+                            {wishlistProducts.find((i) => i.id === product.id) ? "In Wishlist" : "Save for later"}
+                          </span>
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleShareClick} className="p-2.5 bg-gray-50 dark:bg-white/5 rounded-lg transition-all hover:scale-110 hover:bg-purple-50">
+                            <FaShare className="text-gray-500" size={12} />
+                          </button>
+                          <button onClick={handleCopy} className="p-2.5 bg-gray-50 dark:bg-white/5 rounded-lg transition-all hover:scale-110 hover:bg-purple-50">
+                            <FaCopy className="text-gray-600 dark:text-gray-400" size={12} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Trust Badges */}
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          { icon: "🛡️", label: "Secure" },
+                          { icon: "🔄", label: "7 Day" },
+                          { icon: "✨", label: "Authentic" }
+                        ].map((badge, i) => (
+                          <div key={i} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
+                            <span className="text-lg">{badge.icon}</span>
+                            <span className="text-[7px] font-black uppercase tracking-[0.1em] text-gray-400">{badge.label}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </>
@@ -881,50 +923,8 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-                  <div className="flex items-center justify-between p-6 bg-white dark:bg-gray-900/40 rounded-2xl border border-gray-100 dark:border-white/5 shadow-lg">
-                    <button
-                      onClick={handleWishlistClick}
-                      className="flex items-center gap-3 group"
-                    >
-                      <FaHeart
-                        id={`heart-${product.id}`}
-                        className={`transition-all duration-300 text-2xl group-hover:scale-125 ${
-                          wishlistProducts.find((i) => i.id === product.id)
-                            ? "text-red-500 animate-pulse"
-                            : "text-gray-400 group-hover:text-red-400"
-                        }`}
-                      />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 group-hover:text-purple-600 transition-colors">
-                        {wishlistProducts.find((i) => i.id === product.id) ? "In Wishlist" : "Save for later"}
-                      </span>
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                      <button onClick={handleShareClick} className="p-3 bg-gray-50 dark:bg-white/5 rounded-xl transition-all hover:scale-110 hover:bg-purple-50">
-                        <FaShare className="text-gray-500" size={14} />
-                      </button>
-                      <button onClick={handleCopy} className="p-3 bg-gray-50 dark:bg-white/5 rounded-xl transition-all hover:scale-110 hover:bg-purple-50">
-                        <FaCopy className="text-gray-600 dark:text-gray-400" size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Trust Badges */}
-                  <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { icon: "🛡️", label: "Secure Pay" },
-                      { icon: "🔄", label: "7 Day Return" },
-                      { icon: "✨", label: "Authentic" }
-                    ].map((badge, i) => (
-                      <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
-                        <span className="text-xl">{badge.icon}</span>
-                        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-400">{badge.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                {/* ── SECTION 3: PRODUCT INFO TABS (Story & Specs) ── */}
-                <div className="relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
+            {/* SECTION 3: PRODUCT INFO TABS (Story & Specs) */}
+            <div className="mt-16 relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl transition-all duration-500">
                   {/* Tab Navigation */}
                   <div className="flex border-b border-gray-100 dark:border-white/5">
                     {[
@@ -949,66 +949,66 @@ const ProductDetailPage = () => {
                     ))}
                   </div>
 
-                  {/* Tab Content */}
-                  <div className="p-8">
-                    {activeTab === "story" ? (
-                      <div className="animate-fadeIn">
-                        {product?.short_description ? (
-                          <div className="
-                            text-sm text-gray-600 dark:text-gray-400 leading-relaxed
-                            [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
-                            [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
-                            [&_li]:mb-2 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                            [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-                            [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-                            [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
-                            [&_a]:text-purple-600 [&_a]:underline transition-all
-                          ">
-                            {parse(product.short_description)}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-500 italic py-8 text-center">No product story available.</p>
-                        )}
+              {/* Tab Content */}
+              <div className="p-10 sm:p-12">
+                {activeTab === "story" ? (
+                  <div className="animate-fadeIn max-w-4xl mx-auto">
+                    {product?.short_description ? (
+                      <div className="
+                        text-[15px] text-gray-600 dark:text-gray-300 leading-relaxed
+                        [&_p]:mb-6 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
+                        [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6
+                        [&_li]:mb-3 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
+                        [&_h1]:text-3xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-6
+                        [&_h2]:text-2xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-6
+                        [&_h3]:text-xl [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-4
+                        [&_a]:text-purple-600 [&_a]:underline transition-all
+                      ">
+                        {parse(product.short_description)}
                       </div>
                     ) : (
-                      <div className="animate-fadeIn">
-                        {Object.keys(specAttributeMap).length > 0 ? (
-                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
-                            {Object.entries(specAttributeMap).map(([attrName, values]) => {
-                              const displayValue = values.map((v) => v.value).join(", ");
-                              const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
-                              const isTrue = displayValue.toLowerCase() === "true";
+                      <p className="text-sm text-gray-500 italic py-12 text-center">No product story available.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="animate-fadeIn">
+                    {Object.keys(specAttributeMap).length > 0 ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-12 gap-y-10">
+                        {Object.entries(specAttributeMap).map(([attrName, values]) => {
+                          const displayValue = values.map((v) => v.value).join(", ");
+                          const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
+                          const isTrue = displayValue.toLowerCase() === "true";
+                          
+                          return (
+                            <div key={attrName} className="flex flex-col gap-2.5 group">
+                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-400 group-hover:text-purple-500 transition-colors">
+                                {attrName}
+                              </span>
                               
-                              return (
-                                <div key={attrName} className="flex flex-col gap-1.5 group">
-                                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 group-hover:text-purple-500 transition-colors">
-                                    {attrName}
-                                  </span>
-                                  
-                                  <div className="flex items-center gap-3">
-                                    {isBoolean ? (
-                                      <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                                        isTrue 
-                                          ? "bg-green-500/10 text-green-500 border border-green-500/20" 
-                                          : "bg-gray-100 dark:bg-white/5 text-gray-400"
-                                      }`}>
-                                        <span className={`w-1 h-1 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-400"}`} />
-                                        {isTrue ? "Yes" : "No"}
-                                      </div>
-                                    ) : (
-                                      <p className="text-[13px] font-bold text-gray-900 dark:text-gray-100 leading-tight">
-                                        {displayValue}
-                                      </p>
-                                    )}
+                              <div className="flex items-center gap-3">
+                                {isBoolean ? (
+                                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider ${
+                                    isTrue 
+                                      ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+                                      : "bg-gray-100 dark:bg-white/5 text-gray-400"
+                                  }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-400"}`} />
+                                    {isTrue ? "Yes" : "No"}
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-500 italic py-8 text-center">No specifications available.</p>
-                        )}
+                                ) : (
+                                  <p className="text-[15px] font-bold text-gray-900 dark:text-gray-100 leading-tight">
+                                    {displayValue}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic py-12 text-center">No specifications available.</p>
+                    )}
+                  </div>
                     )}
                   </div>
                 </div>
