@@ -955,7 +955,7 @@ const ProductDetailPage = () => {
                   <div className="animate-fadeIn max-w-4xl mx-auto">
                     {product?.short_description ? (
                       <div className="
-                        text-[16px] text-gray-800 dark:text-gray-100 leading-relaxed
+                        text-[16px] text-gray-800 dark:text-white leading-relaxed
                         [&_p]:mb-6 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
                         [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6
                         [&_li]:mb-3 [&_strong]:font-black [&_strong]:text-gray-900 dark:[&_strong]:text-white
@@ -996,7 +996,7 @@ const ProductDetailPage = () => {
                                     {isTrue ? "Yes" : "No"}
                                   </div>
                                 ) : (
-                                  <p className="text-[15px] font-bold text-gray-900 dark:text-gray-100 leading-tight">
+                                  <p className="text-[15px] font-bold text-gray-900 dark:text-white leading-tight">
                                     {displayValue}
                                   </p>
                                 )}
