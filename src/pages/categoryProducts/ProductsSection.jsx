@@ -7,6 +7,7 @@ import { formatFilterDisplayValue, isFilterEmpty } from "./utils";
 export default function ProductsSection({
     loading,
     locationApplying = false,
+    categorySlug,
     filteredProducts,
     currentProducts,
     isCard,
@@ -113,7 +114,7 @@ export default function ProductsSection({
                     <span className="font-bold text-gray-900 dark:text-white">
                         {filteredProducts.length}
                     </span>{" "}
-                    products
+                    {(categorySlug?.includes('realestate') || categorySlug?.includes('business')) ? 'listings' : 'products'}
                 </p>
                 <div className="flex items-center gap-3">
                     <span className="text-sm text-gray-500 dark:text-gray-400">Show:</span>
@@ -137,7 +138,7 @@ export default function ProductsSection({
             <div
                 className={`grid gap-4 sm:gap-6 ${isCard
                         ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                        : "grid-cols-1 sm:grid-cols-2"
+                        : "grid-cols-1"
                     }`}
             >
                 {currentProducts.map((product) => (

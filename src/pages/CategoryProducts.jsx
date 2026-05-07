@@ -83,6 +83,7 @@ export default function CategoryProducts() {
         {/* Main Grid: Sidebar + Products */}
         <div className="grid grid-cols-1 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
           <CategorySidebar
+            categorySlug={slug}
             CategoryOnlyData={hook.CategoryOnlyData}
             categoryFilter={hook.categoryFilter}
             setCategoryFilter={hook.setCategoryFilter}
@@ -113,6 +114,7 @@ export default function CategoryProducts() {
             <ProductsSection
               loading={hook.loading}
               locationApplying={hook.locationApplying}
+              categorySlug={slug}
               filteredProducts={hook.filteredProducts}
               currentProducts={hook.currentProducts}
               isCard={hook.isCard}

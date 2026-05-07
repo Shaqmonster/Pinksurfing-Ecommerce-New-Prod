@@ -3,8 +3,9 @@ import { Menu, Transition } from "@headlessui/react";
 import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, FunnelIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
-import { HiMiniSquares2X2 } from "react-icons/hi2";
+import { HiMiniSquares2X2, HiMiniMap } from "react-icons/hi2";
 import { AiOutlineBars } from "react-icons/ai";
+import { toast } from "react-toastify";
 import AttributeFilterPanel from "./AttributeFilterPanel";
 import { SORT_METHODS, hasActiveFilters, getActiveFilterCount } from "./constants";
 
@@ -47,8 +48,8 @@ export default function CategoryHeader({
                                 {title}
                             </h1>
                             <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                {filteredProducts.length} products
+                                <span className={`w-2 h-2 ${filteredProducts.length > 0 ? "bg-green-500" : "bg-gray-400"} rounded-full`}></span>
+                                {filteredProducts.length || 0} {(title?.includes('realestate') || title?.includes('business')) ? 'listings' : 'products'}
                             </p>
                         </div>
                     </div>
@@ -77,6 +78,15 @@ export default function CategoryHeader({
                             >
                                 <AiOutlineBars className="w-5 h-5" />
                             </button>
+                            {(title?.includes('realestate') || title?.includes('business')) && (
+                                <button
+                                    onClick={() => toast.info("Map View coming soon!")}
+                                    className="p-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-300"
+                                    title="Map View"
+                                >
+                                    <HiMiniMap className="w-5 h-5" />
+                                </button>
+                            )}
                         </div>
 
                         {/* Sort Dropdown — Desktop */}
