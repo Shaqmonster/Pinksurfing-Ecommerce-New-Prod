@@ -83,6 +83,7 @@ const ProductDetailPage = () => {
   } = useContext(authContext);
 
   const isOwner = user?.email === product?.vendor?.email;
+  const isDealClosed = product?.deal_active_until && new Date(product.deal_active_until) < new Date();
 
   // ── CATEGORY DETECTION ──
   const categorySlug = product?.category?.slug || "";
@@ -602,8 +603,15 @@ const ProductDetailPage = () => {
                   </div>
 
                   <div className="flex flex-col items-start md:items-end gap-1">
-                    <div className="text-5xl md:text-6xl font-black text-purple-600 tracking-tighter">
-                      {currency}{formatMoney(finalUnitPrice)}
+                    <div className="flex items-center gap-3">
+                      <div className="text-5xl md:text-6xl font-black text-purple-600 tracking-tighter">
+                        {currency}{formatMoney(finalUnitPrice)}
+                      </div>
+                      {isDealClosed && (
+                        <div className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl">
+                          Deal Closed
+                        </div>
+                      )}
                     </div>
                     <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
                       Est. {currency}{formatMoney(finalUnitPrice / 180)}/mo
@@ -797,16 +805,18 @@ const ProductDetailPage = () => {
                       </h3>
                       <div className="space-y-4">
                         <button 
-                          onClick={() => toast.info("Contacting Agent...", { position: "top-right" })}
-                          className="w-full py-5 bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl shadow-xl shadow-purple-600/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                          onClick={() => !isDealClosed && toast.info("Contacting Agent...", { position: "top-right" })}
+                          disabled={isDealClosed}
+                          className={`w-full py-5 ${isDealClosed ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
-                          <FaPhoneAlt /> Contact {isBusiness ? "Broker" : "Agent"}
+                          <FaPhoneAlt /> {isDealClosed ? "Deal Closed" : (isBusiness ? "Contact Broker" : "Contact Agent")}
                         </button>
                         <button 
-                          onClick={() => toast.info("Scheduling Tour...", { position: "top-right" })}
-                          className="w-full py-5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-3"
+                          onClick={() => !isDealClosed && toast.info("Scheduling Tour...", { position: "top-right" })}
+                          disabled={isDealClosed}
+                          className={`w-full py-5 ${isDealClosed ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
-                          <FaCalendarAlt /> {isBusiness ? "Request Financials" : "Schedule a Tour"}
+                          <FaCalendarAlt /> {isDealClosed ? "Deal Closed" : (isBusiness ? "Request Financials" : "Schedule a Tour")}
                         </button>
                       </div>
                       
@@ -871,12 +881,17 @@ const ProductDetailPage = () => {
                     {/* Standard Price Section */}
                     <div className="relative overflow-hidden p-8 bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl group">
                       <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-purple-500/20 transition-all duration-700"></div>
-                      <div className="relative z-10">
+                      <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-baseline gap-4 flex-wrap">
                           <span className="text-5xl sm:text-6xl font-black tracking-tighter text-gray-900 dark:text-white">
                             {currency}{formatMoney(finalUnitPrice)}
                           </span>
                         </div>
+                        {isDealClosed && (
+                          <div className="px-6 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-sm rounded-xl">
+                            Deal Closed
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -895,14 +910,20 @@ const ProductDetailPage = () => {
                               }
                               AddtoCart();
                             }}
-                            disabled={product.quantity === 0}
-                            className="flex-1 group relative px-8 py-4 bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl"
+                            disabled={product.quantity === 0 || isDealClosed}
+                            className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
                           >
                             <span className="relative z-10 flex items-center justify-center gap-3">
-                              <IoCart size={16} />
-                              Add to bag
+                              {isDealClosed ? (
+                                <>Deal Closed</>
+                              ) : (
+                                <>
+                                  <IoCart size={16} />
+                                  Add to bag
+                                </>
+                              )}
                             </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            {!isDealClosed && <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>}
                           </button>
                         ) : (
                           <div className="flex-1 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
