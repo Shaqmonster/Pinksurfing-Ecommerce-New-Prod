@@ -64,6 +64,7 @@ const ProductDetailPage = () => {
     setIsProfileOpen,
     isProfileOpen,
     currency,
+    user,
   } = useContext(authContext);
 
   const isOwner = user?.email === product?.vendor?.email;
