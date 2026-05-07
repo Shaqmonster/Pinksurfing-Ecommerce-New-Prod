@@ -41,7 +41,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
           </div>
         </button>
 
-        <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isDetailsExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isDetailsExpanded ? 'max-h-[5000px] opacity-100 text-white' : 'max-h-0 opacity-0 overflow-hidden'}`}>
           <div className="pt-6 border-t border-gray-100 dark:border-white/5
             text-sm sm:text-base leading-relaxed text-gray-600 dark:text-gray-300 
             [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
