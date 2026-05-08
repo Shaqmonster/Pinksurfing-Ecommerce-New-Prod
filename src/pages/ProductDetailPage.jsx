@@ -42,6 +42,7 @@ import {
   submitVisitDispute,
   createVisitPaymentLink,
 } from "../api/propertyVisits";
+import { createConversation } from "../api/gigs";
 
 
 const ProductDetailPage = () => {
@@ -76,6 +77,7 @@ const ProductDetailPage = () => {
   const [disputeModalOpen, setDisputeModalOpen] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
   const [disputeBusy, setDisputeBusy] = useState(false);
+  const [contactingAgent, setContactingAgent] = useState(false);
 
   // Remove trailing slash from productId, if any
   const productId = rawProductId ? rawProductId.replace(/\/$/, "") : rawProductId;
@@ -152,16 +154,67 @@ const ProductDetailPage = () => {
       });
     });
   };
-  const handleShareClick = () => {
+  const handleShareClick = async () => {
+    const shareUrl = window.location.href;
+    const shareTitle = product?.name || product?.title || "Listing on PinkSurfing";
+    const shareText = product?.short_description
+      ? `${shareTitle} — ${product.short_description}`
+      : shareTitle;
+
     if (navigator.share) {
-      navigator.share({
-        title: product.title,
-        url: window.location.href,
-      })
-        .then(() => console.log('Product shared successfully!'))
-        .catch((error) => console.error('Error sharing:', error));
-    } else {
-      toast.error('Sharing is not supported in this browser.');
+      try {
+        await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+        return;
+      } catch (err) {
+        if (err?.name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard", { position: "top-right" });
+    } catch {
+      toast.error("Couldn't share or copy the link.", { position: "top-right" });
+    }
+  };
+
+  const handleContactAgent = async () => {
+    if (isDealClosed) return;
+
+    if (!cookies.access_token || !user) {
+      toast.info("Please sign in to message the agent.", { position: "top-right" });
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      navigate("/signin");
+      return;
+    }
+
+    if (isOwner) {
+      toast.info("This is your own listing.", { position: "top-right" });
+      return;
+    }
+
+    const agentEmail = product?.vendor?.email;
+    if (!agentEmail) {
+      toast.error("Agent contact isn't available right now.", { position: "top-right" });
+      return;
+    }
+
+    try {
+      setContactingAgent(true);
+      const res = await createConversation(cookies.access_token, agentEmail);
+      const conversationId = res?.data?.id;
+      if (conversationId) {
+        navigate(`/gighub/messages?conversation=${conversationId}`);
+      } else {
+        navigate(`/gighub/messages`);
+      }
+    } catch (err) {
+      const detail = err?.response?.data?.detail || err?.response?.data?.error;
+      toast.error(typeof detail === "string" ? detail : "Couldn't start a chat with the agent.", {
+        position: "top-right",
+      });
+    } finally {
+      setContactingAgent(false);
     }
   };
 
@@ -916,12 +969,23 @@ const ProductDetailPage = () => {
                         <FaEnvelope className="text-purple-500" /> Interested?
                       </h3>
                       <div className="space-y-4">
-                        <button 
-                          onClick={() => !isDealClosed && toast.info("Contacting Agent...", { position: "top-right" })}
-                          disabled={isDealClosed}
-                          className={`w-full py-5 ${isDealClosed ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                        <button
+                          onClick={handleContactAgent}
+                          disabled={isDealClosed || contactingAgent}
+                          className={`w-full py-5 ${isDealClosed ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
-                          <FaPhoneAlt /> {isDealClosed ? "Deal Closed" : (isBusiness ? "Contact Broker" : "Contact Agent")}
+                          {contactingAgent ? (
+                            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <IoChatbubbleOutline size={16} />
+                          )}
+                          {isDealClosed
+                            ? "Deal Closed"
+                            : contactingAgent
+                              ? "Opening chat…"
+                              : isBusiness
+                                ? "Message Broker"
+                                : "Message Agent"}
                         </button>
 
                         {activeVisit?.status === "vendor_reschedule_pending" && activeVisit?.pending_reschedule_at && (
@@ -1005,19 +1069,53 @@ const ProductDetailPage = () => {
                       </div>
                     </div>
 
-                    <div className="p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-white/10 transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
-                          <FaHeart size={20} />
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={handleWishlistClick}
+                        aria-pressed={!!wishlistProducts.find((i) => i.id === product.id)}
+                        className="group flex items-center gap-3 p-4 rounded-3xl bg-white/5 border border-white/10 hover:border-pink-500/40 hover:bg-pink-500/[0.06] transition-all"
+                      >
+                        <div className="w-11 h-11 rounded-2xl bg-pink-500/15 flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <FaHeart
+                            id={`heart-${product.id}`}
+                            size={18}
+                            className={
+                              wishlistProducts.find((i) => i.id === product.id)
+                                ? "text-pink-500"
+                                : "text-gray-400"
+                            }
+                          />
                         </div>
-                        <div>
-                          <div className="text-sm font-black text-white uppercase tracking-widest">Save Listing</div>
-                          <div className="text-[10px] text-gray-500">Add to your favorites</div>
+                        <div className="text-left">
+                          <div className="text-[12px] font-black text-white uppercase tracking-widest leading-tight">
+                            {wishlistProducts.find((i) => i.id === product.id)
+                              ? "Saved"
+                              : "Save listing"}
+                          </div>
+                          <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                            Add to your wishlist
+                          </div>
                         </div>
-                      </div>
-                      <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-purple-500 group-hover:border-purple-500 transition-all">
-                        <FaShare className="text-white text-xs" />
-                      </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleShareClick}
+                        className="group flex items-center gap-3 p-4 rounded-3xl bg-white/5 border border-white/10 hover:border-purple-500/40 hover:bg-purple-500/[0.06] transition-all"
+                      >
+                        <div className="w-11 h-11 rounded-2xl bg-purple-500/15 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform">
+                          <FaShare size={16} />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-[12px] font-black text-white uppercase tracking-widest leading-tight">
+                            Share
+                          </div>
+                          <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                            Send or copy link
+                          </div>
+                        </div>
+                      </button>
                     </div>
                   </div>
                 ) : (

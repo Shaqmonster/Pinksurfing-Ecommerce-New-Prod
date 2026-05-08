@@ -51,6 +51,7 @@ import GigOrderSuccess from "./pages/gigs/GigOrderSuccess";
 import GigOrderCancel from "./pages/gigs/GigOrderCancel";
 import GigHubLanding from "./pages/gigs/GigHubLanding";
 import GigHubDashboard from "./pages/gigs/GigHubDashboard";
+import GigHubSellerDashboard from "./pages/gigs/GigHubSellerDashboard";
 import GigMessages from "./pages/gigs/GigMessages";
 import GigOrderDetail from "./pages/gigs/GigOrderDetail";
 import VisitPaymentReturn from "./pages/VisitPaymentReturn";
@@ -143,6 +144,7 @@ function App() {
         {/* GigHub integrated routes */}
         <Route path="/gighub" element={<GigHubLanding />} />
         <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
+        <Route path="/gighub/seller" element={<GigHubSellerDashboard />} />
         <Route path="/gighub/messages" element={<GigMessages />} />
 
         {/* Gigs routes — static paths before dynamic :id */}

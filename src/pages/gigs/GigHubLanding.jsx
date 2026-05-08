@@ -275,8 +275,15 @@ const GigHubLanding = () => {
               to="/gighub/dashboard"
               className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/15 text-white/70 text-sm font-medium hover:bg-white/10 hover:border-purple-500/50 hover:text-white transition-all"
             >
-              <IoStorefrontOutline className="text-base" />
-              My Dashboard
+              <IoGridOutline className="text-base" />
+              My orders
+            </Link>
+            <Link
+              to="/gighub/seller"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 border border-pink-500/25 text-white/80 text-sm font-medium hover:bg-pink-500/10 hover:border-pink-500/45 hover:text-white transition-all"
+            >
+              <IoStorefrontOutline className="text-base text-pink-400" />
+              Seller studio
             </Link>
             <Link
               to="/gigs/create"
