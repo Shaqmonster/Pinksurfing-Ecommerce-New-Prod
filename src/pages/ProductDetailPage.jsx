@@ -21,18 +21,27 @@ import { data } from "autoprefixer";
 import Stars from '../components/Stars'
 import { formatMoney } from "../utils/formatMoney";
 import { formatDistanceToNow } from "date-fns";
-import { 
-  FaBed, 
-  FaBath, 
-  FaRulerCombined, 
-  FaChartLine, 
-  FaMoneyBillWave, 
-  FaClock, 
-  FaBuilding, 
-  FaMapMarkerAlt, 
+import {
+  FaBed,
+  FaBath,
+  FaRulerCombined,
+  FaChartLine,
+  FaMoneyBillWave,
+  FaClock,
+  FaBuilding,
+  FaMapMarkerAlt,
   FaCalendarAlt,
   FaPhoneAlt,
-  FaEnvelope
+  FaEnvelope,
+  FaUsers,
+  FaUserTie,
+  FaHandshake,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaRobot,
+  FaTags,
+  FaBriefcase,
+  FaBalanceScale,
 } from "react-icons/fa";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import VisitScheduleModal from "../components/ProductPageComponents/VisitScheduleModal";
@@ -160,21 +169,52 @@ const ProductDetailPage = () => {
   }, [isSpecialized, product?.id, cookies.access_token, product?.category?.slug]);
 
   // ── ATTRIBUTE MAPPING ──
-  const getAttr = (name) => {
-    const lowerName = name.toLowerCase();
-    // Check attributes array directly for speed and reliability
-    const attr = (product?.attributes || []).find(a => a.name?.toLowerCase() === lowerName);
-    return attr?.value || "";
+  const getAttr = (...aliases) => {
+    const attrs = product?.attributes || [];
+    for (const name of aliases) {
+      if (!name) continue;
+      const lowerName = String(name).toLowerCase();
+      const attr = attrs.find((a) => a?.name?.toLowerCase() === lowerName);
+      if (attr?.value !== undefined && attr?.value !== null && attr?.value !== "") {
+        return attr.value;
+      }
+    }
+    return "";
   };
 
-  const beds = getAttr("bedrooms") || getAttr("beds");
-  const baths = getAttr("bathrooms") || getAttr("baths");
-  const sqft = getAttr("square_feet") || getAttr("sqft") || getAttr("size");
+  // Treat truthy money/number-like strings safely. Negative or zero values
+  // typically indicate placeholder/typo data, so we don't render them as
+  // headline numbers.
+  const parseMoney = (v) => {
+    if (v == null || v === "") return null;
+    const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  };
+  const isPositiveMoney = (v) => {
+    const n = parseMoney(v);
+    return n !== null && n > 0;
+  };
+
+  const beds = getAttr("bedrooms", "beds");
+  const baths = getAttr("bathrooms", "baths");
+  const sqft = getAttr("square_feet", "sqft", "size");
   const lotSize = getAttr("lot_size");
   const yearBuilt = getAttr("year_built");
   const capRate = getAttr("cap_rate");
-  const revenue = getAttr("annual revenue");
-  const ebitda = getAttr("ebitda");
+  const revenue = getAttr(
+    "annual revenue",
+    "revenue",
+    "revenue ($)",
+    "annual_revenue"
+  );
+  const ebitda = getAttr(
+    "ebitda",
+    "ebitda ($)",
+    "normalized ebitda",
+    "adjusted ebitda",
+    "sde",
+    "sde ($)"
+  );
   const daysOnMarket = product.created_at ? formatDistanceToNow(new Date(product.created_at)) : null;
 
   const handleCopy = () => {
@@ -802,9 +842,14 @@ const ProductDetailPage = () => {
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white tracking-tighter leading-[0.95]">
                       {product.name}
                     </h1>
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium capitalize">
                       <FaMapMarkerAlt className="text-purple-500" />
-                      <span>{getAttr("city") || product.city}{getAttr("state") ? `, ${getAttr("state")}` : ""} {getAttr("zip") || product.zip_code}</span>
+                      <span>
+                        {[getAttr("city") || product.vendor?.city, getAttr("state") || product.vendor?.state]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {getAttr("zip", "zip_code", "zip / radius") ? ` ${getAttr("zip", "zip_code", "zip / radius")}` : ""}
+                      </span>
                     </div>
                   </div>
 
@@ -876,25 +921,47 @@ const ProductDetailPage = () => {
                     </>
                   ) : (
                     <>
-                      {revenue && (
+                      {isPositiveMoney(revenue) && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
                             <FaMoneyBillWave size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(revenue)}</div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(revenue))}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Revenue</div>
                           </div>
                         </div>
                       )}
-                      {ebitda && (
+                      {isPositiveMoney(ebitda) && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                             <FaChartLine size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(ebitda)}</div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(ebitda))}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">EBITDA</div>
+                          </div>
+                        </div>
+                      )}
+                      {getAttr("years in operation") && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                            <FaBuilding size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{getAttr("years in operation")} yrs</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">In operation</div>
+                          </div>
+                        </div>
+                      )}
+                      {getAttr("employees") && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                            <FaUsers size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{getAttr("employees")}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Employees</div>
                           </div>
                         </div>
                       )}
@@ -910,40 +977,302 @@ const ProductDetailPage = () => {
             <div className={`grid grid-cols-1 ${isSpecialized ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-8 lg:gap-12`}>
               {/* Left Column - Image Gallery */}
               <div className={`${isSpecialized ? "lg:col-span-2" : "lg:col-span-1"} space-y-4 animate-slideInLeft`}>
-                {isSpecialized ? (
-                  /* Premium Grid Gallery */
-                  <div className="grid grid-cols-4 grid-rows-2 gap-3 aspect-[16/10]">
-                    <div className="col-span-3 row-span-2 relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                      <img 
-                        src={activeImage || product.image1} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                        alt="Property main"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    </div>
-                    <div className="col-span-1 row-span-1 relative group rounded-2xl overflow-hidden shadow-lg border border-white/10">
-                      <img 
-                        src={product.image2 || product.image1} 
-                        className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" 
-                        onClick={() => setActiveImage(product.image2)}
-                        alt="view 2"
-                      />
-                    </div>
-                    <div className="col-span-1 row-span-1 relative group rounded-2xl overflow-hidden shadow-lg border border-white/10">
-                      <img 
-                        src={product.image3 || product.image1} 
-                        className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" 
-                        onClick={() => setActiveImage(product.image3)}
-                        alt="view 3"
-                      />
-                      {product.image3 && !product.image4 && (
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold uppercase">
-                          More photos
+                {isSpecialized && (
+                  /* Premium Grid Gallery — adapts to how many real photos the listing has */
+                  (() => {
+                    const allPhotos = [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
+                    const heroSrc = activeImage || allPhotos[0] || "";
+                    const sideSrcs = allPhotos.slice(1);
+
+                    const ImgWithFallback = ({ src, alt, className, onClick }) => (
+                      <div className={`relative w-full h-full ${onClick ? "cursor-pointer" : ""}`} onClick={onClick}>
+                        {src ? (
+                          <img
+                            src={src}
+                            alt={alt}
+                            loading="lazy"
+                            className={className}
+                            onError={(e) => {
+                              const el = e.currentTarget;
+                              el.style.display = "none";
+                              const sib = el.nextElementSibling;
+                              if (sib) sib.classList.remove("hidden");
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={`${src ? "hidden" : ""} absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#13131a] text-gray-500`}
+                          aria-hidden={src ? "true" : "false"}
+                        >
+                          <FaBriefcase className="text-2xl text-gray-600" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">No photo</span>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    );
+
+                    if (allPhotos.length <= 1) {
+                      return (
+                        <div className="aspect-[16/10] relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={heroSrc}
+                            alt={product.name || "Listing photo"}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-4 grid-rows-2 gap-3 aspect-[16/10]">
+                        <div className="col-span-3 row-span-2 relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={heroSrc}
+                            alt={product.name || "Listing photo"}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
+
+                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={sideSrcs[0]}
+                            alt={`${product.name || "Listing"} — view 2`}
+                            className="w-full h-full object-cover hover:scale-110 transition-transform"
+                            onClick={sideSrcs[0] ? () => setActiveImage(sideSrcs[0]) : undefined}
+                          />
+                        </div>
+
+                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={sideSrcs[1]}
+                            alt={`${product.name || "Listing"} — view 3`}
+                            className="w-full h-full object-cover hover:scale-110 transition-transform"
+                            onClick={sideSrcs[1] ? () => setActiveImage(sideSrcs[1]) : undefined}
+                          />
+                          {allPhotos.length > 3 && (
+                            <button
+                              type="button"
+                              onClick={() => sideSrcs[2] && setActiveImage(sideSrcs[2])}
+                              className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold uppercase tracking-widest"
+                            >
+                              +{allPhotos.length - 3} more
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
+
+                {/* Business / listing snapshot — uses real attributes from the API */}
+                {isSpecialized && (
+                  <div className="space-y-4 mt-2">
+                    {(() => {
+                      const industry = product.subcategory?.name;
+                      const transitionType = getAttr("transition type", "transition support");
+                      const owner = getAttr("owner involvement");
+                      const financing = getAttr("financing options");
+                      const ebitdaMultiple = getAttr("ebitda multiple", "revenue multiple");
+                      const remote = getAttr("remote business", "remote", "web/mobile only");
+                      const litigation = getAttr("pending litigation");
+                      const aiLeverage = getAttr("ai leverageable", "ai-enabled operations", "ai-enabled");
+                      const sopsDocumented = getAttr("sops documented", "documented sops", "sops");
+                      const crmInPlace = getAttr("crm/erp in place", "crm/erp");
+                      const expansion = getAttr("expansion opportunity", "expansion");
+                      const licenses = getAttr("licenses required");
+                      const smartFeatures = (getAttr("smart features", "smart match") || "")
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      const staffRoles = getAttr("staff roles");
+                      const techStack = getAttr("technology stack");
+                      const keyVendors = getAttr("key vendors");
+
+                      // truthy-string helpers for boolean-ish attributes
+                      const yes = (v) => {
+                        const s = String(v || "").toLowerCase();
+                        return s === "true" || s === "yes";
+                      };
+                      const no = (v) => {
+                        const s = String(v || "").toLowerCase();
+                        return s === "false" || s === "no";
+                      };
+
+                      const facts = [
+                        industry && { label: "Industry", value: industry, icon: <FaBriefcase /> },
+                        getAttr("years in operation") && {
+                          label: "Years in operation",
+                          value: `${getAttr("years in operation")}`,
+                          icon: <FaBuilding />,
+                        },
+                        getAttr("employees") && {
+                          label: "Employees",
+                          value: getAttr("employees"),
+                          icon: <FaUsers />,
+                        },
+                        owner && { label: "Owner involvement", value: owner, icon: <FaUserTie /> },
+                        isPositiveMoney(revenue) && {
+                          label: "Annual revenue",
+                          value: `${currency}${formatMoney(parseMoney(revenue))}`,
+                          icon: <FaMoneyBillWave />,
+                        },
+                        isPositiveMoney(ebitda) && {
+                          label: "EBITDA / SDE",
+                          value: `${currency}${formatMoney(parseMoney(ebitda))}`,
+                          icon: <FaChartLine />,
+                        },
+                        ebitdaMultiple && { label: "Multiple", value: `${ebitdaMultiple}x`, icon: <FaChartLine /> },
+                        financing && { label: "Financing", value: financing, icon: <FaHandshake /> },
+                        transitionType && {
+                          label: "Transition",
+                          value: transitionType,
+                          icon: <FaUserTie />,
+                        },
+                        (yes(remote) || no(remote)) && {
+                          label: "Remote",
+                          value: yes(remote) ? "Yes" : "No",
+                          icon: yes(remote) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(remote) ? "good" : "muted",
+                        },
+                        (yes(aiLeverage) || no(aiLeverage)) && {
+                          label: "AI-leverageable",
+                          value: yes(aiLeverage) ? "Yes" : "No",
+                          icon: <FaRobot />,
+                          tone: yes(aiLeverage) ? "good" : "muted",
+                        },
+                        (yes(sopsDocumented) || no(sopsDocumented)) && {
+                          label: "SOPs documented",
+                          value: yes(sopsDocumented) ? "Yes" : "No",
+                          icon: yes(sopsDocumented) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(sopsDocumented) ? "good" : "muted",
+                        },
+                        (yes(crmInPlace) || no(crmInPlace)) && {
+                          label: "CRM / ERP",
+                          value: yes(crmInPlace) ? "In place" : "None",
+                          icon: yes(crmInPlace) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(crmInPlace) ? "good" : "muted",
+                        },
+                        (yes(expansion) || no(expansion)) && {
+                          label: "Expansion upside",
+                          value: yes(expansion) ? "Yes" : "No",
+                          icon: yes(expansion) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(expansion) ? "good" : "muted",
+                        },
+                        licenses && { label: "Licenses required", value: licenses, icon: <FaBalanceScale /> },
+                        litigation && {
+                          label: "Pending litigation",
+                          value: litigation,
+                          icon: <FaBalanceScale />,
+                          tone: String(litigation).toLowerCase() === "none" ? "good" : "warn",
+                        },
+                      ].filter(Boolean);
+
+                      const hasAnything =
+                        facts.length > 0 ||
+                        smartFeatures.length > 0 ||
+                        !!staffRoles ||
+                        !!techStack ||
+                        !!keyVendors ||
+                        !!product.short_description ||
+                        !!product.description;
+
+                      if (!hasAnything) return null;
+
+                      const toneClass = (tone) =>
+                        tone === "good"
+                          ? "text-emerald-400"
+                          : tone === "warn"
+                            ? "text-amber-400"
+                            : "text-purple-400";
+
+                      return (
+                        <div className="bg-white dark:bg-[#111]/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-white/10 shadow-xl p-6 sm:p-8 space-y-8">
+                          <div>
+                            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-4">
+                              {isBusiness ? "Business snapshot" : "Listing snapshot"}
+                            </h2>
+
+                            {facts.length > 0 && (
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                {facts.map((f, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5"
+                                  >
+                                    <div className={`text-base mt-0.5 ${toneClass(f.tone)}`}>{f.icon}</div>
+                                    <div className="min-w-0">
+                                      <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 truncate">
+                                        {f.label}
+                                      </div>
+                                      <div className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                        {f.value}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {smartFeatures.length > 0 && (
+                            <div>
+                              <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3 flex items-center gap-2">
+                                <FaTags className="text-purple-500" /> Smart highlights
+                              </h3>
+                              <div className="flex flex-wrap gap-2">
+                                {smartFeatures.map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-300"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(staffRoles || techStack || keyVendors) && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {staffRoles && (
+                                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Staff & roles</div>
+                                  <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{staffRoles}</div>
+                                </div>
+                              )}
+                              {techStack && (
+                                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Tech stack</div>
+                                  <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{techStack}</div>
+                                </div>
+                              )}
+                              {keyVendors && (
+                                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Key vendors</div>
+                                  <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{keyVendors}</div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {(product.short_description || product.description) && (
+                            <div>
+                              <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3">
+                                {isBusiness ? "About this business" : "About this listing"}
+                              </h3>
+                              <div className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200 leading-relaxed">
+                                {parse(product.short_description || product.description || "")}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
-                ) : (
+                )}
+
+                {!isSpecialized && (
                   /* Standard E-commerce Gallery */
                   <>
                     <div className="relative group bg-white dark:bg-gray-900/50 rounded-2xl overflow-hidden shadow-2xl border border-purple-100 dark:border-purple-900/30 backdrop-blur-sm">
@@ -1099,12 +1428,20 @@ const ProductDetailPage = () => {
                       </div>
                       
                       <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Listing Agent</span>
-                          <span className="text-xs font-black text-white">{product.vendor?.name || "Premium Brokerage"}</span>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                            {isBusiness ? "Listed by" : "Listing Agent"}
+                          </span>
+                          <span className="text-xs font-black text-white text-right truncate">
+                            {product.vendor?.store_name ||
+                              [product.vendor?.first_name, product.vendor?.last_name].filter(Boolean).join(" ") ||
+                              "Pinksurfing seller"}
+                          </span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Property ID</span>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                            {isBusiness ? "Listing ID" : "Property ID"}
+                          </span>
                           <span className="text-xs font-black text-white">#PS-{product.id?.slice(-6).toUpperCase()}</span>
                         </div>
                       </div>
