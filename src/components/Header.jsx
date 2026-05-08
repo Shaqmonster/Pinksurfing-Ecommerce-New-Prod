@@ -45,6 +45,11 @@ const Header = () => {
     isMobileCategoryOpen,
     setIsMobileCategoryOpen,
     Logout,
+    isChatOpen,
+    setIsChatOpen,
+    pendingChatConversation,
+    setPendingChatConversation,
+    closeChat,
   } = useContext(authContext);
   const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
     useContext(dataContext);
@@ -57,7 +62,6 @@ const Header = () => {
   const [loading, setLoading] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const navigate = useNavigate();
   const searchInputRef = React.useRef(null);
 
@@ -192,7 +196,12 @@ const Header = () => {
           <SingleOrderForm />
           <VendorDetailsForm />
           <ProfilePopup />
-          <ChatFloatingPanel isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+          <ChatFloatingPanel
+            isOpen={isChatOpen}
+            onClose={closeChat}
+            pendingConversation={pendingChatConversation}
+            clearPendingConversation={() => setPendingChatConversation(null)}
+          />
         </>
       )}
       

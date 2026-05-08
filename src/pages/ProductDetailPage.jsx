@@ -95,6 +95,7 @@ const ProductDetailPage = () => {
     isProfileOpen,
     currency,
     user,
+    openChatWithConversation,
   } = useContext(authContext);
 
   const isOwner = user?.email === product?.vendor?.email;
@@ -202,9 +203,11 @@ const ProductDetailPage = () => {
     try {
       setContactingAgent(true);
       const res = await createConversation(cookies.access_token, agentEmail);
-      const conversationId = res?.data?.id;
-      if (conversationId) {
-        navigate(`/gighub/messages?conversation=${conversationId}`);
+      const conversation = res?.data;
+      if (conversation?.id && typeof openChatWithConversation === "function") {
+        openChatWithConversation(conversation);
+      } else if (conversation?.id) {
+        navigate(`/gighub/messages?conversation=${conversation.id}`);
       } else {
         navigate(`/gighub/messages`);
       }

@@ -43,6 +43,18 @@ export const AuthProvider = ({ children }) => {
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
   const [isUserWalletOpen, setIsUserWalletOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [pendingChatConversation, setPendingChatConversation] = useState(null);
+
+  const openChatWithConversation = (conversation) => {
+    if (conversation) setPendingChatConversation(conversation);
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setIsChatOpen(false);
+    setPendingChatConversation(null);
+  };
 
   const Logout = async () => {
     try {
@@ -324,6 +336,12 @@ export const AuthProvider = ({ children }) => {
         singleOrderProduct,
         setSingleOrderProduct,
         Logout,
+        isChatOpen,
+        setIsChatOpen,
+        pendingChatConversation,
+        setPendingChatConversation,
+        openChatWithConversation,
+        closeChat,
       }}
     >
       {children}

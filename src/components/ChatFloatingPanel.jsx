@@ -14,7 +14,7 @@ const getWsBaseUrl = () => {
     : url.replace("http://", "ws://");
 };
 
-const ChatFloatingPanel = ({ isOpen, onClose }) => {
+const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingConversation }) => {
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
   const [conversations, setConversations] = useState([]);
@@ -33,6 +33,19 @@ const ChatFloatingPanel = ({ isOpen, onClose }) => {
       fetchConversations();
     }
   }, [isOpen, cookies.access_token]);
+
+  // When the panel is opened with a specific conversation (e.g. "Message Agent"
+  // on a listing), surface it immediately and open the thread without waiting
+  // for the conversations list to refetch.
+  useEffect(() => {
+    if (!isOpen || !pendingConversation) return;
+    setConversations((prev) => {
+      const exists = prev.some((c) => c.id === pendingConversation.id);
+      return exists ? prev : [pendingConversation, ...prev];
+    });
+    selectConversation(pendingConversation);
+    clearPendingConversation?.();
+  }, [isOpen, pendingConversation]);
 
   const fetchConversations = async () => {
     try {
