@@ -35,6 +35,13 @@ import {
   FaEnvelope
 } from "react-icons/fa";
 import { IoInformationCircleOutline } from "react-icons/io5";
+import VisitScheduleModal from "../components/ProductPageComponents/VisitScheduleModal";
+import {
+  getVisitForProduct,
+  buyerRespondVendorReschedule,
+  submitVisitDispute,
+  createVisitPaymentLink,
+} from "../api/propertyVisits";
 
 
 const ProductDetailPage = () => {
@@ -63,6 +70,12 @@ const ProductDetailPage = () => {
   const rawProductId = searchParams.get("productId");
   const [averageRating, setAverageRating] = useState(0);
   const [currentUrl, setCurrentUrl] = useState("");
+  const [activeVisit, setActiveVisit] = useState(null);
+  const [visitModalOpen, setVisitModalOpen] = useState(false);
+  const [rescheduleVisitId, setRescheduleVisitId] = useState(null);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeBusy, setDisputeBusy] = useState(false);
 
   // Remove trailing slash from productId, if any
   const productId = rawProductId ? rawProductId.replace(/\/$/, "") : rawProductId;
@@ -92,6 +105,25 @@ const ProductDetailPage = () => {
   const isRealEstate = isResidential || isCommercial;
   const isBusiness = categorySlug === "business4sale" || categorySlug === "business-for-sale";
   const isSpecialized = isRealEstate || isBusiness;
+
+  useEffect(() => {
+    if (!isSpecialized || !product?.id || !cookies.access_token) {
+      setActiveVisit(null);
+      return;
+    }
+    let cancel = false;
+    (async () => {
+      try {
+        const data = await getVisitForProduct(cookies.access_token, product.id);
+        if (!cancel) setActiveVisit(data.visit || null);
+      } catch {
+        if (!cancel) setActiveVisit(null);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [isSpecialized, product?.id, cookies.access_token, product?.category?.slug]);
 
   // ── ATTRIBUTE MAPPING ──
   const getAttr = (name) => {
@@ -132,6 +164,86 @@ const ProductDetailPage = () => {
       toast.error('Sharing is not supported in this browser.');
     }
   };
+
+  const openScheduleVisitModal = () => {
+    if (isDealClosed) return;
+    if (!cookies.access_token) {
+      toast.info("Please sign in to continue.");
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      navigate("/signin");
+      return;
+    }
+    setRescheduleVisitId(null);
+    setVisitModalOpen(true);
+  };
+
+  const openRescheduleVisitModal = () => {
+    if (!activeVisit?.id) return;
+    setRescheduleVisitId(activeVisit.id);
+    setVisitModalOpen(true);
+  };
+
+  const continueVisitPayment = async () => {
+    if (!activeVisit?.id || !cookies.access_token) return;
+    try {
+      const pay = await createVisitPaymentLink(cookies.access_token, activeVisit.id);
+      const url = pay.payment_link || pay.payment_link_url;
+      if (url) window.location.href = url;
+      else toast.error("Could not resume checkout.");
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : "Checkout error");
+    }
+  };
+
+  const respondToVendorReschedule = async (accept) => {
+    if (!activeVisit?.id || !cookies.access_token) return;
+    try {
+      await buyerRespondVendorReschedule(cookies.access_token, activeVisit.id, accept);
+      toast.success(accept ? "You accepted the new time." : "You declined — a refund will be processed.");
+      const data = await getVisitForProduct(cookies.access_token, product.id);
+      setActiveVisit(data.visit || null);
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : "Could not update request.");
+    }
+  };
+
+  const submitDispute = async () => {
+    if (!activeVisit?.id || !cookies.access_token) return;
+    if (disputeReason.trim().length < 10) {
+      toast.error("Please enter at least 10 characters.");
+      return;
+    }
+    setDisputeBusy(true);
+    try {
+      await submitVisitDispute(cookies.access_token, activeVisit.id, disputeReason.trim());
+      toast.success("Dispute submitted. Our team will review it.");
+      setDisputeModalOpen(false);
+      setDisputeReason("");
+      const data = await getVisitForProduct(cookies.access_token, product.id);
+      setActiveVisit(data.visit || null);
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : "Could not submit dispute.");
+    } finally {
+      setDisputeBusy(false);
+    }
+  };
+
+  const visitKindApi = isBusiness ? "business" : "real_estate";
+  const canBuyerReschedule =
+    activeVisit &&
+    ["pending_vendor", "accepted"].includes(activeVisit.status);
+  const scheduleButtonLabel = (() => {
+    if (isDealClosed) return isBusiness ? "Request Financials" : "Schedule a visit";
+    if (!activeVisit) return isBusiness ? "Request financials" : "Schedule a visit";
+    if (activeVisit.status === "pending_payment") return "Continue scheduling payment";
+    if (activeVisit.status === "buyer_reschedule_pending")
+      return "Awaiting agent response";
+    if (canBuyerReschedule) return "Reschedule visit";
+    return isBusiness ? "Request financials" : "Schedule a visit";
+  })();
   useEffect(() => {
     // Remove trailing slash from URL if present
     if (location.pathname.endsWith("/")) {
@@ -811,13 +923,74 @@ const ProductDetailPage = () => {
                         >
                           <FaPhoneAlt /> {isDealClosed ? "Deal Closed" : (isBusiness ? "Contact Broker" : "Contact Agent")}
                         </button>
+
+                        {activeVisit?.status === "vendor_reschedule_pending" && activeVisit?.pending_reschedule_at && (
+                          <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-4 space-y-3">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-purple-200">
+                              New time proposed
+                            </p>
+                            <p className="text-xs text-gray-300">
+                              {new Date(activeVisit.pending_reschedule_at).toLocaleString(undefined, {
+                                weekday: "short",
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => respondToVendorReschedule(true)}
+                                className="flex-1 py-3 rounded-xl bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => respondToVendorReschedule(false)}
+                                className="flex-1 py-3 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-white"
+                              >
+                                Reject (refund)
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {activeVisit?.status === "buyer_reschedule_pending" && (
+                          <p className="text-[10px] text-gray-400 px-1">
+                            You proposed a new time. Waiting for the listing agent to confirm.
+                          </p>
+                        )}
+
                         <button 
-                          onClick={() => !isDealClosed && toast.info("Scheduling Tour...", { position: "top-right" })}
-                          disabled={isDealClosed}
-                          className={`w-full py-5 ${isDealClosed ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                          onClick={() => {
+                            if (isDealClosed) return;
+                            if (activeVisit?.status === "pending_payment") {
+                              continueVisitPayment();
+                              return;
+                            }
+                            if (activeVisit?.status === "buyer_reschedule_pending") return;
+                            if (canBuyerReschedule) openRescheduleVisitModal();
+                            else openScheduleVisitModal();
+                          }}
+                          disabled={
+                            isDealClosed ||
+                            activeVisit?.status === "buyer_reschedule_pending" ||
+                            activeVisit?.status === "vendor_reschedule_pending"
+                          }
+                          className={`w-full py-5 ${isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending" ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
-                          <FaCalendarAlt /> {isDealClosed ? "Deal Closed" : (isBusiness ? "Request Financials" : "Schedule a Tour")}
+                          <FaCalendarAlt /> {isDealClosed ? "Deal Closed" : scheduleButtonLabel}
                         </button>
+
+                        {activeVisit?.status === "accepted" && (
+                          <button
+                            type="button"
+                            onClick={() => setDisputeModalOpen(true)}
+                            className="w-full py-3 rounded-2xl border border-red-500/30 text-red-300 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10"
+                          >
+                            Raise a dispute
+                          </button>
+                        )}
                       </div>
                       
                       <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
@@ -1086,6 +1259,77 @@ const ProductDetailPage = () => {
           </div>
         )}
       </section>
+
+      <VisitScheduleModal
+        open={visitModalOpen}
+        onClose={() => {
+          setVisitModalOpen(false);
+          setRescheduleVisitId(null);
+        }}
+        accessToken={cookies.access_token}
+        productId={product.id}
+        visitKind={visitKindApi}
+        rescheduleVisitId={rescheduleVisitId}
+        onSuccess={async () => {
+          if (!cookies.access_token || !product?.id) return;
+          try {
+            const data = await getVisitForProduct(cookies.access_token, product.id);
+            setActiveVisit(data.visit || null);
+          } catch {
+            setActiveVisit(null);
+          }
+        }}
+      />
+
+      {disputeModalOpen && (
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75"
+          onClick={() => !disputeBusy && setDisputeModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 p-6 text-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <h3 className="text-lg font-bold mb-2">Raise a dispute</h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Describe the issue (no-show, fraud, etc.). Our team at Pinksurfing will review. Minimum 10 characters.
+            </p>
+            <textarea
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              rows={5}
+              className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm mb-4"
+              placeholder="What happened?"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={disputeBusy}
+                onClick={() => {
+                  if (!disputeBusy) {
+                    setDisputeModalOpen(false);
+                    setDisputeReason("");
+                  }
+                }}
+                className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={disputeBusy || disputeReason.trim().length < 10}
+                onClick={submitDispute}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold disabled:opacity-40"
+              >
+                {disputeBusy ? "Submitting…" : "Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes slideInLeft {

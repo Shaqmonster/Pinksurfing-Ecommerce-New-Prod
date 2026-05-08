@@ -53,6 +53,7 @@ import GigHubLanding from "./pages/gigs/GigHubLanding";
 import GigHubDashboard from "./pages/gigs/GigHubDashboard";
 import GigMessages from "./pages/gigs/GigMessages";
 import GigOrderDetail from "./pages/gigs/GigOrderDetail";
+import VisitPaymentReturn from "./pages/VisitPaymentReturn";
 
 function App() {
   const {
@@ -126,6 +127,7 @@ function App() {
           path="/product/productDetail/:slug"
           element={<ProductDetailPage />}
         />
+        <Route path="/visit-payment-return" element={<VisitPaymentReturn />} />
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />
         <Route path="/completion" element={<Completion />} />
