@@ -10,7 +10,7 @@ import OrderConfirm from "../components/OrderConfirm";
 import { FaHeart, FaStar, FaTruck, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { dataContext } from "../context/dataContext";
 import { authContext } from "../context/authContext";
-import { IoClose, IoStarOutline, IoCart, IoChatbubbleOutline } from "react-icons/io5";
+import { IoClose, IoStarOutline, IoCart, IoChatbubbleOutline, IoFlash } from "react-icons/io5";
 import shareImage from "/media/share.png";
 import ProductDetailReviewSection from "../components/ProductPageComponents/ProductDetail-ReviewSection";
 import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLike";
@@ -136,6 +136,8 @@ const ProductDetailPage = () => {
     currency,
     user,
     openChatWithConversation,
+    setIsSingleOrderFormOpen,
+    setSingleOrderProduct,
   } = useContext(authContext);
 
   const isOwner = user?.email === product?.vendor?.email;
@@ -1548,32 +1550,65 @@ const ProductDetailPage = () => {
                     <div className="flex flex-col gap-4 py-4">
                       <div className="flex flex-col xl:flex-row gap-4">
                         {!isOwner ? (
-                          <button
-                            onClick={() => {
-                              if (!user) {
-                                toast.error("You are not Signed In", { position: "top-right" });
-                                sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                                setIsProfileOpen(true);
-                                setTimeout(() => setIsProfileOpen(false), 10000);
-                                return;
-                              }
-                              AddtoCart();
-                            }}
-                            disabled={product.quantity === 0 || isDealClosed}
-                            className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
-                          >
-                            <span className="relative z-10 flex items-center justify-center gap-3">
-                              {isDealClosed ? (
-                                <>Deal Closed</>
-                              ) : (
-                                <>
-                                  <IoCart size={16} />
-                                  Add to bag
-                                </>
-                              )}
-                            </span>
-                            {!isDealClosed && <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => {
+                                if (!user) {
+                                  toast.error("You are not Signed In", { position: "top-right" });
+                                  sessionStorage.setItem("redirectAfterLogin", window.location.href);
+                                  setIsProfileOpen(true);
+                                  setTimeout(() => setIsProfileOpen(false), 10000);
+                                  return;
+                                }
+                                AddtoCart();
+                              }}
+                              disabled={product.quantity === 0 || isDealClosed}
+                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
+                            >
+                              <span className="relative z-10 flex items-center justify-center gap-3">
+                                {isDealClosed ? (
+                                  <>Deal Closed</>
+                                ) : (
+                                  <>
+                                    <IoCart size={16} />
+                                    Add to bag
+                                  </>
+                                )}
+                              </span>
+                              {!isDealClosed && <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>}
+                            </button>
+
+                            {!isDealClosed && product.quantity > 0 && (
+                              <button
+                                onClick={() => {
+                                  if (!user) {
+                                    toast.error("You are not Signed In", { position: "top-right" });
+                                    sessionStorage.setItem("redirectAfterLogin", window.location.href);
+                                    setIsProfileOpen(true);
+                                    setTimeout(() => setIsProfileOpen(false), 10000);
+                                    return;
+                                  }
+                                  setSingleOrderProduct({
+                                    ...product,
+                                    unit_price: finalUnitPrice,
+                                    mrp: finalMrp,
+                                    original_unit_price: product.unit_price,
+                                    original_mrp: product.mrp,
+                                    additional_price: additionalPrice,
+                                    selected_variants: Object.entries(selectedAttributes).map(
+                                      ([name, attr]) => ({ name, value: attr.value })
+                                    ),
+                                    quantity: productQty,
+                                  });
+                                  setIsSingleOrderFormOpen(true);
+                                }}
+                                className="flex-1 px-8 py-4 bg-purple-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl transition-all duration-500 hover:bg-purple-700 hover:shadow-2xl hover:shadow-purple-500/20 active:scale-95 shadow-xl flex items-center justify-center gap-3"
+                              >
+                                <IoFlash size={16} />
+                                Buy now — {currency}{formatMoney(finalUnitPrice)}
+                              </button>
+                            )}
+                          </>
                         ) : (
                           <div className="flex-1 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
                             Your Product
