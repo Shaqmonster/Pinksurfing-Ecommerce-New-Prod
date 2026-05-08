@@ -114,7 +114,12 @@ const GigHubSellerDashboard = () => {
     setLoadingGigs(false);
   };
 
-  const sellerOrders = allOrders.filter((o) => o.is_seller === true);
+  const sellerOrders = allOrders.filter((o) => {
+    if (o.is_seller !== true) return false;
+    if (o.status === "pending_payment") return false;
+    if (o.payment_status && ["pending", "unpaid", "failed"].includes(o.payment_status)) return false;
+    return true;
+  });
 
   const handleSquareOnboarding = async () => {
     if (!workerProfile?.id) {

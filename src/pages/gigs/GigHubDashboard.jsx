@@ -31,6 +31,25 @@ const STATUS_CONFIG = {
   },
 };
 
+// Hide unpaid orders from the dashboard. The backend creates a gig-order in
+// `pending_payment` as soon as the buyer hits checkout — but until Square
+// confirms the payment the order isn't really theirs yet, so we treat it like
+// it doesn't exist on the buyer dashboard.
+const PAID_BUYER_STATUSES = new Set([
+  "pending_requirements",
+  "in_progress",
+  "delivered",
+  "completed",
+  "cancelled",
+]);
+
+const isPaidBuyerOrder = (o) => {
+  if (!o) return false;
+  if (o.status === "pending_payment") return false;
+  if (o.payment_status && ["pending", "unpaid", "failed"].includes(o.payment_status)) return false;
+  return PAID_BUYER_STATUSES.has(o.status);
+};
+
 const BuyerDashboardContent = ({ orders, loading }) => {
   const [filter, setFilter] = useState("all");
 
@@ -226,7 +245,7 @@ const GigHubDashboard = () => {
     }
   };
 
-  const buyerOrders = allOrders.filter((o) => o.is_buyer === true);
+  const buyerOrders = allOrders.filter((o) => o.is_buyer === true && isPaidBuyerOrder(o));
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
