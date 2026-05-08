@@ -10,7 +10,7 @@ import OrderConfirm from "../components/OrderConfirm";
 import { FaHeart, FaStar, FaTruck, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { dataContext } from "../context/dataContext";
 import { authContext } from "../context/authContext";
-import { IoClose, IoStarOutline, IoCart } from "react-icons/io5";
+import { IoClose, IoStarOutline, IoCart, IoChatbubbleOutline } from "react-icons/io5";
 import shareImage from "/media/share.png";
 import ProductDetailReviewSection from "../components/ProductPageComponents/ProductDetail-ReviewSection";
 import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLike";
