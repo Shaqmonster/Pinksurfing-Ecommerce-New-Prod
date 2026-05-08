@@ -1354,7 +1354,7 @@ const ProductDetailPage = () => {
                             : contactingAgent
                               ? "Opening chat…"
                               : isBusiness
-                                ? "Message Broker"
+                                ? "Message Lister"
                                 : "Message Agent"}
                         </button>
 
