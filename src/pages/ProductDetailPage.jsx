@@ -446,6 +446,12 @@ const ProductDetailPage = () => {
   };
   useEffect(() => {
     const GetProductData = async () => {
+      if (!productId) {
+        // Without a productId we can't safely hit the API — bail out instead
+        // of firing requests like /api/product/product/null/.
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const productResponse = await axios.get(
@@ -526,6 +532,7 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     const getProductRatings = async (productId) => {
+      if (!productId) return;
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/ratings/get-ratings/${productId}/`,

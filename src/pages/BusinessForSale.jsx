@@ -254,7 +254,12 @@ const BusinessForSale = () => {
                       ))}
                       <div className="px-2 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-[8px] font-bold uppercase">{biz.growth}</div>
                     </div>
-                    <Link to={`/product/productDetail/${biz.slug}`} className="text-[10px] font-bold text-[#e8237a] hover:underline flex items-center gap-1">View <IoArrowForwardOutline /></Link>
+                    <Link
+                      to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`}
+                      className="text-[10px] font-bold text-[#e8237a] hover:underline flex items-center gap-1"
+                    >
+                      View <IoArrowForwardOutline />
+                    </Link>
                   </div>
                 </div>
               </motion.div>
