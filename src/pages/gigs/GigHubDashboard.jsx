@@ -61,100 +61,161 @@ const STATUS_CONFIG = {
 const BuyerTab = ({ orders, loading, refetch }) => {
   const [filter, setFilter] = useState("all");
 
-  const filteredOrders = filter === "all" ? orders : orders.filter((o) => o.status === filter);
+  // "Active" groups in-progress + awaiting-requirements (both are paid orders simply
+  // waiting on work or buyer input). We never expose unpaid states.
+  const matchesFilter = (o) => {
+    if (filter === "all") return true;
+    if (filter === "in_progress") return ["in_progress", "pending_requirements"].includes(o.status);
+    return o.status === filter;
+  };
+  const filteredOrders = orders.filter(matchesFilter);
 
   const FILTERS = [
     { key: "all", label: "All" },
-    { key: "pending_requirements", label: "Pending" },
-    { key: "in_progress", label: "In Progress" },
+    { key: "in_progress", label: "Active" },
     { key: "delivered", label: "Delivered" },
     { key: "completed", label: "Completed" },
   ];
 
+  const totalSpent = orders.reduce((s, o) => s + parseFloat(o.total_price || 0), 0);
+  const activeCount = orders.filter((o) =>
+    ["in_progress", "pending_requirements"].includes(o.status)
+  ).length;
+  const completedCount = orders.filter((o) => o.status === "completed").length;
+
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
   return (
-    <div className="space-y-6">
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="space-y-10">
+      {/* Hero metrics — 3 meaningful figures, restrained typography */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          { label: "Total Orders", value: orders.length, icon: <FaBriefcase className="text-purple-400" /> },
-          { label: "In Progress", value: orders.filter((o) => o.status === "in_progress").length, icon: <IoTimeOutline className="text-blue-400" /> },
-          { label: "Delivered", value: orders.filter((o) => o.status === "delivered").length, icon: <IoAlertCircleOutline className="text-yellow-400" /> },
-          { label: "Completed", value: orders.filter((o) => o.status === "completed").length, icon: <IoCheckmarkCircle className="text-green-400" /> },
-        ].map((card, i) => (
-          <div key={i} className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-lg">{card.icon}</div>
-              <p className="text-white/40 text-xs">{card.label}</p>
-            </div>
-            <p className="text-white font-bold text-2xl">{card.value}</p>
+          {
+            label: "Total spent",
+            value: `$${totalSpent.toFixed(2)}`,
+            sub: `${orders.length} ${orders.length === 1 ? "order" : "orders"}`,
+          },
+          {
+            label: "Active",
+            value: activeCount,
+            sub: activeCount === 0 ? "nothing in flight" : "in progress",
+          },
+          {
+            label: "Completed",
+            value: completedCount,
+            sub: completedCount === 0 ? "no completed yet" : "delivered & approved",
+          },
+        ].map((m, i) => (
+          <div
+            key={i}
+            className="bg-white/[0.025] border border-white/[0.06] rounded-2xl p-5 backdrop-blur-xl"
+          >
+            <p className="text-white/45 text-[13px] font-medium tracking-tight">{m.label}</p>
+            <p className="text-white text-[34px] leading-none font-semibold tracking-tight mt-3">
+              {m.value}
+            </p>
+            <p className="text-white/30 text-xs mt-2">{m.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-              filter === f.key
-                ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white"
-                : "bg-transparent border-white/10 text-white/50 hover:border-white/20"
-            }`}
-          >
-            {f.label}
-            {f.key !== "all" && (
-              <span className="ml-1.5 text-xs opacity-60">({orders.filter((o) => o.status === f.key).length})</span>
-            )}
-          </button>
-        ))}
+      {/* Section header + filter (segmented control, iOS-style) */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="text-white text-[22px] font-semibold tracking-tight">Your orders</h2>
+          <p className="text-white/40 text-sm mt-1">
+            All payments completed securely via Square.
+          </p>
+        </div>
+
+        {orders.length > 0 && (
+          <div className="inline-flex gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+            {FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
+                  filter === f.key
+                    ? "bg-white text-black shadow-sm"
+                    : "text-white/55 hover:text-white"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Orders list */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-[#13131a] rounded-2xl p-5 animate-pulse h-24" />
+            <div key={i} className="bg-white/[0.03] rounded-2xl animate-pulse h-[88px]" />
           ))}
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-16">
-          <FaBriefcase className="text-5xl text-white/10 mx-auto mb-4" />
-          <p className="text-white/40">No orders found</p>
-          <Link to="/gigs" className="mt-3 inline-block text-purple-400 hover:text-purple-300 text-sm">
-            Browse gigs to get started →
-          </Link>
+        <div className="text-center py-20 bg-white/[0.02] border border-dashed border-white/[0.08] rounded-3xl">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+            <FaBriefcase className="text-white/30 text-lg" />
+          </div>
+          <p className="text-white/70 font-medium tracking-tight">
+            {orders.length === 0 ? "No orders yet" : "Nothing here"}
+          </p>
+          <p className="text-white/35 text-sm mt-1 mb-6">
+            {orders.length === 0
+              ? "Discover talented sellers ready to help."
+              : "Try a different filter to see your other orders."}
+          </p>
+          {orders.length === 0 && (
+            <Link
+              to="/gigs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-full text-[13px] font-medium hover:bg-white/90 transition-all"
+            >
+              Explore GigHub
+            </Link>
+          )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {filteredOrders.map((order) => {
             const statusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.in_progress;
             return (
               <Link
                 key={order.id}
                 to={`/gigs/orders/${order.id}`}
-                className="block bg-[#13131a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all"
+                className="group block bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/[0.12] rounded-2xl p-5 transition-all duration-200"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <p className="text-white font-semibold text-sm line-clamp-1">
-                        {order.gig?.title || `Order #${order.id}`}
-                      </p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full border ${statusCfg.color}`}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
+                      <p className="text-white/55 text-[11px] font-semibold uppercase tracking-[0.08em]">
                         {statusCfg.label}
-                      </span>
+                      </p>
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/40 text-xs">
-                      <span>Order #{order.id}</span>
-                      {order.package && <span className="capitalize">{order.package.tier} pkg</span>}
-                      <span>{new Date(order.created_at).toLocaleDateString()}</span>
+                    <p className="text-white font-semibold text-[15px] tracking-tight line-clamp-1">
+                      {order.gig?.title || `Order #${order.id}`}
+                    </p>
+                    <div className="flex items-center gap-2 text-white/35 text-xs mt-2">
+                      {order.package && (
+                        <>
+                          <span className="capitalize">{order.package.tier} package</span>
+                          <span className="text-white/15">·</span>
+                        </>
+                      )}
+                      <span>{formatDate(order.created_at)}</span>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-white font-bold">${parseFloat(order.total_price || 0).toFixed(2)}</p>
-                    <p className="text-white/30 text-xs">total paid</p>
+                    <p className="text-white font-semibold text-[17px] tracking-tight">
+                      ${parseFloat(order.total_price || 0).toFixed(2)}
+                    </p>
+                    <div className="inline-flex items-center gap-1 text-emerald-400/80 text-[11px] mt-1 font-medium">
+                      <IoCheckmarkCircle className="text-[13px]" />
+                      <span>Paid</span>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -548,56 +609,58 @@ const GigHubDashboard = () => {
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/8 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-600/8 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -top-32 right-0 w-[640px] h-[640px] bg-purple-600/[0.06] rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute -bottom-32 -left-20 w-[520px] h-[520px] bg-pink-600/[0.05] rounded-full blur-[150px] pointer-events-none" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
+      <div className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 pt-12 pb-16">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8"
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10"
         >
           <div className="flex-1">
-            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1 mb-2">
-              <FaBriefcase className="text-pink-400 text-xs" />
-              <span className="text-white/60 text-xs font-medium">GigHub Dashboard</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              {user?.first_name ? `Welcome back, ${user.first_name}` : "Dashboard"}
+            <p className="text-white/40 text-[13px] font-medium tracking-tight mb-3">
+              GigHub
+            </p>
+            <h1 className="text-white text-[40px] sm:text-[44px] leading-[1.05] font-semibold tracking-[-0.02em]">
+              {user?.first_name ? `Welcome back, ${user.first_name}.` : "Welcome back."}
             </h1>
-            <p className="text-white/40 text-sm mt-1">Manage your gigs and orders</p>
+            <p className="text-white/45 text-[15px] mt-3 tracking-tight">
+              A quiet place to manage your gigs and orders.
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <Link
               to="/gigs"
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/60 text-sm hover:border-white/20 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-full text-white/70 text-[13px] font-medium hover:bg-white/[0.07] hover:text-white transition-all"
             >
-              <IoEyeOutline /> Browse
+              <IoEyeOutline className="text-[15px]" /> Browse
             </Link>
             <Link
               to="/gighub/messages"
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/60 text-sm hover:border-white/20 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-full text-white/70 text-[13px] font-medium hover:bg-white/[0.07] hover:text-white transition-all"
             >
-              <IoChatbubbleOutline /> Messages
+              <IoChatbubbleOutline className="text-[15px]" /> Messages
             </Link>
           </div>
         </motion.div>
 
-        {/* Tab selector */}
-        <div className="flex gap-1 bg-[#13131a] border border-white/5 rounded-2xl p-1 w-fit mb-8">
+        {/* Tab selector — iOS-style segmented control */}
+        <div className="inline-flex gap-1 bg-white/[0.04] border border-white/[0.06] rounded-xl p-1 mb-10">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              className={`flex items-center gap-2 px-5 py-2 rounded-lg text-[13px] font-medium tracking-tight transition-all ${
                 activeTab === tab.key
-                  ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md"
-                  : "text-white/50 hover:text-white/70"
+                  ? "bg-white text-black shadow-sm"
+                  : "text-white/55 hover:text-white"
               }`}
             >
-              {tab.icon}
+              <span className="text-[14px]">{tab.icon}</span>
               {tab.label}
             </button>
           ))}
