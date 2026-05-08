@@ -44,6 +44,37 @@ import {
 } from "../api/propertyVisits";
 import { createConversation } from "../api/gigs";
 
+/** API returns `/media/...` paths; resolve against API origin when SPA is on another host. */
+function resolveProductMediaUrl(url) {
+  if (url == null || url === "") return "";
+  const s = String(url).trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  const base = (import.meta.env.VITE_SERVER_URL || "").replace(/\/$/, "");
+  if (!base) return s;
+  if (s.startsWith("/")) return `${base}${s}`;
+  return `${base}/${s}`;
+}
+
+function withResolvedProductImages(product) {
+  if (!product || typeof product !== "object") return product;
+  const next = { ...product };
+  for (let i = 1; i <= 4; i++) {
+    const key = `image${i}`;
+    if (next[key]) next[key] = resolveProductMediaUrl(next[key]);
+  }
+  return next;
+}
+
+function firstProductImageUrl(product) {
+  if (!product || typeof product !== "object") return "";
+  for (let i = 1; i <= 4; i++) {
+    const u = product[`image${i}`];
+    if (u) return u;
+  }
+  return "";
+}
+
 
 const ProductDetailPage = () => {
   const navigate = useNavigate();
@@ -465,15 +496,16 @@ const ProductDetailPage = () => {
         );
 
         const productData = productResponse.data.Products;
-        setProduct(productData);
-        const isOwner = user?.email === productData.vendor?.email;
+        const normalizedProduct = withResolvedProductImages(productData);
+        setProduct(normalizedProduct);
+        const isOwner = user?.email === normalizedProduct.vendor?.email;
         setLoading(false);
-        setActiveImage(productResponse.data.Products.image);
+        setActiveImage(firstProductImageUrl(normalizedProduct));
 
         // Build a lookup: attribute name (lowercase) → is_variant boolean
         // from the subcategory's allowed_attributes list.
         const isVariantLookup = {};
-        const allowedAttrs = productData.subcategory?.allowed_attributes || [];
+        const allowedAttrs = normalizedProduct.subcategory?.allowed_attributes || [];
         allowedAttrs.forEach((aa) => {
           if (aa.name) isVariantLookup[aa.name.toLowerCase()] = aa.is_variant;
         });
@@ -481,7 +513,7 @@ const ProductDetailPage = () => {
         const variantAttrs = {};
         const specAttrs = {};
 
-        (productData.attributes || []).forEach(({ name, value, additional_price }) => {
+        (normalizedProduct.attributes || []).forEach(({ name, value, additional_price }) => {
           if (!name) return;
           const lowerName = name.toLowerCase();
           // Default to variant=true when not found (preserves existing behavior)
@@ -651,9 +683,8 @@ const ProductDetailPage = () => {
     }
   };
   useEffect(() => {
-    if (product.image1) {
-      setActiveImage(product.image1);
-    }
+    const primary = firstProductImageUrl(product);
+    if (primary) setActiveImage(primary);
   }, [product]);
 
   useEffect(() => {
@@ -905,9 +936,9 @@ const ProductDetailPage = () => {
                         onClick={() => setActiveImage(product.image3)}
                         alt="view 3"
                       />
-                      {(!product.image4 && !product.image3) && (
+                      {product.image3 && !product.image4 && (
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold uppercase">
-                          +12 Photos
+                          More photos
                         </div>
                       )}
                     </div>
