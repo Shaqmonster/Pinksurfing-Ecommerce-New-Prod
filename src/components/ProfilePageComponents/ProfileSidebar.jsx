@@ -125,15 +125,15 @@ export function Sidebar() {
 
             {/* Desktop: Full Sidebar */}
             <div className="max-md:hidden">
-                <div className="bg-[#0E0F13] rounded-xl border border-gray-700/50 shadow-2xl overflow-hidden min-w-[240px] w-[264px]">
+                <div className="bg-white/[0.03] backdrop-blur-2xl rounded-[2rem] border border-white/5 shadow-2xl overflow-hidden min-w-[240px] w-[300px]">
                     {/* Sidebar Header */}
-                    <div className="px-5 py-4 bg-gradient-to-r  border-b border-white/10">
-                        <h3 className="text-base font-bold text-white">My Account</h3>
-                        <p className="text-xs text-gray-400 mt-0.5">Manage your preferences</p>
+                    <div className="px-10 py-12 border-b border-white/5">
+                        <h3 className="text-2xl font-black text-white tracking-tighter uppercase leading-tight">Account</h3>
+                        <p className="text-[10px] text-purple-400/80 mt-1.5 font-bold uppercase tracking-[0.25em]">Secure Dashboard</p>
                     </div>
                     
                     {/* Navigation Items */}
-                    <div className="py-2">
+                    <div className="py-8 px-4 space-y-2">
                         {navigationItems.map((item, index) => (
                             <div key={item.label} onClick={() => handleItemClick(index)}>
                                 <NavigationItem
@@ -144,7 +144,6 @@ export function Sidebar() {
                             </div>
                         ))}
                     </div>
-                    
                 </div>
             </div>
         </div>

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
-import { getGig, createGigOrder, createStripeCheckoutSession } from "../../api/gigs";
+import { getGig, createGigOrder, createSquareGigCheckoutSession } from "../../api/gigs";
 import GigSellerChatModal from "../../components/gigs/GigSellerChatModal";
 import {
   IoStarSharp,
@@ -85,6 +85,7 @@ const GigDetailPage = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [chatOpen, setChatOpen] = useState(false);
+  const isOwner = user?.email === gig?.worker?.email;
 
   useEffect(() => {
     setLoading(true);
@@ -132,12 +133,12 @@ const GigDetailPage = () => {
         addons: selectedAddons.map((a) => a.id),
       });
       const order = orderRes.data;
-      const sessionRes = await createStripeCheckoutSession(cookies.access_token, order.id);
+      const sessionRes = await createSquareGigCheckoutSession(cookies.access_token, order.id);
       const { url } = sessionRes.data;
       if (url) {
         window.location.href = url;
       } else {
-        toast.error("Failed to create Stripe session.");
+        toast.error("Failed to create Square payment link.");
       }
     } catch (err) {
       const msg = err?.response?.data?.detail || err?.response?.data?.error || "Purchase failed.";
@@ -147,7 +148,7 @@ const GigDetailPage = () => {
     }
   };
 
-  const images = gig?.media_files?.filter((m) => m.media_type === "image") || [];
+  const images = gig?.media_files || [];
   const prevImage = () => setActiveImageIdx((i) => (i === 0 ? images.length - 1 : i - 1));
   const nextImage = () => setActiveImageIdx((i) => (i === images.length - 1 ? 0 : i + 1));
 
@@ -291,7 +292,7 @@ const GigDetailPage = () => {
                 <img
                   src={images[activeImageIdx]?.file}
                   alt={gig.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 {images.length > 1 && (
                   <>
@@ -337,7 +338,7 @@ const GigDetailPage = () => {
                       i === activeImageIdx ? "border-purple-500" : "border-white/10 hover:border-white/20"
                     }`}
                   >
-                    <img src={img.file} alt="" className="w-full h-full object-cover" />
+                    <img src={img.file} alt="" className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>
@@ -586,22 +587,28 @@ const GigDetailPage = () => {
                 <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5 text-center">
                   <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Pricing</p>
                   <p className="text-white/40 text-sm mb-4">No packages listed yet. Contact the seller for a custom quote.</p>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      if (!cookies.access_token) {
-                        toast.error("Please sign in to message this seller.");
-                        navigate("/signin");
-                        return;
-                      }
-                      setChatOpen(true);
-                    }}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
-                  >
-                    <IoChatbubbleOutline className="text-base" />
-                    Request a Quote
-                  </motion.button>
+                  {!isOwner ? (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        if (!cookies.access_token) {
+                          toast.error("Please sign in to message this seller.");
+                          navigate("/signin");
+                          return;
+                        }
+                        setChatOpen(true);
+                      }}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
+                    >
+                      <IoChatbubbleOutline className="text-base" />
+                      Request a Quote
+                    </motion.button>
+                  ) : (
+                    <div className="py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white/40 text-xs italic text-center">
+                      This is your listing.
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -696,22 +703,28 @@ const GigDetailPage = () => {
                     </div>
                   </div>
 
-                  <motion.button
-                    whileHover={{ scale: purchasing ? 1 : 1.02 }}
-                    whileTap={{ scale: purchasing ? 1 : 0.98 }}
-                    onClick={handleBuy}
-                    disabled={purchasing || !selectedPkg}
-                    className="mt-4 w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                  >
-                    {purchasing ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Processing…
-                      </>
-                    ) : (
-                      "Continue to Checkout"
-                    )}
-                  </motion.button>
+                  {!isOwner ? (
+                    <motion.button
+                      whileHover={{ scale: purchasing ? 1 : 1.02 }}
+                      whileTap={{ scale: purchasing ? 1 : 0.98 }}
+                      onClick={handleBuy}
+                      disabled={purchasing || !selectedPkg}
+                      className="mt-4 w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    >
+                      {purchasing ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Processing…
+                        </>
+                      ) : (
+                        "Continue to Checkout"
+                      )}
+                    </motion.button>
+                  ) : (
+                    <div className="mt-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white/30 text-xs italic text-center">
+                      Listing Owner: Self-checkout disabled
+                    </div>
+                  )}
 
                   {!user && (
                     <p className="text-center text-white/30 text-xs mt-2">
@@ -722,7 +735,7 @@ const GigDetailPage = () => {
                   {/* Trust badges */}
                   <div className="mt-4 space-y-2">
                     {[
-                      { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Stripe" },
+                      { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Square" },
                       { icon: <IoRefreshOutline className="text-blue-400" />, text: "Revisions as specified" },
                       { icon: <IoCheckmarkCircle className="text-purple-400" />, text: "Money-back guarantee" },
                     ].map((item, i) => (
@@ -780,23 +793,28 @@ const GigDetailPage = () => {
                   )}
                 </div>
 
-                {/* Message Seller */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    if (!cookies.access_token) {
-                      toast.error("Please sign in to message this seller.");
-                      navigate("/signin");
-                      return;
-                    }
-                    setChatOpen(true);
-                  }}
-                  className="mt-4 w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 transition-all flex items-center justify-center gap-2"
-                >
-                  <IoChatbubbleOutline className="text-base" />
-                  Message Seller
-                </motion.button>
+                {!isOwner ? (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      if (!cookies.access_token) {
+                        toast.error("Please sign in to message this seller.");
+                        navigate("/signin");
+                        return;
+                      }
+                      setChatOpen(true);
+                    }}
+                    className="mt-4 w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <IoChatbubbleOutline className="text-base" />
+                    Message Seller
+                  </motion.button>
+                ) : (
+                  <div className="mt-4 py-2.5 text-center text-white/20 text-xs italic bg-white/[0.02] rounded-xl border border-white/5">
+                    Viewing your own gig
+                  </div>
+                )}
               </div>
             </div>
           </div>

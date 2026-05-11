@@ -10,7 +10,7 @@ import Wishlist from "./components/Wishlist";
 import { authContext } from "./context/authContext";
 import Checkout from "./pages/Checkout";
 import Orders from "./components/Orders";
-import CategoriesMobile from "./components/CategoriesMobile";
+// import CategoriesMobile from "./components/CategoriesMobile";
 import SearchPage from "./pages/SearchPage";
 import Shop from "./pages/Shop";
 import VendorDetailsForm from "./components/VendorDetailsForm";
@@ -51,8 +51,10 @@ import GigOrderSuccess from "./pages/gigs/GigOrderSuccess";
 import GigOrderCancel from "./pages/gigs/GigOrderCancel";
 import GigHubLanding from "./pages/gigs/GigHubLanding";
 import GigHubDashboard from "./pages/gigs/GigHubDashboard";
+import GigHubSellerDashboard from "./pages/gigs/GigHubSellerDashboard";
 import GigMessages from "./pages/gigs/GigMessages";
 import GigOrderDetail from "./pages/gigs/GigOrderDetail";
+import VisitPaymentReturn from "./pages/VisitPaymentReturn";
 
 function App() {
   const {
@@ -126,6 +128,7 @@ function App() {
           path="/product/productDetail/:slug"
           element={<ProductDetailPage />}
         />
+        <Route path="/visit-payment-return" element={<VisitPaymentReturn />} />
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />
         <Route path="/completion" element={<Completion />} />
@@ -141,6 +144,7 @@ function App() {
         {/* GigHub integrated routes */}
         <Route path="/gighub" element={<GigHubLanding />} />
         <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
+        <Route path="/gighub/seller" element={<GigHubSellerDashboard />} />
         <Route path="/gighub/messages" element={<GigMessages />} />
 
         {/* Gigs routes — static paths before dynamic :id */}

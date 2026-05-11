@@ -60,7 +60,7 @@ const Home = () => {
 
   const getFilteredCards = () => {
     if (selectedCategory === 3) return products; // Buyer's Choice shows all products
-    return products.slice(0, 4); // Other categories display limited items
+    return (products || []).slice(0, 4); // Other categories display limited items
   };
 
   const handleNext = () => {
@@ -82,8 +82,6 @@ const Home = () => {
     { id: 3, name: "Buyer's Choice" },
     { id: 4, name: "Pinksurfing finds" },
   ];
-  const awsS3BaseUrl =
-    "https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/";
 
   // Initialize countries on component mount
   useEffect(() => {
@@ -256,7 +254,7 @@ const Home = () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-        setStores(storesResponse.data.stores);
+        setStores(storesResponse.data.stores || []);
         console.log(storesResponse.data.stores);
       } catch (error) {
         console.error(error);
@@ -274,7 +272,7 @@ const Home = () => {
           }
         );
         console.log(productsResponse.data.Products);
-        setProducts(productsResponse.data.Products);
+        setProducts(productsResponse.data.Products || []);
       } catch (error) {
         console.error(error);
       }
@@ -609,7 +607,7 @@ const Home = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {stores.slice(0, 6).map((store, storeIndex) => (
+                      {(stores || []).slice(0, 6).map((store, storeIndex) => (
                         <StoreCard key={storeIndex} store={store} />
                       ))}
                     </div>
@@ -620,7 +618,7 @@ const Home = () => {
               {/* Trending Top Sales */}
               {selectedCategory === 2 && (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {getDiscountedProducts().slice(0, 8).map((product, productIndex) => (
+                  {(getDiscountedProducts() || []).slice(0, 8).map((product, productIndex) => (
                     <ProductCard key={productIndex} product={product} isCard={true} />
                   ))}
                 </div>
@@ -629,7 +627,7 @@ const Home = () => {
               {/* Buyer's Choice */}
               {selectedCategory === 3 && (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {products.slice(0, 8).map((product, productIndex) => (
+                  {(products || []).slice(0, 8).map((product, productIndex) => (
                     <ProductCard key={productIndex} product={product} isCard={true} />
                   ))}
                 </div>
@@ -638,7 +636,7 @@ const Home = () => {
               {/* Pinksurfing Finds */}
               {selectedCategory === 4 && (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {products.slice(0, 4).map((product, productIndex) => (
+                  {(products || []).slice(0, 4).map((product, productIndex) => (
                     <ProductCard key={productIndex} product={product} isCard={true} />
                   ))}
                 </div>

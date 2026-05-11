@@ -560,36 +560,39 @@ const LocationStep = ({ data, onUpdate }) => (
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-white/70">Property Type</label>
-          <select
-            value={data.propertyType}
-            onChange={(e) => onUpdate("propertyType", e.target.value)}
-            className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all [color-scheme:dark]"
-          >
-            <option value="">Select</option>
-            <option value="house">House</option>
-            <option value="condo">Condo</option>
-            <option value="apartment">Apartment</option>
-            <option value="commercial">Commercial</option>
-            <option value="other">Other</option>
-          </select>
+      {/* Hide property details for digital services */}
+      {data.category !== "technology" && data.category !== "digital" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white/70">Property Type</label>
+            <select
+              value={data.propertyType}
+              onChange={(e) => onUpdate("propertyType", e.target.value)}
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all [color-scheme:dark]"
+            >
+              <option value="">Select</option>
+              <option value="house">House</option>
+              <option value="condo">Condo</option>
+              <option value="apartment">Apartment</option>
+              <option value="commercial">Commercial</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white/70">Ownership</label>
+            <select
+              value={data.ownership}
+              onChange={(e) => onUpdate("ownership", e.target.value)}
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all [color-scheme:dark]"
+            >
+              <option value="">Select</option>
+              <option value="owner">Owner</option>
+              <option value="tenant">Tenant</option>
+              <option value="agent">Agent / Manager</option>
+            </select>
+          </div>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-white/70">Ownership</label>
-          <select
-            value={data.ownership}
-            onChange={(e) => onUpdate("ownership", e.target.value)}
-            className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all [color-scheme:dark]"
-          >
-            <option value="">Select</option>
-            <option value="owner">Owner</option>
-            <option value="tenant">Tenant</option>
-            <option value="agent">Agent / Manager</option>
-          </select>
-        </div>
-      </div>
+      )}
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-white/70">Access Restrictions</label>
@@ -1023,16 +1026,10 @@ const CreateBidPage = () => {
       return;
     }
 
-    if (!Array.isArray(BUDGET_OPTIONS)) {
-      console.error("[CreateBidPage:L1016] BUDGET_OPTIONS is not an array:", typeof BUDGET_OPTIONS, BUDGET_OPTIONS);
-    }
-    const budgetOpt = BUDGET_OPTIONS.find((o) => o.value === requestData.budgetRange);
+    const budgetOpt = Array.isArray(BUDGET_OPTIONS) ? BUDGET_OPTIONS.find((o) => o.value === requestData.budgetRange) : null;
     const budget = budgetOpt ? budgetOpt.num : 1;
 
-    if (!Array.isArray(TIMELINE_OPTIONS)) {
-      console.error("[CreateBidPage:L1022] TIMELINE_OPTIONS is not an array:", typeof TIMELINE_OPTIONS, TIMELINE_OPTIONS);
-    }
-    const timelineOpt = TIMELINE_OPTIONS.find((o) => o.value === requestData.timeline);
+    const timelineOpt = Array.isArray(TIMELINE_OPTIONS) ? TIMELINE_OPTIONS.find((o) => o.value === requestData.timeline) : null;
     const deadline = timelineOpt?.days
       ? new Date(Date.now() + timelineOpt.days * 86400000).toISOString().split("T")[0]
       : undefined;

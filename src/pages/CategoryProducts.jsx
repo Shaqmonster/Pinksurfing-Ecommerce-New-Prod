@@ -1,3 +1,5 @@
+import { useParams } from "react-router-dom";
+import BusinessForSale from "./BusinessForSale";
 import useCategoryProducts from "./categoryProducts/useCategoryProducts";
 import MobileFilterDrawer from "./categoryProducts/MobileFilterDrawer";
 import CategoryHeader from "./categoryProducts/CategoryHeader";
@@ -5,6 +7,13 @@ import CategorySidebar from "./categoryProducts/CategorySidebar";
 import ProductsSection from "./categoryProducts/ProductsSection";
 
 export default function CategoryProducts() {
+  const { slug } = useParams();
+
+  // ── Business for Sale gets its own premium marketplace UI ──
+  if (slug === "business4sale" || slug === "business-for-sale") {
+    return <BusinessForSale />;
+  }
+
   const hook = useCategoryProducts();
 
   return (
@@ -74,6 +83,7 @@ export default function CategoryProducts() {
         {/* Main Grid: Sidebar + Products */}
         <div className="grid grid-cols-1 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
           <CategorySidebar
+            categorySlug={slug}
             CategoryOnlyData={hook.CategoryOnlyData}
             categoryFilter={hook.categoryFilter}
             setCategoryFilter={hook.setCategoryFilter}
@@ -104,6 +114,7 @@ export default function CategoryProducts() {
             <ProductsSection
               loading={hook.loading}
               locationApplying={hook.locationApplying}
+              categorySlug={slug}
               filteredProducts={hook.filteredProducts}
               currentProducts={hook.currentProducts}
               isCard={hook.isCard}

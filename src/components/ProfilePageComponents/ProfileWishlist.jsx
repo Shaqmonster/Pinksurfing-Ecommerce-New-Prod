@@ -136,148 +136,102 @@ export default function ProfileWishlist() {
     }
 
     return (
-        <div className=" overflow-hidden font-sen">
-            <div className=" inset-0 overflow-hidden border border-gray-500  rounded-lg">
-                <div className="  inset-y-0 right-0 flex max-w-full pl-10">
-
-                        <div className="  w-screen max-w-md">
-                            <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-[#0E0F13] shadow-xl">
-                                <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-6 sm:px-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="text-lg font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                            My Wishlist
-                                        </div>
-
-                                    </div>
-
-                                    <div className=" ">
-                                        <div className="flow-root ">
-                                            <ul role="list" className="  pt-3 sm:pt-5">
-                                                {wishlistProducts?.map((product) => {
-                                                    return (
-                                                        <li
-                                                            key={product.id}
-                                                            className="flex  py-1 sm:py-2"
-                                                        >
-                                                            <div className=" w-full">
-                                                                <div className="flex max-w-md h-[150px] sm:h-[200px] w-full bg-white dark:bg-[#0E0F13] shadow-md pt-4 px-4 shadow-gray-500 rounded-lg overflow-hidden">
-                                                                    <img
-                                                                        className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200"
-                                                                        src={`${product.image1}`}
-                                                                    // src="https://images.unsplash.com/photo-1494726161322-5360d4d0eeae?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
-                                                                    />
-                                                                    <div className="w-2/3 p-2 pt-0">
-                                                                        <Link
-                                                                            to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-                                                                            onClick={() => setIsWishlistOpen(false)}
-                                                                        >
-                                                                            <h1 className="text-gray-900 dark:text-[#f5f5f5] font-bold text-base sm:text-sm">
-                                                                                {product.name.length > 17 ? `${product.name.slice(0, 17)}...` : product.name}
-                                                                            </h1>
-                                                                            <p className=" text-ellipsis h-[20px] dark:text-[#f5f5f5] text-[13px] sm:text-sm overflow-hidden text-gray-600">
-                                                                                {htmlToText(
-                                                                                    product.short_description
-                                                                                ).slice(0, 10)}
-                                                                                {product.short_description.length > 10
-                                                                                    ? "..."
-                                                                                    : ""}
-                                                                            </p>
-                                                                        </Link>
-                                                                        <div className="flex item-center sm:mt-2">
-                                                                            <svg
-                                                                                className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-700 dark:text-[#f5f5f5]"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                                                            </svg>
-                                                                            <svg
-                                                                                className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-700 dark:text-[#f5f5f5]"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                                                            </svg>
-                                                                            <svg
-                                                                                className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-700 dark:text-[#f5f5f5]"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                                                            </svg>
-                                                                            <svg
-                                                                                className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-500"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                                                            </svg>
-                                                                            <svg
-                                                                                className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-500"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                                                            </svg>
-                                                                        </div>
-                                                                        <div className="flex flex-col item-center justify-between sm:mt-1">
-                                                                            <h1 className="text-gray-700 dark:text-[#f5f5f5] font-semibold text-base sm:text-md">
-                                                                                {currency}
-                                                                                {formatMoney(product.unit_price)}
-                                                                            </h1>
-                                                                            <div className=" w-full flex sm:gap-1 items-center sm:mt-2 ">
-                                                                                <button
-                                                                                    disabled={product.quantity === 0}
-                                                                                    onClick={() => {
-                                                                                        AddtoCart(product.id);
-                                                                                    }}
-                                                                                    className=" px-2 sm:px-3 disabled:bg-gray-200 dark:disabled:bg-gray-500 dark:disabled:text-gray-400 disabled:text-gray-700 py-1 sm:py-2 bg-[#FFD814]  text-black text-[10px] lg:text-[11px] font-bold uppercase rounded"
-                                                                                >
-                                                                                    Add to Cart
-                                                                                </button>
-                                                                                <button
-                                                                                    onClick={() => {
-                                                                                        RemoveWishlistProduct(
-                                                                                            product.id
-                                                                                        );
-                                                                                    }}
-                                                                                    className="px-1.5 sm:px-3 py-2 text-purple-800 dark:text-[#fff] text-[11px] sm:text-[13.4px] font-semibold uppercase rounded"
-                                                                                >
-                                                                                    Remove
-                                                                                </button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <p
-                                                                className={` ${!wishlistProducts ? "block" : "hidden"
-                                                                    } w-full h-full flex items-center justify-center pt-5 top-3 left-3 z-50 text-black/80`}
-                                                            >
-                                                                your wishlist is empty
-                                                            </p>
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    {wishlistProducts.length === 0 && (
-                                        <div className=" w-full h-[90%] flex flex-col items-center justify-center">
-                                            <FaHeart className=" text-red-500 text-[13vw] lg:text-[80px] " />
-                                            <p className=" text-[16px] sm:text-[19px] dark:text-[#f5f5f5] mt-1 font-semibold">
-                                                Your Wishlist is Empty
-                                            </p>
-                                            <button
-                                                onClick={() => {
-                                                    navigate("/shoppingMall/all");
-                                                    setIsWishlistOpen(false);
-                                                }}
-                                                className=" bg-[#2d1e5f] px-3 text-sm sm:text-base py-1.5 rounded-md text-white mt-2"
-                                            >
-                                                Shop Now{" "}
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+        <div className="font-sen min-h-screen">
+            <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-8 lg:p-14 shadow-2xl">
+                <div className="flex items-end justify-between mb-12 border-b border-white/5 pb-8">
+                    <div className="space-y-1">
+                        <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em]">Curation</p>
+                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase">
+                            My Wishlist
+                        </h2>
+                    </div>
+                    <span className="text-xs font-black text-white/30 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl">
+                        {wishlistProducts?.length || 0} {wishlistProducts?.length === 1 ? 'Item' : 'Items'}
+                    </span>
                 </div>
+
+                <div className="flow-root">
+                    <ul role="list" className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {wishlistProducts?.map((product) => (
+                            <li key={product.id} className="relative group">
+                                <div className="bg-white/[0.03] border border-white/5 rounded-[2rem] p-6 hover:bg-white/[0.06] hover:border-purple-500/30 transition-all duration-500 shadow-xl overflow-hidden">
+                                    <div className="flex gap-6">
+                                        <div className="h-28 w-28 sm:h-36 sm:w-36 flex-shrink-0 overflow-hidden rounded-2xl border border-white/5 shadow-2xl relative">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                            <img
+                                                className="h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
+                                                src={`${product.image1}`}
+                                                alt={product.name}
+                                            />
+                                        </div>
+                                        
+                                        <div className="flex-1 flex flex-col justify-between">
+                                            <div>
+                                                <div className="flex justify-between items-start">
+                                                    <Link
+                                                        to={`/product/productDetail/${product.slug}?productId=${product.id}`}
+                                                        onClick={() => setIsWishlistOpen(false)}
+                                                        className="block"
+                                                    >
+                                                        <h3 className="text-lg font-black text-white tracking-tighter uppercase hover:text-purple-400 transition-colors">
+                                                            {product.name}
+                                                        </h3>
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => RemoveWishlistProduct(product.id)}
+                                                        className="text-white/20 hover:text-red-500 transition-colors p-1"
+                                                    >
+                                                        <XMarkIcon className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                                <p className="mt-2 text-sm text-white/30 line-clamp-2 leading-relaxed">
+                                                    {htmlToText(product.short_description)}
+                                                </p>
+                                            </div>
+
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <p className="text-xl font-black text-purple-400 tracking-tighter">
+                                                    {currency}{formatMoney(product.unit_price)}
+                                                </p>
+                                                <button
+                                                    disabled={product.quantity === 0}
+                                                    onClick={() => AddtoCart(product.id)}
+                                                    className="px-6 py-2.5 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-purple-50 transition-all active:scale-95 disabled:opacity-20"
+                                                >
+                                                    Add to Cart
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                {wishlistProducts?.length === 0 && (
+                    <div className="py-32 flex flex-col items-center justify-center space-y-10">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-red-500/10 blur-[100px] rounded-full"></div>
+                            <FaHeartBroken className="relative text-white/10 text-8xl transition-transform duration-700 group-hover:scale-110" />
+                        </div>
+                        <div className="text-center space-y-3">
+                            <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Your wishlist is empty</h3>
+                            <p className="text-white/30 text-sm font-medium max-w-xs mx-auto">
+                                Save the premium products you love here for future consideration.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                navigate("/shoppingMall/all");
+                                setIsWishlistOpen(false);
+                            }}
+                            className="px-12 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
+                        >
+                            Explore Marketplace
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

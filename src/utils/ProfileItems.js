@@ -42,12 +42,5 @@ export const navigationItems = [
     label: "My Offers",
     altText: "My Offers icon",
     route: "/bids/my-offers"
-  },
-  {
-    icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/3fc4c0132983cb6b227f3de3497ad40d404bad5dca20bdc8ea57cd932cb4a535?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
-    label: "Log-out",
-    altText: "Log-out icon",
-    /** Not a profile tab — handled in ProfileSidebar via auth Logout() */
-    action: "logout",
-  },
+  }
 ];

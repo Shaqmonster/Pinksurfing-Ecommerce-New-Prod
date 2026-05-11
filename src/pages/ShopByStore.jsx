@@ -279,7 +279,7 @@ export default function ShopByStore() {
                                   <img
                                     src={
                                       store.store_image
-                                        ? `${awsS3BaseUrl}${store.store_image}`
+                                        ? (store.store_image.startsWith('http') ? store.store_image : `${awsS3BaseUrl}${store.store_image}`)
                                         : "https://media-cldnry.s-nbcnews.com/image/upload/t_nbcnews-fp-1024-512,f_auto,q_auto:best/newscms/2017_26/2053956/170627-better-grocery-store-main-se-539p.jpg"
                                     }
                                     alt={store.store_name}

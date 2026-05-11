@@ -82,17 +82,17 @@ const Signin = () => {
         { headers: { Authorization: `Bearer ${data.access}` } }
       );
       if (customerResponse.status === 200 || customerResponse.status === 201) {
-        // const expirationDateAccessToken = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-        // const expirationDateRefreshToken = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        const expirationDateAccessToken = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        const expirationDateRefreshToken = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
   
-        // setCookie("access_token", data.access, {
-        //   path: "/",
-        //   expires: expirationDateAccessToken,
-        // });
-        // setCookie("refresh_token", data.refresh, {
-        //   path: "/",
-        //   expires: expirationDateRefreshToken,
-        // });
+        setCookie("access_token", data.access, {
+          path: "/",
+          expires: expirationDateAccessToken,
+        });
+        setCookie("refresh_token", data.refresh, {
+          path: "/",
+          expires: expirationDateRefreshToken,
+        });
         // localStorage.setItem("refresh", data.refresh);
         // localStorage.setItem("access", data.access);
   
