@@ -3,7 +3,16 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
+import { ethers } from "ethers";
 import { authContext } from "../../context/authContext";
+import {
+  getGig,
+  createGigOrder,
+  createStripeCheckoutSession,
+  setGigOrderEscrowId,
+} from "../../api/gigs";
+import { useInAppWallet } from "../../context/inAppWalletContext";
+import { createServicesEscrowForGigOrder } from "../../lib/gighubEscrowFlow";
 import { getGig, createGigOrder, createSquareGigCheckoutSession } from "../../api/gigs";
 import GigSellerChatModal from "../../components/gigs/GigSellerChatModal";
 import {
@@ -71,11 +80,187 @@ const formatDate = (iso) => {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 };
 
+const CheckoutFlowModal = ({
+  open,
+  onClose,
+  onConfirm,
+  loading,
+  totalUsd,
+  options,
+  setOptions,
+  ethUsdRate,
+  rateLoading,
+  rateError,
+  onRecalculateFromRate,
+}) => {
+  if (!open) return null;
+  let escrowEthExact = "";
+  let escrowWeiExact = "";
+  if (options.paymentMode === "escrow_wallet_only" || options.paymentMode === "escrow_plus_stripe") {
+    try {
+      const wei = ethers.parseEther(String(options.escrowEth || "0"));
+      escrowEthExact = ethers.formatEther(wei);
+      escrowWeiExact = wei.toString();
+    } catch {
+      escrowEthExact = "";
+      escrowWeiExact = "";
+    }
+  }
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 16, scale: 0.98, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ y: 16, scale: 0.98, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg bg-[#13131a] border border-white/10 rounded-2xl p-5"
+      >
+        <h3 className="text-white font-bold text-lg mb-1">GigHub Checkout Setup</h3>
+        <p className="text-white/45 text-sm mb-4">
+          Choose how you want to pay and how escrow should be structured before checkout.
+        </p>
+
+        <div className="space-y-4">
+          <div>
+            <p className="text-white/65 text-xs mb-2 uppercase tracking-wider">Payment method</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                {
+                  id: "escrow_wallet_only",
+                  label: "Crypto escrow (wallet only)",
+                  hint: "Create and fund on-chain escrow directly from your in-app wallet.",
+                },
+                {
+                  id: "escrow_plus_stripe",
+                  label: "Escrow + Stripe",
+                  hint: "Create escrow and also continue with card checkout.",
+                },
+              ].map((x) => (
+                <button
+                  key={x.id}
+                  type="button"
+                  onClick={() => setOptions((p) => ({ ...p, paymentMode: x.id }))}
+                  className={`text-left rounded-xl border p-3 transition-all ${
+                    options.paymentMode === x.id
+                      ? "border-purple-500/40 bg-purple-500/10"
+                      : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}
+                >
+                  <p className="text-white text-sm font-semibold">{x.label}</p>
+                  <p className="text-white/45 text-xs mt-1">{x.hint}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(options.paymentMode === "escrow_wallet_only" || options.paymentMode === "escrow_plus_stripe") && (
+            <>
+              <div>
+                <p className="text-white/65 text-xs mb-2 uppercase tracking-wider">Milestones</p>
+                <div className="flex gap-2">
+                  {[2, 4, 6].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setOptions((p) => ({ ...p, milestoneCount: n }))}
+                      className={`flex-1 py-2 rounded-lg border text-sm ${
+                        options.milestoneCount === n
+                          ? "border-purple-500/40 bg-purple-500/10 text-white"
+                          : "border-white/10 text-white/60 hover:border-white/20"
+                      }`}
+                    >
+                      {n} milestones
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-white/65 text-xs mb-2 uppercase tracking-wider">Escrow amount (ETH)</p>
+                <input
+                  value={options.escrowEth}
+                  onChange={(e) => setOptions((p) => ({ ...p, escrowEth: e.target.value }))}
+                  placeholder="1.0"
+                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-purple-400"
+                />
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-white/40 text-[11px]">
+                    {rateLoading
+                      ? "Fetching live ETH/USD rate..."
+                      : ethUsdRate
+                      ? `Live rate (Binance): 1 ETH = $${ethUsdRate.toFixed(2)}`
+                      : "Live rate unavailable right now. You can set ETH manually."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onRecalculateFromRate}
+                    disabled={rateLoading || !ethUsdRate}
+                    className="text-[11px] px-2 py-0.5 rounded border border-white/10 text-white/55 hover:bg-white/5 disabled:opacity-50"
+                  >
+                    Recalc
+                  </button>
+                </div>
+                {rateError ? <p className="text-amber-400 text-[11px] mt-1">{rateError}</p> : null}
+              </div>
+            </>
+          )}
+
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm">
+            <div className="flex justify-between text-white/70">
+              <span>Checkout total (USD)</span>
+              <span className="font-semibold">${totalUsd}</span>
+            </div>
+            {(options.paymentMode === "escrow_wallet_only" || options.paymentMode === "escrow_plus_stripe") && (
+              <>
+                <div className="flex justify-between text-white/50 mt-1">
+                  <span>Escrow setup</span>
+                  <span>{options.milestoneCount} milestones</span>
+                </div>
+                <div className="flex justify-between text-white/50 mt-1">
+                  <span>Escrow amount (exact ETH)</span>
+                  <span>{escrowEthExact || "Invalid amount"} ETH</span>
+                </div>
+                <div className="flex justify-between text-white/35 mt-1">
+                  <span>Escrow amount (Wei)</span>
+                  <span className="font-mono text-[11px]">{escrowWeiExact || "-"}</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-2 mt-5">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm hover:border-white/20"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-[1.4] py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold disabled:opacity-50"
+          >
+            {loading ? "Processing..." : "Confirm & Continue"}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const GigDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
+  const { wallet: inAppWallet } = useInAppWallet();
 
   const [gig, setGig] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -83,6 +268,15 @@ const GigDetailPage = () => {
   const [selectedPkg, setSelectedPkg] = useState(null);
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [purchasing, setPurchasing] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutOptions, setCheckoutOptions] = useState(() => ({
+    paymentMode: "escrow_wallet_only",
+    milestoneCount: 2,
+    escrowEth: String(import.meta.env.VITE_GIGHUB_DEMO_ORDER_ETH || "1"),
+  }));
+  const [ethUsdRate, setEthUsdRate] = useState(null);
+  const [rateLoading, setRateLoading] = useState(false);
+  const [rateError, setRateError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
   const [chatOpen, setChatOpen] = useState(false);
   const isOwner = user?.email === gig?.worker?.email;
@@ -115,7 +309,43 @@ const GigDetailPage = () => {
     return (base + addonSum + (base + addonSum) * 0.05).toFixed(2);
   };
 
-  const handleBuy = async () => {
+  const fetchEthUsdRate = async () => {
+    setRateLoading(true);
+    setRateError("");
+    try {
+      const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT");
+      if (!res.ok) throw new Error("Binance rate request failed");
+      const data = await res.json();
+      const px = Number(data?.price);
+      if (!Number.isFinite(px) || px <= 0) throw new Error("Invalid Binance ETH price");
+      setEthUsdRate(px);
+      return px;
+    } catch (e) {
+      setRateError("Could not fetch Binance live rate. Using manual ETH amount.");
+      return null;
+    } finally {
+      setRateLoading(false);
+    }
+  };
+
+  const recalculateEscrowFromRate = (rate = ethUsdRate) => {
+    const usd = Number(totalPrice());
+    if (!Number.isFinite(usd) || usd <= 0 || !Number.isFinite(rate) || rate <= 0) return;
+    const eth = usd / rate;
+    setCheckoutOptions((prev) => ({
+      ...prev,
+      escrowEth: eth.toFixed(6),
+    }));
+  };
+
+  const openCheckoutSetup = async () => {
+    setCheckoutOpen(true);
+    if (checkoutOptions.paymentMode !== "escrow_wallet_only" && checkoutOptions.paymentMode !== "escrow_plus_stripe") return;
+    const liveRate = await fetchEthUsdRate();
+    if (liveRate) recalculateEscrowFromRate(liveRate);
+  };
+
+  const handleCheckoutConfirm = async () => {
     if (!cookies.access_token) {
       toast.error("Please sign in to purchase.");
       navigate("/signin");
@@ -125,20 +355,70 @@ const GigDetailPage = () => {
       toast.error("Please select a package.");
       return;
     }
+    if (
+      (checkoutOptions.paymentMode === "escrow_wallet_only" || checkoutOptions.paymentMode === "escrow_plus_stripe") &&
+      (!Number.isFinite(Number(checkoutOptions.escrowEth)) || Number(checkoutOptions.escrowEth) <= 0)
+    ) {
+      toast.error("Enter a valid escrow ETH amount.");
+      return;
+    }
     try {
       setPurchasing(true);
+      setCheckoutOpen(false);
       const orderRes = await createGigOrder(cookies.access_token, {
         gig_id: gig.id,
         package_id: selectedPkg.id,
         addons: selectedAddons.map((a) => a.id),
       });
       const order = orderRes.data;
-      const sessionRes = await createSquareGigCheckoutSession(cookies.access_token, order.id);
-      const { url } = sessionRes.data;
-      if (url) {
-        window.location.href = url;
+if (checkoutOptions.paymentMode === "escrow_wallet_only" || checkoutOptions.paymentMode === "escrow_plus_stripe") {
+        // On-chain (GigHub only): create Services escrow for this order.
+        try {
+          // Prefer authoritative seller wallet from order serializer.
+          const configuredSeller = order?.seller_wallet_address || gig?.worker?.wallet_address || "";
+          if (inAppWallet && configuredSeller) {
+            const chainRes = await createServicesEscrowForGigOrder({
+              order,
+              gig,
+              wallet: inAppWallet,
+              sellerAddress: configuredSeller,
+              milestoneCount: checkoutOptions.milestoneCount,
+              escrowEth: checkoutOptions.escrowEth,
+            });
+            await setGigOrderEscrowId(cookies.access_token, order.id, chainRes.escrowId);
+            toast.success(`Escrow created (${checkoutOptions.milestoneCount} milestones): ${chainRes.escrowId.slice(0, 10)}...`);
+          } else {
+            throw new Error("Buyer wallet or seller wallet address is missing for escrow.");
+          }
+        } catch (chainErr) {
+          const msg = chainErr?.shortMessage || chainErr?.message || "On-chain escrow create failed.";
+          toast.warning(msg);
+          setPurchasing(false);
+          return;
+        }
+      }
+
+      if (checkoutOptions.paymentMode === "escrow_plus_stripe") {
+        const sessionRes = await createStripeCheckoutSession(cookies.access_token, order.id);
+        const { url } = sessionRes.data;
+        if (url) {
+          window.location.href = url;
+        } else {
+          toast.error("Failed to create Stripe session.");
+        }
+      } else if (checkoutOptions.paymentMode === "square") {
+        // If you still want to support the old Square path:
+        const sessionRes = await createSquareGigCheckoutSession(cookies.access_token, order.id);
+        const { url } = sessionRes.data;
+        if (url) {
+          window.location.href = url;
+        } else {
+          toast.error("Failed to create Square payment link.");
+        }
       } else {
-        toast.error("Failed to create Square payment link.");
+        toast.success("Order + escrow created. Continuing to order workspace.");
+        navigate(`/gigs/orders/${order.id}`);
+      }
       }
     } catch (err) {
       const msg = err?.response?.data?.detail || err?.response?.data?.error || "Purchase failed.";
@@ -830,6 +1110,22 @@ const GigDetailPage = () => {
         sellerName={workerName}
         currentUserEmail={user?.email}
       />
+
+      <AnimatePresence>
+        <CheckoutFlowModal
+          open={checkoutOpen}
+          onClose={() => setCheckoutOpen(false)}
+          onConfirm={handleCheckoutConfirm}
+          loading={purchasing}
+          totalUsd={totalPrice()}
+          options={checkoutOptions}
+          setOptions={setCheckoutOptions}
+        ethUsdRate={ethUsdRate}
+        rateLoading={rateLoading}
+        rateError={rateError}
+        onRecalculateFromRate={() => recalculateEscrowFromRate()}
+        />
+      </AnimatePresence>
     </div>
   );
 };
