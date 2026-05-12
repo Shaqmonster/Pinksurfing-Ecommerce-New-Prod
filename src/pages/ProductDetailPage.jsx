@@ -7,10 +7,10 @@ import Header from "../components/Header";
 import axios from "axios";
 import { FaCopy, FaFacebook, FaFontAwesome, FaPinterest, FaShare, FaTwitter } from "react-icons/fa";
 import OrderConfirm from "../components/OrderConfirm";
-import { FaHeart, FaStar, FaTruck } from "react-icons/fa";
+import { FaHeart, FaStar, FaTruck, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { dataContext } from "../context/dataContext";
 import { authContext } from "../context/authContext";
-import { IoClose, IoStarOutline, IoCart } from "react-icons/io5";
+import { IoClose, IoStarOutline, IoCart, IoChatbubbleOutline, IoFlash } from "react-icons/io5";
 import shareImage from "/media/share.png";
 import ProductDetailReviewSection from "../components/ProductPageComponents/ProductDetail-ReviewSection";
 import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLike";
@@ -19,6 +19,70 @@ import ImageZoom from "../components/ProductPageComponents/ZoomImage";
 import parse from "html-react-parser";
 import { data } from "autoprefixer";
 import Stars from '../components/Stars'
+import { formatMoney } from "../utils/formatMoney";
+import { formatDistanceToNow } from "date-fns";
+import {
+  FaBed,
+  FaBath,
+  FaRulerCombined,
+  FaChartLine,
+  FaMoneyBillWave,
+  FaClock,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaPhoneAlt,
+  FaEnvelope,
+  FaUsers,
+  FaUserTie,
+  FaHandshake,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaRobot,
+  FaTags,
+  FaBriefcase,
+  FaBalanceScale,
+} from "react-icons/fa";
+import { IoInformationCircleOutline } from "react-icons/io5";
+import VisitScheduleModal from "../components/ProductPageComponents/VisitScheduleModal";
+import {
+  getVisitForProduct,
+  buyerRespondVendorReschedule,
+  submitVisitDispute,
+  createVisitPaymentLink,
+} from "../api/propertyVisits";
+import { createConversation } from "../api/gigs";
+
+/** API returns `/media/...` paths; resolve against API origin when SPA is on another host. */
+function resolveProductMediaUrl(url) {
+  if (url == null || url === "") return "";
+  const s = String(url).trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  const base = (import.meta.env.VITE_SERVER_URL || "").replace(/\/$/, "");
+  if (!base) return s;
+  if (s.startsWith("/")) return `${base}${s}`;
+  return `${base}/${s}`;
+}
+
+function withResolvedProductImages(product) {
+  if (!product || typeof product !== "object") return product;
+  const next = { ...product };
+  for (let i = 1; i <= 4; i++) {
+    const key = `image${i}`;
+    if (next[key]) next[key] = resolveProductMediaUrl(next[key]);
+  }
+  return next;
+}
+
+function firstProductImageUrl(product) {
+  if (!product || typeof product !== "object") return "";
+  for (let i = 1; i <= 4; i++) {
+    const u = product[`image${i}`];
+    if (u) return u;
+  }
+  return "";
+}
 
 
 const ProductDetailPage = () => {
@@ -39,11 +103,21 @@ const ProductDetailPage = () => {
   const [productQty, setProductQty] = useState(1);
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("story");
+  const [isStoryExpanded, setIsStoryExpanded] = useState(false);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
   const searchParams = new URLSearchParams(location.search);
   const rawProductId = searchParams.get("productId");
   const [averageRating, setAverageRating] = useState(0);
   const [currentUrl, setCurrentUrl] = useState("");
+  const [activeVisit, setActiveVisit] = useState(null);
+  const [visitModalOpen, setVisitModalOpen] = useState(false);
+  const [rescheduleVisitId, setRescheduleVisitId] = useState(null);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeBusy, setDisputeBusy] = useState(false);
+  const [contactingAgent, setContactingAgent] = useState(false);
 
   // Remove trailing slash from productId, if any
   const productId = rawProductId ? rawProductId.replace(/\/$/, "") : rawProductId;
@@ -57,12 +131,93 @@ const ProductDetailPage = () => {
     setAdditionalAttribute,
   } = useContext(dataContext);
   const {
-    user,
-    setSingleOrderProduct,
-    setIsSingleOrderFormOpen,
     setIsProfileOpen,
+    isProfileOpen,
     currency,
+    user,
+    openChatWithConversation,
+    setIsSingleOrderFormOpen,
+    setSingleOrderProduct,
   } = useContext(authContext);
+
+  const isOwner = user?.email === product?.vendor?.email;
+  const isDealClosed = product?.deal_active_until && new Date(product.deal_active_until) < new Date();
+
+  // ── CATEGORY DETECTION ──
+  const categorySlug = product?.category?.slug || "";
+  const isResidential = categorySlug === "residential-realestate";
+  const isCommercial = categorySlug === "commercial-realestate";
+  const isRealEstate = isResidential || isCommercial;
+  const isBusiness = categorySlug === "business4sale" || categorySlug === "business-for-sale";
+  const isSpecialized = isRealEstate || isBusiness;
+
+  useEffect(() => {
+    if (!isSpecialized || !product?.id || !cookies.access_token) {
+      setActiveVisit(null);
+      return;
+    }
+    let cancel = false;
+    (async () => {
+      try {
+        const data = await getVisitForProduct(cookies.access_token, product.id);
+        if (!cancel) setActiveVisit(data.visit || null);
+      } catch {
+        if (!cancel) setActiveVisit(null);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [isSpecialized, product?.id, cookies.access_token, product?.category?.slug]);
+
+  // ── ATTRIBUTE MAPPING ──
+  const getAttr = (...aliases) => {
+    const attrs = product?.attributes || [];
+    for (const name of aliases) {
+      if (!name) continue;
+      const lowerName = String(name).toLowerCase();
+      const attr = attrs.find((a) => a?.name?.toLowerCase() === lowerName);
+      if (attr?.value !== undefined && attr?.value !== null && attr?.value !== "") {
+        return attr.value;
+      }
+    }
+    return "";
+  };
+
+  // Treat truthy money/number-like strings safely. Negative or zero values
+  // typically indicate placeholder/typo data, so we don't render them as
+  // headline numbers.
+  const parseMoney = (v) => {
+    if (v == null || v === "") return null;
+    const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  };
+  const isPositiveMoney = (v) => {
+    const n = parseMoney(v);
+    return n !== null && n > 0;
+  };
+
+  const beds = getAttr("bedrooms", "beds");
+  const baths = getAttr("bathrooms", "baths");
+  const sqft = getAttr("square_feet", "sqft", "size");
+  const lotSize = getAttr("lot_size");
+  const yearBuilt = getAttr("year_built");
+  const capRate = getAttr("cap_rate");
+  const revenue = getAttr(
+    "annual revenue",
+    "revenue",
+    "revenue ($)",
+    "annual_revenue"
+  );
+  const ebitda = getAttr(
+    "ebitda",
+    "ebitda ($)",
+    "normalized ebitda",
+    "adjusted ebitda",
+    "sde",
+    "sde ($)"
+  );
+  const daysOnMarket = product.created_at ? formatDistanceToNow(new Date(product.created_at)) : null;
 
   const handleCopy = () => {
     const currentURL = window.location.href;
@@ -73,18 +228,151 @@ const ProductDetailPage = () => {
       });
     });
   };
-  const handleShareClick = () => {
+  const handleShareClick = async () => {
+    const shareUrl = window.location.href;
+    const shareTitle = product?.name || product?.title || "Listing on PinkSurfing";
+    const shareText = product?.short_description
+      ? `${shareTitle} — ${product.short_description}`
+      : shareTitle;
+
     if (navigator.share) {
-      navigator.share({
-        title: product.title,
-        url: window.location.href,
-      })
-        .then(() => console.log('Product shared successfully!'))
-        .catch((error) => console.error('Error sharing:', error));
-    } else {
-      toast.error('Sharing is not supported in this browser.');
+      try {
+        await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+        return;
+      } catch (err) {
+        if (err?.name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard", { position: "top-right" });
+    } catch {
+      toast.error("Couldn't share or copy the link.", { position: "top-right" });
     }
   };
+
+  const handleContactAgent = async () => {
+    if (isDealClosed) return;
+
+    if (!cookies.access_token || !user) {
+      toast.info("Please sign in to message the agent.", { position: "top-right" });
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      navigate("/signin");
+      return;
+    }
+
+    if (isOwner) {
+      toast.info("This is your own listing.", { position: "top-right" });
+      return;
+    }
+
+    const agentEmail = product?.vendor?.email;
+    if (!agentEmail) {
+      toast.error("Agent contact isn't available right now.", { position: "top-right" });
+      return;
+    }
+
+    try {
+      setContactingAgent(true);
+      const res = await createConversation(cookies.access_token, agentEmail);
+      const conversation = res?.data;
+      if (conversation?.id && typeof openChatWithConversation === "function") {
+        openChatWithConversation(conversation);
+      } else if (conversation?.id) {
+        navigate(`/gighub/messages?conversation=${conversation.id}`);
+      } else {
+        navigate(`/gighub/messages`);
+      }
+    } catch (err) {
+      const detail = err?.response?.data?.detail || err?.response?.data?.error;
+      toast.error(typeof detail === "string" ? detail : "Couldn't start a chat with the agent.", {
+        position: "top-right",
+      });
+    } finally {
+      setContactingAgent(false);
+    }
+  };
+
+  const openScheduleVisitModal = () => {
+    if (isDealClosed) return;
+    if (!cookies.access_token) {
+      toast.info("Please sign in to continue.");
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      navigate("/signin");
+      return;
+    }
+    setRescheduleVisitId(null);
+    setVisitModalOpen(true);
+  };
+
+  const openRescheduleVisitModal = () => {
+    if (!activeVisit?.id) return;
+    setRescheduleVisitId(activeVisit.id);
+    setVisitModalOpen(true);
+  };
+
+  const continueVisitPayment = async () => {
+    if (!activeVisit?.id || !cookies.access_token) return;
+    try {
+      const pay = await createVisitPaymentLink(cookies.access_token, activeVisit.id);
+      const url = pay.payment_link || pay.payment_link_url;
+      if (url) window.location.href = url;
+      else toast.error("Could not resume checkout.");
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : "Checkout error");
+    }
+  };
+
+  const respondToVendorReschedule = async (accept) => {
+    if (!activeVisit?.id || !cookies.access_token) return;
+    try {
+      await buyerRespondVendorReschedule(cookies.access_token, activeVisit.id, accept);
+      toast.success(accept ? "You accepted the new time." : "You declined — a refund will be processed.");
+      const data = await getVisitForProduct(cookies.access_token, product.id);
+      setActiveVisit(data.visit || null);
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : "Could not update request.");
+    }
+  };
+
+  const submitDispute = async () => {
+    if (!activeVisit?.id || !cookies.access_token) return;
+    if (disputeReason.trim().length < 10) {
+      toast.error("Please enter at least 10 characters.");
+      return;
+    }
+    setDisputeBusy(true);
+    try {
+      await submitVisitDispute(cookies.access_token, activeVisit.id, disputeReason.trim());
+      toast.success("Dispute submitted. Our team will review it.");
+      setDisputeModalOpen(false);
+      setDisputeReason("");
+      const data = await getVisitForProduct(cookies.access_token, product.id);
+      setActiveVisit(data.visit || null);
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : "Could not submit dispute.");
+    } finally {
+      setDisputeBusy(false);
+    }
+  };
+
+  const visitKindApi = isBusiness ? "business" : "real_estate";
+  const canBuyerReschedule =
+    activeVisit &&
+    ["pending_vendor", "accepted"].includes(activeVisit.status);
+  const scheduleButtonLabel = (() => {
+    if (isDealClosed) return isBusiness ? "Request Financials" : "Schedule a visit";
+    if (!activeVisit) return isBusiness ? "Request financials" : "Schedule a visit";
+    if (activeVisit.status === "pending_payment") return "Continue scheduling payment";
+    if (activeVisit.status === "buyer_reschedule_pending")
+      return "Awaiting agent response";
+    if (canBuyerReschedule) return "Reschedule visit";
+    return isBusiness ? "Request financials" : "Schedule a visit";
+  })();
   useEffect(() => {
     // Remove trailing slash from URL if present
     if (location.pathname.endsWith("/")) {
@@ -231,6 +519,12 @@ const ProductDetailPage = () => {
   };
   useEffect(() => {
     const GetProductData = async () => {
+      if (!productId) {
+        // Without a productId we can't safely hit the API — bail out instead
+        // of firing requests like /api/product/product/null/.
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const productResponse = await axios.get(
@@ -244,14 +538,16 @@ const ProductDetailPage = () => {
         );
 
         const productData = productResponse.data.Products;
-        setProduct(productData);
+        const normalizedProduct = withResolvedProductImages(productData);
+        setProduct(normalizedProduct);
+        const isOwner = user?.email === normalizedProduct.vendor?.email;
         setLoading(false);
-        setActiveImage(productResponse.data.Products.image);
+        setActiveImage(firstProductImageUrl(normalizedProduct));
 
         // Build a lookup: attribute name (lowercase) → is_variant boolean
         // from the subcategory's allowed_attributes list.
         const isVariantLookup = {};
-        const allowedAttrs = productData.subcategory?.allowed_attributes || [];
+        const allowedAttrs = normalizedProduct.subcategory?.allowed_attributes || [];
         allowedAttrs.forEach((aa) => {
           if (aa.name) isVariantLookup[aa.name.toLowerCase()] = aa.is_variant;
         });
@@ -259,7 +555,7 @@ const ProductDetailPage = () => {
         const variantAttrs = {};
         const specAttrs = {};
 
-        (productData.attributes || []).forEach(({ name, value, additional_price }) => {
+        (normalizedProduct.attributes || []).forEach(({ name, value, additional_price }) => {
           if (!name) return;
           const lowerName = name.toLowerCase();
           // Default to variant=true when not found (preserves existing behavior)
@@ -310,6 +606,7 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     const getProductRatings = async (productId) => {
+      if (!productId) return;
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/ratings/get-ratings/${productId}/`,
@@ -428,9 +725,8 @@ const ProductDetailPage = () => {
     }
   };
   useEffect(() => {
-    if (product.image1) {
-      setActiveImage(product.image1);
-    }
+    const primary = firstProductImageUrl(product);
+    if (primary) setActiveImage(primary);
   }, [product]);
 
   useEffect(() => {
@@ -439,6 +735,41 @@ const ProductDetailPage = () => {
       setCurrentUrl(window.location.href);
     }
   }, []);
+
+  const formatTextToParagraphs = (text) => {
+    if (!text) return "No description available.";
+    
+    // If text already contains HTML tags, let parse handle it
+    if (/<[a-z][\s\S]*>/i.test(text)) {
+      return parse(text);
+    }
+
+    // Naively split text into sentences by ". "
+    const sentences = text.split(/(?<=\.)\s+/);
+    
+    // Group into paragraphs of ~3-4 sentences
+    const paragraphs = [];
+    let currentParagraph = [];
+    
+    sentences.forEach((sentence, index) => {
+      currentParagraph.push(sentence);
+      if (currentParagraph.length >= 3 || index === sentences.length - 1) {
+        paragraphs.push(currentParagraph.join(" "));
+        currentParagraph = [];
+      }
+    });
+
+    return (
+      <div className="space-y-6">
+        {paragraphs.map((para, idx) => (
+          <p key={idx} className="text-justify text-[15px] sm:text-[16px] leading-[1.8] text-gray-800 dark:text-white dark:[&_*]:!text-white font-medium tracking-wide">
+            {para}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
 
   return (
     <>
@@ -495,429 +826,936 @@ const ProductDetailPage = () => {
               <span className="text-gray-900 dark:text-white font-medium">{product.name}</span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16">
-              {/* Left Column - Image Gallery */}
-              <div className="space-y-4 animate-slideInLeft">
-                {/* Main Image */}
-                <div className="relative group bg-white dark:bg-gray-900/50 rounded-2xl overflow-hidden shadow-2xl border border-purple-100 dark:border-purple-900/30 backdrop-blur-sm">
-                  <div className="aspect-square flex items-center justify-center p-8 bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-900/50 dark:to-purple-950/30">
-                    <img
-                      className="w-full h-full object-contain cursor-crosshair transition-transform duration-500 group-hover:scale-105"
-                      src={activeImage || product.image1}
-                      alt={product.name}
-                      onMouseOut={() => setViewMainImg(false)}
-                      onMouseMove={handleMouseMove}
-                    />
-                  </div>
-                  
-                  {/* Image Overlay Icons */}
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="p-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-transform">
-                      <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                      </svg>
-                    </button>
+            {/* Premium Listing Header (Real Estate/Business) */}
+            {isSpecialized && (
+              <div className="mb-10 space-y-4 animate-fadeIn">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-purple-500/20">
+                        {isBusiness ? "Business For Sale" : (isResidential ? "Residential" : "Commercial")}
+                      </span>
+                      {daysOnMarket && (
+                        <span className="px-3 py-1 bg-white/10 dark:bg-white/5 border border-white/10 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5">
+                          <FaClock className="text-purple-500" /> {daysOnMarket} on market
+                        </span>
+                      )}
+                    </div>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white tracking-tighter leading-[0.95]">
+                      {product.name}
+                    </h1>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium capitalize">
+                      <FaMapMarkerAlt className="text-purple-500" />
+                      <span>
+                        {[getAttr("city") || product.vendor?.city, getAttr("state") || product.vendor?.state]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {getAttr("zip", "zip_code", "zip / radius") ? ` ${getAttr("zip", "zip_code", "zip / radius")}` : ""}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Stock Badge */}
-                  {product.quantity > 0 ? (
-                    <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg animate-bounce">
-                      In Stock
+                  <div className="flex flex-col items-start md:items-end gap-1">
+                    <div className="flex items-center gap-3">
+                      <div className="text-5xl md:text-6xl font-black text-purple-600 tracking-tighter">
+                        {currency}{formatMoney(finalUnitPrice)}
+                      </div>
+                      {isDealClosed && (
+                        <div className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl">
+                          Deal Closed
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="absolute top-4 left-4 px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
-                      Out of Stock
+                    <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                      Est. {currency}{formatMoney(finalUnitPrice / 180)}/mo
                     </div>
-                  )}
-
-                  {/* Discount Badge */}
-                  {discountPercentage !== "0.00" && (
-                    <div className="absolute bottom-4 left-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full shadow-lg">
-                      {discountPercentage}% OFF
-                    </div>
-                  )}
+                  </div>
                 </div>
 
-                {/* Thumbnail Gallery */}
-                <div className="grid grid-cols-4 gap-3">
-                  {[product.image1, product.image2, product.image3, product.image4].filter(Boolean).map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveImage(img)}
-                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-105 ${
-                        activeImage === img
-                          ? "ring-4 ring-purple-500 shadow-xl scale-105"
-                          : "ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-purple-300 dark:hover:ring-purple-700"
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt={`Product view ${index + 1}`}
-                        className="w-full h-full object-cover bg-white dark:bg-gray-900"
-                      />
-                      {activeImage === img && (
-                        <div className="absolute inset-0 bg-purple-500/20 backdrop-blur-[1px]"></div>
+                {/* Specs Strip */}
+                <div className="grid grid-cols-2 md:flex md:items-center gap-4 md:gap-8 p-6 bg-white/50 dark:bg-white/[0.03] backdrop-blur-3xl rounded-3xl border border-white/20 dark:border-white/5 shadow-xl">
+                  {isRealEstate ? (
+                    <>
+                      {beds && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                            <FaBed size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{beds}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Beds</div>
+                          </div>
+                        </div>
                       )}
-                    </button>
-                  ))}
+                      {baths && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <FaBath size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{baths}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Baths</div>
+                          </div>
+                        </div>
+                      )}
+                      {sqft && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+                            <FaRulerCombined size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{formatMoney(sqft).replace("$", "")}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Sqft</div>
+                          </div>
+                        </div>
+                      )}
+                      {capRate && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                            <FaChartLine size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{capRate}%</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Cap Rate</div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {isPositiveMoney(revenue) && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+                            <FaMoneyBillWave size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(revenue))}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Revenue</div>
+                          </div>
+                        </div>
+                      )}
+                      {isPositiveMoney(ebitda) && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <FaChartLine size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(ebitda))}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">EBITDA</div>
+                          </div>
+                        </div>
+                      )}
+                      {getAttr("years in operation") && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                            <FaBuilding size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{getAttr("years in operation")} yrs</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">In operation</div>
+                          </div>
+                        </div>
+                      )}
+                      {getAttr("employees") && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                            <FaUsers size={18} />
+                          </div>
+                          <div>
+                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{getAttr("employees")}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Employees</div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <div className="ml-auto hidden md:flex items-center gap-2 px-4 py-2 bg-purple-600/10 border border-purple-500/20 rounded-2xl text-purple-600 text-[10px] font-black uppercase tracking-widest">
+                    <IoInformationCircleOutline size={16} /> Verified Listing
+                  </div>
                 </div>
               </div>
+            )}
 
-              {/* Right Column - Product Info */}
-              <div className="space-y-6 animate-slideInRight">
-                {/* Rating and Reviews */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <Stars stars={averageRating} />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {averageRating.toFixed(1)} ({reviews.length} reviews)
-                  </span>
-                </div>
+            <div className={`grid grid-cols-1 ${isSpecialized ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-8 lg:gap-12`}>
+              {/* Left Column - Image Gallery */}
+              <div className={`${isSpecialized ? "lg:col-span-2" : "lg:col-span-1"} space-y-4 animate-slideInLeft`}>
+                {isSpecialized && (
+                  /* Premium Grid Gallery — adapts to how many real photos the listing has */
+                  (() => {
+                    const allPhotos = [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
+                    const heroSrc = activeImage || allPhotos[0] || "";
+                    const sideSrcs = allPhotos.slice(1);
 
-                {/* Product Title */}
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                  {product.name}
-                </h1>
+                    const ImgWithFallback = ({ src, alt, className, onClick }) => (
+                      <div className={`relative w-full h-full ${onClick ? "cursor-pointer" : ""}`} onClick={onClick}>
+                        {src ? (
+                          <img
+                            src={src}
+                            alt={alt}
+                            loading="lazy"
+                            className={className}
+                            onError={(e) => {
+                              const el = e.currentTarget;
+                              el.style.display = "none";
+                              const sib = el.nextElementSibling;
+                              if (sib) sib.classList.remove("hidden");
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={`${src ? "hidden" : ""} absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#13131a] text-gray-500`}
+                          aria-hidden={src ? "true" : "false"}
+                        >
+                          <FaBriefcase className="text-2xl text-gray-600" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">No photo</span>
+                        </div>
+                      </div>
+                    );
 
-                {/* Brand and Category */}
-                <div className="flex flex-wrap gap-3 text-sm">
-                  {product.brand_name && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                      <span className="text-gray-600 dark:text-gray-400">Brand:</span>
-                      <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
-                    </div>
-                  )}
-                  {product.category?.name && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                      <span className="text-gray-600 dark:text-gray-400">Category:</span>
-                      <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category.name}</span>
-                    </div>
-                  )}
-                </div>
+                    if (allPhotos.length <= 1) {
+                      return (
+                        <div className="aspect-[16/10] relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={heroSrc}
+                            alt={product.name || "Listing photo"}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
+                      );
+                    }
 
-                {/* Price Section */}
-                <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 rounded-2xl border border-purple-200 dark:border-purple-800/30 shadow-lg">
-                  <div className="flex items-baseline gap-4 flex-wrap">
-                    <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                      {currency}
-                      {finalUnitPrice.toFixed(2)}
-                    </span>
-                    
-                    {discountPercentage !== "0.00" && Number(discountPercentage) > 0 && (
-                      <>
-                        <span className="text-2xl font-semibold text-gray-400 line-through">
-                          {currency}{finalMrp.toFixed(2)}
-                        </span>
-                        <span className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full">
-                          Save {discountPercentage}%
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  
-                  <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                    Inclusive of all taxes
-                  </p>
-                </div>
+                    return (
+                      <div className="grid grid-cols-4 grid-rows-2 gap-3 aspect-[16/10]">
+                        <div className="col-span-3 row-span-2 relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={heroSrc}
+                            alt={product.name || "Listing photo"}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
 
-                {/* ── SECTION 1: OPTIONS (is_variant=true) — selectable, price-affecting ── */}
-                {Object.keys(variantAttributeMap).length > 0 && (
-                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#9747FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                      </svg>
-                      <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                        Options
-                      </p>
-                      {additionalPrice > 0 && (
-                        <span className="ml-auto text-xs font-semibold text-[#9747FF] bg-[#9747FF]/10 px-2 py-0.5 rounded-full">
-                          +{currency}{additionalPrice.toFixed(2)} selected
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-4 space-y-4">
-                      {Object.entries(variantAttributeMap).map(([attributeName, values]) => {
-                        const isColor = attributeName.toLowerCase() === "color";
-                        const selectedVal = selectedAttributes[attributeName]?.value;
+                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={sideSrcs[0]}
+                            alt={`${product.name || "Listing"} — view 2`}
+                            className="w-full h-full object-cover hover:scale-110 transition-transform"
+                            onClick={sideSrcs[0] ? () => setActiveImage(sideSrcs[0]) : undefined}
+                          />
+                        </div>
 
-                        return (
-                          <div key={attributeName} className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                                {attributeName}
-                              </span>
-                              {selectedVal && (
-                                <span className="text-xs text-[#9747FF] font-medium">
-                                  {selectedVal}
-                                  {selectedAttributes[attributeName]?.additional_price > 0 && (
-                                    <span className="text-gray-400 ml-1">
-                                      (+{currency}{selectedAttributes[attributeName].additional_price})
-                                    </span>
-                                  )}
-                                </span>
-                              )}
-                            </div>
+                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-[#13131a]">
+                          <ImgWithFallback
+                            src={sideSrcs[1]}
+                            alt={`${product.name || "Listing"} — view 3`}
+                            className="w-full h-full object-cover hover:scale-110 transition-transform"
+                            onClick={sideSrcs[1] ? () => setActiveImage(sideSrcs[1]) : undefined}
+                          />
+                          {allPhotos.length > 3 && (
+                            <button
+                              type="button"
+                              onClick={() => sideSrcs[2] && setActiveImage(sideSrcs[2])}
+                              className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold uppercase tracking-widest"
+                            >
+                              +{allPhotos.length - 3} more
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
 
-                            {isColor ? (
-                              /* Color swatches */
-                              <div className="flex flex-wrap gap-2">
-                                {values.map((v, idx) => (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => handleAttributeSelection(attributeName, v)}
-                                    title={v.value}
-                                    className={`relative w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
-                                      selectedVal === v.value
-                                        ? "border-[#9747FF] ring-2 ring-[#9747FF]/40 ring-offset-1 dark:ring-offset-gray-900 scale-110"
-                                        : "border-gray-300 dark:border-gray-600 hover:border-[#9747FF]/50"
-                                    }`}
-                                    style={{ backgroundColor: v.value }}
+                {/* Business / listing snapshot — uses real attributes from the API */}
+                {isSpecialized && (
+                  <div className="space-y-4 mt-2">
+                    {(() => {
+                      const industry = product.subcategory?.name;
+                      const transitionType = getAttr("transition type", "transition support");
+                      const owner = getAttr("owner involvement");
+                      const financing = getAttr("financing options");
+                      const ebitdaMultiple = getAttr("ebitda multiple", "revenue multiple");
+                      const remote = getAttr("remote business", "remote", "web/mobile only");
+                      const litigation = getAttr("pending litigation");
+                      const aiLeverage = getAttr("ai leverageable", "ai-enabled operations", "ai-enabled");
+                      const sopsDocumented = getAttr("sops documented", "documented sops", "sops");
+                      const crmInPlace = getAttr("crm/erp in place", "crm/erp");
+                      const expansion = getAttr("expansion opportunity", "expansion");
+                      const licenses = getAttr("licenses required");
+                      const smartFeatures = (getAttr("smart features", "smart match") || "")
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      const staffRoles = getAttr("staff roles");
+                      const techStack = getAttr("technology stack");
+                      const keyVendors = getAttr("key vendors");
+
+                      // truthy-string helpers for boolean-ish attributes
+                      const yes = (v) => {
+                        const s = String(v || "").toLowerCase();
+                        return s === "true" || s === "yes";
+                      };
+                      const no = (v) => {
+                        const s = String(v || "").toLowerCase();
+                        return s === "false" || s === "no";
+                      };
+
+                      const facts = [
+                        industry && { label: "Industry", value: industry, icon: <FaBriefcase /> },
+                        getAttr("years in operation") && {
+                          label: "Years in operation",
+                          value: `${getAttr("years in operation")}`,
+                          icon: <FaBuilding />,
+                        },
+                        getAttr("employees") && {
+                          label: "Employees",
+                          value: getAttr("employees"),
+                          icon: <FaUsers />,
+                        },
+                        owner && { label: "Owner involvement", value: owner, icon: <FaUserTie /> },
+                        isPositiveMoney(revenue) && {
+                          label: "Annual revenue",
+                          value: `${currency}${formatMoney(parseMoney(revenue))}`,
+                          icon: <FaMoneyBillWave />,
+                        },
+                        isPositiveMoney(ebitda) && {
+                          label: "EBITDA / SDE",
+                          value: `${currency}${formatMoney(parseMoney(ebitda))}`,
+                          icon: <FaChartLine />,
+                        },
+                        ebitdaMultiple && { label: "Multiple", value: `${ebitdaMultiple}x`, icon: <FaChartLine /> },
+                        financing && { label: "Financing", value: financing, icon: <FaHandshake /> },
+                        transitionType && {
+                          label: "Transition",
+                          value: transitionType,
+                          icon: <FaUserTie />,
+                        },
+                        (yes(remote) || no(remote)) && {
+                          label: "Remote",
+                          value: yes(remote) ? "Yes" : "No",
+                          icon: yes(remote) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(remote) ? "good" : "muted",
+                        },
+                        (yes(aiLeverage) || no(aiLeverage)) && {
+                          label: "AI-leverageable",
+                          value: yes(aiLeverage) ? "Yes" : "No",
+                          icon: <FaRobot />,
+                          tone: yes(aiLeverage) ? "good" : "muted",
+                        },
+                        (yes(sopsDocumented) || no(sopsDocumented)) && {
+                          label: "SOPs documented",
+                          value: yes(sopsDocumented) ? "Yes" : "No",
+                          icon: yes(sopsDocumented) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(sopsDocumented) ? "good" : "muted",
+                        },
+                        (yes(crmInPlace) || no(crmInPlace)) && {
+                          label: "CRM / ERP",
+                          value: yes(crmInPlace) ? "In place" : "None",
+                          icon: yes(crmInPlace) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(crmInPlace) ? "good" : "muted",
+                        },
+                        (yes(expansion) || no(expansion)) && {
+                          label: "Expansion upside",
+                          value: yes(expansion) ? "Yes" : "No",
+                          icon: yes(expansion) ? <FaCheckCircle /> : <FaTimesCircle />,
+                          tone: yes(expansion) ? "good" : "muted",
+                        },
+                        licenses && { label: "Licenses required", value: licenses, icon: <FaBalanceScale /> },
+                        litigation && {
+                          label: "Pending litigation",
+                          value: litigation,
+                          icon: <FaBalanceScale />,
+                          tone: String(litigation).toLowerCase() === "none" ? "good" : "warn",
+                        },
+                      ].filter(Boolean);
+
+                      const hasAnything =
+                        facts.length > 0 ||
+                        smartFeatures.length > 0 ||
+                        !!staffRoles ||
+                        !!techStack ||
+                        !!keyVendors ||
+                        !!product.short_description ||
+                        !!product.description;
+
+                      if (!hasAnything) return null;
+
+                      const toneClass = (tone) =>
+                        tone === "good"
+                          ? "text-emerald-400"
+                          : tone === "warn"
+                            ? "text-amber-400"
+                            : "text-purple-400";
+
+                      return (
+                        <div className="bg-white dark:bg-[#111]/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-white/10 shadow-xl p-6 sm:p-8 space-y-8">
+                          <div>
+                            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-4">
+                              {isBusiness ? "Business snapshot" : "Listing snapshot"}
+                            </h2>
+
+                            {facts.length > 0 && (
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                {facts.map((f, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5"
                                   >
-                                    {selectedVal === v.value && (
-                                      <svg className="absolute inset-0 m-auto w-4 h-4 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              /* Selectable chips */
-                              <div className="flex flex-wrap gap-2">
-                                {values.map((v, idx) => (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => handleAttributeSelection(attributeName, v)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border-2 transition-all duration-200 ${
-                                      selectedVal === v.value
-                                        ? "bg-[#9747FF] text-white border-[#9747FF] shadow-md shadow-[#9747FF]/20"
-                                        : "bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#9747FF] hover:text-[#9747FF] dark:hover:border-[#9747FF] dark:hover:text-[#9747FF]"
-                                    }`}
-                                  >
-                                    {v.value}
-                                    {v.additional_price > 0 && (
-                                      <span className={`ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
-                                        selectedVal === v.value
-                                          ? "bg-white/20 text-white"
-                                          : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                      }`}>
-                                        +{currency}{v.additional_price}
-                                      </span>
-                                    )}
-                                  </button>
+                                    <div className={`text-base mt-0.5 ${toneClass(f.tone)}`}>{f.icon}</div>
+                                    <div className="min-w-0">
+                                      <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 truncate">
+                                        {f.label}
+                                      </div>
+                                      <div className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                        {f.value}
+                                      </div>
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             )}
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          {smartFeatures.length > 0 && (
+                            <div>
+                              <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3 flex items-center gap-2">
+                                <FaTags className="text-purple-500" /> Smart highlights
+                              </h3>
+                              <div className="flex flex-wrap gap-2">
+                                {smartFeatures.map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-300"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(staffRoles || techStack || keyVendors) && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {staffRoles && (
+                                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Staff & roles</div>
+                                  <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{staffRoles}</div>
+                                </div>
+                              )}
+                              {techStack && (
+                                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Tech stack</div>
+                                  <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{techStack}</div>
+                                </div>
+                              )}
+                              {keyVendors && (
+                                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Key vendors</div>
+                                  <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{keyVendors}</div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {(product.short_description || product.description) && (
+                            <div>
+                              <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3">
+                                {isBusiness ? "About this business" : "About this listing"}
+                              </h3>
+                              <div className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200 leading-relaxed">
+                                {parse(product.short_description || product.description || "")}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 
-                {/* ── SECTION 2: SPECIFICATIONS (is_variant=false) — read-only info grid ── */}
-                {Object.keys(specAttributeMap).length > 0 && (
-                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                      <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                        Specifications
-                      </p>
+                {!isSpecialized && (
+                  /* Standard E-commerce Gallery */
+                  <>
+                    <div className="relative group bg-white dark:bg-gray-900/50 rounded-2xl overflow-hidden shadow-2xl border border-purple-100 dark:border-purple-900/30 backdrop-blur-sm">
+                      <div className="aspect-square flex items-center justify-center p-8 bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-900/50 dark:to-purple-950/30">
+                        <img
+                          className="w-full h-full object-contain cursor-crosshair transition-transform duration-500 group-hover:scale-105"
+                          src={activeImage || product.image1}
+                          alt={product.name}
+                          onMouseOut={() => setViewMainImg(false)}
+                          onMouseMove={handleMouseMove}
+                        />
+                      </div>
+                      
+                      {/* Stock Badge */}
+                      {product.quantity > 0 ? (
+                        <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg animate-bounce">
+                          In Stock
+                        </div>
+                      ) : (
+                        <div className="absolute top-4 left-4 px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                          Out of Stock
+                        </div>
+                      )}
+
+                      {/* Discount Badge */}
+                      {discountPercentage !== "0.00" && (
+                        <div className="absolute bottom-4 left-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full shadow-lg">
+                          {discountPercentage}% OFF
+                        </div>
+                      )}
                     </div>
-                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                      {Object.entries(specAttributeMap).map(([attrName, values], idx) => {
-                        const displayValue = values.map((v) => v.value).join(", ");
-                        return (
-                          <div
-                            key={attrName}
-                            className={`grid grid-cols-2 gap-3 px-4 py-2.5 text-sm ${
-                              idx % 2 === 0
-                                ? "bg-white dark:bg-transparent"
-                                : "bg-gray-50/60 dark:bg-gray-800/30"
-                            }`}
-                          >
-                            <span className="font-medium text-gray-500 dark:text-gray-400 capitalize">
-                              {attrName}
-                            </span>
-                            <span className="font-semibold text-gray-800 dark:text-gray-100 break-words">
-                              {displayValue}
-                            </span>
+
+                    {/* Thumbnail Gallery */}
+                    <div className="grid grid-cols-4 gap-3">
+                      {[product.image1, product.image2, product.image3, product.image4].filter(Boolean).map((img, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setActiveImage(img)}
+                          className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-105 ${
+                            activeImage === img
+                              ? "ring-4 ring-purple-500 shadow-xl scale-105"
+                              : "ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-purple-300 dark:hover:ring-purple-700"
+                          }`}
+                        >
+                          <img
+                            src={img}
+                            alt={`Product view ${index + 1}`}
+                            className="w-full h-full object-cover bg-white dark:bg-gray-900"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Right Column - Product Info */}
+              <div className="space-y-6 animate-slideInRight">
+                {isSpecialized ? (
+                  /* Specialized Action Panel */
+                  <div className="space-y-6">
+                    <div className="p-8 bg-[#111]/90 dark:bg-[#111]/90 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-2xl">
+                      <h3 className="text-lg font-black text-white uppercase tracking-widest mb-6 border-b border-white/5 pb-4 flex items-center gap-3">
+                        <FaEnvelope className="text-purple-500" /> Interested?
+                      </h3>
+                      <div className="space-y-4">
+                        <button
+                          onClick={handleContactAgent}
+                          disabled={isDealClosed || contactingAgent}
+                          className={`w-full py-5 ${isDealClosed ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                        >
+                          {contactingAgent ? (
+                            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <IoChatbubbleOutline size={16} />
+                          )}
+                          {isDealClosed
+                            ? "Deal Closed"
+                            : contactingAgent
+                              ? "Opening chat…"
+                              : isBusiness
+                                ? "Message Lister"
+                                : "Message Agent"}
+                        </button>
+
+                        {activeVisit?.status === "vendor_reschedule_pending" && activeVisit?.pending_reschedule_at && (
+                          <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-4 space-y-3">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-purple-200">
+                              New time proposed
+                            </p>
+                            <p className="text-xs text-gray-300">
+                              {new Date(activeVisit.pending_reschedule_at).toLocaleString(undefined, {
+                                weekday: "short",
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => respondToVendorReschedule(true)}
+                                className="flex-1 py-3 rounded-xl bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => respondToVendorReschedule(false)}
+                                className="flex-1 py-3 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-white"
+                              >
+                                Reject (refund)
+                              </button>
+                            </div>
                           </div>
-                        );
-                      })}
+                        )}
+
+                        {activeVisit?.status === "buyer_reschedule_pending" && (
+                          <p className="text-[10px] text-gray-400 px-1">
+                            You proposed a new time. Waiting for the listing agent to confirm.
+                          </p>
+                        )}
+
+                        <button 
+                          onClick={() => {
+                            if (isDealClosed) return;
+                            if (activeVisit?.status === "pending_payment") {
+                              continueVisitPayment();
+                              return;
+                            }
+                            if (activeVisit?.status === "buyer_reschedule_pending") return;
+                            if (canBuyerReschedule) openRescheduleVisitModal();
+                            else openScheduleVisitModal();
+                          }}
+                          disabled={
+                            isDealClosed ||
+                            activeVisit?.status === "buyer_reschedule_pending" ||
+                            activeVisit?.status === "vendor_reschedule_pending"
+                          }
+                          className={`w-full py-5 ${isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending" ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                        >
+                          <FaCalendarAlt /> {isDealClosed ? "Deal Closed" : scheduleButtonLabel}
+                        </button>
+
+                        {activeVisit?.status === "accepted" && (
+                          <button
+                            type="button"
+                            onClick={() => setDisputeModalOpen(true)}
+                            className="w-full py-3 rounded-2xl border border-red-500/30 text-red-300 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10"
+                          >
+                            Raise a dispute
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                            {isBusiness ? "Listed by" : "Listing Agent"}
+                          </span>
+                          <span className="text-xs font-black text-white text-right truncate">
+                            {product.vendor?.store_name ||
+                              [product.vendor?.first_name, product.vendor?.last_name].filter(Boolean).join(" ") ||
+                              "Pinksurfing seller"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                            {isBusiness ? "Listing ID" : "Property ID"}
+                          </span>
+                          <span className="text-xs font-black text-white">#PS-{product.id?.slice(-6).toUpperCase()}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                {/* Short Description */}
-                {product?.short_description && (
-                  <div className="p-5 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Description</h3>
-                    <div className="
-                      text-sm text-gray-600 dark:text-gray-400 leading-relaxed
-                      [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2
-                      [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2
-                      [&_li]:mb-1 [&_strong]:font-semibold [&_strong]:text-gray-800 dark:[&_strong]:text-gray-200
-                      [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-2
-                      [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2
-                      [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-1
-                      [&_a]:text-purple-600 [&_a]:underline
-                    ">
-                      {parse(product.short_description)}
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        toast.error("You are not Signed In", { position: "top-right" });
-                        sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                        setIsProfileOpen(true);
-                        setTimeout(() => setIsProfileOpen(false), 10000);
-                        return;
-                      }
-                      AddtoCart();
-                    }}
-                    disabled={product.quantity === 0}
-                    className="flex-1 group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100"
-                  >
-                    <span className="relative z-10 flex items-center justify-center gap-3">
-                      <IoCart size={24} />
-                      Add to Cart
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                  </button>
-
-                  {product.quantity > 0 && (
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          toast.error("You are not Signed In", { position: "top-right" });
-                          sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                          setIsProfileOpen(true);
-                          setTimeout(() => setIsProfileOpen(false), 10000);
-                          return;
-                        }
-                        setIsSingleOrderFormOpen(true);
-                        setSingleOrderProduct({
-                          ...product,
-                          // Displayed prices (optimistic, for UI only)
-                          unit_price: finalUnitPrice,
-                          mrp: finalMrp,
-                          original_unit_price: product.unit_price,
-                          original_mrp: product.mrp,
-                          additional_price: additionalPrice,
-                          // Variant selections sent to backend for server-side price validation
-                          selected_variants: Object.entries(selectedAttributes).map(
-                            ([name, attr]) => ({ name, value: attr.value })
-                          ),
-                          quantity: productQty,
-                        });
-                        setIsProfileOpen(false);
-                      }}
-                      className="flex-1 px-8 py-4 bg-white dark:bg-gray-900 text-purple-600 dark:text-purple-400 font-bold rounded-xl border-2 border-purple-600 dark:border-purple-500 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-600 dark:hover:text-white transition-all duration-300 hover:shadow-2xl hover:scale-105"
-                    >
-                      Buy Now
-                    </button>
-                  )}
-                </div>
-
-                {/* Wishlist and Share */}
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-900/50 dark:to-purple-950/30 rounded-2xl border border-gray-200 dark:border-gray-800">
-                  <button
-                    onClick={handleWishlistClick}
-                    className="flex items-center gap-3 group"
-                  >
-                    <FaHeart
-                      id={`heart-${product.id}`}
-                      className={`transition-all duration-300 text-2xl group-hover:scale-125 ${
-                        wishlistProducts.find((i) => i.id === product.id)
-                          ? "text-red-500 animate-pulse"
-                          : "text-gray-400 group-hover:text-red-400"
-                      }`}
-                    />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400">
-                      {wishlistProducts.find((i) => i.id === product.id) ? "In Wishlist" : "Add to Wishlist"}
-                    </span>
-                  </button>
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Share:</span>
-                    <div className="flex items-center gap-2">
-                      <button onClick={handleShareClick} className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all duration-300 hover:scale-110">
-                        <FaShare className="text-gray-600 dark:text-gray-400 hover:text-purple-600" size={16} />
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={handleWishlistClick}
+                        aria-pressed={!!wishlistProducts.find((i) => i.id === product.id)}
+                        className="group flex items-center gap-3 p-4 rounded-3xl bg-white/5 border border-white/10 hover:border-pink-500/40 hover:bg-pink-500/[0.06] transition-all"
+                      >
+                        <div className="w-11 h-11 rounded-2xl bg-pink-500/15 flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <FaHeart
+                            id={`heart-${product.id}`}
+                            size={18}
+                            className={
+                              wishlistProducts.find((i) => i.id === product.id)
+                                ? "text-pink-500"
+                                : "text-gray-400"
+                            }
+                          />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-[12px] font-black text-white uppercase tracking-widest leading-tight">
+                            {wishlistProducts.find((i) => i.id === product.id)
+                              ? "Saved"
+                              : "Save listing"}
+                          </div>
+                          <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                            Add to your wishlist
+                          </div>
+                        </div>
                       </button>
-                      <button onClick={handleCopy} className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all duration-300 hover:scale-110">
-                        <FaCopy className="text-gray-600 dark:text-gray-400 hover:text-purple-600" size={16} />
+
+                      <button
+                        type="button"
+                        onClick={handleShareClick}
+                        className="group flex items-center gap-3 p-4 rounded-3xl bg-white/5 border border-white/10 hover:border-purple-500/40 hover:bg-purple-500/[0.06] transition-all"
+                      >
+                        <div className="w-11 h-11 rounded-2xl bg-purple-500/15 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform">
+                          <FaShare size={16} />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-[12px] font-black text-white uppercase tracking-widest leading-tight">
+                            Share
+                          </div>
+                          <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                            Send or copy link
+                          </div>
+                        </div>
                       </button>
-                      <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all duration-300 hover:scale-110"
-                      >
-                        <FaFacebook className="text-gray-600 dark:text-gray-400 hover:text-blue-600" size={16} />
-                      </a>
-                      <a
-                        href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent("Check out this product on Pinksurfing")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all duration-300 hover:scale-110"
-                      >
-                        <FaTwitter className="text-gray-600 dark:text-gray-400 hover:text-blue-400" size={16} />
-                      </a>
-                      <a
-                        href={`https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(currentUrl)}&media=${encodeURIComponent(product.image1)}&description=${encodeURIComponent(product.name)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-all duration-300 hover:scale-110"
-                      >
-                        <FaPinterest className="text-gray-600 dark:text-gray-400 hover:text-red-600" size={16} />
-                      </a>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  /* Standard E-commerce Info */
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <Stars stars={averageRating} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {averageRating.toFixed(1)} ({reviews.length} reviews)
+                      </span>
+                    </div>
+
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+                      {product.name}
+                    </h1>
+
+                    <div className="flex flex-wrap gap-3 text-sm">
+                      {product.brand_name && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                          <span className="text-gray-600 dark:text-gray-400">Brand:</span>
+                          <span className="font-semibold text-purple-700 dark:text-purple-300">{product.brand_name}</span>
+                        </div>
+                      )}
+                      {product.category?.name && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                          <span className="text-gray-600 dark:text-gray-400">Category:</span>
+                          <span className="font-semibold text-blue-700 dark:text-blue-300">{product.category.name}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Standard Price Section */}
+                    <div className="relative overflow-hidden p-8 bg-white dark:bg-gray-900/40 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl group">
+                      <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-purple-500/20 transition-all duration-700"></div>
+                      <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-baseline gap-4 flex-wrap">
+                          <span className="text-5xl sm:text-6xl font-black tracking-tighter text-gray-900 dark:text-white">
+                            {currency}{formatMoney(finalUnitPrice)}
+                          </span>
+                        </div>
+                        {isDealClosed && (
+                          <div className="px-6 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-sm rounded-xl">
+                            Deal Closed
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Standard Action Zone */}
+                    <div className="flex flex-col gap-4 py-4">
+                      <div className="flex flex-col xl:flex-row gap-4">
+                        {!isOwner ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                if (!user) {
+                                  toast.error("You are not Signed In", { position: "top-right" });
+                                  sessionStorage.setItem("redirectAfterLogin", window.location.href);
+                                  setIsProfileOpen(true);
+                                  setTimeout(() => setIsProfileOpen(false), 10000);
+                                  return;
+                                }
+                                AddtoCart();
+                              }}
+                              disabled={product.quantity === 0 || isDealClosed}
+                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
+                            >
+                              <span className="relative z-10 flex items-center justify-center gap-3">
+                                {isDealClosed ? (
+                                  <>Deal Closed</>
+                                ) : (
+                                  <>
+                                    <IoCart size={16} />
+                                    Add to bag
+                                  </>
+                                )}
+                              </span>
+                              {!isDealClosed && <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>}
+                            </button>
+
+                            {!isDealClosed && product.quantity > 0 && (
+                              <button
+                                onClick={() => {
+                                  if (!user) {
+                                    toast.error("You are not Signed In", { position: "top-right" });
+                                    sessionStorage.setItem("redirectAfterLogin", window.location.href);
+                                    setIsProfileOpen(true);
+                                    setTimeout(() => setIsProfileOpen(false), 10000);
+                                    return;
+                                  }
+                                  setSingleOrderProduct({
+                                    ...product,
+                                    unit_price: finalUnitPrice,
+                                    mrp: finalMrp,
+                                    original_unit_price: product.unit_price,
+                                    original_mrp: product.mrp,
+                                    additional_price: additionalPrice,
+                                    selected_variants: Object.entries(selectedAttributes).map(
+                                      ([name, attr]) => ({ name, value: attr.value })
+                                    ),
+                                    quantity: productQty,
+                                  });
+                                  setIsSingleOrderFormOpen(true);
+                                }}
+                                className="flex-1 px-8 py-4 bg-purple-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl transition-all duration-500 hover:bg-purple-700 hover:shadow-2xl hover:shadow-purple-500/20 active:scale-95 shadow-xl flex items-center justify-center gap-3"
+                              >
+                                <IoFlash size={16} />
+                                Buy now — {currency}{formatMoney(finalUnitPrice)}
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex-1 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
+                            Your Product
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between p-5 bg-white dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-white/5 shadow-md">
+                        <button
+                          onClick={handleWishlistClick}
+                          className="flex items-center gap-3 group"
+                        >
+                          <FaHeart
+                            id={`heart-${product.id}`}
+                            className={`transition-all duration-300 text-xl group-hover:scale-125 ${
+                              wishlistProducts.find((i) => i.id === product.id)
+                                ? "text-red-500 animate-pulse"
+                                : "text-gray-400 group-hover:text-red-400"
+                            }`}
+                          />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 group-hover:text-purple-600 transition-colors">
+                            {wishlistProducts.find((i) => i.id === product.id) ? "In Wishlist" : "Save for later"}
+                          </span>
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleShareClick} className="p-2.5 bg-gray-50 dark:bg-white/5 rounded-lg transition-all hover:scale-110 hover:bg-purple-50">
+                            <FaShare className="text-gray-500" size={12} />
+                          </button>
+                          <button onClick={handleCopy} className="p-2.5 bg-gray-50 dark:bg-white/5 rounded-lg transition-all hover:scale-110 hover:bg-purple-50">
+                            <FaCopy className="text-gray-600 dark:text-gray-400" size={12} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Trust Badges */}
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          { icon: "🛡️", label: "Secure" },
+                          { icon: "🔄", label: "7 Day" },
+                          { icon: "✨", label: "Authentic" }
+                        ].map((badge, i) => (
+                          <div key={i} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
+                            <span className="text-lg">{badge.icon}</span>
+                            <span className="text-[7px] font-black uppercase tracking-[0.1em] text-gray-400">{badge.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Full Description (long HTML from vendor) */}
-            {product?.description && (
-              <div className="mt-12 bg-white dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Full Product Details</h2>
+            {/* SECTION 3: PRODUCT INFO TABS (Story & Specs) */}
+            <div className="mt-16 relative overflow-hidden bg-white dark:bg-[#111]/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-100 dark:border-white/10 shadow-xl transition-all duration-500">
+                  {/* Tab Navigation */}
+                  <div className="flex border-b border-gray-100 dark:border-white/5">
+                    {[
+                      { id: "story", label: "Product Story", icon: "✨" },
+                      { id: "specs", label: "Specifications", icon: "📋" }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 flex items-center justify-center gap-3 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative ${
+                          activeTab === tab.id 
+                            ? "text-purple-600 dark:text-purple-400" 
+                            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        }`}
+                      >
+                        <span className="text-sm">{tab.icon}</span>
+                        {tab.label}
+                        {activeTab === tab.id && (
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600 animate-fadeIn"></div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+              {/* Tab Content */}
+              <div className="p-10 sm:p-12">
+                {activeTab === "story" ? (
+                  <div className="animate-fadeIn max-w-4xl mx-auto">
+                    {product?.short_description ? (
+                      <div className="
+                        text-[16px] text-gray-800 dark:text-white dark:[&_*]:!text-white whitespace-pre-line leading-relaxed
+                        [&_p]:mb-6
+                        [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
+                        [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6
+                        [&_li]:mb-3
+                        [&_strong]:font-black
+                        [&_h1]:text-3xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-6
+                        [&_h2]:text-2xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-6
+                        [&_h3]:text-xl [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-4
+                        [&_a]:text-purple-600 [&_a]:underline transition-all
+                      ">
+                        {formatTextToParagraphs(product?.short_description)}
+                      </div>
+
+                    ) : (
+                      <p className="text-sm text-gray-500 italic py-12 text-center">No product story available.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="animate-fadeIn">
+                    {Object.keys(specAttributeMap).length > 0 ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-12 gap-y-10">
+                        {Object.entries(specAttributeMap).map(([attrName, values]) => {
+                          const displayValue = values.map((v) => v.value).join(", ");
+                          const isBoolean = displayValue.toLowerCase() === "true" || displayValue.toLowerCase() === "false";
+                          const isTrue = displayValue.toLowerCase() === "true";
+                          
+                          return (
+                            <div key={attrName} className="flex flex-col gap-2.5 group">
+                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-400 group-hover:text-purple-500 transition-colors">
+                                {attrName}
+                              </span>
+                              
+                              <div className="flex items-center gap-3">
+                                {isBoolean ? (
+                                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider ${
+                                    isTrue 
+                                      ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+                                      : "bg-gray-100 dark:bg-white/5 text-gray-400"
+                                  }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-400"}`} />
+                                    {isTrue ? "Yes" : "No"}
+                                  </div>
+                                ) : (
+                                  <p className="text-[15px] font-bold text-gray-900 dark:text-white leading-tight">
+                                    {displayValue}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic py-12 text-center">No specifications available.</p>
+                    )}
+                  </div>
+                    )}
+                  </div>
                 </div>
-                <div className="px-6 py-6
-                  text-sm text-gray-700 dark:text-gray-300 leading-relaxed
-                  [&_p]:mb-3 [&_p]:leading-relaxed
-                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ul]:space-y-1
-                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_ol]:space-y-1
-                  [&_li]:leading-relaxed
-                  [&_strong]:font-semibold [&_strong]:text-gray-900 dark:[&_strong]:text-white
-                  [&_em]:italic
-                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900 dark:[&_h1]:text-white [&_h1]:mb-3 [&_h1]:mt-4
-                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 dark:[&_h2]:text-white [&_h2]:mb-2 [&_h2]:mt-4
-                  [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-gray-900 dark:[&_h3]:text-white [&_h3]:mb-2 [&_h3]:mt-3
-                  [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-1
-                  [&_blockquote]:border-l-4 [&_blockquote]:border-purple-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 dark:[&_blockquote]:text-gray-400 [&_blockquote]:mb-3
-                  [&_a]:text-purple-600 dark:[&_a]:text-purple-400 [&_a]:underline [&_a]:hover:text-purple-700
-                  [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
-                  [&_th]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:bg-purple-50 dark:[&_th]:bg-purple-900/20 [&_th]:font-semibold [&_th]:border [&_th]:border-gray-200 dark:[&_th]:border-gray-700
-                  [&_td]:px-3 [&_td]:py-2 [&_td]:border [&_td]:border-gray-200 dark:[&_td]:border-gray-700
-                  [&_img]:rounded-xl [&_img]:max-w-full [&_img]:my-3
-                ">
-                  {parse(product.description)}
-                </div>
-              </div>
-            )}
+
 
             {/* Reviews and Recommendations */}
             <div className="mt-16 space-y-12">
@@ -933,7 +1771,78 @@ const ProductDetailPage = () => {
         )}
       </section>
 
-      <style jsx>{`
+      <VisitScheduleModal
+        open={visitModalOpen}
+        onClose={() => {
+          setVisitModalOpen(false);
+          setRescheduleVisitId(null);
+        }}
+        accessToken={cookies.access_token}
+        productId={product.id}
+        visitKind={visitKindApi}
+        rescheduleVisitId={rescheduleVisitId}
+        onSuccess={async () => {
+          if (!cookies.access_token || !product?.id) return;
+          try {
+            const data = await getVisitForProduct(cookies.access_token, product.id);
+            setActiveVisit(data.visit || null);
+          } catch {
+            setActiveVisit(null);
+          }
+        }}
+      />
+
+      {disputeModalOpen && (
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75"
+          onClick={() => !disputeBusy && setDisputeModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 p-6 text-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <h3 className="text-lg font-bold mb-2">Raise a dispute</h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Describe the issue (no-show, fraud, etc.). Our team at Pinksurfing will review. Minimum 10 characters.
+            </p>
+            <textarea
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              rows={5}
+              className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm mb-4"
+              placeholder="What happened?"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={disputeBusy}
+                onClick={() => {
+                  if (!disputeBusy) {
+                    setDisputeModalOpen(false);
+                    setDisputeReason("");
+                  }
+                }}
+                className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={disputeBusy || disputeReason.trim().length < 10}
+                onClick={submitDispute}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold disabled:opacity-40"
+              >
+                {disputeBusy ? "Submitting…" : "Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes slideInLeft {
           from {
             opacity: 0;
@@ -976,7 +1885,7 @@ const ProductDetailPage = () => {
         .animate-fadeIn {
           animation: fadeIn 0.8s ease-out;
         }
-      `}</style>
+      `}} />
     </>
   );
 };

@@ -43,57 +43,85 @@ export const AuthProvider = ({ children }) => {
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
   const [isUserWalletOpen, setIsUserWalletOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [pendingChatConversation, setPendingChatConversation] = useState(null);
+
+  const openChatWithConversation = (conversation) => {
+    if (conversation) setPendingChatConversation(conversation);
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setIsChatOpen(false);
+    setPendingChatConversation(null);
+  };
 
   const Logout = async () => {
     try {
       console.log("Logging out user...");
-      // Get the token before clearing
       const token = cookies.access_token;
-      console.log("Token to be used for logout:", token);
-      // Call server logout API if token exists
-      try {
-        console.log("Calling server logout API");
-        const response = await axios.post(
-          `https://auth.pinksurfing.com/api/logout/`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token.replaceAll('"', "")}`,
-            },
-          }
-        );
-        console.log("Server logout successful", response.data);
-      } catch (error) {
-        console.error("Server logout error:", error);
-        // Continue with client-side cleanup even if server logout fails
+      
+      // 1. Attempt server-side logout
+      if (token) {
+        try {
+          await axios.post(
+            `https://auth.pinksurfing.com/api/logout/`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token.replaceAll('"', "")}`,
+              },
+            }
+          );
+        } catch (error) {
+          console.error("Server logout error:", error);
+        }
       }
-      // Clear subdomain cookies
+
+      // 2. Clear cookies using multiple methods to be sure
       const domain = window.location.hostname.includes('localhost')
         ? undefined
         : '.pinksurfing.com';
 
+      // Method A: Using react-cookie's removeCookie
+      const cookieOptions = { path: "/" };
+      const domainOptions = { path: "/", domain: domain };
+      
+      removeCookie("access_token", cookieOptions);
+      removeCookie("refresh_token", cookieOptions);
+      removeCookie("user_id", cookieOptions);
+      
+      if (domain) {
+        removeCookie("access_token", domainOptions);
+        removeCookie("refresh_token", domainOptions);
+        removeCookie("user_id", domainOptions);
+      }
+
+      // Method B: Manual deletion for safety
       deleteCookie("access_token", domain);
       deleteCookie("refresh_token", domain);
       deleteCookie("user_id", domain);
+      deleteCookie("access_token");
+      deleteCookie("refresh_token");
 
+      // 3. Clear local storage and state
+      localStorage.clear();
+      sessionStorage.clear();
+      setUser("");
+      setAuthToken("");
 
-      toast.success("Log Out Successfull", {
+      toast.success("Logged out successfully", {
         position: "top-right",
         autoClose: 2500,
       });
 
-      setUser("");
-      setAuthToken("");
+      // 4. Redirect
       navigate("/");
+      // Force a reload to ensure all states are reset if needed, 
+      // but navigate should usually be enough.
+      // window.location.href = "/"; 
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Error during logout, but local session cleared");
-
-      // Still clear local data even if there's an error
-      const allCookies = Object.keys(cookies);
-      allCookies.forEach((cookieName) => {
-        removeCookie(cookieName, { path: "/" });
-      });
       localStorage.clear();
       setUser("");
       setAuthToken("");
@@ -163,7 +191,7 @@ export const AuthProvider = ({ children }) => {
         // Store new access token in both cookie and localStorage
         setCookie("access_token", newAccessToken, {
           path: "/",
-          expires: new Date(Date.now() + 7 * 60 * 60 * 1000),
+          expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
           secure: true,
           sameSite: "strict",
         });
@@ -308,6 +336,12 @@ export const AuthProvider = ({ children }) => {
         singleOrderProduct,
         setSingleOrderProduct,
         Logout,
+        isChatOpen,
+        setIsChatOpen,
+        pendingChatConversation,
+        setPendingChatConversation,
+        openChatWithConversation,
+        closeChat,
       }}
     >
       {children}

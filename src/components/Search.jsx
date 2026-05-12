@@ -44,7 +44,7 @@ const SearchForm = () => {
         isDarkMode ? "bg-[#0E0F13] text-white" : "bg-white text-black"
       }`}
     >
-      <div
+      {/* <div
         onClick={() => {
           setIsMobileCategoryOpen(isMobileCategoryOpen === true ? false : true);
         }}
@@ -52,7 +52,7 @@ const SearchForm = () => {
       >
         <IoMenuOutline className="text-white text-[21px] sm:text-[22px] dark:text-white" />
         <p className="hidden sm:block w-max text-white">Shop By Categories</p>
-      </div>
+      </div> */}
 
       <form
         className={`flex items-start gap-5 md:w-1/3 rounded-lg ${

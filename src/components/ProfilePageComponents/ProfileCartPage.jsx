@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { dataContext } from "../../context/dataContext";
 import { IoRemoveCircle } from "react-icons/io5";
+import { formatMoney } from "../../utils/formatMoney";
 
 export default function ProfileCartPage() {
     const { isCartOpen, setIsCartOpen, currency, isDarkMode } =
@@ -140,229 +141,164 @@ export default function ProfileCartPage() {
     }
 
     return (
-
-        <div className="font-sen">
-            <div className=" overflow-hidden">
-                <div className="border border-gray-500  rounded-lg pt-2 ">
-                            <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-[#0E0F13]   ">
-                                <div className="flex-1    px-4 py-6 sm:px-6">
-                                    <div className="flex  items-start  justify-between">
-                                        <div className="text-lg font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                            Shopping cart
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-8 ">
-                                        <div className="flow-root ">
-                                            <ul
-                                                role="list"
-                                                className="-my-6 divide-y  divide-gray-200"
-                                            >
-                                                {cartProducts.map((product, index) => (
-                                                    <li
-                                                        key={product.product.id + index}
-                                                        className="flex items-center py-6 dark:border-white"
-                                                    >
-                                                        <div className=" h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                                                            <img
-                                                                src={`${product.product.image1}`}
-                                                                // src="/signin.jpg"
-                                                                alt={product.product.imageAlt}
-                                                                className="h-full w-full object-cover object-center"
-                                                            />
-                                                        </div>
-
-                                                        <div className="ml-4  flex flex-1 flex-col">
-                                                            <div>
-                                                                <div className="flex justify-between text-[15px] sm:text-base font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                                                    <h3 className="whitespace-normal">
-                                                                        <a href={product.product.href}>
-                                                                            {product.product.name.length > 17 ? `${product.product.name.slice(0, 17)}...` : product.product.name}
-                                                                        </a>
-                                                                    </h3>
-                                                                    <p className="ml-4">
-                                                                        {currency}{" "}
-                                                                        {product.additional_price > 0
-                                                                            ? Number(product.product.unit_price) +
-                                                                            Number(product.additional_price)
-                                                                            : product.product.unit_price}
-                                                                    </p>
-                                                                </div>
-                                                                <p className="mt-1 text-[13.4px] sm:text-sm text-gray-500 whitespace-normal">
-                                                                    {htmlToText(
-                                                                        product.product.short_description
-                                                                    ).slice(0, 10)}
-                                                                    {product.product.short_description
-                                                                        .length > 10
-                                                                        ? "..."
-                                                                        : ""}
-                                                                </p>
-                                                                <p className="text-[12.4px] sm:text-[13px] text-gray-500 whitespace-normal">
-                                                                    {/* Additional Price: {currency}
-                                    {product.additional_price > 0 ? product.additional_price : product.product.unit_price} */}
-                                                                </p>
-
-                                                                {/* )} */}
-                                                            </div>
-                                                            <div className="flex flex-1 items-end justify-between text-sm">
-                                                                <div className="text-gray-500">
-                                                                    {/* Qty {product.quantity} */}
-                                                                    {/* increment / decrement --------------------------------------------------------------------------------- */}
-                                                                    <form className="max-w-xs flex items-center gap-2 mx-auto">
-                                                                        <label
-                                                                            htmlFor="counter-input"
-                                                                            className=" block mb-1 text-xs font-medium text-gray-900 dark:text-[#f5f5f5]"
-                                                                        >
-                                                                            Qty:
-                                                                        </label>
-                                                                        <div className="relative flex items-center">
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    if (product.quantity === 1) {
-                                                                                        return RemoveCartProduct(
-                                                                                            product.product.id
-                                                                                        );
-                                                                                    }
-                                                                                    DecrementQty(product.product.id);
-                                                                                }}
-                                                                                type="button"
-                                                                                id="decrement-button"
-                                                                                data-input-counter-decrement="counter-input"
-                                                                                className="flex-shrink-0 bg-gray-200 dark:bg-black disabled:hidden  inline-flex items-center justify-center border border-gray-300 rounded-md h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                                                                            >
-                                                                                <svg
-                                                                                    className="w-2.5 h-2.5 text-gray-900 dark:text-[#f5f5f5] "
-                                                                                    aria-hidden="true"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    fill="none"
-                                                                                    viewBox="0 0 18 2"
-                                                                                >
-                                                                                    <path
-                                                                                        stroke="currentColor"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth="2"
-                                                                                        d="M1 1h16"
-                                                                                    />
-                                                                                </svg>
-                                                                            </button>
-                                                                            <span
-                                                                                type="text"
-                                                                                id="counter-input"
-                                                                                className="flex-shrink-0 px-3 text-gray-900 dark:text-[#f5f5f5] border-0 bg-transparent text-sm font-normal focus:outline-none focus:ring-0 max-w-[2.5rem] text-center"
-                                                                            >
-                                                                                {product.quantity}
-                                                                            </span>
-                                                                            <button
-                                                                                disabled={
-                                                                                    product.quantity ===
-                                                                                    product.product.quantity
-                                                                                }
-                                                                                onClick={() => {
-                                                                                    IncrementQty(product.product.id);
-                                                                                }}
-                                                                                type="button"
-                                                                                id="increment-button"
-                                                                                data-input-counter-increment="counter-input"
-                                                                                className="flex-shrink-0 disabled:hidden  bg-gray-200 dark:bg-black  inline-flex items-center justify-center border border-gray-300 rounded-md h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                                                                            >
-                                                                                <svg
-                                                                                    className="w-2.5 h-2.5 text-gray-900 dark:text-[#f5f5f5]"
-                                                                                    aria-hidden="true"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    fill="none"
-                                                                                    viewBox="0 0 18 18"
-                                                                                >
-                                                                                    <path
-                                                                                        stroke="currentColor"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth="2"
-                                                                                        d="M9 1v16M1 9h16"
-                                                                                    />
-                                                                                </svg>
-                                                                            </button>
-                                                                        </div>
-                                                                    </form>{" "}
-                                                                </div>
-
-                                                                <div className="flex">
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            RemoveCartProduct(product.product.id);
-                                                                        }}
-                                                                        type="button"
-                                                                        className="font-medium text-[13px] sm:text-sm text-[#fff] hover:text-purple-600"
-                                                                    >
-                                                                        Remove
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
+        <div className="font-sen min-h-screen">
+            <div className="overflow-hidden">
+                <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-8 lg:p-14 shadow-2xl">
+                    <div className="flex h-full flex-col">
+                        <div className="flex-1">
+                            <div className="flex items-end justify-between mb-12 border-b border-white/5 pb-8">
+                                <div className="space-y-1">
+                                    <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em]">Management</p>
+                                    <h2 className="text-4xl font-black text-white tracking-tighter uppercase">
+                                        Shopping Cart
+                                    </h2>
                                 </div>
-                                {cartProducts.length === 0 && (
-                                    <div className=" w-full dark:bg-[#0E0F13] h-full flex   flex-col items-center justify-center">
-                                        <img
-                                            className=" w-[60%] sm:w-[55%] object-contain "
-                                            src="/cartEmpty.svg"
-                                        />
-                                        <p className=" text-[16px] sm:text-[17px] dark:text-white mt-1 font-semibold">
-                                            Your Cart is Empty
-                                        </p>
-                                        <button
-                                            onClick={() => {
-                                                navigate("/shoppingMall/all");
-                                                setIsCartOpen(false);
-                                            }}
-                                            className=" bg-[#6A1BBE]   px-3 text-sm sm:text-base py-1.5 rounded-md text-white mt-2"
-                                        >
-                                            Shop Now{" "}
-                                        </button>
-                                    </div>
-                                )}
+                                <span className="text-xs font-black text-white/30 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl">
+                                    {cartProducts.length} {cartProducts.length === 1 ? 'Item' : 'Items'}
+                                </span>
+                            </div>
 
-                                <div className="border-t border-gray-200 px-4 py-2 sm:py-6 sm:px-6">
-                                    <div className="flex justify-between text-base font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                        <p>Subtotal</p>
-                                        <p>
-                                            {currency}
-                                            {subTotal}
+                            <div className="mt-4">
+                                <div className="flow-root">
+                                    <ul role="list" className="divide-y divide-white/5">
+                                        {cartProducts.map((product, index) => (
+                                            <li key={product.product.id + index} className="flex py-10 group first:pt-0">
+                                                <div className="h-28 w-28 sm:h-40 sm:w-40 flex-shrink-0 overflow-hidden rounded-[2rem] border border-white/10 group-hover:border-purple-500/30 transition-all duration-500 shadow-2xl relative">
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                                    <img
+                                                        src={`${product.product.image1}`}
+                                                        alt={product.product.imageAlt}
+                                                        className="h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
+                                                    />
+                                                </div>
+
+                                                <div className="ml-8 flex flex-1 flex-col">
+                                                    <div>
+                                                        <div className="flex justify-between text-xl font-black text-white tracking-tighter uppercase">
+                                                            <h3>
+                                                                <a href={product.product.href} className="hover:text-purple-400 transition-colors">
+                                                                    {product.product.name}
+                                                                </a>
+                                                            </h3>
+                                                            <p className="ml-4 text-purple-400 font-black">
+                                                                {currency}{" "}
+                                                                {formatMoney(
+                                                                    product.additional_price > 0
+                                                                        ? Number(product.product.unit_price) + Number(product.additional_price)
+                                                                        : Number(product.product.unit_price)
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                        <p className="mt-3 text-sm text-white/40 leading-relaxed max-w-xl">
+                                                            {htmlToText(product.product.short_description)}
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div className="flex flex-1 items-end justify-between text-sm mt-8">
+                                                        <div className="flex items-center gap-6 bg-white/[0.03] px-5 py-3 rounded-2xl border border-white/5">
+                                                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Qty</span>
+                                                            <div className="flex items-center gap-5">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (product.quantity === 1) return RemoveCartProduct(product.product.id);
+                                                                        DecrementQty(product.product.id);
+                                                                    }}
+                                                                    type="button"
+                                                                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all active:scale-90"
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <span className="text-base font-black text-white min-w-[20px] text-center">
+                                                                    {product.quantity}
+                                                                </span>
+                                                                <button
+                                                                    disabled={product.quantity === product.product.quantity}
+                                                                    onClick={() => IncrementQty(product.product.id)}
+                                                                    type="button"
+                                                                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all active:scale-90 disabled:opacity-30"
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <button
+                                                            onClick={() => RemoveCartProduct(product.product.id)}
+                                                            className="text-[10px] font-black text-red-400/50 hover:text-red-400 uppercase tracking-[0.2em] transition-all py-2 px-4 rounded-xl hover:bg-red-500/5"
+                                                        >
+                                                            Remove Item
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {cartProducts.length === 0 && (
+                            <div className="py-32 flex flex-col items-center justify-center space-y-10">
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-purple-500/10 blur-[100px] rounded-full"></div>
+                                    <img
+                                        className="relative w-56 sm:w-72 object-contain opacity-20 grayscale brightness-200"
+                                        src="/cartEmpty.svg"
+                                        alt="Empty Cart"
+                                    />
+                                </div>
+                                <div className="text-center space-y-3">
+                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Your cart is empty</h3>
+                                    <p className="text-white/30 text-sm font-medium max-w-xs mx-auto">
+                                        Explore our exclusive marketplace and start adding premium products.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        navigate("/shoppingMall/all");
+                                        setIsCartOpen(false);
+                                    }}
+                                    className="px-12 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
+                                >
+                                    Start Shopping
+                                </button>
+                            </div>
+                        )}
+
+                        {cartProducts.length > 0 && (
+                            <div className="mt-16 pt-16 border-t border-white/5">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+                                    <div className="space-y-2">
+                                        <div className="flex items-baseline gap-6">
+                                            <p className="text-white/30 font-black uppercase tracking-[0.2em] text-[10px]">Total Value</p>
+                                            <p className="text-5xl font-black text-white tracking-tighter">
+                                                {currency}{formatMoney(subTotal)}
+                                            </p>
+                                        </div>
+                                        <p className="text-xs text-white/20 font-medium">
+                                            Shipping and taxes calculated at secure checkout.
                                         </p>
                                     </div>
-                                    <p className="mt-0.5 text-sm text-gray-500">
-                                        Shipping and taxes calculated at checkout.
-                                    </p>
-                                    <div className=" mt-2 sm:mt-6">
-                                        <Link to="/checkout">
+                                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                                        <button
+                                            onClick={() => navigate("/shoppingMall/all")}
+                                            className="text-[10px] font-black text-white/30 hover:text-white transition-all uppercase tracking-widest px-8 py-5 border border-white/5 rounded-2xl hover:bg-white/5"
+                                        >
+                                            Continue Shopping
+                                        </button>
+                                        <Link to="/checkout" className="w-full sm:w-auto">
                                             <button
                                                 onClick={() => setIsCartOpen(false)}
-                                                disabled={cartProducts.length === 0}
-                                                className="flex items-center justify-center rounded-md border border-transparent bg-[#6A1BBE]  disabled:bg-gray-500 w-full px-6 py-3 textsm sm:text-base font-medium text-white shadow-sm hover:bg-[#5e2d92]"
+                                                className="w-full sm:px-16 py-6 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-2xl shadow-2xl shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-[0.2em] text-xs"
                                             >
-                                                Checkout
+                                                Secure Checkout
                                             </button>
                                         </Link>
                                     </div>
-                                    <div className=" mt-2 sm:mt-6 flex justify-center text-center text-sm text-gray-500">
-                                        <p>
-                                            or
-                                            <button
-                                                type="button"
-                                                className="font-medium ml-1  text-[#6040ca]  hover:text-[#7b62cd]  "
-                                                onClick={() => setIsCartOpen(false)}
-                                            >
-                                                Continue Shopping
-                                                <span aria-hidden="true"> &rarr;</span>
-                                            </button>
-                                        </p>
-                                    </div>
                                 </div>
                             </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

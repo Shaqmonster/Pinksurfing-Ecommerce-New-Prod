@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
-  createGigFull,
+  createGig,
+  updateGigJson,
+  addGigPackage,
+  addGigMedia,
+  getGig,
   getGigCategories,
   getGigSubcategories,
 } from "../../api/gigs";
@@ -62,16 +66,41 @@ const CreateGigPage = () => {
   const [mediaFiles, setMediaFiles] = useState([]);
   const [mediaPreviews, setMediaPreviews] = useState([]);
 
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
+
   useEffect(() => {
-    // if (!cookies.access_token) {
-    //   toast.error("Please sign in to create a gig.");
-    //   navigate("/signin");
-    //   return;
-    // }
     getGigCategories()
-      .then((res) => setCategories(res.data.results))
+      .then((res) => setCategories(res.data.results || res.data))
       .catch(() => {});
-  }, []);
+
+    if (editId) {
+      getGig(editId).then((res) => {
+        const gig = res.data;
+        setDetails({
+          id: gig.id,
+          title: gig.title,
+          description: gig.description,
+          category: gig.category || "",
+          subcategory: gig.subcategory || "",
+          status: gig.status,
+        });
+
+        if (gig.packages && gig.packages.length > 0) {
+          setPackages((prev) =>
+            prev.map((p) => {
+              const match = gig.packages.find((sp) => sp.tier === p.tier);
+              return match ? { ...match, enabled: true } : p;
+            })
+          );
+        }
+
+        if (gig.media_files && gig.media_files.length > 0) {
+          setMediaPreviews(gig.media_files.map((m) => m.file));
+        }
+      }).catch(() => toast.error("Failed to load gig for editing."));
+    }
+  }, [editId]);
 
   useEffect(()=> {
     console.log("categories:", categories, subcategories);
@@ -79,7 +108,14 @@ const CreateGigPage = () => {
   useEffect(() => {
     if (details.category) {
       getGigSubcategories(details.category)
-        .then((res) => setSubcategories(res.data.results))
+        .then((res) => {
+          const data = res.data.results || res.data;
+          // Fallback local filter in case backend filtering is not live/working
+          const filtered = Array.isArray(data) 
+            ? data.filter(s => String(s.category) === String(details.category))
+            : [];
+          setSubcategories(filtered);
+        })
         .catch(() => setSubcategories([]));
     } else {
       setSubcategories([]);
@@ -154,32 +190,47 @@ const CreateGigPage = () => {
       if (details.category) gigDetails.category = Number(details.category);
       if (details.subcategory) gigDetails.subcategory = Number(details.subcategory);
 
-      const activePkgs = packages
-        .filter((p) => p.enabled)
-        .map((p) => ({
-          tier: p.tier,
-          title: p.title || undefined,
-          description: p.description,
-          price: p.price,
-          delivery_days: Number(p.delivery_days),
-          revisions: Number(p.revisions),
-        }));
+      const activePkgs = packages.filter((p) => p.enabled).map((p) => ({
+        tier: p.tier,
+        title: p.title || undefined,
+        description: p.description,
+        price: p.price,
+        delivery_days: Number(p.delivery_days),
+        revisions: Number(p.revisions),
+      }));
 
-      const res = await createGigFull(
-        cookies.access_token,
-        gigDetails,
-        activePkgs,
-        mediaFiles
-      );
+      let finalGigId = editId;
 
-      toast.success("Gig published successfully!");
-      navigate(`/gigs/${res.data.id}`);
+      if (editId) {
+        // Update existing gig using JSON (handles nested packages correctly)
+        await updateGigJson(cookies.access_token, editId, {
+          ...gigDetails,
+          packages: activePkgs,
+        });
+      } else {
+        // Create basic gig
+        const res = await createGig(cookies.access_token, gigDetails);
+        finalGigId = res.data.id;
+
+        // Add Packages sequentially for creation
+        for (const p of activePkgs) {
+          await addGigPackage(cookies.access_token, finalGigId, p);
+        }
+      }
+
+      // Add NEW Media files sequentially
+      for (let i = 0; i < mediaFiles.length; i++) {
+        await addGigMedia(cookies.access_token, finalGigId, mediaFiles[i], i === 0 && !editId);
+      }
+
+      toast.success(editId ? "Gig updated successfully!" : "Gig published successfully!");
+      navigate(`/gigs/${finalGigId}`);
     } catch (err) {
       const errData = err?.response?.data;
       const msg =
         errData?.detail ||
         (typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
-        "Failed to create gig.";
+        "Failed to save gig.";
       toast.error(msg);
     } finally {
       setSubmitting(false);
@@ -274,10 +325,14 @@ const CreateGigPage = () => {
             <textarea
               name="description"
               value={details.description}
-              onChange={handleDetailChange}
+              onChange={(e) => {
+                handleDetailChange(e);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
               placeholder="Describe your service in detail — what you offer, your process, what buyers can expect…"
               rows={5}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none"
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all overflow-hidden resize-none min-h-[120px]"
             />
                 </div>
 
@@ -287,12 +342,15 @@ const CreateGigPage = () => {
               <select
                 name="category"
                 value={details.category}
-                onChange={(e) => setDetails((prev) => ({ ...prev, category: e.target.selectedOptions[0]?.id || e.target.value }))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDetails((prev) => ({ ...prev, category: val, subcategory: "" }));
+                }}
                 className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24]"
               >
                 <option value="">Select category…</option>
                 {categories.length > 0  && categories.map((c) => (
-                  <option key={c.id} id={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -301,13 +359,13 @@ const CreateGigPage = () => {
               <select
                 name="subcategory"
                 value={details.subcategory}
-                onChange={(e) => setDetails((prev) => ({ ...prev, subcategory: e.target.selectedOptions[0]?.id || e.target.value }))}
+                onChange={(e) => setDetails((prev) => ({ ...prev, subcategory: e.target.value }))}
                 disabled={!details.category || subcategories.length === 0}
                 className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-40"
               >
                 <option value="">Select subcategory…</option>
                 {subcategories.length > 0 && subcategories.map((s) => (
-                  <option key={s.id} id={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
             </div>
@@ -408,10 +466,14 @@ const CreateGigPage = () => {
                         />
                         <textarea
                           value={pkg.description}
-                          onChange={(e) => updatePkg(pkg.tier, "description", e.target.value)}
+                          onChange={(e) => {
+                            updatePkg(pkg.tier, "description", e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
                           placeholder="Describe what's included in this package…"
                           rows={2}
-                          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
+                          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all overflow-hidden resize-none min-h-[60px]"
                         />
                         <div className="grid grid-cols-3 gap-3">
                           <div className="space-y-1">

@@ -17,12 +17,32 @@ export const SORT_METHODS = [
     { name: "Price: High to Low", value: "descPrice", icon: "💎" },
 ];
 
-// Static filter arrays (currently empty — kept for future use)
+// Static filter arrays for Real Estate & Business
 export const QUICK_FILTERS = [
-    { id: "color", name: "Color", options: [] },
-    { id: "size", name: "Size", options: [] },
-    { id: "storage", name: "Storage", options: [] },
-    { id: "system", name: "System / OS", options: [] },
+    {
+        id: "bedrooms",
+        name: "Beds",
+        options: ["1+", "2+", "3+", "4+", "5+"],
+        categoryMatch: ["residential-realestate"]
+    },
+    {
+        id: "bathrooms",
+        name: "Baths",
+        options: ["1+", "1.5+", "2+", "3+"],
+        categoryMatch: ["residential-realestate"]
+    },
+    {
+        id: "propertyType",
+        name: "Property Type",
+        options: ["Single Family Home", "Condos", "Townhouses", "Apartments", "Land & Lots"],
+        categoryMatch: ["residential-realestate"]
+    },
+    {
+        id: "industry",
+        name: "Industry",
+        options: ["SaaS / Tech", "E-commerce", "Retail", "Healthcare", "Food & Beverage", "Manufacturing"],
+        categoryMatch: ["business-for-sale", "business4sale"]
+    }
 ];
 
 /**

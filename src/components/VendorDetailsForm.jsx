@@ -43,6 +43,8 @@ export default function VendorDetailsForm() {
     state: "",
     country: "",
     zip_code: "",
+    tax_number: "",
+    listing_fee_exempt_until: null,
   });
 
   const {
@@ -57,6 +59,8 @@ export default function VendorDetailsForm() {
     state,
     country,
     zip_code,
+    tax_number,
+    listing_fee_exempt_until,
   } = profile;
 
   useEffect(() => {
@@ -158,6 +162,9 @@ export default function VendorDetailsForm() {
     formData.append("state", state);
     formData.append("country", country);
     formData.append("zip_code", zip_code);
+    if (tax_number) {
+      formData.append("tax_number", tax_number);
+    }
     if (storeImage) {
       formData.append("shop_image", storeImage);
     }
@@ -247,6 +254,18 @@ export default function VendorDetailsForm() {
                       }}
                     />
                   </Dialog.Title>
+                  
+                  {listing_fee_exempt_until && new Date(listing_fee_exempt_until) > new Date() && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-6 flex items-center justify-between">
+                      <div>
+                        <p className="text-green-500 text-sm font-semibold">Free Listing Active!</p>
+                        <p className="text-green-400/80 text-xs">
+                          {Math.ceil((new Date(listing_fee_exempt_until) - new Date()) / (1000 * 60 * 60 * 24))} days remaining of free listings.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <form onSubmit={GetProfile} className="w-full max-w-lg">
                     <div className="flex flex-wrap -mx-3 mb-6">
                       <div className="w-full  px-3 mb-6 md:mb-0">
@@ -546,6 +565,25 @@ export default function VendorDetailsForm() {
                           onChange={handleOnChange}
                           required
                         />
+                      </div>
+
+                      <div className="w-full px-3 mt-5">
+                        <label
+                          className="block uppercase tracking-wide text-gray-700 dark:text-[#f5f5f5] text-xs font-bold mb-2"
+                          htmlFor="tax_number"
+                        >
+                          Tax Number (Optional)
+                        </label>
+                        <input
+                          className="appearance-none block w-full bg-gray-200 dark:bg-black/30 text-gray-700 dark:text-[#f5f5f5] border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white dark:bg-black focus:border-gray-500"
+                          name="tax_number"
+                          id="tax_number"
+                          type="text"
+                          placeholder="Tax ID or Registration Number"
+                          value={tax_number || ""}
+                          onChange={handleOnChange}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Provide your tax number to receive 6 months of free listings!</p>
                       </div>
                     </div>
                     <div className="flex flex-col items-center mt-4">

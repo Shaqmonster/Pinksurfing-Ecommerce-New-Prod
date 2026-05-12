@@ -20,12 +20,13 @@ import QRCode from "qrcode.react";
 // icons-------------------------------------------------------------
 import { MdOutlineWbSunny } from "react-icons/md";
 import { IoIosMoon } from "react-icons/io";
-import { IoCart, IoMenuOutline, IoPersonCircleOutline, IoSearchSharp, IoClose } from "react-icons/io5";
+import { IoCart, IoMenuOutline, IoPersonCircleOutline, IoSearchSharp, IoClose, IoChatbubbleOutline } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { currencyOptions } from "../utils/CurrencyList";
 import ProfilePopup from "./ProfilePopup";
+import ChatFloatingPanel from "./ChatFloatingPanel";
 
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 
@@ -45,6 +46,12 @@ const Header = () => {
     setSearch,
     isMobileCategoryOpen,
     setIsMobileCategoryOpen,
+    Logout,
+    isChatOpen,
+    setIsChatOpen,
+    pendingChatConversation,
+    setPendingChatConversation,
+    closeChat,
   } = useContext(authContext);
   const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
     useContext(dataContext);
@@ -56,6 +63,7 @@ const Header = () => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const searchInputRef = React.useRef(null);
 
@@ -187,7 +195,7 @@ const Header = () => {
 
   return (
     <>
-      <CategoriesMobile />
+      {/* <CategoriesMobile /> */}
       {user && (
         <>
           <Cart />
@@ -195,6 +203,12 @@ const Header = () => {
           <SingleOrderForm />
           <VendorDetailsForm />
           <ProfilePopup />
+          <ChatFloatingPanel
+            isOpen={isChatOpen}
+            onClose={closeChat}
+            pendingConversation={pendingChatConversation}
+            clearPendingConversation={() => setPendingChatConversation(null)}
+          />
         </>
       )}
       
@@ -203,247 +217,220 @@ const Header = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-40 glass bg-gradient-to-r from-purple-900/95 via-purple-800/95 to-pink-600/95 backdrop-blur-xl w-full py-3 sm:py-4 shadow-xl border-b border-white/10"
+        className="sticky top-0 z-40 bg-[#0E0F13]/60 backdrop-blur-3xl w-full py-5 border-b border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)]"
       >
-        <div className="flex items-center justify-between px-[2%] sm:px-[3%] text-white">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between px-8 md:px-16 text-white gap-10">
           {/* Logo */}
-          <Link to="/">
+          <Link to="/" className="flex-shrink-0">
             <motion.div 
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center"
             >
-              <motion.img 
-                src="logo.jpg" 
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg ring-2 ring-white/20" 
+              <img 
+                src="/logo.jpg" 
+                className="w-12 h-12 rounded-full ring-2 ring-white/10 shadow-2xl transition-all duration-500 hover:ring-purple-500/50" 
                 alt="PinkSurfing Logo"
-                transition={{ duration: 0.6 }}
               />
             </motion.div>
           </Link>
 
-          {/* Right Section - All Actions */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Search Bar - Desktop */}
-            <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 max-w-xl mx-4">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-400 transition-all text-sm"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:text-purple-300 transition-colors"
-                >
-                  <IoSearchSharp className="text-xl" />
-                </button>
-              </div>
-            </form>
+          {/* Search Bar - Stealth Integrated */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl relative group">
+            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+              <IoSearchSharp className="text-gray-500 group-focus-within:text-purple-400 transition-colors text-lg" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search the marketplace..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-14 pr-6 py-3.5 bg-white/[0.03] border border-white/5 rounded-2xl outline-none text-white placeholder-gray-600 focus:bg-white/[0.07] focus:border-purple-500/30 transition-all duration-500 text-sm font-medium tracking-tight"
+            />
+          </form>
 
-            {/* Mobile Search Icon */}
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="md:hidden"
-            >
-              <IoSearchSharp
-                onClick={() => setShowMobileSearch(true)}
-                className="text-2xl text-white cursor-pointer"
-              />
-            </motion.div>
-
-            {/* Language & Currency - Compact */}
-            {/* <div className="hidden sm:flex items-center gap-2">
-              <select className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-xs px-2 py-1.5 hover:bg-white/20 transition-all cursor-pointer">
-                <option className="bg-purple-900 text-white">EN</option>
-              </select>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg outline-none text-xs px-2 py-1.5 hover:bg-white/20 transition-all cursor-pointer"
-              >
-                {Object.keys(currencyOptions).map((code) => (
-                  <option key={code} value={currencyOptions[code].symbol} className="bg-purple-900 text-white">
-                    {code}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-            {/* Wallet Section */}
-            {/* <AnimatePresence>
-              {isWalletOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-lg px-2 sm:px-3 py-1.5 border border-white/20"
-                >
-                  <p className="text-white text-xs font-semibold">
-                    {selectedCurrency === "MYBIZ" ? "MYBIZ" : selectedCurrency}
-                  </p>
-                  <motion.p 
-                    key={walletBalance}
-                    initial={{ scale: 1.2, color: "#fbbf24" }}
-                    animate={{ scale: 1, color: "#ffffff" }}
-                    className="text-white font-bold text-xs sm:text-sm"
-                  >
-                    ${walletBalance}
-                  </motion.p>
-                  
-                  <select
-                    className="bg-black/30 text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded border border-white/20 outline-none cursor-pointer"
-                    value={selectedCurrency}
-                    onChange={(e) => setSelectedCurrency(e.target.value)}
-                  >
-                    <option value="BTC">BTC</option>
-                    <option value="ETH">ETH</option>
-                    <option value="USDT">USDT</option>
-                    <option value="MYBIZ">MYBIZ</option>
-                  </select>
-                  
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <QRCode
-                      value={getWalletAddress()}
-                      className="cursor-pointer rounded"
-                      size={24}
-                      onClick={handleWalletClick}
-                    />
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence> */}
-
-            {/* QR Code Modal */}
-            {/* <AnimatePresence>
-              {showQRCode && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50"
-                  onClick={closeQRCode}
-                >
-                  <motion.div 
-                    initial={{ scale: 0.8, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    exit={{ scale: 0.8, y: 20 }}
-                    className="glass bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-2xl"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="bg-white p-4 rounded-2xl shadow-inner">
-                      <QRCode value={getWalletAddress()} size={256} />
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={closeQRCode}
-                      className="mt-6 w-full py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-red-500/50 transition-all"
-                    >
-                      Close
-                    </motion.button>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
- */}
-            {/* GigHub Marketplace */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          {/* Right Section - Unified Premium Actions */}
+          <div className="flex items-center gap-8">
+            <div className="hidden xl:flex items-center gap-3">
               <Link
                 to="/gighub"
-                className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all whitespace-nowrap"
+                className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
               >
-                <FaBriefcase className="text-xs" />
                 GigHub
               </Link>
-            </motion.div>
-
-            {/* Bids Marketplace */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/bids"
-                className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 text-white text-xs font-semibold transition-all shadow-md hover:shadow-pink-500/30 whitespace-nowrap"
+                className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
               >
-                <FaGavel className="text-xs" />
-                <span className="hidden sm:inline">Bids</span>
+                Bids
               </Link>
-            </motion.div>
+              <Link
+                to="/contact"
+                className="px-6 py-3 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 rounded-2xl text-purple-300 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
+              >
+                Help & Support
+              </Link>
+            </div>
 
-            {/* User Actions */}
-            {user && (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-                  <FaHeart
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      setIsWishlistOpen(true);
-                    }}
-                    className="cursor-pointer text-lg sm:text-xl text-pink-300 hover:text-pink-400 transition-colors"
-                  />
-                </motion.div>
-                
-                <motion.div 
-                  whileHover={{ scale: 1.1 }} 
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    setIsCartOpen(true);
-                  }}
-                  className="relative cursor-pointer"
-                >
-                  <motion.span 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="bg-gradient-to-r from-pink-500 to-purple-500 px-1.5 py-0.5 absolute -top-2 -right-2 text-white text-[9px] sm:text-[10px] font-bold rounded-full shadow-lg"
-                  >
-                    {cartProducts.length}
-                  </motion.span>
-                  <IoCart className="cursor-pointer text-xl sm:text-2xl text-purple-200 hover:text-purple-300 transition-colors" />
-                </motion.div>
-              </div>
-            )}
-
-            {/* Profile Section */}
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/profile")}
-              className="flex items-center cursor-pointer gap-2 bg-white/10 backdrop-blur-md px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
-            >
-              {user.img ? (
-                <motion.img
-                  whileHover={{ scale: 1.1 }}
-                  src="https://avatars.githubusercontent.com/u/499550?v=4"
-                  alt="avatar"
-                  className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full ring-2 ring-white/30 shadow-lg"
-                />
-              ) : (
-                <IoPersonCircleOutline className="text-2xl sm:text-3xl text-purple-200" />
-              )}
+            <div className="flex items-center gap-6 border-l border-white/10 pl-8">
               {user && (
-                <div className="hidden sm:flex flex-col">
-                  <p className="text-[10px] text-white/60 leading-tight">Hello</p>
-                  <span className="text-xs font-semibold text-white leading-tight">
-                    {user?.first_name}
-                  </span>
+                <div className="flex items-center gap-6">
+                  <div className="relative group cursor-pointer" onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}>
+                    <FaHeart className="text-xl text-gray-500 hover:text-pink-500 transition-all duration-300 transform group-hover:scale-110" />
+                  </div>
+                  
+                  <div 
+                    className="relative group cursor-pointer"
+                    onClick={() => { setIsProfileOpen(false); setIsCartOpen(true); }}
+                  >
+                    <IoCart className="text-2xl text-gray-500 group-hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
+                    {cartProducts.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-purple-600 text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full ring-2 ring-[#0E0F13]">
+                        {cartProducts.length}
+                      </span>
+                    )}
+                  </div>
+
+                  <div 
+                    className="relative group cursor-pointer"
+                    onClick={() => { setIsProfileOpen(false); setIsChatOpen(!isChatOpen); }}
+                  >
+                    <IoChatbubbleOutline className="text-2xl text-gray-500 hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
+                    <span className="absolute -top-1 -right-1 bg-red-500 w-2 h-2 rounded-full ring-2 ring-[#0E0F13] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
               )}
-            </motion.div>
 
-            {/* Shop by Categories Button */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsMobileCategoryOpen(!isMobileCategoryOpen)}
-              className="flex items-center justify-center cursor-pointer bg-white/10 backdrop-blur-md p-2 sm:p-2.5 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
-              title="Shop by Categories"
-            >
-              <IoMenuOutline className="text-xl sm:text-2xl text-purple-200 hover:text-white transition-colors" />
-            </motion.div>
+              <div className="flex items-center gap-4">
+                {/* Mobile Search & Menu Triggers */}
+                <div className="flex md:hidden items-center gap-4 border-l border-white/10 pl-4">
+                  <IoSearchSharp 
+                    className="text-2xl text-gray-400 cursor-pointer hover:text-white transition-colors" 
+                    onClick={() => setShowMobileSearch(true)} 
+                  />
+                  <IoMenuOutline 
+                    className="text-3xl text-white cursor-pointer hover:text-purple-400 transition-colors" 
+                    onClick={() => setIsMobileMenuOpen(true)} 
+                  />
+                </div>
+
+                <div className="hidden md:flex items-center gap-4">
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/profile")}
+                    className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
+                  >
+                    <img
+                      src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
+                      alt="avatar"
+                      className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
+                    />
+                    <div className="hidden sm:flex flex-col">
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1">
+                        {user?.first_name}
+                      </span>
+                      <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
+                        Account
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {user && (
+                    <button
+                      onClick={Logout}
+                      className="px-6 py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.2em] border border-white/5 hover:border-white/20 rounded-2xl transition-all duration-300 bg-white/[0.02] hover:bg-white/[0.05]"
+                    >
+                      Logout
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
+
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed inset-0 z-[100] bg-[#0E0F13]/95 backdrop-blur-2xl md:hidden flex flex-col"
+          >
+            <div className="flex justify-between items-center p-8 border-b border-white/5">
+              <img src="/logo.jpg" className="w-10 h-10 rounded-full ring-2 ring-white/10" alt="Logo" />
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10"
+              >
+                <IoClose className="text-2xl text-white" />
+              </button>
+            </div>
+
+            <nav className="flex-1 flex flex-col p-8 gap-6 overflow-y-auto">
+              <Link 
+                to="/gighub" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
+              >
+                GigHub
+              </Link>
+              <Link 
+                to="/bids" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
+              >
+                Bids
+              </Link>
+              <Link 
+                to="/contact" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                Support
+              </Link>
+              <Link 
+                to="/gighub/messages" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
+              >
+                Messages
+              </Link>
+              
+              <div className="mt-auto flex flex-col gap-4">
+                <Link 
+                  to="/profile" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/10"
+                >
+                  <img
+                    src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
+                    alt="avatar"
+                    className="w-12 h-12 rounded-2xl object-cover ring-1 ring-white/10"
+                  />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{user?.first_name}</p>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">View Profile</p>
+                  </div>
+                </Link>
+
+                {user && (
+                  <button
+                    onClick={() => { Logout(); setIsMobileMenuOpen(false); }}
+                    className="w-full py-6 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-3xl text-red-400 text-[10px] font-black uppercase tracking-[0.3em] transition-all"
+                  >
+                    Logout Session
+                  </button>
+                )}
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Search Overlay */}
       <AnimatePresence>

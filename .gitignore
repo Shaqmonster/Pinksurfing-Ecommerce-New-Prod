@@ -3,3 +3,4 @@ node_modules
 frontend_integration_guide.md 
 tracking_frontend_guide.md
 .env.local
+dist/

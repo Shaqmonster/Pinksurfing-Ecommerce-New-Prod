@@ -1158,6 +1158,12 @@ export default function BidRequestDetail() {
   }, []);
 
   const handleSendOffer = async () => {
+    // Defensive checks
+    if (!offerData) {
+      toast.error("Offer data is missing. Please refresh the page.");
+      return;
+    }
+
     if (!offerData.amount) {
       toast.error("Please fill in your bid amount in the Price & Payment step.");
       setCurrentStep(2);
@@ -1176,7 +1182,7 @@ export default function BidRequestDetail() {
       offerData.inclusions && `\n\nIncluded:\n${offerData.inclusions}`,
       offerData.exclusions && `\n\nExcluded:\n${offerData.exclusions}`,
       offerData.assumptions && `\n\nAssumptions:\n${offerData.assumptions}`,
-      milestones.some((m) => m.title) &&
+      Array.isArray(milestones) && milestones.some((m) => m.title) &&
         `\n\nMilestones:\n${milestones
           .filter((m) => m.title)
           .map((m, i) => `${i + 1}. ${m.title}${m.amount ? ` ($${m.amount})` : ""}`)
@@ -1186,19 +1192,24 @@ export default function BidRequestDetail() {
 
     try {
       setSubmitting(true);
+      const payload = {
+        request_id: requestId,
+        bid_amount: offerData.amount,
+        delivery_time_days: offerData.deliveryDays,
+        proposal,
+      };
+      
+      console.log("Sending offer payload:", payload);
+      
       await createBidOffer(
         token,
-        {
-          request_id: requestId,
-          bid_amount: offerData.amount,
-          delivery_time_days: offerData.deliveryDays,
-          proposal,
-        },
-        attachments.slice(0, 4)
+        payload,
+        Array.isArray(attachments) ? attachments.slice(0, 4) : []
       );
       setIsConfirmed(true);
       toast.success("Offer sent successfully!");
     } catch (err) {
+      console.error("Failed to send offer:", err);
       toast.error(err?.response?.data?.detail ?? "Failed to send offer. Please try again.");
     } finally {
       setSubmitting(false);

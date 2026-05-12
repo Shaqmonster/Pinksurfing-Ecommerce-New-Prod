@@ -33,7 +33,7 @@ const GigCard = ({ gig }) => {
       <div className="relative h-48 overflow-hidden bg-[#1a1a24] flex-shrink-0">
         {mainImage ? (
           <img src={mainImage.file} alt={gig.title}
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+            className="w-full h-full object-contain transition-transform duration-500 hover:scale-105" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <FaBriefcase className="text-4xl text-white/10" />
@@ -81,7 +81,7 @@ const GigCard = ({ gig }) => {
         </div>
       </div>
 
-      <Link to={`/gigs/${gig.id}`} className="block px-4 pb-4">
+      <Link to={`/gigs/${gig.gig_id || gig.id}`} className="block px-4 pb-4">
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           className="w-full py-2 rounded-xl bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 text-white text-sm font-semibold transition-all">
           View Gig
@@ -173,7 +173,14 @@ const GigsPage = () => {
   }, [filters, setSearchParams]);
 
   const applyFilter = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [key]: value, page: 1 };
+      // Reset subcategory if category changes
+      if (key === "category_slug") {
+        newFilters.subcategory_slug = "";
+      }
+      return newFilters;
+    });
   };
 
   const handleSearch = () => {
@@ -278,6 +285,20 @@ const GigsPage = () => {
                     className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-purple-500 transition-all [&>option]:bg-[#1a1a24]">
                     <option value="">All Categories</option>
                     {categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-white/50 text-xs">Subcategory</label>
+                  <select 
+                    value={filters.subcategory_slug} 
+                    onChange={(e) => applyFilter("subcategory_slug", e.target.value)}
+                    disabled={!filters.category_slug || !activeCategory?.subcategories?.length}
+                    className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-purple-500 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-30"
+                  >
+                    <option value="">All Subcategories</option>
+                    {activeCategory?.subcategories?.map((s) => (
+                      <option key={s.id} value={s.slug}>{s.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="space-y-1">

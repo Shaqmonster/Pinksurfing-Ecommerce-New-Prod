@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import AddressForm from "./AddressForm";
 import PaymentOptionsModal from "../pages/PaymentOptionsModal";
+import { formatMoney } from "../utils/formatMoney";
 
 export default function SingleOrderForm() {
   const {
@@ -192,12 +193,12 @@ export default function SingleOrderForm() {
                           </p>
                           <p className="text-lg font-bold text-[#9747FF] mt-1">
                             {currency}
-                            {singleOrderProduct.unit_price}
+                            {formatMoney(singleOrderProduct.unit_price)}
                           </p>
                           {singleOrderProduct.additional_price > 0 && (
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                               includes {currency}
-                              {singleOrderProduct.additional_price} variant
+                              {formatMoney(singleOrderProduct.additional_price)} variant
                             </p>
                           )}
                         </div>
