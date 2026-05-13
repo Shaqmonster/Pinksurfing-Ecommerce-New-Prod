@@ -103,12 +103,6 @@ const CSS = `
   .b-fin-table .neg{color:var(--red);}
   .b-fin-table .pos{color:var(--green);}
 
-  /* NDA gate */
-  .b-nda-gate{background:var(--surface-2);border:1.5px solid var(--border);border-radius:8px;padding:20px;text-align:center;margin-top:16px;}
-  .b-nda-gate-icon{font-size:36px;margin-bottom:10px;}
-  .b-nda-doc-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:4px 9px;font-size:11px;font-weight:600;color:var(--text-3);margin:3px;}
-  .b-btn-nda{background:var(--pink);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s;}
-  .b-btn-nda:hover{background:var(--pink-h);}
 
   /* operations */
   .b-ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -148,11 +142,8 @@ const CSS = `
   .b-doc-sub{font-size:11px;color:var(--text-3);}
   .b-doc-right{flex-shrink:0;display:flex;align-items:center;gap:8px;}
   .b-badge-free{font-size:10px;font-weight:700;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:2px 7px;border-radius:4px;}
-  .b-badge-nda{font-size:10px;font-weight:700;background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);padding:2px 7px;border-radius:4px;}
   .b-btn-doc{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap;}
   .b-btn-doc:hover{border-color:var(--pink);color:var(--pink);}
-  .b-btn-doc.locked{color:var(--amber);border-color:var(--amber-border);}
-  .b-btn-doc.locked:hover{background:var(--amber-bg);}
 
   /* similar grid */
   .b-sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
@@ -177,12 +168,6 @@ const CSS = `
   .b-meta-v.amber{color:var(--amber);}
   .b-meta-v.pink{color:var(--pink);}
 
-  /* nda side */
-  .b-nda-side{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:8px;padding:16px;}
-  .b-nda-side h4{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:6px;}
-  .b-nda-side p{font-size:12px;color:var(--amber);line-height:1.5;margin-bottom:12px;opacity:.9;}
-  .b-btn-nda-side{width:100%;background:var(--amber);color:#fff;border:none;padding:9px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;}
-  .b-btn-nda-side:hover{background:#b45309;}
 
   /* interest form */
   .b-side-head{padding:16px 18px;border-bottom:1px solid var(--border);}
@@ -205,26 +190,17 @@ const CSS = `
   .b-btn-qa:hover{border-color:var(--border-2);color:var(--text);}
   .b-btn-qa.saved{border-color:var(--pink);color:var(--pink);background:var(--pink-light);}
 
-  /* modal */
-  .b-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
-  .b-modal-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;}
-  .b-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
-  .b-modal-title{font-size:15px;font-weight:700;color:var(--text);}
-  .b-modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-3);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;}
-  .b-modal-close:hover{background:var(--surface-2);color:var(--text);}
-  .b-modal-body{padding:18px 20px;}
-  .b-modal-foot{padding:12px 20px 18px;border-top:1px solid var(--border);}
-  .b-nda-text{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:12px;line-height:1.7;color:var(--text-2);max-height:180px;overflow-y:auto;margin-bottom:16px;}
-  .b-nda-text h4{font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;color:var(--text);}
-  .b-nda-text h5{font-size:10px;font-weight:700;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.07em;color:var(--text);}
-  .b-sig-field{border:2px solid var(--border);border-radius:6px;padding:12px;font-size:18px;font-style:italic;text-align:center;width:100%;color:var(--text);background:var(--surface-2);font-family:Georgia,serif;outline:none;transition:border-color .15s;margin-bottom:8px;}
-  .b-sig-field:focus{border-color:var(--pink);}
-  .b-agree-wrap{display:flex;align-items:flex-start;gap:9px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;padding:11px;margin-bottom:14px;}
-  .b-agree-wrap label{font-size:12px;color:var(--text-2);cursor:pointer;line-height:1.5;}
-  .b-btn-sign{background:var(--pink);color:#fff;border:none;padding:11px 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
-  .b-btn-sign:hover{background:var(--pink-h);}
-  .b-btn-sign:disabled{background:var(--surface-3);color:var(--text-3);cursor:not-allowed;}
-  .b-btn-cancel{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:11px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px;}
+
+  /* lightbox */
+  .b-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:700;display:flex;align-items:center;justify-content:center;}
+  .b-lightbox-img{max-width:90vw;max-height:88vh;object-fit:contain;border-radius:6px;display:block;}
+  .b-lightbox-close{position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:.7;line-height:1;}
+  .b-lightbox-close:hover{opacity:1;}
+  .b-lightbox-prev,.b-lightbox-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.08);border:none;color:#fff;font-size:22px;cursor:pointer;padding:12px 16px;border-radius:6px;transition:background .15s;}
+  .b-lightbox-prev{left:16px;}
+  .b-lightbox-next{right:16px;}
+  .b-lightbox-prev:hover,.b-lightbox-next:hover{background:rgba(255,255,255,.18);}
+  .b-lightbox-counter{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:12px;font-weight:600;}
 
   /* pulse */
   .b-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;animation:b-pulse-dot 2s infinite;}
@@ -281,18 +257,8 @@ const BusinessListingDetail = ({
   const [activeImage, setActiveImage] = useState(
     product.image1 || product.image2 || product.image3 || product.image4 || ""
   );
-  const [ndaOpen, setNdaOpen] = useState(false);
-  const [ndaSig, setNdaSig] = useState("");
-  const [ndaAgree, setNdaAgree] = useState(false);
-  const [ndaName, setNdaName] = useState(user ? [user.first_name, user.last_name].filter(Boolean).join(" ") : "");
-  const [ndaEmail, setNdaEmail] = useState(user?.email || "");
-  const [ndaRole, setNdaRole] = useState("");
-  const [ndaSigned, setNdaSigned] = useState(false);
-  const [interestSent, setInterestSent] = useState(false);
-  const [interestSending, setInterestSending] = useState(false);
-  const [interestMsg, setInterestMsg] = useState("");
-  const [buyerType, setBuyerType] = useState("");
-  const [fundingSource, setFundingSource] = useState("");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const photos = [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
   const daysOnMarket = product.created_at ? formatDistanceToNow(new Date(product.created_at)) : null;
@@ -337,24 +303,6 @@ const BusinessListingDetail = ({
   const price = Number(product.unit_price) || 0;
   const formattedPrice = price ? `${currency}${formatMoney(price)}` : "Contact for Price";
 
-  const handleNdaSubmit = () => {
-    if (!ndaAgree || !ndaName || !ndaEmail || !ndaSig || ndaSig !== ndaName) return;
-    setNdaSigned(true);
-    setNdaOpen(false);
-  };
-
-  const handleExpressInterest = async () => {
-    if (interestSending) return;
-    setInterestSending(true);
-    try {
-      await handleContactAgent();
-      setInterestSent(true);
-    } catch {
-    } finally {
-      setInterestSending(false);
-    }
-  };
-
   const isSaved = !!wishlistProducts?.find((i) => i.id === product.id);
 
   const tabs = ["overview", "financials", "operations", "location", "documents"];
@@ -380,7 +328,7 @@ const BusinessListingDetail = ({
 
               {/* PHOTO GALLERY */}
               <div className="b-gallery">
-                <div className="b-gallery-main">
+                <div className="b-gallery-main" style={{ cursor: photos.length > 0 ? "zoom-in" : "default" }} onClick={() => { if (photos.length > 0) { setLightboxIndex(photos.indexOf(activeImage) >= 0 ? photos.indexOf(activeImage) : 0); setLightboxOpen(true); } }}>
                   {activeImage ? (
                     <img src={activeImage} alt={product.name} />
                   ) : (
@@ -416,7 +364,6 @@ const BusinessListingDetail = ({
                         <img src={src} alt={`View ${i + 1}`} />
                       </div>
                     ))}
-                    {photos.length < 4 && <div className="b-thumb-more">+{Math.max(0, 5 - photos.length)} more</div>}
                   </div>
                 )}
               </div>
@@ -631,25 +578,8 @@ const BusinessListingDetail = ({
                       </tbody>
                     </table>
 
-                    <div className="b-nda-gate">
-                      <div className="b-nda-gate-icon">🔒</div>
-                      <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: "var(--text)" }}>Full Financials Require NDA</h4>
-                      <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.5, marginBottom: 14, maxWidth: 380, margin: "0 auto 14px" }}>
-                        Tax returns (3 years), full P&L with add-backs, normalized EBITDA, and detailed financial breakdowns are available after signing a simple NDA.
-                      </p>
-                      <div style={{ marginBottom: 14 }}>
-                        {["🧾 Tax Returns (3yr)", "📊 Normalized EBITDA", "📋 Franchise Agreement", "💰 Full P&L with Add-Backs"].map((d) => (
-                          <span key={d} className="b-nda-doc-chip">{d}</span>
-                        ))}
-                      </div>
-                      <button className="b-btn-nda" onClick={() => setNdaOpen(true)}>
-                        🔓 Sign NDA & Access Full Financials
-                      </button>
-                      {ndaSigned && (
-                        <p style={{ fontSize: 12, color: "var(--green)", marginTop: 10, fontWeight: 600 }}>
-                          ✅ NDA signed — documents unlocked. Check your email for a copy.
-                        </p>
-                      )}
+                    <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
+                      📋 For full financial details including tax returns, full P&amp;L, and add-backs, contact the lister directly using the Express Interest form.
                     </div>
                   </div>
                 )}
@@ -780,53 +710,28 @@ const BusinessListingDetail = ({
                 {activeTab === "documents" && (
                   <div className="b-panel">
                     <div>
-                      <div className="b-doc-row">
-                        <div style={{ fontSize: 22 }}>📄</div>
-                        <div className="b-doc-info">
-                          <div className="b-doc-name">Business Teaser</div>
-                          <div className="b-doc-sub">High-level overview · Visible to all buyers · No NDA required</div>
+                      {[
+                        { icon: "📄", name: "Business Teaser", sub: "High-level overview of the business" },
+                        { icon: "📊", name: "Confidential Information Memorandum (CIM)", sub: "Full business overview, competitive positioning, and growth plan" },
+                        { icon: "💰", name: "P&L / Financial Statements", sub: "Revenue and expenses summary" },
+                        { icon: "🧾", name: "Full Financials — Tax Returns & Add-Backs", sub: "Complete financial documentation for due diligence" },
+                        { icon: "📋", name: "Franchise / Operating Agreement", sub: "Operational terms, royalties, and transfer details" },
+                      ].map((doc) => (
+                        <div key={doc.name} className="b-doc-row">
+                          <div style={{ fontSize: 22 }}>{doc.icon}</div>
+                          <div className="b-doc-info">
+                            <div className="b-doc-name">{doc.name}</div>
+                            <div className="b-doc-sub">{doc.sub}</div>
+                          </div>
+                          <div className="b-doc-right">
+                            <span className="b-badge-free">Available</span>
+                            <button className="b-btn-doc" onClick={() => handleContactAgent()}>Request</button>
+                          </div>
                         </div>
-                        <div className="b-doc-right">
-                          <span className="b-badge-free">Free Access</span>
-                          <button className="b-btn-doc" onClick={() => handleContactAgent()}>Download</button>
-                        </div>
-                      </div>
-                      <div className="b-doc-row">
-                        <div style={{ fontSize: 22 }}>📊</div>
-                        <div className="b-doc-info">
-                          <div className="b-doc-name">Confidential Information Memorandum (CIM)</div>
-                          <div className="b-doc-sub">Full business overview, competitive positioning, and growth plan</div>
-                        </div>
-                        <div className="b-doc-right">
-                          <span className="b-badge-nda">🔒 NDA Required</span>
-                          <button className="b-btn-doc locked" onClick={() => setNdaOpen(true)}>🔓 Unlock</button>
-                        </div>
-                      </div>
-                      <div className="b-doc-row">
-                        <div style={{ fontSize: 22 }}>💰</div>
-                        <div className="b-doc-info">
-                          <div className="b-doc-name">Redacted P&L / Financial Statements</div>
-                          <div className="b-doc-sub">Revenue and expenses summary</div>
-                        </div>
-                        <div className="b-doc-right">
-                          <span className="b-badge-nda">🔒 NDA Required</span>
-                          <button className="b-btn-doc locked" onClick={() => setNdaOpen(true)}>🔓 Unlock</button>
-                        </div>
-                      </div>
-                      <div className="b-doc-row">
-                        <div style={{ fontSize: 22 }}>🔒</div>
-                        <div className="b-doc-info">
-                          <div className="b-doc-name">Full Financials — Tax Returns & Add-Backs</div>
-                          <div className="b-doc-sub">Complete financial documentation for due diligence</div>
-                        </div>
-                        <div className="b-doc-right">
-                          <span className="b-badge-nda">🔒 NDA Required</span>
-                          <button className="b-btn-doc locked" onClick={() => setNdaOpen(true)}>🔓 Unlock</button>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                     <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
-                      🤖 <strong style={{ color: "var(--text-2)" }}>AI Agent Notice:</strong> AI agents cannot initiate or sign NDAs on PinkSurfing. NDA requests and document access require a verified human buyer with legal signing capacity.
+                      📩 To request any document, message the lister directly using the <strong style={{ color: "var(--text-2)" }}>Express Interest</strong> form or the chat button.
                     </div>
                   </div>
                 )}
@@ -966,7 +871,7 @@ const BusinessListingDetail = ({
                   <div className="b-meta-row">
                     <span className="b-meta-k">Listing ID</span>
                     <span className="b-meta-v" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11 }}>
-                      #PS-{product.id?.slice(-6).toUpperCase()}
+                      #PS-{product.id?.slice(-7).toUpperCase()}
                     </span>
                   </div>
                   <div className="b-meta-row">
@@ -978,135 +883,72 @@ const BusinessListingDetail = ({
                 </div>
               </div>
 
-              {/* NDA CTA */}
-              {!ndaSigned && (
-                <div className="b-nda-side">
-                  <h4>🔒 Financial Details Locked</h4>
-                  <p>Sign a quick NDA to access tax returns, full P&L, and detailed financials. Takes 60 seconds.</p>
-                  <button className="b-btn-nda-side" onClick={() => setNdaOpen(true)}>
-                    🔓 Sign NDA & Access Full Financials
-                  </button>
-                </div>
-              )}
-              {ndaSigned && (
-                <div style={{ background: "var(--green-bg)", border: "1.5px solid var(--green-border)", borderRadius: 8, padding: 14, fontSize: 13, color: "var(--green)", fontWeight: 600 }}>
-                  ✅ NDA Signed — Financial documents unlocked. Check your email for a countersigned copy.
-                </div>
-              )}
 
-              {/* Express Interest / Message */}
+              {/* Contact / Message */}
               <div className="b-side-card">
                 <div className="b-side-head">
-                  <h3>{isDealClosed ? "📩 Listing Closed" : "✉ Express Interest"}</h3>
+                  <h3>{isDealClosed ? "📩 Listing Closed" : "💬 Contact Lister"}</h3>
                   <p>
                     {isDealClosed
                       ? "This deal is no longer accepting offers."
-                      : "Send a direct message to the listing owner. Your info is shared securely."}
+                      : "Message the owner or show your interest to move forward."}
                   </p>
                 </div>
                 <div className="b-side-body">
-                  {interestSent ? (
-                    <div className="b-success">
-                      <div style={{ fontSize: 40, marginBottom: 10 }}>✅</div>
-                      <h4>Message Sent!</h4>
-                      <p>The listing owner has been notified and will contact you directly.</p>
-                      <button
-                        style={{ background: "none", border: "1.5px solid var(--border)", color: "var(--text-2)", padding: "7px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
-                        onClick={() => setInterestSent(false)}
-                      >
-                        Send Another Message
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      {activeVisit?.status === "vendor_reschedule_pending" && activeVisit?.pending_reschedule_at && (
-                        <div style={{ background: "var(--indigo-bg)", border: "1px solid var(--indigo-border)", borderRadius: 8, padding: 14, marginBottom: 14 }}>
-                          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--indigo)", marginBottom: 6 }}>New time proposed</p>
-                          <p style={{ fontSize: 12, color: "var(--text-2)", marginBottom: 10 }}>
-                            {new Date(activeVisit.pending_reschedule_at).toLocaleString(undefined, { weekday: "short", dateStyle: "medium", timeStyle: "short" })}
-                          </p>
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button onClick={() => respondToVendorReschedule(true)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "var(--indigo)", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Accept</button>
-                            <button onClick={() => respondToVendorReschedule(false)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "none", color: "var(--text-2)", border: "1px solid var(--border)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Decline</button>
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="b-form-label">Buyer Type</label>
-                        <select className="b-form-select" value={buyerType} onChange={(e) => setBuyerType(e.target.value)}>
-                          <option value="">Select…</option>
-                          <option>Individual Buyer</option>
-                          <option>Strategic Acquirer</option>
-                          <option>Private Equity</option>
-                          <option>Search Fund</option>
-                          <option>Investor / Broker</option>
-                        </select>
-                        <label className="b-form-label">Funding Source</label>
-                        <select className="b-form-select" value={fundingSource} onChange={(e) => setFundingSource(e.target.value)}>
-                          <option value="">Select…</option>
-                          <option>Cash / Liquid Funds</option>
-                          <option>SBA Loan</option>
-                          <option>Seller Financing</option>
-                          <option>Investor Backed</option>
-                        </select>
-                        <label className="b-form-label">Message</label>
-                        <textarea
-                          className="b-form-textarea"
-                          placeholder="Introduce yourself and explain your interest and acquisition intent…"
-                          value={interestMsg}
-                          onChange={(e) => setInterestMsg(e.target.value)}
-                          rows={3}
-                        />
-                      </div>
-
-                      <button
-                        className={`b-btn-express${interestSending ? " sending" : ""}`}
-                        disabled={isDealClosed || interestSending}
-                        onClick={handleExpressInterest}
-                      >
-                        {interestSending ? (
-                          <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,.3)", borderTop: "2px solid #fff", borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
-                        ) : isDealClosed ? (
-                          "Deal Closed"
-                        ) : (
-                          <>✉ Send Interest to Owner</>
-                        )}
-                      </button>
-                      <p className="b-form-disclaimer">
-                        Your info is shared only with the listing owner. PinkSurfing does not sell your data.
+                  {activeVisit?.status === "vendor_reschedule_pending" && activeVisit?.pending_reschedule_at && (
+                    <div style={{ background: "var(--indigo-bg)", border: "1px solid var(--indigo-border)", borderRadius: 8, padding: 14, marginBottom: 14 }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--indigo)", marginBottom: 6 }}>New time proposed</p>
+                      <p style={{ fontSize: 12, color: "var(--text-2)", marginBottom: 10 }}>
+                        {new Date(activeVisit.pending_reschedule_at).toLocaleString(undefined, { weekday: "short", dateStyle: "medium", timeStyle: "short" })}
                       </p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={() => respondToVendorReschedule(true)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "var(--indigo)", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Accept</button>
+                        <button onClick={() => respondToVendorReschedule(false)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "none", color: "var(--text-2)", border: "1px solid var(--border)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Decline</button>
+                      </div>
+                    </div>
+                  )}
 
-                      {/* Schedule financial review / visit */}
-                      <button
-                        onClick={() => {
-                          if (isDealClosed) return;
-                          if (activeVisit?.status === "pending_payment") { continueVisitPayment(); return; }
-                          if (activeVisit?.status === "buyer_reschedule_pending") return;
-                          if (canBuyerReschedule) openRescheduleVisitModal();
-                          else openScheduleVisitModal();
-                        }}
-                        disabled={isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending"}
-                        style={{
-                          width: "100%", marginTop: 10, padding: "10px 12px", borderRadius: 6,
-                          background: "var(--surface-2)", border: "1.5px solid var(--border)",
-                          color: isDealClosed ? "var(--text-3)" : "var(--text-2)",
-                          fontSize: 13, fontWeight: 600, cursor: isDealClosed ? "not-allowed" : "pointer",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .15s"
-                        }}
-                      >
-                        📅 {isDealClosed ? "Deal Closed" : scheduleButtonLabel}
-                      </button>
+                  <button
+                    className={`b-btn-express${contactingAgent ? " sending" : ""}`}
+                    disabled={isDealClosed || contactingAgent}
+                    onClick={handleContactAgent}
+                  >
+                    {contactingAgent ? (
+                      <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,.3)", borderTop: "2px solid #fff", borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
+                    ) : isDealClosed ? (
+                      "Deal Closed"
+                    ) : (
+                      <>💬 Message Lister</>
+                    )}
+                  </button>
 
-                      {activeVisit?.status === "accepted" && (
-                        <button
-                          onClick={() => setDisputeModalOpen(true)}
-                          style={{ width: "100%", marginTop: 8, padding: "8px", borderRadius: 6, background: "none", border: "1px solid var(--red-border)", color: "var(--red)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
-                        >
-                          Raise a Dispute
-                        </button>
-                      )}
-                    </>
+                  <button
+                    onClick={() => {
+                      if (isDealClosed) return;
+                      if (activeVisit?.status === "pending_payment") { continueVisitPayment(); return; }
+                      if (activeVisit?.status === "buyer_reschedule_pending") return;
+                      if (canBuyerReschedule) openRescheduleVisitModal();
+                      else openScheduleVisitModal();
+                    }}
+                    disabled={isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending"}
+                    style={{
+                      width: "100%", marginTop: 10, padding: "10px 12px", borderRadius: 6,
+                      background: "var(--surface-2)", border: "1.5px solid var(--border)",
+                      color: isDealClosed ? "var(--text-3)" : "var(--text-2)",
+                      fontSize: 13, fontWeight: 600, cursor: isDealClosed ? "not-allowed" : "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .15s"
+                    }}
+                  >
+                    🤝 {isDealClosed ? "Deal Closed" : "Show Interest"}
+                  </button>
+
+                  {activeVisit?.status === "accepted" && (
+                    <button
+                      onClick={() => setDisputeModalOpen(true)}
+                      style={{ width: "100%", marginTop: 8, padding: "8px", borderRadius: 6, background: "none", border: "1px solid var(--red-border)", color: "var(--red)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      Raise a Dispute
+                    </button>
                   )}
                 </div>
               </div>
@@ -1115,89 +957,42 @@ const BusinessListingDetail = ({
         </div>
       </div>
 
-      {/* NDA MODAL */}
-      {ndaOpen && (
-        <div className="b-modal-overlay" onClick={() => setNdaOpen(false)}>
-          <div className="b-modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="b-modal-header">
-              <div className="b-modal-title">🔒 Sign NDA to Access Financial Documents</div>
-              <button className="b-modal-close" onClick={() => setNdaOpen(false)}>✕</button>
-            </div>
-            <div className="b-modal-body">
-              <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 14, lineHeight: 1.5 }}>
-                You will receive access to financial documents after signing. A countersigned copy will be emailed to you and the seller.
-              </p>
-              <div className="b-nda-text">
-                <h4>NON-DISCLOSURE AGREEMENT</h4>
-                <p>This Agreement is entered into between the Disclosing Party (Business Seller via PinkSurfing) and the Receiving Party (identified by signature below).</p>
-                <h5>1. Confidential Information</h5>
-                <p>Includes financial statements, tax returns, revenue data, customer lists, contracts, operational procedures, and all information related to the listed business.</p>
-                <h5>2. Receiving Party Obligations</h5>
-                <p>(a) Keep all information strictly confidential. (b) Not disclose to any third party without consent. (c) Use solely to evaluate a potential acquisition.</p>
-                <h5>3. Term</h5>
-                <p>Valid for 1 year from date of signing.</p>
-                <h5>4. Non-Solicitation</h5>
-                <p>Receiving Party agrees not to solicit employees or key contractors during the NDA term and 12 months thereafter.</p>
-                <h5>5. Governing Law</h5>
-                <p>Governed by the laws of California, USA.</p>
-                <h5>6. AI Agent Restriction</h5>
-                <p>AI agents cannot sign this agreement. Human signing authority is required.</p>
-              </div>
+      {/* LIGHTBOX */}
+      {lightboxOpen && photos.length > 0 && (
+        <div
+          className="b-lightbox"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button className="b-lightbox-close" onClick={() => setLightboxOpen(false)}>✕</button>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-                <div>
-                  <label className="b-form-label">Full Legal Name *</label>
-                  <input className="b-form-input" type="text" placeholder="Jane Smith" value={ndaName} onChange={(e) => setNdaName(e.target.value)} style={{ margin: 0 }} />
-                </div>
-                <div>
-                  <label className="b-form-label">Email *</label>
-                  <input className="b-form-input" type="email" placeholder="jane@company.com" value={ndaEmail} onChange={(e) => setNdaEmail(e.target.value)} style={{ margin: 0 }} />
-                </div>
-              </div>
-              <div style={{ marginBottom: 12 }}>
-                <label className="b-form-label">Buyer Role *</label>
-                <select className="b-form-select" value={ndaRole} onChange={(e) => setNdaRole(e.target.value)} style={{ margin: 0 }}>
-                  <option value="">Select…</option>
-                  <option>Individual Buyer</option>
-                  <option>Strategic Acquirer</option>
-                  <option>Private Equity</option>
-                  <option>Search Fund</option>
-                  <option>Broker / Advisor</option>
-                </select>
-              </div>
-              <div style={{ marginBottom: 12 }}>
-                <label className="b-form-label">Digital Signature — Type your full legal name exactly *</label>
-                <input
-                  className="b-sig-field"
-                  type="text"
-                  placeholder="Type your full legal name to sign"
-                  value={ndaSig}
-                  onChange={(e) => setNdaSig(e.target.value)}
-                />
-                <div style={{ fontSize: 11, color: "var(--text-3)", lineHeight: 1.4 }}>
-                  By typing your name you confirm this is a legally binding electronic signature (ESIGN Act / UETA).
-                </div>
-              </div>
-              <div className="b-agree-wrap">
-                <input type="checkbox" id="biz-nda-agree" checked={ndaAgree} onChange={(e) => setNdaAgree(e.target.checked)} style={{ width: 14, height: 14, accentColor: "var(--pink)", flexShrink: 0, marginTop: 2 }} />
-                <label htmlFor="biz-nda-agree">
-                  I have read and agree to all terms of this Non-Disclosure Agreement. I confirm I am a human with the legal authority to enter this Agreement.
-                </label>
-              </div>
-            </div>
-            <div className="b-modal-foot">
-              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
-                <button className="b-btn-cancel" onClick={() => setNdaOpen(false)}>Cancel</button>
-                <button
-                  className="b-btn-sign"
-                  disabled={!ndaAgree || !ndaName || !ndaEmail || !ndaRole || ndaSig !== ndaName}
-                  onClick={handleNdaSubmit}
-                >
-                  ✍ Sign NDA & Unlock Documents
-                </button>
-              </div>
-            </div>
-          </div>
+          {photos.length > 1 && (
+            <button
+              className="b-lightbox-prev"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex - 1 + photos.length) % photos.length); }}
+            >
+              ‹
+            </button>
+          )}
+
+          <img
+            className="b-lightbox-img"
+            src={photos[lightboxIndex]}
+            alt={`${product.name} — photo ${lightboxIndex + 1}`}
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {photos.length > 1 && (
+            <button
+              className="b-lightbox-next"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex + 1) % photos.length); }}
+            >
+              ›
+            </button>
+          )}
+
+          {photos.length > 1 && (
+            <div className="b-lightbox-counter">{lightboxIndex + 1} / {photos.length}</div>
+          )}
         </div>
       )}
 
