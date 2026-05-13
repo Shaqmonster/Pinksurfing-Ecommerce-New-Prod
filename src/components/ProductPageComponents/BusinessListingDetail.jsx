@@ -745,7 +745,140 @@ const BusinessListingDetail = ({
                 {/* ── ALL INFO ── */}
                 {activeTab === "documents" && (() => {
                   const attrs = product.attributes || [];
-                  if (attrs.length === 0) {
+
+                  const yesNo = (v) => {
+                    const s = String(v || "").toLowerCase();
+                    if (s === "true" || s === "yes" || s === "1") return "yes";
+                    if (s === "false" || s === "no" || s === "0") return "no";
+                    return null;
+                  };
+
+                  const isMoneyField = (name) => {
+                    const l = (name || "").toLowerCase();
+                    return l.includes("revenue") || l.includes("ebitda") || l.includes("sde") || l.includes("price") || l.includes("add-back") || l.includes("addback") || l.includes("normalized");
+                  };
+
+                  const formatVal = (name, value) => {
+                    const yn = yesNo(value);
+                    if (yn === "yes") return { label: "Yes", tone: "good" };
+                    if (yn === "no") return { label: "No", tone: "neutral" };
+                    const n = parseFloat(String(value || "").replace(/[^0-9.\-]/g, ""));
+                    if (!isNaN(n)) {
+                      if (n <= 0) return { label: "N/A", tone: "muted" };
+                      if (isMoneyField(name)) return { label: `${currency}${formatMoney(n)}`, tone: "highlight" };
+                      const l = (name || "").toLowerCase();
+                      if (l.includes("multiple") || l.includes("%") || l.includes("margin") || l.includes("ratio")) return { label: String(value), tone: "highlight" };
+                    }
+                    if (!value || String(value).trim() === "") return { label: "—", tone: "muted" };
+                    return { label: String(value), tone: "neutral" };
+                  };
+
+                  // Comprehensive groups covering every form section
+                  const GROUPS = [
+                    {
+                      title: "📄 Listing Info",
+                      isMeta: true,
+                      items: [
+                        product.brand_name && { name: "Brand / Company", value: product.brand_name },
+                        product.subcategory?.name && { name: "Subcategory", value: product.subcategory.name },
+                        product.vendor?.store_name && { name: "Listed by", value: product.vendor.store_name },
+                        product.created_at && { name: "Date Listed", value: new Date(product.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },
+                        { name: "Listing ID", value: `#PS-${product.id?.slice(-7).toUpperCase()}` },
+                      ].filter(Boolean),
+                    },
+                    {
+                      title: "📍 Location",
+                      keys: ["city", "state", "country", "zip", "zip / radius", "zip/radius", "address", "street address"],
+                    },
+                    {
+                      title: "💰 Price & Financials",
+                      keys: [
+                        "asking price ($)", "asking price", "annual revenue", "revenue", "revenue ($)",
+                        "ebitda", "ebitda ($)", "sde", "sde ($)", "normalized ebitda", "adjusted ebitda",
+                        "ebitda multiple", "revenue multiple", "sde multiple",
+                        "recurring rev %", "recurring revenue %",
+                        "growth trend", "add-backs", "owner add-backs",
+                        "financial snapshot (3-5 year summary)", "financial snapshot",
+                        "historical financials available",
+                      ],
+                    },
+                    {
+                      title: "🏢 Business Overview",
+                      keys: [
+                        "industry", "sale type", "deal structure", "listing status", "status",
+                        "business title", "years in operation", "employees", "owner involvement",
+                        "transition type", "transition support", "financing options",
+                      ],
+                    },
+                    {
+                      title: "⚙️ Operations & Team",
+                      keys: [
+                        "staff roles", "technology stack", "key vendors", "key vendors / suppliers",
+                        "automations present", "automations", "automation in place",
+                        "crm/erp in place", "crm/erp",
+                        "sops documented", "sops", "documented sops",
+                      ],
+                    },
+                    {
+                      title: "🌐 Remote & Digital",
+                      keys: ["remote business", "remote", "web/mobile only", "multi-location", "digital-only"],
+                    },
+                    {
+                      title: "🤖 AI & Automation",
+                      keys: [
+                        "ai leverageable", "ai-enabled operations", "ai-enabled", "ai in operations",
+                        "ai upside", "ai upside potential",
+                      ],
+                    },
+                    {
+                      title: "🚀 Opportunities",
+                      keys: [
+                        "expansion opportunity", "expansion",
+                        "cost reduction opportunity", "cost reduction",
+                        "pricing power",
+                        "recurring revenue",
+                      ],
+                    },
+                    {
+                      title: "⚠️ Risk Disclosures",
+                      keys: [
+                        "regulated industry", "licenses required", "pending litigation",
+                        "customer concentration risk", "revenue dependency risk", "key person dependency",
+                      ],
+                    },
+                    {
+                      title: "✦ Smart Match Tags",
+                      keys: ["smart features", "smart tags"],
+                    },
+                  ];
+
+                  const usedNames = new Set();
+                  const grouped = [];
+
+                  GROUPS.forEach(({ title, keys, items, isMeta }) => {
+                    if (isMeta) {
+                      if (items && items.length > 0) grouped.push({ title, items, isMeta: true });
+                      return;
+                    }
+                    const matches = attrs.filter((a) =>
+                      (keys || []).includes((a.name || "").toLowerCase().trim()) && !usedNames.has(a.name)
+                    );
+                    matches.forEach((a) => usedNames.add(a.name));
+                    if (matches.length > 0) grouped.push({ title, items: matches });
+                  });
+
+                  // Everything not yet categorised
+                  const remaining = attrs.filter((a) => !usedNames.has(a.name));
+                  if (remaining.length > 0) grouped.push({ title: "📋 Additional Details", items: remaining });
+
+                  const toneStyle = (tone) => {
+                    if (tone === "good")      return { background: "var(--green-bg)", border: "1px solid var(--green-border)", color: "var(--green)" };
+                    if (tone === "highlight") return { background: "rgba(236,72,153,.08)", border: "1px solid rgba(236,72,153,.25)", color: "var(--pink)" };
+                    if (tone === "muted")     return { background: "var(--surface-3,var(--surface-2))", border: "1px solid var(--border)", color: "var(--text-3)" };
+                    return { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" };
+                  };
+
+                  if (grouped.length === 0) {
                     return (
                       <div className="b-panel">
                         <p style={{ fontSize: 13, color: "var(--text-3)", fontStyle: "italic" }}>No additional information available.</p>
@@ -753,84 +886,41 @@ const BusinessListingDetail = ({
                     );
                   }
 
-                  const yesNo = (v) => {
-                    const s = String(v || "").toLowerCase();
-                    if (s === "true" || s === "yes") return "yes";
-                    if (s === "false" || s === "no") return "no";
-                    return null;
-                  };
-
-                  const formatVal = (name, value) => {
-                    const yn = yesNo(value);
-                    if (yn === "yes") return { label: "Yes", tone: "good" };
-                    if (yn === "no") return { label: "No", tone: "muted" };
-                    // number-looking values
-                    const n = parseFloat(value);
-                    if (!isNaN(n) && n > 0 && /^\-?[\d.,]+$/.test(String(value).trim())) {
-                      const lower = name.toLowerCase();
-                      if (lower.includes("revenue") || lower.includes("ebitda") || lower.includes("sde") || lower.includes("price") || lower.includes("add-back")) {
-                        return { label: `${currency}${formatMoney(n)}`, tone: "neutral" };
-                      }
-                      return { label: String(value), tone: "neutral" };
-                    }
-                    if (!isNaN(n) && n < 0) return { label: "N/A", tone: "muted" };
-                    return { label: String(value), tone: "neutral" };
-                  };
-
-                  // Group into categories
-                  const GROUPS = {
-                    "📍 Location": ["city", "state", "country", "zip", "zip / radius", "address"],
-                    "💰 Financials": ["annual revenue", "revenue", "revenue ($)", "normalized ebitda", "ebitda ($)", "ebitda", "sde", "sde ($)", "ebitda multiple", "revenue multiple", "sde multiple", "growth trend", "add-backs", "recurring rev %"],
-                    "🏢 Business Details": ["years in operation", "employees", "owner involvement", "transition type", "transition support", "sale type", "deal structure", "industry", "business title", "brand", "listing status", "status", "financing options"],
-                    "⚙️ Operations": ["staff roles", "technology stack", "key vendors", "licenses required", "pending litigation", "automations present", "automations", "crm/erp in place", "crm/erp", "sops documented", "sops", "documented sops", "financial snapshot (3-5 year summary)"],
-                    "🤖 Digital & AI": ["remote business", "remote", "web/mobile only", "multi-location", "ai leverageable", "ai-enabled operations", "ai-enabled", "ai in operations", "ai upside", "automation in place", "digital-only"],
-                    "📊 Opportunities & Risks": ["expansion opportunity", "expansion", "cost reduction opportunity", "cost reduction", "pricing power", "regulated industry", "key person dependency", "customer concentration risk", "revenue dependency risk", "historical financials available", "recurring revenue %", "adjusted ebitda", "owner add-backs", "smart features"],
-                  };
-
-                  const usedNames = new Set();
-                  const grouped = {};
-
-                  Object.entries(GROUPS).forEach(([groupName, keys]) => {
-                    const matches = attrs.filter((a) =>
-                      keys.includes((a.name || "").toLowerCase()) && !usedNames.has(a.name)
-                    );
-                    matches.forEach((a) => usedNames.add(a.name));
-                    if (matches.length > 0) grouped[groupName] = matches;
-                  });
-
-                  // Anything not matched goes to "Other"
-                  const remaining = attrs.filter((a) => !usedNames.has(a.name));
-                  if (remaining.length > 0) grouped["📋 Other Details"] = remaining;
-
                   return (
                     <div className="b-panel">
                       <h3 style={{ marginBottom: 20 }}>Full Listing Information</h3>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                        {Object.entries(grouped).map(([groupName, items]) => (
-                          <div key={groupName}>
-                            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--text-3)", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
-                              {groupName}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+                        {grouped.map(({ title, items, isMeta }) => (
+                          <div key={title}>
+                            <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--text-3)", marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
+                              {title}
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
-                              {items.map((attr) => {
-                                const { label, tone } = formatVal(attr.name, attr.value);
-                                const chipStyle = tone === "good"
-                                  ? { background: "var(--green-bg)", border: "1px solid var(--green-border)", color: "var(--green)" }
-                                  : tone === "muted"
-                                  ? { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-3)" }
-                                  : { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" };
-                                return (
-                                  <div key={attr.name} style={{ padding: "10px 12px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6 }}>
-                                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--text-3)", marginBottom: 5 }}>
-                                      {attr.name}
+
+                            {title === "✦ Smart Match Tags" ? (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                {items.flatMap((a) =>
+                                  String(a.value || "").split(",").map((t) => t.trim()).filter(Boolean).map((tag) => (
+                                    <span key={tag} className="b-smart-tag">✦ {tag}</span>
+                                  ))
+                                )}
+                              </div>
+                            ) : (
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 8 }}>
+                                {items.map((attr) => {
+                                  const { label, tone } = isMeta ? { label: String(attr.value), tone: "neutral" } : formatVal(attr.name, attr.value);
+                                  return (
+                                    <div key={attr.name} style={{ padding: "11px 13px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6 }}>
+                                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--text-3)", marginBottom: 6 }}>
+                                        {attr.name}
+                                      </div>
+                                      <span style={{ fontSize: 13, fontWeight: 600, padding: "2px 8px", borderRadius: 4, display: "inline-block", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...toneStyle(tone) }}>
+                                        {label}
+                                      </span>
                                     </div>
-                                    <div style={{ fontSize: 13, fontWeight: 600, ...chipStyle, display: "inline-block", padding: "2px 8px", borderRadius: 4 }}>
-                                      {label}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
