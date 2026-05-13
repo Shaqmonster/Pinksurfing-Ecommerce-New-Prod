@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import axios from "axios";
+import { toast } from "react-toastify";
 import {
   FaHeart,
   FaShare,
@@ -134,16 +136,6 @@ const CSS = `
   .b-loc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:4px;}
   .b-loc-val{font-size:14px;font-weight:600;color:var(--text);}
 
-  /* docs */
-  .b-doc-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;margin-bottom:8px;transition:border-color .15s;}
-  .b-doc-row:hover{border-color:var(--border-2);}
-  .b-doc-info{flex:1;min-width:0;}
-  .b-doc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
-  .b-doc-sub{font-size:11px;color:var(--text-3);}
-  .b-doc-right{flex-shrink:0;display:flex;align-items:center;gap:8px;}
-  .b-badge-free{font-size:10px;font-weight:700;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:2px 7px;border-radius:4px;}
-  .b-btn-doc{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap;}
-  .b-btn-doc:hover{border-color:var(--pink);color:var(--pink);}
 
   /* similar grid */
   .b-sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
@@ -205,6 +197,7 @@ const CSS = `
   /* pulse */
   .b-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;animation:b-pulse-dot 2s infinite;}
   @keyframes b-pulse-dot{0%{box-shadow:0 0 0 0 rgba(52,211,153,.4);}70%{box-shadow:0 0 0 7px rgba(52,211,153,0);}100%{box-shadow:0 0 0 0 rgba(52,211,153,0);}}
+  @keyframes b-heart-pop{0%{transform:scale(1);}40%{transform:scale(1.4);}70%{transform:scale(.9);}100%{transform:scale(1);}}
 
   /* success */
   .b-success{text-align:center;padding:20px;}
@@ -236,9 +229,9 @@ const BusinessListingDetail = ({
   isDealClosed,
   contactingAgent,
   handleContactAgent,
-  handleWishlistClick,
   handleShareClick,
   wishlistProducts,
+  setWishlistProducts,
   user,
   cookies,
   allProducts,
@@ -253,12 +246,14 @@ const BusinessListingDetail = ({
   canBuyerReschedule,
   setDisputeModalOpen,
 }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [activeImage, setActiveImage] = useState(
     product.image1 || product.image2 || product.image3 || product.image4 || ""
   );
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [wishlistBusy, setWishlistBusy] = useState(false);
 
   const photos = [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
   const daysOnMarket = product.created_at ? formatDistanceToNow(new Date(product.created_at)) : null;
@@ -303,7 +298,48 @@ const BusinessListingDetail = ({
   const price = Number(product.unit_price) || 0;
   const formattedPrice = price ? `${currency}${formatMoney(price)}` : "Contact for Price";
 
+  // ── Optimistic wishlist toggle ──
   const isSaved = !!wishlistProducts?.find((i) => i.id === product.id);
+
+  const handleWishlistClick = useCallback(async () => {
+    if (!user) {
+      toast.error("Please sign in to save listings", { position: "top-right" });
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      navigate("/signin");
+      return;
+    }
+    if (wishlistBusy) return;
+    setWishlistBusy(true);
+
+    // Optimistically update UI immediately
+    const wasInWishlist = isSaved;
+    if (wasInWishlist) {
+      setWishlistProducts((prev) => prev.filter((i) => i.id !== product.id));
+    } else {
+      setWishlistProducts((prev) => [...(prev || []), { id: product.id, ...product }]);
+    }
+
+    try {
+      const url = wasInWishlist
+        ? `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/remove/${product.id}`
+        : `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/add/${product.id}`;
+      await axios.post(url, {}, {
+        headers: { Authorization: `Bearer ${cookies.access_token}` },
+      });
+      toast.success(wasInWishlist ? "Removed from wishlist" : "Saved to wishlist", { position: "top-right" });
+    } catch (err) {
+      // Revert on failure
+      if (wasInWishlist) {
+        setWishlistProducts((prev) => [...(prev || []), { id: product.id, ...product }]);
+      } else {
+        setWishlistProducts((prev) => (prev || []).filter((i) => i.id !== product.id));
+      }
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || "Couldn't update wishlist";
+      toast.error(msg, { position: "top-right" });
+    } finally {
+      setWishlistBusy(false);
+    }
+  }, [user, wishlistBusy, isSaved, product, cookies, navigate, setWishlistProducts]);
 
   const tabs = ["overview", "financials", "operations", "location", "documents"];
 
@@ -445,7 +481,7 @@ const BusinessListingDetail = ({
                       onClick={() => setActiveTab(t)}
                       style={{ textTransform: "capitalize" }}
                     >
-                      {t === "overview" ? "Overview" : t === "financials" ? "Financials" : t === "operations" ? "Operations" : t === "location" ? "Location" : "Documents"}
+                      {t === "overview" ? "Overview" : t === "financials" ? "Financials" : t === "operations" ? "Operations" : t === "location" ? "Location" : "All Info"}
                     </button>
                   ))}
                 </div>
@@ -706,35 +742,101 @@ const BusinessListingDetail = ({
                   </div>
                 )}
 
-                {/* ── DOCUMENTS ── */}
-                {activeTab === "documents" && (
-                  <div className="b-panel">
-                    <div>
-                      {[
-                        { icon: "📄", name: "Business Teaser", sub: "High-level overview of the business" },
-                        { icon: "📊", name: "Confidential Information Memorandum (CIM)", sub: "Full business overview, competitive positioning, and growth plan" },
-                        { icon: "💰", name: "P&L / Financial Statements", sub: "Revenue and expenses summary" },
-                        { icon: "🧾", name: "Full Financials — Tax Returns & Add-Backs", sub: "Complete financial documentation for due diligence" },
-                        { icon: "📋", name: "Franchise / Operating Agreement", sub: "Operational terms, royalties, and transfer details" },
-                      ].map((doc) => (
-                        <div key={doc.name} className="b-doc-row">
-                          <div style={{ fontSize: 22 }}>{doc.icon}</div>
-                          <div className="b-doc-info">
-                            <div className="b-doc-name">{doc.name}</div>
-                            <div className="b-doc-sub">{doc.sub}</div>
+                {/* ── ALL INFO ── */}
+                {activeTab === "documents" && (() => {
+                  const attrs = product.attributes || [];
+                  if (attrs.length === 0) {
+                    return (
+                      <div className="b-panel">
+                        <p style={{ fontSize: 13, color: "var(--text-3)", fontStyle: "italic" }}>No additional information available.</p>
+                      </div>
+                    );
+                  }
+
+                  const yesNo = (v) => {
+                    const s = String(v || "").toLowerCase();
+                    if (s === "true" || s === "yes") return "yes";
+                    if (s === "false" || s === "no") return "no";
+                    return null;
+                  };
+
+                  const formatVal = (name, value) => {
+                    const yn = yesNo(value);
+                    if (yn === "yes") return { label: "Yes", tone: "good" };
+                    if (yn === "no") return { label: "No", tone: "muted" };
+                    // number-looking values
+                    const n = parseFloat(value);
+                    if (!isNaN(n) && n > 0 && /^\-?[\d.,]+$/.test(String(value).trim())) {
+                      const lower = name.toLowerCase();
+                      if (lower.includes("revenue") || lower.includes("ebitda") || lower.includes("sde") || lower.includes("price") || lower.includes("add-back")) {
+                        return { label: `${currency}${formatMoney(n)}`, tone: "neutral" };
+                      }
+                      return { label: String(value), tone: "neutral" };
+                    }
+                    if (!isNaN(n) && n < 0) return { label: "N/A", tone: "muted" };
+                    return { label: String(value), tone: "neutral" };
+                  };
+
+                  // Group into categories
+                  const GROUPS = {
+                    "📍 Location": ["city", "state", "country", "zip", "zip / radius", "address"],
+                    "💰 Financials": ["annual revenue", "revenue", "revenue ($)", "normalized ebitda", "ebitda ($)", "ebitda", "sde", "sde ($)", "ebitda multiple", "revenue multiple", "sde multiple", "growth trend", "add-backs", "recurring rev %"],
+                    "🏢 Business Details": ["years in operation", "employees", "owner involvement", "transition type", "transition support", "sale type", "deal structure", "industry", "business title", "brand", "listing status", "status", "financing options"],
+                    "⚙️ Operations": ["staff roles", "technology stack", "key vendors", "licenses required", "pending litigation", "automations present", "automations", "crm/erp in place", "crm/erp", "sops documented", "sops", "documented sops", "financial snapshot (3-5 year summary)"],
+                    "🤖 Digital & AI": ["remote business", "remote", "web/mobile only", "multi-location", "ai leverageable", "ai-enabled operations", "ai-enabled", "ai in operations", "ai upside", "automation in place", "digital-only"],
+                    "📊 Opportunities & Risks": ["expansion opportunity", "expansion", "cost reduction opportunity", "cost reduction", "pricing power", "regulated industry", "key person dependency", "customer concentration risk", "revenue dependency risk", "historical financials available", "recurring revenue %", "adjusted ebitda", "owner add-backs", "smart features"],
+                  };
+
+                  const usedNames = new Set();
+                  const grouped = {};
+
+                  Object.entries(GROUPS).forEach(([groupName, keys]) => {
+                    const matches = attrs.filter((a) =>
+                      keys.includes((a.name || "").toLowerCase()) && !usedNames.has(a.name)
+                    );
+                    matches.forEach((a) => usedNames.add(a.name));
+                    if (matches.length > 0) grouped[groupName] = matches;
+                  });
+
+                  // Anything not matched goes to "Other"
+                  const remaining = attrs.filter((a) => !usedNames.has(a.name));
+                  if (remaining.length > 0) grouped["📋 Other Details"] = remaining;
+
+                  return (
+                    <div className="b-panel">
+                      <h3 style={{ marginBottom: 20 }}>Full Listing Information</h3>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                        {Object.entries(grouped).map(([groupName, items]) => (
+                          <div key={groupName}>
+                            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--text-3)", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
+                              {groupName}
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
+                              {items.map((attr) => {
+                                const { label, tone } = formatVal(attr.name, attr.value);
+                                const chipStyle = tone === "good"
+                                  ? { background: "var(--green-bg)", border: "1px solid var(--green-border)", color: "var(--green)" }
+                                  : tone === "muted"
+                                  ? { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-3)" }
+                                  : { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" };
+                                return (
+                                  <div key={attr.name} style={{ padding: "10px 12px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6 }}>
+                                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--text-3)", marginBottom: 5 }}>
+                                      {attr.name}
+                                    </div>
+                                    <div style={{ fontSize: 13, fontWeight: 600, ...chipStyle, display: "inline-block", padding: "2px 8px", borderRadius: 4 }}>
+                                      {label}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                          <div className="b-doc-right">
-                            <span className="b-badge-free">Available</span>
-                            <button className="b-btn-doc" onClick={() => handleContactAgent()}>Request</button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                    <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
-                      📩 To request any document, message the lister directly using the <strong style={{ color: "var(--text-2)" }}>Express Interest</strong> form or the chat button.
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
 
               {/* SIMILAR LISTINGS */}
@@ -789,9 +891,15 @@ const BusinessListingDetail = ({
                     <button
                       className={`b-btn-qa${isSaved ? " saved" : ""}`}
                       onClick={handleWishlistClick}
-                      style={{ gap: 5 }}
+                      disabled={wishlistBusy}
+                      style={{ gap: 5, minWidth: 80, transition: "all .2s", opacity: wishlistBusy ? 0.7 : 1 }}
                     >
-                      {isSaved ? "♥ Saved" : "♡ Save"}
+                      {wishlistBusy ? (
+                        <span style={{ width: 12, height: 12, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 0.6s linear infinite" }} />
+                      ) : isSaved ? (
+                        <span style={{ animation: "b-heart-pop 0.3s ease" }}>♥</span>
+                      ) : "♡"}
+                      {" "}{isSaved ? "Saved" : "Save"}
                     </button>
                     <button className="b-btn-qa" onClick={handleShareClick}>
                       🔗 Share

@@ -795,9 +795,9 @@ const ProductDetailPage = () => {
           isDealClosed={isDealClosed}
           contactingAgent={contactingAgent}
           handleContactAgent={handleContactAgent}
-          handleWishlistClick={handleWishlistClick}
           handleShareClick={handleShareClick}
           wishlistProducts={wishlistProducts}
+          setWishlistProducts={setWishlistProducts}
           user={user}
           cookies={cookies}
           allProducts={allProducts}
