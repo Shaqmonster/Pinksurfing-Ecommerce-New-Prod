@@ -14,6 +14,7 @@ import { IoClose, IoStarOutline, IoCart, IoChatbubbleOutline, IoFlash } from "re
 import shareImage from "/media/share.png";
 import ProductDetailReviewSection from "../components/ProductPageComponents/ProductDetail-ReviewSection";
 import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLike";
+import BusinessListingDetail from "../components/ProductPageComponents/BusinessListingDetail";
 import { Helmet } from "react-helmet";
 import ImageZoom from "../components/ProductPageComponents/ZoomImage";
 import parse from "html-react-parser";
@@ -770,6 +771,78 @@ const ProductDetailPage = () => {
     );
   };
 
+
+  // ── BUSINESS FOR SALE: render dedicated page ──
+  if (!loading && isBusiness && product?.id) {
+    return (
+      <>
+        {orderConfirm && <OrderConfirm />}
+        {product.meta_title && (
+          <Helmet>
+            <title>{product.meta_title}</title>
+            {product.short_description && (
+              <meta name="description" content={htmlToText(product.short_description)} />
+            )}
+            {product.tags && <meta name="keywords" content={product.tags} />}
+          </Helmet>
+        )}
+        <BusinessListingDetail
+          product={product}
+          getAttr={getAttr}
+          parseMoney={parseMoney}
+          isPositiveMoney={isPositiveMoney}
+          currency={currency}
+          isDealClosed={isDealClosed}
+          contactingAgent={contactingAgent}
+          handleContactAgent={handleContactAgent}
+          handleWishlistClick={handleWishlistClick}
+          handleShareClick={handleShareClick}
+          wishlistProducts={wishlistProducts}
+          user={user}
+          cookies={cookies}
+          allProducts={allProducts}
+          productId={productId}
+          reviews={reviews}
+          activeVisit={activeVisit}
+          openScheduleVisitModal={openScheduleVisitModal}
+          openRescheduleVisitModal={openRescheduleVisitModal}
+          continueVisitPayment={continueVisitPayment}
+          respondToVendorReschedule={respondToVendorReschedule}
+          scheduleButtonLabel={scheduleButtonLabel}
+          canBuyerReschedule={canBuyerReschedule}
+          setDisputeModalOpen={setDisputeModalOpen}
+        />
+        <VisitScheduleModal
+          open={visitModalOpen}
+          onClose={() => { setVisitModalOpen(false); setRescheduleVisitId(null); }}
+          accessToken={cookies.access_token}
+          productId={product.id}
+          visitKind={visitKindApi}
+          rescheduleVisitId={rescheduleVisitId}
+          onSuccess={async () => {
+            if (!cookies.access_token || !product?.id) return;
+            try {
+              const data = await getVisitForProduct(cookies.access_token, product.id);
+              setActiveVisit(data.visit || null);
+            } catch { setActiveVisit(null); }
+          }}
+        />
+        {disputeModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75" onClick={() => !disputeBusy && setDisputeModalOpen(false)} role="presentation">
+            <div className="w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 p-6 text-white shadow-2xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+              <h3 className="text-lg font-bold mb-2">Raise a dispute</h3>
+              <p className="text-xs text-gray-400 mb-4">Describe the issue. Our team at Pinksurfing will review. Minimum 10 characters.</p>
+              <textarea value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} rows={5} className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm mb-4" placeholder="What happened?" />
+              <div className="flex gap-2">
+                <button type="button" disabled={disputeBusy} onClick={() => { if (!disputeBusy) { setDisputeModalOpen(false); setDisputeReason(""); } }} className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-semibold">Cancel</button>
+                <button type="button" disabled={disputeBusy || disputeReason.trim().length < 10} onClick={submitDispute} className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold disabled:opacity-40">{disputeBusy ? "Submitting…" : "Submit"}</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>

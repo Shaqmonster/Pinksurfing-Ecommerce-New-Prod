@@ -1,0 +1,1209 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import {
+  FaHeart,
+  FaShare,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaMoneyBillWave,
+  FaChartLine,
+  FaBuilding,
+  FaUsers,
+  FaUserTie,
+  FaHandshake,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaRobot,
+  FaTags,
+  FaBriefcase,
+  FaBalanceScale,
+  FaFileAlt,
+  FaLock,
+  FaEnvelope,
+} from "react-icons/fa";
+import { IoChatbubbleOutline, IoInformationCircleOutline } from "react-icons/io5";
+import parse from "html-react-parser";
+import { formatMoney } from "../../utils/formatMoney";
+import YouMightAlsoLike from "./YouMightAlsoLike";
+import ProductDetailReviewSection from "./ProductDetail-ReviewSection";
+
+const CSS = `
+  .biz-root{--pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.12);--pink-mid:rgba(240,49,138,.10);--pink-border:rgba(240,49,138,.28);--bg:#0d0d10;--surface:#141418;--surface-2:#1c1c22;--surface-3:#232329;--border:#2a2a33;--border-2:#36363f;--text:#f0f0f4;--text-2:#b0b0c0;--text-3:#66667a;--green:#34d399;--green-bg:rgba(52,211,153,.10);--green-border:rgba(52,211,153,.22);--amber:#fbbf24;--amber-bg:rgba(251,191,36,.10);--amber-border:rgba(251,191,36,.22);--blue:#60a5fa;--blue-bg:rgba(96,165,250,.10);--blue-border:rgba(96,165,250,.22);--red:#f87171;--red-bg:rgba(248,113,113,.10);--red-border:rgba(248,113,113,.22);--indigo:#a78bfa;--indigo-bg:rgba(167,139,250,.10);--indigo-border:rgba(167,139,250,.22);}
+  .biz-root{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+  .biz-page{max-width:1200px;margin:0 auto;padding:28px 24px 80px;}
+  .biz-grid{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start;}
+  .biz-main{display:flex;flex-direction:column;gap:20px;min-width:0;}
+  .biz-side{position:sticky;top:72px;display:flex;flex-direction:column;gap:14px;}
+
+  /* gallery */
+  .b-gallery{border-radius:12px;overflow:hidden;background:var(--surface-2);border:1px solid var(--border);}
+  .b-gallery-main{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--surface-3);}
+  .b-gallery-main img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .3s;}
+  .b-gallery-badge{position:absolute;top:14px;left:14px;display:flex;gap:6px;flex-wrap:wrap;}
+  .b-gallery-price{position:absolute;bottom:14px;right:14px;background:rgba(13,13,16,.85);backdrop-filter:blur(8px);border:1px solid var(--pink-border);border-radius:8px;padding:10px 16px;}
+  .b-asking-label{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:2px;}
+  .b-asking-val{font-size:26px;font-weight:800;color:var(--pink);line-height:1;}
+  .b-thumbs{display:flex;gap:8px;padding:10px;background:var(--surface-2);}
+  .b-thumb{width:72px;height:52px;border-radius:5px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0;background:var(--surface-3);}
+  .b-thumb.active{border-color:var(--pink);}
+  .b-thumb img{width:100%;height:100%;object-fit:cover;}
+  .b-thumb-more{width:72px;height:52px;border-radius:5px;border:1.5px dashed var(--border-2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text-3);flex-shrink:0;background:var(--surface-3);}
+
+  /* badge */
+  .b-badge{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;}
+  .b-badge.ind{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue);}
+  .b-badge.active-s{background:var(--green-bg);border-color:var(--green-border);color:var(--green);}
+  .b-badge.closed{background:var(--red-bg);border-color:var(--red-border);color:var(--red);}
+  .b-badge.sba{background:var(--indigo-bg);border-color:var(--indigo-border);color:var(--indigo);}
+
+  /* deal hero */
+  .b-hero{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+  .b-hero-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);}
+  .b-hero-title{font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.25;margin-bottom:8px;color:var(--text);}
+  .b-hero-loc{font-size:13px;color:var(--text-3);display:flex;align-items:center;gap:5px;}
+  .b-hero-loc a{color:var(--pink);font-weight:600;cursor:pointer;}
+  .b-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--surface-2);}
+  .b-met{padding:16px 18px;display:flex;flex-direction:column;gap:3px;border-right:1px solid var(--border);}
+  .b-met:last-child{border-right:none;}
+  .b-met-v{font-size:20px;font-weight:800;color:var(--text);line-height:1;}
+  .b-met-v.pink{color:var(--pink);}
+  .b-met-v.green{color:var(--green);}
+  .b-met-v.amber{color:var(--amber);}
+  .b-met-k{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-top:2px;}
+  .b-met-note{font-size:10px;color:var(--text-3);margin-top:2px;}
+
+  /* tabs */
+  .b-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);border-radius:8px 8px 0 0;overflow:hidden;}
+  .b-tab{padding:13px 20px;font-size:13px;font-weight:600;color:var(--text-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;flex-shrink:0;background:none;border-top:none;border-left:none;border-right:none;}
+  .b-tab:hover{color:var(--text-2);background:var(--surface-2);}
+  .b-tab.active{color:var(--pink);border-bottom-color:var(--pink);background:var(--surface);}
+  .b-panel{background:var(--surface);border:1.5px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:24px;}
+  .b-panel h3{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--text);}
+  .b-panel h4{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text-2);}
+  .b-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+  .b-about{font-size:14px;color:var(--text-2);line-height:1.75;}
+
+  /* highlight boxes */
+  .b-hl-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;}
+  .b-hl-box{background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:4px;}
+  .b-hl-icon{font-size:20px;}
+  .b-hl-val{font-size:16px;font-weight:800;color:var(--text);}
+  .b-hl-key{font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+
+  /* financials table */
+  .b-fin-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .b-fin-table th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);padding:8px 12px;border-bottom:1px solid var(--border);}
+  .b-fin-table th:not(:first-child){text-align:right;}
+  .b-fin-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-2);}
+  .b-fin-table td:not(:first-child){text-align:right;font-family:'DM Mono',monospace;font-size:12px;}
+  .b-fin-table tr:last-child td{border-bottom:none;}
+  .b-fin-table tr.total td{font-weight:700;color:var(--text);}
+  .b-fin-table tr.highlight td{background:var(--pink-light);color:var(--pink);font-weight:700;}
+  .b-fin-table .neg{color:var(--red);}
+  .b-fin-table .pos{color:var(--green);}
+
+  /* NDA gate */
+  .b-nda-gate{background:var(--surface-2);border:1.5px solid var(--border);border-radius:8px;padding:20px;text-align:center;margin-top:16px;}
+  .b-nda-gate-icon{font-size:36px;margin-bottom:10px;}
+  .b-nda-doc-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:4px 9px;font-size:11px;font-weight:600;color:var(--text-3);margin:3px;}
+  .b-btn-nda{background:var(--pink);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s;}
+  .b-btn-nda:hover{background:var(--pink-h);}
+
+  /* operations */
+  .b-ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .b-ops-card{background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;padding:14px;}
+  .b-ops-card h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:10px;}
+  .b-ops-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0;}
+  .b-ops-key{color:var(--text-3);}
+  .b-ops-val{font-weight:600;color:var(--text);text-align:right;}
+  .b-flag-wrap{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;}
+  .b-flag{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 10px;font-size:12px;font-weight:600;color:var(--text-2);}
+  .b-flag.yes{background:var(--green-bg);border-color:var(--green-border);color:var(--green);}
+  .b-flag.warn{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber);}
+  .b-flag.no{background:var(--surface);color:var(--text-3);}
+
+  /* smart tags */
+  .b-smart-tag{display:inline-flex;align-items:center;gap:5px;background:var(--pink-light);border:1px solid var(--pink-border);color:var(--pink);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;margin:3px;}
+
+  /* activity */
+  .b-state-msg{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-radius:6px;font-size:12px;line-height:1.5;border:1px solid;margin-bottom:6px;}
+  .b-state-msg.active-s{background:var(--green-bg);border-color:var(--green-border);color:var(--green);}
+  .b-state-msg.info{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue);}
+  .b-sm-text{font-weight:600;}
+  .b-sm-ts{font-size:10px;opacity:.65;margin-top:2px;}
+
+  /* location */
+  .b-map-ph{width:100%;height:200px;background:var(--surface-2);border-radius:8px;border:1.5px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--text-3);margin-bottom:16px;}
+  .b-loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .b-loc-item{background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;padding:12px;}
+  .b-loc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:4px;}
+  .b-loc-val{font-size:14px;font-weight:600;color:var(--text);}
+
+  /* docs */
+  .b-doc-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;margin-bottom:8px;transition:border-color .15s;}
+  .b-doc-row:hover{border-color:var(--border-2);}
+  .b-doc-info{flex:1;min-width:0;}
+  .b-doc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .b-doc-sub{font-size:11px;color:var(--text-3);}
+  .b-doc-right{flex-shrink:0;display:flex;align-items:center;gap:8px;}
+  .b-badge-free{font-size:10px;font-weight:700;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:2px 7px;border-radius:4px;}
+  .b-badge-nda{font-size:10px;font-weight:700;background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);padding:2px 7px;border-radius:4px;}
+  .b-btn-doc{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap;}
+  .b-btn-doc:hover{border-color:var(--pink);color:var(--pink);}
+  .b-btn-doc.locked{color:var(--amber);border-color:var(--amber-border);}
+  .b-btn-doc.locked:hover{background:var(--amber-bg);}
+
+  /* similar grid */
+  .b-sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .b-sim-card{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s,transform .12s;}
+  .b-sim-card:hover{border-color:var(--pink);transform:translateY(-2px);}
+
+  /* sidebar */
+  .b-side-card{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+  .b-side-asking{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .b-side-asking-val{font-size:28px;font-weight:800;color:var(--pink);}
+  .b-side-asking-label{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+  .b-side-mini{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+  .b-side-met{padding:11px 16px;border-right:1px solid var(--border);}
+  .b-side-met:nth-child(even){border-right:none;}
+  .b-side-met-v{font-size:15px;font-weight:700;color:var(--text);}
+  .b-side-met-k{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-top:1px;}
+  .b-meta-row{display:flex;justify-content:space-between;align-items:center;padding:9px 18px;border-bottom:1px solid var(--border);font-size:12px;}
+  .b-meta-row:last-child{border-bottom:none;}
+  .b-meta-k{color:var(--text-3);}
+  .b-meta-v{font-weight:600;color:var(--text);text-align:right;}
+  .b-meta-v.green{color:var(--green);}
+  .b-meta-v.amber{color:var(--amber);}
+  .b-meta-v.pink{color:var(--pink);}
+
+  /* nda side */
+  .b-nda-side{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:8px;padding:16px;}
+  .b-nda-side h4{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:6px;}
+  .b-nda-side p{font-size:12px;color:var(--amber);line-height:1.5;margin-bottom:12px;opacity:.9;}
+  .b-btn-nda-side{width:100%;background:var(--amber);color:#fff;border:none;padding:9px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;}
+  .b-btn-nda-side:hover{background:#b45309;}
+
+  /* interest form */
+  .b-side-head{padding:16px 18px;border-bottom:1px solid var(--border);}
+  .b-side-head h3{font-size:15px;font-weight:700;margin-bottom:2px;color:var(--text);}
+  .b-side-head p{font-size:12px;color:var(--text-3);line-height:1.4;}
+  .b-side-body{padding:16px 18px;}
+  .b-form-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-2);display:block;margin-bottom:5px;}
+  .b-form-input,.b-form-select,.b-form-textarea{background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:9px 12px;width:100%;transition:border-color .15s;outline:none;font-family:inherit;margin-bottom:12px;}
+  .b-form-input:focus,.b-form-select:focus,.b-form-textarea:focus{border-color:var(--pink);}
+  .b-form-select{appearance:none;cursor:pointer;}
+  .b-form-textarea{resize:vertical;min-height:80px;line-height:1.5;}
+  .b-btn-express{width:100%;background:var(--pink);color:#fff;border:none;padding:12px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .b-btn-express:hover{background:var(--pink-h);}
+  .b-btn-express:disabled{background:var(--surface-3);color:var(--text-3);cursor:not-allowed;}
+  .b-btn-express.sending{background:var(--surface-3);}
+  .b-form-disclaimer{font-size:11px;color:var(--text-3);text-align:center;margin-top:8px;line-height:1.5;}
+  .b-form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .b-quick-actions{display:flex;gap:8px;margin-bottom:0;}
+  .b-btn-qa{flex:1;background:var(--surface-2);border:1.5px solid var(--border);color:var(--text-2);padding:8px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .b-btn-qa:hover{border-color:var(--border-2);color:var(--text);}
+  .b-btn-qa.saved{border-color:var(--pink);color:var(--pink);background:var(--pink-light);}
+
+  /* modal */
+  .b-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .b-modal-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;}
+  .b-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+  .b-modal-title{font-size:15px;font-weight:700;color:var(--text);}
+  .b-modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-3);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;}
+  .b-modal-close:hover{background:var(--surface-2);color:var(--text);}
+  .b-modal-body{padding:18px 20px;}
+  .b-modal-foot{padding:12px 20px 18px;border-top:1px solid var(--border);}
+  .b-nda-text{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:12px;line-height:1.7;color:var(--text-2);max-height:180px;overflow-y:auto;margin-bottom:16px;}
+  .b-nda-text h4{font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;color:var(--text);}
+  .b-nda-text h5{font-size:10px;font-weight:700;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.07em;color:var(--text);}
+  .b-sig-field{border:2px solid var(--border);border-radius:6px;padding:12px;font-size:18px;font-style:italic;text-align:center;width:100%;color:var(--text);background:var(--surface-2);font-family:Georgia,serif;outline:none;transition:border-color .15s;margin-bottom:8px;}
+  .b-sig-field:focus{border-color:var(--pink);}
+  .b-agree-wrap{display:flex;align-items:flex-start;gap:9px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;padding:11px;margin-bottom:14px;}
+  .b-agree-wrap label{font-size:12px;color:var(--text-2);cursor:pointer;line-height:1.5;}
+  .b-btn-sign{background:var(--pink);color:#fff;border:none;padding:11px 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
+  .b-btn-sign:hover{background:var(--pink-h);}
+  .b-btn-sign:disabled{background:var(--surface-3);color:var(--text-3);cursor:not-allowed;}
+  .b-btn-cancel{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:11px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px;}
+
+  /* pulse */
+  .b-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;animation:b-pulse-dot 2s infinite;}
+  @keyframes b-pulse-dot{0%{box-shadow:0 0 0 0 rgba(52,211,153,.4);}70%{box-shadow:0 0 0 7px rgba(52,211,153,0);}100%{box-shadow:0 0 0 0 rgba(52,211,153,0);}}
+
+  /* success */
+  .b-success{text-align:center;padding:20px;}
+  .b-success h4{font-size:15px;font-weight:700;margin-bottom:5px;color:var(--green);}
+  .b-success p{font-size:12px;color:var(--text-3);line-height:1.5;}
+
+  @media(max-width:900px){
+    .biz-grid{grid-template-columns:1fr;}
+    .biz-side{position:static;}
+    .b-metrics{grid-template-columns:1fr 1fr;}
+    .b-met:nth-child(2){border-right:none;}
+    .b-met:nth-child(3){border-top:1px solid var(--border);}
+    .b-met:nth-child(4){border-top:1px solid var(--border);}
+    .b-met:nth-child(5){border-top:1px solid var(--border);border-right:none;}
+    .b-ops-grid{grid-template-columns:1fr;}
+    .b-hl-row{grid-template-columns:1fr 1fr;}
+    .b-loc-grid{grid-template-columns:1fr;}
+    .b-sim-grid{grid-template-columns:1fr;}
+    .b-form-row-2{grid-template-columns:1fr;}
+  }
+`;
+
+const BusinessListingDetail = ({
+  product,
+  getAttr,
+  parseMoney,
+  isPositiveMoney,
+  currency,
+  isDealClosed,
+  contactingAgent,
+  handleContactAgent,
+  handleWishlistClick,
+  handleShareClick,
+  wishlistProducts,
+  user,
+  cookies,
+  allProducts,
+  productId,
+  reviews,
+  activeVisit,
+  openScheduleVisitModal,
+  openRescheduleVisitModal,
+  continueVisitPayment,
+  respondToVendorReschedule,
+  scheduleButtonLabel,
+  canBuyerReschedule,
+  setDisputeModalOpen,
+}) => {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [activeImage, setActiveImage] = useState(
+    product.image1 || product.image2 || product.image3 || product.image4 || ""
+  );
+  const [ndaOpen, setNdaOpen] = useState(false);
+  const [ndaSig, setNdaSig] = useState("");
+  const [ndaAgree, setNdaAgree] = useState(false);
+  const [ndaName, setNdaName] = useState(user ? [user.first_name, user.last_name].filter(Boolean).join(" ") : "");
+  const [ndaEmail, setNdaEmail] = useState(user?.email || "");
+  const [ndaRole, setNdaRole] = useState("");
+  const [ndaSigned, setNdaSigned] = useState(false);
+  const [interestSent, setInterestSent] = useState(false);
+  const [interestSending, setInterestSending] = useState(false);
+  const [interestMsg, setInterestMsg] = useState("");
+  const [buyerType, setBuyerType] = useState("");
+  const [fundingSource, setFundingSource] = useState("");
+
+  const photos = [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
+  const daysOnMarket = product.created_at ? formatDistanceToNow(new Date(product.created_at)) : null;
+
+  const revenue = getAttr("annual revenue", "revenue", "revenue ($)", "annual_revenue");
+  const ebitda = getAttr("ebitda", "ebitda ($)", "normalized ebitda", "adjusted ebitda", "sde", "sde ($)");
+  const ebitdaMultiple = getAttr("ebitda multiple", "revenue multiple", "sde multiple");
+  const yearsOp = getAttr("years in operation", "years operating");
+  const employees = getAttr("employees");
+  const ownerInvolvement = getAttr("owner involvement");
+  const transitionType = getAttr("transition type", "transition support");
+  const financing = getAttr("financing options");
+  const remote = getAttr("remote business", "remote");
+  const litigation = getAttr("pending litigation");
+  const aiLeverage = getAttr("ai leverageable", "ai-enabled operations", "ai-enabled");
+  const sopsDocumented = getAttr("sops documented", "documented sops", "sops");
+  const crmInPlace = getAttr("crm/erp in place", "crm/erp");
+  const expansion = getAttr("expansion opportunity", "expansion");
+  const licenses = getAttr("licenses required");
+  const saleType = getAttr("sale type");
+  const inventory = getAttr("inventory");
+  const ffe = getAttr("ff&e", "ffe", "fixtures & equipment");
+  const leaseRemaining = getAttr("lease remaining", "lease term");
+  const monthlyRent = getAttr("monthly rent", "rent");
+  const city = getAttr("city") || product.vendor?.city || "";
+  const state = getAttr("state") || product.vendor?.state || "";
+  const zip = getAttr("zip", "zip_code", "zip / radius") || "";
+  const country = getAttr("country") || product.vendor?.country || "";
+  const street = getAttr("address", "street address", "street") || "";
+  const smartFeaturesRaw = getAttr("smart features", "smart match") || "";
+  const smartFeatures = smartFeaturesRaw.split(",").map((s) => s.trim()).filter(Boolean);
+  const staffRoles = getAttr("staff roles");
+  const techStack = getAttr("technology stack");
+  const keyVendors = getAttr("key vendors");
+  const locationDetails = getAttr("location details", "location");
+  const franchiseName = getAttr("franchise name", "franchise");
+  const industry = product.subcategory?.name || getAttr("industry", "sector");
+
+  const yes = (v) => { const s = String(v || "").toLowerCase(); return s === "true" || s === "yes"; };
+  const no = (v) => { const s = String(v || "").toLowerCase(); return s === "false" || s === "no"; };
+
+  const price = Number(product.unit_price) || 0;
+  const formattedPrice = price ? `${currency}${formatMoney(price)}` : "Contact for Price";
+
+  const handleNdaSubmit = () => {
+    if (!ndaAgree || !ndaName || !ndaEmail || !ndaSig || ndaSig !== ndaName) return;
+    setNdaSigned(true);
+    setNdaOpen(false);
+  };
+
+  const handleExpressInterest = async () => {
+    if (interestSending) return;
+    setInterestSending(true);
+    try {
+      await handleContactAgent();
+      setInterestSent(true);
+    } catch {
+    } finally {
+      setInterestSending(false);
+    }
+  };
+
+  const isSaved = !!wishlistProducts?.find((i) => i.id === product.id);
+
+  const tabs = ["overview", "financials", "operations", "location", "documents"];
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <div className="biz-root">
+        <div className="biz-page">
+          {/* Breadcrumb */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-3)", marginBottom: 20 }}>
+            <Link to="/" style={{ color: "var(--text-3)" }}>Home</Link>
+            <span>›</span>
+            <Link to={`/category/${product.category?.slug}`} style={{ color: "var(--text-3)" }}>Business for Sale</Link>
+            {industry && <><span>›</span><span style={{ color: "var(--text-2)" }}>{industry}</span></>}
+            <span>›</span>
+            <span style={{ color: "var(--text)", fontWeight: 600 }}>{product.name}</span>
+          </div>
+
+          <div className="biz-grid">
+            {/* ════ MAIN ════ */}
+            <div className="biz-main">
+
+              {/* PHOTO GALLERY */}
+              <div className="b-gallery">
+                <div className="b-gallery-main">
+                  {activeImage ? (
+                    <img src={activeImage} alt={product.name} />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "var(--surface-3)", color: "var(--text-3)", fontSize: 48 }}>
+                      💼
+                      <p style={{ fontSize: 13 }}>No photo available</p>
+                    </div>
+                  )}
+                  <div className="b-gallery-badge">
+                    {industry && <span className="b-badge ind">{industry}</span>}
+                    {isDealClosed
+                      ? <span className="b-badge closed">● Closed</span>
+                      : <span className="b-badge active-s">● Active</span>}
+                    {product.origin && (
+                      <span className="b-badge" style={{ background: "var(--blue-bg)", borderColor: "var(--blue-border)", color: "var(--blue)" }}>
+                        {product.origin === "ai_built" ? "🤖 AI-Built" : product.origin === "ai_built_verified" ? "✅ AI Verified" : product.origin === "hybrid" ? "⚡ Hybrid" : "👤 Human-Built"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="b-gallery-price">
+                    <div className="b-asking-label">Asking Price</div>
+                    <div className="b-asking-val">{formattedPrice}</div>
+                  </div>
+                </div>
+                {photos.length > 0 && (
+                  <div className="b-thumbs">
+                    {photos.map((src, i) => (
+                      <div
+                        key={i}
+                        className={`b-thumb${activeImage === src ? " active" : ""}`}
+                        onClick={() => setActiveImage(src)}
+                      >
+                        <img src={src} alt={`View ${i + 1}`} />
+                      </div>
+                    ))}
+                    {photos.length < 4 && <div className="b-thumb-more">+{Math.max(0, 5 - photos.length)} more</div>}
+                  </div>
+                )}
+              </div>
+
+              {/* DEAL HERO */}
+              <div className="b-hero">
+                <div className="b-hero-head">
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                    {industry && <span className="b-badge ind">{industry}</span>}
+                    {saleType && <span className="b-badge">{saleType}</span>}
+                    {yes(getAttr("sba eligible", "sba-eligible")) && <span className="b-badge sba">SBA-Eligible</span>}
+                    {financing && <span className="b-badge" style={{ background: "var(--green-bg)", borderColor: "var(--green-border)", color: "var(--green)" }}>{financing}</span>}
+                    {isDealClosed && <span className="b-badge closed">Deal Closed</span>}
+                  </div>
+                  <h1 className="b-hero-title">{product.name}</h1>
+                  {(city || state || street) && (
+                    <div className="b-hero-loc">
+                      📍
+                      <span>
+                        {[street, city, state, zip].filter(Boolean).join(", ")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Metrics strip */}
+                <div className="b-metrics">
+                  <div className="b-met">
+                    <div className="b-met-v pink">{formattedPrice}</div>
+                    <div className="b-met-k">Asking Price</div>
+                    {inventory && <div className="b-met-note">+ Inv. ~{inventory}</div>}
+                  </div>
+                  {isPositiveMoney(revenue) && (
+                    <div className="b-met">
+                      <div className="b-met-v">{currency}{formatMoney(parseMoney(revenue))}</div>
+                      <div className="b-met-k">Annual Revenue</div>
+                    </div>
+                  )}
+                  {isPositiveMoney(ebitda) && (
+                    <div className="b-met">
+                      <div className="b-met-v green">{currency}{formatMoney(parseMoney(ebitda))}</div>
+                      <div className="b-met-k">SDE / EBITDA</div>
+                    </div>
+                  )}
+                  {ebitdaMultiple && (
+                    <div className="b-met">
+                      <div className="b-met-v amber">{ebitdaMultiple}x</div>
+                      <div className="b-met-k">SDE Multiple</div>
+                    </div>
+                  )}
+                  {yearsOp && (
+                    <div className="b-met">
+                      <div className="b-met-v">{yearsOp} yrs</div>
+                      <div className="b-met-k">Years Operating</div>
+                    </div>
+                  )}
+                  {!isPositiveMoney(revenue) && !ebitdaMultiple && (
+                    <div className="b-met">
+                      <div className="b-met-v">{employees || "—"}</div>
+                      <div className="b-met-k">Employees</div>
+                    </div>
+                  )}
+                  {!isPositiveMoney(ebitda) && !yearsOp && (
+                    <div className="b-met">
+                      <div className="b-met-v">{daysOnMarket || "—"}</div>
+                      <div className="b-met-k">On Market</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* TABS */}
+              <div>
+                <div style={{ display: "flex", background: "var(--surface)", border: "1.5px solid var(--border)", borderBottom: "none", borderRadius: "8px 8px 0 0", overflow: "hidden" }}>
+                  {tabs.map((t) => (
+                    <button
+                      key={t}
+                      className={`b-tab${activeTab === t ? " active" : ""}`}
+                      onClick={() => setActiveTab(t)}
+                      style={{ textTransform: "capitalize" }}
+                    >
+                      {t === "overview" ? "Overview" : t === "financials" ? "Financials" : t === "operations" ? "Operations" : t === "location" ? "Location" : "Documents"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* ── OVERVIEW ── */}
+                {activeTab === "overview" && (
+                  <div className="b-panel">
+                    <h3>About This Business</h3>
+                    {(product.short_description || product.description) ? (
+                      <div className="b-about">
+                        {parse(product.short_description || product.description || "")}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 13, color: "var(--text-3)", fontStyle: "italic" }}>No description provided.</p>
+                    )}
+
+                    {(staffRoles || techStack || keyVendors) && (
+                      <>
+                        <hr className="b-divider" />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                          {staffRoles && (
+                            <div className="b-ops-card">
+                              <h4>Staff & Roles</h4>
+                              <div style={{ fontSize: 13, color: "var(--text-2)", lineHeight: 1.6 }}>{staffRoles}</div>
+                            </div>
+                          )}
+                          {techStack && (
+                            <div className="b-ops-card">
+                              <h4>Tech Stack</h4>
+                              <div style={{ fontSize: 13, color: "var(--text-2)", lineHeight: 1.6 }}>{techStack}</div>
+                            </div>
+                          )}
+                          {keyVendors && (
+                            <div className="b-ops-card">
+                              <h4>Key Vendors</h4>
+                              <div style={{ fontSize: 13, color: "var(--text-2)", lineHeight: 1.6 }}>{keyVendors}</div>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    {smartFeatures.length > 0 && (
+                      <>
+                        <hr className="b-divider" />
+                        <h3>Smart Match Tags</h3>
+                        <div>
+                          {smartFeatures.map((tag) => (
+                            <span key={tag} className="b-smart-tag">✦ {tag}</span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    <hr className="b-divider" />
+                    <h3>Activity</h3>
+                    <div>
+                      <div className="b-state-msg active-s">
+                        <span>✔</span>
+                        <div>
+                          <div className="b-sm-text">
+                            {isDealClosed ? "This listing is closed" : "Listing live and active on PinkSurfing marketplace"}
+                          </div>
+                          {daysOnMarket && <div className="b-sm-ts">Listed {daysOnMarket} ago</div>}
+                        </div>
+                      </div>
+                      <div className="b-state-msg info">
+                        <span><span className="b-pulse" /></span>
+                        <div>
+                          <div className="b-sm-text">Buyers are actively reviewing this listing</div>
+                          <div className="b-sm-ts">Interest tracking · Real-time updates</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── FINANCIALS ── */}
+                {activeTab === "financials" && (
+                  <div className="b-panel">
+                    <h3>Financial Summary</h3>
+                    <table className="b-fin-table">
+                      <thead>
+                        <tr>
+                          <th>Metric</th>
+                          <th>Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Asking Price</td>
+                          <td style={{ color: "var(--pink)", fontWeight: 700 }}>{formattedPrice}</td>
+                        </tr>
+                        {isPositiveMoney(revenue) && (
+                          <tr>
+                            <td>Annual Revenue</td>
+                            <td className="pos">{currency}{formatMoney(parseMoney(revenue))}</td>
+                          </tr>
+                        )}
+                        {isPositiveMoney(ebitda) && (
+                          <tr className="highlight">
+                            <td>SDE / EBITDA</td>
+                            <td>{currency}{formatMoney(parseMoney(ebitda))}</td>
+                          </tr>
+                        )}
+                        {ebitdaMultiple && (
+                          <tr>
+                            <td>Multiple</td>
+                            <td>{ebitdaMultiple}x</td>
+                          </tr>
+                        )}
+                        {inventory && (
+                          <tr>
+                            <td>Inventory (est.)</td>
+                            <td>{inventory}</td>
+                          </tr>
+                        )}
+                        {ffe && (
+                          <tr>
+                            <td>FF&E</td>
+                            <td>{ffe}</td>
+                          </tr>
+                        )}
+                        {financing && (
+                          <tr>
+                            <td>Seller Financing</td>
+                            <td className="pos">{financing}</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+
+                    <div className="b-nda-gate">
+                      <div className="b-nda-gate-icon">🔒</div>
+                      <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: "var(--text)" }}>Full Financials Require NDA</h4>
+                      <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.5, marginBottom: 14, maxWidth: 380, margin: "0 auto 14px" }}>
+                        Tax returns (3 years), full P&L with add-backs, normalized EBITDA, and detailed financial breakdowns are available after signing a simple NDA.
+                      </p>
+                      <div style={{ marginBottom: 14 }}>
+                        {["🧾 Tax Returns (3yr)", "📊 Normalized EBITDA", "📋 Franchise Agreement", "💰 Full P&L with Add-Backs"].map((d) => (
+                          <span key={d} className="b-nda-doc-chip">{d}</span>
+                        ))}
+                      </div>
+                      <button className="b-btn-nda" onClick={() => setNdaOpen(true)}>
+                        🔓 Sign NDA & Access Full Financials
+                      </button>
+                      {ndaSigned && (
+                        <p style={{ fontSize: 12, color: "var(--green)", marginTop: 10, fontWeight: 600 }}>
+                          ✅ NDA signed — documents unlocked. Check your email for a copy.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── OPERATIONS ── */}
+                {activeTab === "operations" && (
+                  <div className="b-panel">
+                    <div className="b-ops-grid">
+                      <div className="b-ops-card">
+                        <h4>Business Details</h4>
+                        <div>
+                          {saleType && <div className="b-ops-row"><span className="b-ops-key">Sale Type</span><span className="b-ops-val">{saleType}</span></div>}
+                          {yearsOp && <div className="b-ops-row"><span className="b-ops-key">Years Operating</span><span className="b-ops-val">{yearsOp} years</span></div>}
+                          {ownerInvolvement && <div className="b-ops-row"><span className="b-ops-key">Owner Involvement</span><span className="b-ops-val">{ownerInvolvement}</span></div>}
+                          {employees && <div className="b-ops-row"><span className="b-ops-key">Team Size</span><span className="b-ops-val">{employees} employees</span></div>}
+                          {transitionType && <div className="b-ops-row"><span className="b-ops-key">Transition Support</span><span className="b-ops-val">{transitionType}</span></div>}
+                          {leaseRemaining && <div className="b-ops-row"><span className="b-ops-key">Lease Remaining</span><span className="b-ops-val">{leaseRemaining}</span></div>}
+                          {licenses && <div className="b-ops-row"><span className="b-ops-key">Licenses Required</span><span className="b-ops-val">{licenses}</span></div>}
+                          {franchiseName && <div className="b-ops-row"><span className="b-ops-key">Franchise</span><span className="b-ops-val">{franchiseName}</span></div>}
+                        </div>
+                      </div>
+                      <div className="b-ops-card">
+                        <h4>Financing & Deal</h4>
+                        <div>
+                          <div className="b-ops-row"><span className="b-ops-key">Asking Price</span><span className="b-ops-val" style={{ color: "var(--pink)" }}>{formattedPrice}</span></div>
+                          {inventory && <div className="b-ops-row"><span className="b-ops-key">Inventory (est.)</span><span className="b-ops-val">{inventory}</span></div>}
+                          {ffe && <div className="b-ops-row"><span className="b-ops-key">FF&E Included</span><span className="b-ops-val">{ffe}</span></div>}
+                          {financing && <div className="b-ops-row"><span className="b-ops-key">Seller Financing</span><span className="b-ops-val" style={{ color: "var(--green)" }}>{financing}</span></div>}
+                          {monthlyRent && <div className="b-ops-row"><span className="b-ops-key">Monthly Rent</span><span className="b-ops-val">{monthlyRent}</span></div>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr className="b-divider" />
+                    <h4>Operational Capabilities</h4>
+                    <div className="b-flag-wrap">
+                      {(yes(sopsDocumented) || no(sopsDocumented)) && (
+                        <div className={`b-flag ${yes(sopsDocumented) ? "yes" : "no"}`}>
+                          📋 Documented SOPs: {yes(sopsDocumented) ? "Yes" : "No"}
+                        </div>
+                      )}
+                      {(yes(crmInPlace) || no(crmInPlace)) && (
+                        <div className={`b-flag ${yes(crmInPlace) ? "yes" : "no"}`}>
+                          🗂️ CRM / ERP: {yes(crmInPlace) ? "In Place" : "None"}
+                        </div>
+                      )}
+                      {(yes(remote) || no(remote)) && (
+                        <div className={`b-flag ${yes(remote) ? "yes" : "no"}`}>
+                          🌐 Remote-Friendly: {yes(remote) ? "Yes" : "No"}
+                        </div>
+                      )}
+                      {(yes(aiLeverage) || no(aiLeverage)) && (
+                        <div className={`b-flag ${yes(aiLeverage) ? "yes" : "no"}`}>
+                          🤖 AI-Leverageable: {yes(aiLeverage) ? "Yes" : "No"}
+                        </div>
+                      )}
+                      {(yes(expansion) || no(expansion)) && (
+                        <div className={`b-flag ${yes(expansion) ? "yes" : "no"}`}>
+                          🚀 Expansion Opportunity: {yes(expansion) ? "Yes" : "No"}
+                        </div>
+                      )}
+                    </div>
+
+                    {litigation && (
+                      <>
+                        <hr className="b-divider" />
+                        <h4>Risk Disclosures</h4>
+                        <div className="b-flag-wrap">
+                          <div className={`b-flag ${String(litigation).toLowerCase() === "none" ? "no" : "warn"}`}>
+                            ⚖️ Pending Litigation: {litigation}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* ── LOCATION ── */}
+                {activeTab === "location" && (
+                  <div className="b-panel">
+                    <div className="b-map-ph">
+                      <div style={{ fontSize: 36 }}>🗺️</div>
+                      <div>{[street, city, state, zip].filter(Boolean).join(", ") || "Location details available after contact"}</div>
+                      <div style={{ fontSize: 11 }}>Map integration — connect your Maps API</div>
+                    </div>
+                    <div className="b-loc-grid">
+                      {street && (
+                        <div className="b-loc-item">
+                          <div className="b-loc-label">Street Address</div>
+                          <div className="b-loc-val">{street}</div>
+                        </div>
+                      )}
+                      {city && (
+                        <div className="b-loc-item">
+                          <div className="b-loc-label">City</div>
+                          <div className="b-loc-val">{city}{state ? `, ${state}` : ""}{zip ? ` ${zip}` : ""}</div>
+                        </div>
+                      )}
+                      {country && (
+                        <div className="b-loc-item">
+                          <div className="b-loc-label">Country</div>
+                          <div className="b-loc-val">{country}</div>
+                        </div>
+                      )}
+                      {monthlyRent && (
+                        <div className="b-loc-item">
+                          <div className="b-loc-label">Monthly Rent</div>
+                          <div className="b-loc-val">{monthlyRent}</div>
+                        </div>
+                      )}
+                      {leaseRemaining && (
+                        <div className="b-loc-item">
+                          <div className="b-loc-label">Lease Term Remaining</div>
+                          <div className="b-loc-val">{leaseRemaining}</div>
+                        </div>
+                      )}
+                      {locationDetails && (
+                        <div className="b-loc-item" style={{ gridColumn: "1 / -1" }}>
+                          <div className="b-loc-label">Location Details</div>
+                          <div className="b-loc-val">{locationDetails}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── DOCUMENTS ── */}
+                {activeTab === "documents" && (
+                  <div className="b-panel">
+                    <div>
+                      <div className="b-doc-row">
+                        <div style={{ fontSize: 22 }}>📄</div>
+                        <div className="b-doc-info">
+                          <div className="b-doc-name">Business Teaser</div>
+                          <div className="b-doc-sub">High-level overview · Visible to all buyers · No NDA required</div>
+                        </div>
+                        <div className="b-doc-right">
+                          <span className="b-badge-free">Free Access</span>
+                          <button className="b-btn-doc" onClick={() => handleContactAgent()}>Download</button>
+                        </div>
+                      </div>
+                      <div className="b-doc-row">
+                        <div style={{ fontSize: 22 }}>📊</div>
+                        <div className="b-doc-info">
+                          <div className="b-doc-name">Confidential Information Memorandum (CIM)</div>
+                          <div className="b-doc-sub">Full business overview, competitive positioning, and growth plan</div>
+                        </div>
+                        <div className="b-doc-right">
+                          <span className="b-badge-nda">🔒 NDA Required</span>
+                          <button className="b-btn-doc locked" onClick={() => setNdaOpen(true)}>🔓 Unlock</button>
+                        </div>
+                      </div>
+                      <div className="b-doc-row">
+                        <div style={{ fontSize: 22 }}>💰</div>
+                        <div className="b-doc-info">
+                          <div className="b-doc-name">Redacted P&L / Financial Statements</div>
+                          <div className="b-doc-sub">Revenue and expenses summary</div>
+                        </div>
+                        <div className="b-doc-right">
+                          <span className="b-badge-nda">🔒 NDA Required</span>
+                          <button className="b-btn-doc locked" onClick={() => setNdaOpen(true)}>🔓 Unlock</button>
+                        </div>
+                      </div>
+                      <div className="b-doc-row">
+                        <div style={{ fontSize: 22 }}>🔒</div>
+                        <div className="b-doc-info">
+                          <div className="b-doc-name">Full Financials — Tax Returns & Add-Backs</div>
+                          <div className="b-doc-sub">Complete financial documentation for due diligence</div>
+                        </div>
+                        <div className="b-doc-right">
+                          <span className="b-badge-nda">🔒 NDA Required</span>
+                          <button className="b-btn-doc locked" onClick={() => setNdaOpen(true)}>🔓 Unlock</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
+                      🤖 <strong style={{ color: "var(--text-2)" }}>AI Agent Notice:</strong> AI agents cannot initiate or sign NDAs on PinkSurfing. NDA requests and document access require a verified human buyer with legal signing capacity.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* SIMILAR LISTINGS */}
+              {allProducts && allProducts.length > 0 && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text)" }}>Similar Listings</h3>
+                  </div>
+                  <div className="b-sim-grid">
+                    {allProducts
+                      .filter((p) => p.id !== product.id && (p.category?.slug === "business4sale" || p.category?.slug === "business-for-sale"))
+                      .slice(0, 3)
+                      .map((p) => (
+                        <div key={p.id} className="b-sim-card" onClick={() => window.location.href = `/product/productDetail/${p.slug}?productId=${p.id}`}>
+                          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", color: "var(--text-3)", marginBottom: 6 }}>
+                            {p.subcategory?.name || p.category?.name}
+                          </div>
+                          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--pink)", marginBottom: 4 }}>
+                            {currency}{formatMoney(Number(p.unit_price))}
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", lineHeight: 1.3, marginBottom: 6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                            {p.name}
+                          </div>
+                          <div style={{ fontSize: 11, color: "var(--text-3)" }}>
+                            📍 {p.vendor?.city || "—"}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reviews */}
+              {reviews && reviews.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <ProductDetailReviewSection reviews={reviews} product={product} />
+                </div>
+              )}
+            </div>
+
+            {/* ════ SIDEBAR ════ */}
+            <div className="biz-side">
+
+              {/* Asking price card */}
+              <div className="b-side-card">
+                <div className="b-side-asking">
+                  <div>
+                    <div className="b-side-asking-label">Asking Price</div>
+                    <div className="b-side-asking-val">{formattedPrice}</div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+                    <button
+                      className={`b-btn-qa${isSaved ? " saved" : ""}`}
+                      onClick={handleWishlistClick}
+                      style={{ gap: 5 }}
+                    >
+                      {isSaved ? "♥ Saved" : "♡ Save"}
+                    </button>
+                    <button className="b-btn-qa" onClick={handleShareClick}>
+                      🔗 Share
+                    </button>
+                  </div>
+                </div>
+
+                <div className="b-side-mini">
+                  {isPositiveMoney(revenue) && (
+                    <div className="b-side-met">
+                      <div className="b-side-met-v">{currency}{formatMoney(parseMoney(revenue))}</div>
+                      <div className="b-side-met-k">Revenue</div>
+                    </div>
+                  )}
+                  {isPositiveMoney(ebitda) && (
+                    <div className="b-side-met">
+                      <div className="b-side-met-v">{currency}{formatMoney(parseMoney(ebitda))}</div>
+                      <div className="b-side-met-k">SDE</div>
+                    </div>
+                  )}
+                  {ebitdaMultiple && (
+                    <div className="b-side-met">
+                      <div className="b-side-met-v">{ebitdaMultiple}x</div>
+                      <div className="b-side-met-k">Multiple</div>
+                    </div>
+                  )}
+                  {yearsOp && (
+                    <div className="b-side-met">
+                      <div className="b-side-met-v">{yearsOp} yrs</div>
+                      <div className="b-side-met-k">Operating</div>
+                    </div>
+                  )}
+                  {employees && (
+                    <div className="b-side-met">
+                      <div className="b-side-met-v">{employees}</div>
+                      <div className="b-side-met-k">Employees</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Financing badges */}
+                <div style={{ padding: "10px 18px", borderBottom: "1px solid var(--border)", display: "flex", flexWrap: "wrap", gap: 5 }}>
+                  {yes(getAttr("sba eligible", "sba-eligible")) && (
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", background: "var(--green-bg)", border: "1px solid var(--green-border)", color: "var(--green)", borderRadius: 4 }}>SBA-Eligible</span>
+                  )}
+                  {financing && (
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", background: "var(--green-bg)", border: "1px solid var(--green-border)", color: "var(--green)", borderRadius: 4 }}>{financing}</span>
+                  )}
+                  {saleType && (
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-3)", borderRadius: 4 }}>{saleType}</span>
+                  )}
+                </div>
+
+                {/* Metadata */}
+                <div style={{ padding: 0 }}>
+                  {ownerInvolvement && (
+                    <div className="b-meta-row"><span className="b-meta-k">Owner Involvement</span><span className="b-meta-v">{ownerInvolvement}</span></div>
+                  )}
+                  {transitionType && (
+                    <div className="b-meta-row"><span className="b-meta-k">Transition</span><span className="b-meta-v">{transitionType}</span></div>
+                  )}
+                  {employees && (
+                    <div className="b-meta-row"><span className="b-meta-k">Employees</span><span className="b-meta-v">{employees}</span></div>
+                  )}
+                  {leaseRemaining && (
+                    <div className="b-meta-row"><span className="b-meta-k">Lease</span><span className="b-meta-v">{leaseRemaining}</span></div>
+                  )}
+                  {inventory && (
+                    <div className="b-meta-row"><span className="b-meta-k">Inventory</span><span className="b-meta-v">{inventory}</span></div>
+                  )}
+                  {ffe && (
+                    <div className="b-meta-row"><span className="b-meta-k">FF&E</span><span className="b-meta-v">{ffe}</span></div>
+                  )}
+                  {daysOnMarket && (
+                    <div className="b-meta-row"><span className="b-meta-k">Listed</span><span className="b-meta-v">{daysOnMarket} ago</span></div>
+                  )}
+                  <div className="b-meta-row">
+                    <span className="b-meta-k">Listing ID</span>
+                    <span className="b-meta-v" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11 }}>
+                      #PS-{product.id?.slice(-6).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="b-meta-row">
+                    <span className="b-meta-k">{isDealClosed ? "Lister" : "Listed by"}</span>
+                    <span className="b-meta-v" style={{ maxWidth: 140, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {product.vendor?.store_name || [product.vendor?.first_name, product.vendor?.last_name].filter(Boolean).join(" ") || "Pinksurfing Seller"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* NDA CTA */}
+              {!ndaSigned && (
+                <div className="b-nda-side">
+                  <h4>🔒 Financial Details Locked</h4>
+                  <p>Sign a quick NDA to access tax returns, full P&L, and detailed financials. Takes 60 seconds.</p>
+                  <button className="b-btn-nda-side" onClick={() => setNdaOpen(true)}>
+                    🔓 Sign NDA & Access Full Financials
+                  </button>
+                </div>
+              )}
+              {ndaSigned && (
+                <div style={{ background: "var(--green-bg)", border: "1.5px solid var(--green-border)", borderRadius: 8, padding: 14, fontSize: 13, color: "var(--green)", fontWeight: 600 }}>
+                  ✅ NDA Signed — Financial documents unlocked. Check your email for a countersigned copy.
+                </div>
+              )}
+
+              {/* Express Interest / Message */}
+              <div className="b-side-card">
+                <div className="b-side-head">
+                  <h3>{isDealClosed ? "📩 Listing Closed" : "✉ Express Interest"}</h3>
+                  <p>
+                    {isDealClosed
+                      ? "This deal is no longer accepting offers."
+                      : "Send a direct message to the listing owner. Your info is shared securely."}
+                  </p>
+                </div>
+                <div className="b-side-body">
+                  {interestSent ? (
+                    <div className="b-success">
+                      <div style={{ fontSize: 40, marginBottom: 10 }}>✅</div>
+                      <h4>Message Sent!</h4>
+                      <p>The listing owner has been notified and will contact you directly.</p>
+                      <button
+                        style={{ background: "none", border: "1.5px solid var(--border)", color: "var(--text-2)", padding: "7px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+                        onClick={() => setInterestSent(false)}
+                      >
+                        Send Another Message
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {activeVisit?.status === "vendor_reschedule_pending" && activeVisit?.pending_reschedule_at && (
+                        <div style={{ background: "var(--indigo-bg)", border: "1px solid var(--indigo-border)", borderRadius: 8, padding: 14, marginBottom: 14 }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--indigo)", marginBottom: 6 }}>New time proposed</p>
+                          <p style={{ fontSize: 12, color: "var(--text-2)", marginBottom: 10 }}>
+                            {new Date(activeVisit.pending_reschedule_at).toLocaleString(undefined, { weekday: "short", dateStyle: "medium", timeStyle: "short" })}
+                          </p>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => respondToVendorReschedule(true)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "var(--indigo)", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Accept</button>
+                            <button onClick={() => respondToVendorReschedule(false)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "none", color: "var(--text-2)", border: "1px solid var(--border)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Decline</button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="b-form-label">Buyer Type</label>
+                        <select className="b-form-select" value={buyerType} onChange={(e) => setBuyerType(e.target.value)}>
+                          <option value="">Select…</option>
+                          <option>Individual Buyer</option>
+                          <option>Strategic Acquirer</option>
+                          <option>Private Equity</option>
+                          <option>Search Fund</option>
+                          <option>Investor / Broker</option>
+                        </select>
+                        <label className="b-form-label">Funding Source</label>
+                        <select className="b-form-select" value={fundingSource} onChange={(e) => setFundingSource(e.target.value)}>
+                          <option value="">Select…</option>
+                          <option>Cash / Liquid Funds</option>
+                          <option>SBA Loan</option>
+                          <option>Seller Financing</option>
+                          <option>Investor Backed</option>
+                        </select>
+                        <label className="b-form-label">Message</label>
+                        <textarea
+                          className="b-form-textarea"
+                          placeholder="Introduce yourself and explain your interest and acquisition intent…"
+                          value={interestMsg}
+                          onChange={(e) => setInterestMsg(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+
+                      <button
+                        className={`b-btn-express${interestSending ? " sending" : ""}`}
+                        disabled={isDealClosed || interestSending}
+                        onClick={handleExpressInterest}
+                      >
+                        {interestSending ? (
+                          <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,.3)", borderTop: "2px solid #fff", borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
+                        ) : isDealClosed ? (
+                          "Deal Closed"
+                        ) : (
+                          <>✉ Send Interest to Owner</>
+                        )}
+                      </button>
+                      <p className="b-form-disclaimer">
+                        Your info is shared only with the listing owner. PinkSurfing does not sell your data.
+                      </p>
+
+                      {/* Schedule financial review / visit */}
+                      <button
+                        onClick={() => {
+                          if (isDealClosed) return;
+                          if (activeVisit?.status === "pending_payment") { continueVisitPayment(); return; }
+                          if (activeVisit?.status === "buyer_reschedule_pending") return;
+                          if (canBuyerReschedule) openRescheduleVisitModal();
+                          else openScheduleVisitModal();
+                        }}
+                        disabled={isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending"}
+                        style={{
+                          width: "100%", marginTop: 10, padding: "10px 12px", borderRadius: 6,
+                          background: "var(--surface-2)", border: "1.5px solid var(--border)",
+                          color: isDealClosed ? "var(--text-3)" : "var(--text-2)",
+                          fontSize: 13, fontWeight: 600, cursor: isDealClosed ? "not-allowed" : "pointer",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .15s"
+                        }}
+                      >
+                        📅 {isDealClosed ? "Deal Closed" : scheduleButtonLabel}
+                      </button>
+
+                      {activeVisit?.status === "accepted" && (
+                        <button
+                          onClick={() => setDisputeModalOpen(true)}
+                          style={{ width: "100%", marginTop: 8, padding: "8px", borderRadius: 6, background: "none", border: "1px solid var(--red-border)", color: "var(--red)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+                        >
+                          Raise a Dispute
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* NDA MODAL */}
+      {ndaOpen && (
+        <div className="b-modal-overlay" onClick={() => setNdaOpen(false)}>
+          <div className="b-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="b-modal-header">
+              <div className="b-modal-title">🔒 Sign NDA to Access Financial Documents</div>
+              <button className="b-modal-close" onClick={() => setNdaOpen(false)}>✕</button>
+            </div>
+            <div className="b-modal-body">
+              <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 14, lineHeight: 1.5 }}>
+                You will receive access to financial documents after signing. A countersigned copy will be emailed to you and the seller.
+              </p>
+              <div className="b-nda-text">
+                <h4>NON-DISCLOSURE AGREEMENT</h4>
+                <p>This Agreement is entered into between the Disclosing Party (Business Seller via PinkSurfing) and the Receiving Party (identified by signature below).</p>
+                <h5>1. Confidential Information</h5>
+                <p>Includes financial statements, tax returns, revenue data, customer lists, contracts, operational procedures, and all information related to the listed business.</p>
+                <h5>2. Receiving Party Obligations</h5>
+                <p>(a) Keep all information strictly confidential. (b) Not disclose to any third party without consent. (c) Use solely to evaluate a potential acquisition.</p>
+                <h5>3. Term</h5>
+                <p>Valid for 1 year from date of signing.</p>
+                <h5>4. Non-Solicitation</h5>
+                <p>Receiving Party agrees not to solicit employees or key contractors during the NDA term and 12 months thereafter.</p>
+                <h5>5. Governing Law</h5>
+                <p>Governed by the laws of California, USA.</p>
+                <h5>6. AI Agent Restriction</h5>
+                <p>AI agents cannot sign this agreement. Human signing authority is required.</p>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                <div>
+                  <label className="b-form-label">Full Legal Name *</label>
+                  <input className="b-form-input" type="text" placeholder="Jane Smith" value={ndaName} onChange={(e) => setNdaName(e.target.value)} style={{ margin: 0 }} />
+                </div>
+                <div>
+                  <label className="b-form-label">Email *</label>
+                  <input className="b-form-input" type="email" placeholder="jane@company.com" value={ndaEmail} onChange={(e) => setNdaEmail(e.target.value)} style={{ margin: 0 }} />
+                </div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label className="b-form-label">Buyer Role *</label>
+                <select className="b-form-select" value={ndaRole} onChange={(e) => setNdaRole(e.target.value)} style={{ margin: 0 }}>
+                  <option value="">Select…</option>
+                  <option>Individual Buyer</option>
+                  <option>Strategic Acquirer</option>
+                  <option>Private Equity</option>
+                  <option>Search Fund</option>
+                  <option>Broker / Advisor</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label className="b-form-label">Digital Signature — Type your full legal name exactly *</label>
+                <input
+                  className="b-sig-field"
+                  type="text"
+                  placeholder="Type your full legal name to sign"
+                  value={ndaSig}
+                  onChange={(e) => setNdaSig(e.target.value)}
+                />
+                <div style={{ fontSize: 11, color: "var(--text-3)", lineHeight: 1.4 }}>
+                  By typing your name you confirm this is a legally binding electronic signature (ESIGN Act / UETA).
+                </div>
+              </div>
+              <div className="b-agree-wrap">
+                <input type="checkbox" id="biz-nda-agree" checked={ndaAgree} onChange={(e) => setNdaAgree(e.target.checked)} style={{ width: 14, height: 14, accentColor: "var(--pink)", flexShrink: 0, marginTop: 2 }} />
+                <label htmlFor="biz-nda-agree">
+                  I have read and agree to all terms of this Non-Disclosure Agreement. I confirm I am a human with the legal authority to enter this Agreement.
+                </label>
+              </div>
+            </div>
+            <div className="b-modal-foot">
+              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
+                <button className="b-btn-cancel" onClick={() => setNdaOpen(false)}>Cancel</button>
+                <button
+                  className="b-btn-sign"
+                  disabled={!ndaAgree || !ndaName || !ndaEmail || !ndaRole || ndaSig !== ndaName}
+                  onClick={handleNdaSubmit}
+                >
+                  ✍ Sign NDA & Unlock Documents
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}` }} />
+    </>
+  );
+};
+
+export default BusinessListingDetail;
