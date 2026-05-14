@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -353,6 +353,7 @@ const BusinessListingDetail = ({
   setDisputeModalOpen,
 }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [activeImage, setActiveImage] = useState(
     product.image1 || product.image2 || product.image3 || product.image4 || ""
@@ -361,10 +362,10 @@ const BusinessListingDetail = ({
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [wishlistBusy, setWishlistBusy] = useState(false);
 
-  // NDA gating
+  // NDA gating — auto-unlock when returning from Square payment
   const lockEbitda = !!product.nda_lock_ebitda;
   const lockFinancials = !!product.nda_lock_full_financials;
-  const [ndaSigned, setNdaSigned] = useState(false);
+  const [ndaSigned, setNdaSigned] = useState(() => searchParams.get("nda_unlocked") === "1");
   const [ndaModalOpen, setNdaModalOpen] = useState(false);
   const [ndaForm, setNdaForm] = useState({ name: "", email: "", company: "", role: "", signature: "", agreed: false });
   const [ndaSubmitting, setNdaSubmitting] = useState(false);
@@ -379,10 +380,14 @@ const BusinessListingDetail = ({
       toast.error("Your signature must match your full legal name exactly.", { position: "top-right" });
       return;
     }
+    if (!user?.id) {
+      toast.error("Please sign in to continue.", { position: "top-right" });
+      return;
+    }
     setNdaSubmitting(true);
     try {
       const payload = {
-        customer_id: user?.id,
+        customer_id: user.id,
         product_id: productId,
         full_name: name,
         email,
@@ -391,12 +396,25 @@ const BusinessListingDetail = ({
         signature,
         agreed_to_terms: agreed,
       };
-      if (user?.id) {
-        await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/nda/sign/`, payload);
+      const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/nda/sign/`, payload);
+      const { payment_url, detail } = res.data;
+
+      // Already signed a previous NDA for this listing
+      if (detail === "already_signed") {
+        setNdaSigned(true);
+        setNdaModalOpen(false);
+        toast.success("✅ NDA already on record — financials are unlocked.", { position: "top-right" });
+        return;
       }
-      setNdaSigned(true);
-      setNdaModalOpen(false);
-      toast.success("✅ NDA signed — financial details are now unlocked.", { position: "top-right" });
+
+      // Redirect to Square checkout for the $1 NDA fee
+      if (payment_url) {
+        toast.info("Redirecting to secure payment…", { position: "top-right" });
+        window.location.href = payment_url;
+        return;
+      }
+
+      toast.error("Could not start payment. Please try again.", { position: "top-right" });
     } catch (err) {
       const data = err?.response?.data || {};
       const msg = data.detail || data.full_name?.[0] || data.signature?.[0] || data.non_field_errors?.[0] || "Failed to submit NDA. Please try again.";
@@ -1492,7 +1510,7 @@ const BusinessListingDetail = ({
             <div className="b-modal-header">
               <div className="b-modal-header-text">
                 <div className="b-modal-title">🔒 Sign NDA to Access Financial Documents</div>
-                <div className="b-modal-subtitle">Signing instantly unlocks the protected financials. A countersigned copy is emailed to you and the seller.</div>
+                <div className="b-modal-subtitle">A one-time $1 fee is charged to verify your identity and unlock protected financials. A countersigned copy is emailed to you and the seller.</div>
               </div>
               <button className="b-modal-close" onClick={() => setNdaModalOpen(false)}>✕</button>
             </div>
@@ -1598,7 +1616,7 @@ const BusinessListingDetail = ({
             <div className="b-modal-foot">
               <button className="b-btn-cancel" onClick={() => setNdaModalOpen(false)}>Cancel</button>
               <button className="b-btn-sign" onClick={handleSignNda} disabled={ndaSubmitting}>
-                {ndaSubmitting ? "⏳ Processing…" : "✍ Sign NDA & Unlock"}
+                {ndaSubmitting ? "⏳ Redirecting to payment…" : "✍ Sign NDA & Pay $1 to Unlock"}
               </button>
             </div>
           </div>

@@ -55,6 +55,7 @@ import GigHubSellerDashboard from "./pages/gigs/GigHubSellerDashboard";
 import GigMessages from "./pages/gigs/GigMessages";
 import GigOrderDetail from "./pages/gigs/GigOrderDetail";
 import VisitPaymentReturn from "./pages/VisitPaymentReturn";
+import NdaPaymentReturn from "./pages/NdaPaymentReturn";
 
 function App() {
   const {
@@ -129,6 +130,7 @@ function App() {
           element={<ProductDetailPage />}
         />
         <Route path="/visit-payment-return" element={<VisitPaymentReturn />} />
+        <Route path="/nda-payment-return" element={<NdaPaymentReturn />} />
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />
         <Route path="/completion" element={<Completion />} />
