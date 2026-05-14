@@ -204,6 +204,57 @@ const CSS = `
   .b-success h4{font-size:15px;font-weight:700;margin-bottom:5px;color:var(--green);}
   .b-success p{font-size:12px;color:var(--text-3);line-height:1.5;}
 
+  /* ── NDA ── */
+  .b-nda-gate{background:var(--surface-2);border:1.5px solid var(--amber-border);border-radius:8px;padding:28px 24px;text-align:center;margin-top:20px;}
+  .b-nda-gate-icon{font-size:40px;margin-bottom:10px;}
+  .b-nda-gate h4{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;}
+  .b-nda-gate p{font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:16px;max-width:400px;margin-left:auto;margin-right:auto;}
+  .b-nda-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:18px;}
+  .b-nda-chip{display:inline-flex;align-items:center;gap:5px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:4px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--amber);}
+  .b-btn-nda{background:var(--pink);color:#fff;border:none;padding:11px 26px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s;}
+  .b-btn-nda:hover{background:var(--pink-h);}
+  .b-nda-side-card{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:8px;padding:16px;}
+  .b-nda-side-card h4{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .b-nda-side-card p{font-size:12px;color:var(--amber);line-height:1.5;margin-bottom:12px;opacity:.9;}
+  .b-btn-nda-side{width:100%;background:var(--amber);color:#fff;border:none;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .15s;}
+  .b-btn-nda-side:hover{filter:brightness(0.88);}
+  /* NDA modal */
+  .b-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .b-modal-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.7);}
+  .b-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+  .b-modal-title{font-size:15px;font-weight:700;color:var(--text);}
+  .b-modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;transition:all .14s;}
+  .b-modal-close:hover{background:var(--surface-2);color:var(--text);}
+  .b-modal-body{padding:18px 20px;}
+  .b-modal-foot{padding:12px 20px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+  .b-nda-doc-text{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:12px;line-height:1.75;color:var(--text-2);max-height:180px;overflow-y:auto;margin-bottom:16px;font-family:Georgia,serif;}
+  .b-nda-doc-text h4{font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;color:var(--text);font-family:Georgia,serif;}
+  .b-nda-doc-text h5{font-size:10px;font-weight:700;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.07em;color:var(--text);}
+  .b-sig-field{border:2px solid var(--border);border-radius:6px;padding:12px;font-size:20px;font-style:italic;text-align:center;width:100%;color:var(--text);background:var(--surface-2);transition:border-color .15s;outline:none;font-family:Georgia,serif;}
+  .b-sig-field:focus{border-color:var(--pink);}
+  .b-agree-check{display:flex;align-items:flex-start;gap:9px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;padding:11px;margin-bottom:14px;}
+  .b-agree-check input{width:14px;height:14px;margin-top:2px;accent-color:var(--pink);flex-shrink:0;cursor:pointer;}
+  .b-agree-check label{font-size:12px;color:var(--text-2);cursor:pointer;line-height:1.5;}
+  .b-btn-sign{background:var(--pink);color:#fff;border:none;padding:11px 22px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
+  .b-btn-sign:hover{background:var(--pink-h);}
+  .b-btn-sign:disabled{background:var(--surface-3);color:var(--text-3);cursor:not-allowed;}
+  .b-btn-cancel{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:11px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .b-btn-cancel:hover{border-color:var(--border-2);}
+  /* doc rows */
+  .b-doc-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;transition:border-color .15s;}
+  .b-doc-row:hover{border-color:var(--border-2);}
+  .b-doc-row-icon{font-size:22px;flex-shrink:0;}
+  .b-doc-row-info{flex:1;min-width:0;}
+  .b-doc-row-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .b-doc-row-sub{font-size:11px;color:var(--text-3);}
+  .b-doc-row-right{flex-shrink:0;display:flex;align-items:center;gap:8px;}
+  .b-doc-badge-free{font-size:10px;font-weight:700;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:2px 8px;border-radius:4px;}
+  .b-doc-badge-nda{font-size:10px;font-weight:700;background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);padding:2px 8px;border-radius:4px;display:inline-flex;align-items:center;gap:3px;}
+  .b-doc-btn{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap;}
+  .b-doc-btn:hover{border-color:var(--pink);color:var(--pink);}
+  .b-doc-btn.locked{color:var(--amber);border-color:var(--amber-border);}
+  .b-doc-btn.locked:hover{background:var(--amber-bg);}
+
   @media(max-width:900px){
     .biz-grid{grid-template-columns:1fr;}
     .biz-side{position:static;}
@@ -254,6 +305,51 @@ const BusinessListingDetail = ({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [wishlistBusy, setWishlistBusy] = useState(false);
+
+  // NDA gating
+  const lockEbitda = !!product.nda_lock_ebitda;
+  const lockFinancials = !!product.nda_lock_full_financials;
+  const [ndaSigned, setNdaSigned] = useState(false);
+  const [ndaModalOpen, setNdaModalOpen] = useState(false);
+  const [ndaForm, setNdaForm] = useState({ name: "", email: "", company: "", role: "", signature: "", agreed: false });
+  const [ndaSubmitting, setNdaSubmitting] = useState(false);
+
+  const handleSignNda = async () => {
+    const { name, email, role, signature, agreed } = ndaForm;
+    if (!name || !email || !role || !signature || !agreed) {
+      toast.error("Please fill in all required fields and agree to the terms.", { position: "top-right" });
+      return;
+    }
+    if (signature.trim().toLowerCase() !== name.trim().toLowerCase()) {
+      toast.error("Your signature must match your full legal name exactly.", { position: "top-right" });
+      return;
+    }
+    setNdaSubmitting(true);
+    try {
+      const payload = {
+        customer_id: user?.id,
+        product_id: productId,
+        full_name: name,
+        email,
+        company: ndaForm.company || "",
+        buyer_role: role,
+        signature,
+        agreed_to_terms: agreed,
+      };
+      if (user?.id) {
+        await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/nda/sign/`, payload);
+      }
+      setNdaSigned(true);
+      setNdaModalOpen(false);
+      toast.success("✅ NDA signed — financial details are now unlocked.", { position: "top-right" });
+    } catch (err) {
+      const data = err?.response?.data || {};
+      const msg = data.detail || data.full_name?.[0] || data.signature?.[0] || data.non_field_errors?.[0] || "Failed to submit NDA. Please try again.";
+      toast.error(msg, { position: "top-right" });
+    } finally {
+      setNdaSubmitting(false);
+    }
+  };
 
   const photos = [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
   const daysOnMarket = product.created_at ? formatDistanceToNow(new Date(product.created_at)) : null;
@@ -438,7 +534,13 @@ const BusinessListingDetail = ({
                       <div className="b-met-k">Annual Revenue</div>
                     </div>
                   )}
-                  {isPositiveMoney(ebitda) && (
+                  {lockEbitda && !ndaSigned ? (
+                    <div className="b-met" style={{ cursor: "pointer" }} onClick={() => setNdaModalOpen(true)} title="Sign NDA to reveal">
+                      <div className="b-met-v amber" style={{ fontSize: 14 }}>🔒 NDA</div>
+                      <div className="b-met-k">SDE / EBITDA</div>
+                      <div className="b-met-note" style={{ color: "var(--amber)" }}>Tap to unlock</div>
+                    </div>
+                  ) : isPositiveMoney(ebitda) && (
                     <div className="b-met">
                       <div className="b-met-v green">{currency}{formatMoney(parseMoney(ebitda))}</div>
                       <div className="b-met-k">SDE / EBITDA</div>
@@ -565,10 +667,7 @@ const BusinessListingDetail = ({
                     <h3>Financial Summary</h3>
                     <table className="b-fin-table">
                       <thead>
-                        <tr>
-                          <th>Metric</th>
-                          <th>Value</th>
-                        </tr>
+                        <tr><th>Metric</th><th>Value</th></tr>
                       </thead>
                       <tbody>
                         <tr>
@@ -581,42 +680,76 @@ const BusinessListingDetail = ({
                             <td className="pos">{currency}{formatMoney(parseMoney(revenue))}</td>
                           </tr>
                         )}
-                        {isPositiveMoney(ebitda) && (
+                        {/* EBITDA — shown only if not locked or NDA signed */}
+                        {(!lockEbitda || ndaSigned) && isPositiveMoney(ebitda) && (
                           <tr className="highlight">
                             <td>SDE / EBITDA</td>
                             <td>{currency}{formatMoney(parseMoney(ebitda))}</td>
                           </tr>
                         )}
-                        {ebitdaMultiple && (
+                        {lockEbitda && !ndaSigned && (
+                          <tr>
+                            <td>SDE / EBITDA</td>
+                            <td>
+                              <button
+                                onClick={() => setNdaModalOpen(true)}
+                                style={{ background: "none", border: "none", color: "var(--amber)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0, display: "flex", alignItems: "center", gap: 5 }}
+                              >
+                                🔒 Sign NDA to reveal
+                              </button>
+                            </td>
+                          </tr>
+                        )}
+                        {(!lockEbitda || ndaSigned) && ebitdaMultiple && (
                           <tr>
                             <td>Multiple</td>
                             <td>{ebitdaMultiple}x</td>
                           </tr>
                         )}
-                        {inventory && (
-                          <tr>
-                            <td>Inventory (est.)</td>
-                            <td>{inventory}</td>
-                          </tr>
-                        )}
-                        {ffe && (
-                          <tr>
-                            <td>FF&E</td>
-                            <td>{ffe}</td>
-                          </tr>
-                        )}
-                        {financing && (
-                          <tr>
-                            <td>Seller Financing</td>
-                            <td className="pos">{financing}</td>
-                          </tr>
-                        )}
+                        {inventory && <tr><td>Inventory (est.)</td><td>{inventory}</td></tr>}
+                        {ffe && <tr><td>FF&amp;E</td><td>{ffe}</td></tr>}
+                        {financing && <tr><td>Seller Financing</td><td className="pos">{financing}</td></tr>}
                       </tbody>
                     </table>
 
-                    <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
-                      📋 For full financial details including tax returns, full P&amp;L, and add-backs, contact the lister directly using the Express Interest form.
-                    </div>
+                    {/* NDA gate for full financials */}
+                    {(lockEbitda || lockFinancials) && !ndaSigned ? (
+                      <div className="b-nda-gate">
+                        <div className="b-nda-gate-icon">🔒</div>
+                        <h4>
+                          {lockEbitda && lockFinancials
+                            ? "EBITDA & Full Financials Require NDA"
+                            : lockEbitda
+                            ? "EBITDA / SDE Requires NDA"
+                            : "Full Financial Details Require NDA"}
+                        </h4>
+                        <p>
+                          {lockEbitda && lockFinancials
+                            ? "The seller has chosen to protect EBITDA/SDE and the full financial breakdown. Sign the NDA to unlock both instantly."
+                            : lockEbitda
+                            ? "The seller has locked the SDE / EBITDA figure. Sign the NDA to view it instantly."
+                            : "Full revenue breakdown, P&L, and supporting documents are protected. Sign the NDA to unlock instantly."}
+                        </p>
+                        <div className="b-nda-chips">
+                          {lockEbitda && <span className="b-nda-chip">📊 SDE / EBITDA</span>}
+                          {lockFinancials && <span className="b-nda-chip">💰 Revenue Breakdown</span>}
+                          {lockFinancials && <span className="b-nda-chip">📈 Full P&amp;L</span>}
+                          {lockFinancials && <span className="b-nda-chip">🧾 Tax Returns (3yr)</span>}
+                          <span className="b-nda-chip">📋 CIM / Documents</span>
+                        </div>
+                        <button className="b-btn-nda" onClick={() => setNdaModalOpen(true)}>
+                          ✍ Sign NDA to Unlock
+                        </button>
+                      </div>
+                    ) : ndaSigned ? (
+                      <div style={{ marginTop: 16, padding: 14, background: "var(--green-bg)", border: "1.5px solid var(--green-border)", borderRadius: 6, fontSize: 12, color: "var(--green)", lineHeight: 1.6 }}>
+                        ✅ <strong>NDA Signed</strong> — All financial details are now visible. Full documents accessible in the Documents tab.
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
+                        📋 For full financial details including tax returns and full P&amp;L, contact the lister using the form below.
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -738,6 +871,76 @@ const BusinessListingDetail = ({
                           <div className="b-loc-val">{locationDetails}</div>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── DOCUMENTS ── */}
+                {activeTab === "documents" && !ndaSigned && (lockEbitda || lockFinancials) && (
+                  <div className="b-panel" style={{ paddingBottom: 0, borderRadius: "0 0 0 0", borderBottom: "none" }}>
+                    <h3 style={{ marginBottom: 14 }}>Documents</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                      {/* Free document */}
+                      <div className="b-doc-row">
+                        <div className="b-doc-row-icon">📄</div>
+                        <div className="b-doc-row-info">
+                          <div className="b-doc-row-name">Business Teaser</div>
+                          <div className="b-doc-row-sub">High-level overview · Visible to all buyers · No NDA required</div>
+                        </div>
+                        <div className="b-doc-row-right">
+                          <span className="b-doc-badge-free">Free Access</span>
+                          <button className="b-doc-btn" onClick={() => toast.info("📄 Teaser download — contact lister for file.", { position: "top-right" })}>Download</button>
+                        </div>
+                      </div>
+                      {/* NDA-gated docs */}
+                      {[
+                        { icon: "📊", name: "Confidential Information Memorandum (CIM)", sub: "Full business overview, competitive positioning, and growth plan" },
+                        { icon: "💰", name: "Redacted P&L (Last 3 Years)", sub: "Revenue and expenses with sensitive line items removed" },
+                        lockFinancials && { icon: "🔒", name: "Full Financials — Tax Returns (3 Years)", sub: "Complete IRS returns FY2022, FY2023, FY2024" },
+                        { icon: "📋", name: "Franchise / Operating Agreement Summary", sub: "Terms, royalties, and transfer process" },
+                      ].filter(Boolean).map((doc) => (
+                        <div className="b-doc-row" key={doc.name}>
+                          <div className="b-doc-row-icon">{doc.icon}</div>
+                          <div className="b-doc-row-info">
+                            <div className="b-doc-row-name">{doc.name}</div>
+                            <div className="b-doc-row-sub">{doc.sub}</div>
+                          </div>
+                          <div className="b-doc-row-right">
+                            <span className="b-doc-badge-nda">🔒 NDA Required</span>
+                            <button className="b-doc-btn locked" onClick={() => setNdaModalOpen(true)}>✍ Sign NDA</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ marginBottom: 20, padding: 12, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11, color: "var(--text-3)" }}>
+                      🤖 AI agents cannot sign NDAs. Human signing authority required.
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "documents" && ndaSigned && (
+                  <div className="b-panel" style={{ paddingBottom: 0, borderRadius: "0 0 0 0", borderBottom: "none" }}>
+                    <h3 style={{ marginBottom: 14 }}>Documents</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                      {[
+                        { icon: "📄", name: "Business Teaser", sub: "High-level overview" },
+                        { icon: "📊", name: "Confidential Information Memorandum (CIM)", sub: "Full business overview" },
+                        { icon: "💰", name: "Redacted P&L (Last 3 Years)", sub: "Revenue and expenses" },
+                        { icon: "🔒", name: "Full Financials — Tax Returns (3 Years)", sub: "Complete IRS returns FY2022–FY2024" },
+                        { icon: "📋", name: "Franchise / Operating Agreement Summary", sub: "Terms, royalties, and transfer process" },
+                      ].map((doc) => (
+                        <div className="b-doc-row" key={doc.name}>
+                          <div className="b-doc-row-icon">{doc.icon}</div>
+                          <div className="b-doc-row-info">
+                            <div className="b-doc-row-name">{doc.name}</div>
+                            <div className="b-doc-row-sub">{doc.sub}</div>
+                          </div>
+                          <div className="b-doc-row-right">
+                            <span className="b-doc-badge-free">✅ Unlocked</span>
+                            <button className="b-doc-btn" onClick={() => toast.info("📥 Downloading — contact lister for file access.", { position: "top-right" })}>📥 Download</button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -1082,6 +1285,37 @@ const BusinessListingDetail = ({
               </div>
 
 
+              {/* NDA sidebar card */}
+              {(lockEbitda || lockFinancials) && (
+                ndaSigned ? (
+                  <div className="b-nda-side-card" style={{ background: "var(--green-bg)", border: "1.5px solid var(--green-border)" }}>
+                    <h4 style={{ color: "var(--green)" }}>✅ NDA Signed</h4>
+                    <p style={{ color: "var(--green)" }}>All locked financial details are now visible. Check the Financials and Documents tabs.</p>
+                  </div>
+                ) : (
+                  <div className="b-nda-side-card">
+                    <h4>
+                      🔒{" "}
+                      {lockEbitda && lockFinancials
+                        ? "EBITDA & Financials Locked"
+                        : lockEbitda
+                        ? "EBITDA / SDE Locked"
+                        : "Full Financials Locked"}
+                    </h4>
+                    <p>
+                      {lockEbitda && lockFinancials
+                        ? "Sign the NDA to instantly unlock EBITDA/SDE and the full financial breakdown."
+                        : lockEbitda
+                        ? "Sign the NDA to instantly view the SDE / EBITDA figure for this listing."
+                        : "Sign the NDA to unlock the full revenue breakdown, P&L, and documents."}
+                    </p>
+                    <button className="b-btn-nda-side" onClick={() => setNdaModalOpen(true)}>
+                      ✍ Sign NDA to Unlock
+                    </button>
+                  </div>
+                )
+              )}
+
               {/* Contact / Message */}
               <div className="b-side-card">
                 <div className="b-side-head">
@@ -1195,6 +1429,129 @@ const BusinessListingDetail = ({
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}` }} />
+
+      {/* ── NDA MODAL ── */}
+      {ndaModalOpen && (
+        <div className="b-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setNdaModalOpen(false); }}>
+          <div className="b-modal-box">
+            <div className="b-modal-header">
+              <div className="b-modal-title">🔒 Sign NDA to Access Financial Documents</div>
+              <button className="b-modal-close" onClick={() => setNdaModalOpen(false)}>✕</button>
+            </div>
+
+            <div className="b-modal-body">
+              <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 14, lineHeight: 1.5 }}>
+                Signing this NDA instantly unlocks the financial details the seller has chosen to protect. A countersigned copy will be emailed to you and the seller.
+              </p>
+
+              <div className="b-nda-doc-text">
+                <h4>NON-DISCLOSURE AGREEMENT</h4>
+                <p>This Agreement is between the Disclosing Party (Business Seller via PinkSurfing) and the Receiving Party (identified by signature below).</p>
+                <h5>1. Confidential Information</h5>
+                <p>Includes financial statements, tax returns, revenue data, customer lists, contracts, operational procedures, and all information related to the listed business.</p>
+                <h5>2. Receiving Party Obligations</h5>
+                <p>(a) Keep all information strictly confidential. (b) Not disclose to any third party without consent. (c) Use solely to evaluate a potential acquisition.</p>
+                <h5>3. Term</h5>
+                <p>Valid for 1 year from date of signing.</p>
+                <h5>4. Non-Solicitation</h5>
+                <p>Receiving Party agrees not to solicit employees or key contractors of the listed business during the NDA term and 12 months thereafter.</p>
+                <h5>5. Governing Law</h5>
+                <p>Governed by the laws of the applicable jurisdiction.</p>
+                <h5>6. AI Agent Restriction</h5>
+                <p>AI agents cannot sign this agreement. Human signing authority is required.</p>
+              </div>
+
+              {/* Form fields */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                <div>
+                  <label className="b-form-label">Full Legal Name *</label>
+                  <input
+                    className="b-form-input"
+                    style={{ marginBottom: 0 }}
+                    type="text"
+                    placeholder="Jane Smith"
+                    value={ndaForm.name}
+                    onChange={(e) => setNdaForm((f) => ({ ...f, name: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="b-form-label">Email *</label>
+                  <input
+                    className="b-form-input"
+                    style={{ marginBottom: 0 }}
+                    type="email"
+                    placeholder="jane@company.com"
+                    value={ndaForm.email}
+                    onChange={(e) => setNdaForm((f) => ({ ...f, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                <div>
+                  <label className="b-form-label">Company</label>
+                  <input
+                    className="b-form-input"
+                    style={{ marginBottom: 0 }}
+                    type="text"
+                    placeholder="Acme Acquisitions LLC"
+                    value={ndaForm.company}
+                    onChange={(e) => setNdaForm((f) => ({ ...f, company: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="b-form-label">Buyer Role *</label>
+                  <select
+                    className="b-form-select"
+                    style={{ marginBottom: 0 }}
+                    value={ndaForm.role}
+                    onChange={(e) => setNdaForm((f) => ({ ...f, role: e.target.value }))}
+                  >
+                    <option value="">Select…</option>
+                    <option>Individual Buyer</option>
+                    <option>Strategic Acquirer</option>
+                    <option>Private Equity</option>
+                    <option>Search Fund</option>
+                    <option>Broker / Advisor</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 14 }}>
+                <label className="b-form-label">Digital Signature — Type your full legal name exactly *</label>
+                <input
+                  className="b-sig-field"
+                  type="text"
+                  placeholder="Type your full legal name to sign"
+                  value={ndaForm.signature}
+                  onChange={(e) => setNdaForm((f) => ({ ...f, signature: e.target.value }))}
+                />
+                <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 5, lineHeight: 1.4 }}>
+                  By typing your name you confirm this is a legally binding electronic signature (ESIGN Act / UETA).
+                </div>
+              </div>
+
+              <div className="b-agree-check">
+                <input
+                  type="checkbox"
+                  id="nda-agree-check"
+                  checked={ndaForm.agreed}
+                  onChange={(e) => setNdaForm((f) => ({ ...f, agreed: e.target.checked }))}
+                />
+                <label htmlFor="nda-agree-check">
+                  I have read and agree to all terms of this Non-Disclosure Agreement. I confirm I am a human with the legal authority to enter this Agreement on behalf of myself or my organisation.
+                </label>
+              </div>
+            </div>
+
+            <div className="b-modal-foot">
+              <button className="b-btn-cancel" onClick={() => setNdaModalOpen(false)}>Cancel</button>
+              <button className="b-btn-sign" onClick={handleSignNda} disabled={ndaSubmitting}>
+                {ndaSubmitting ? "⏳ Processing…" : "✍ Sign NDA & Unlock"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
