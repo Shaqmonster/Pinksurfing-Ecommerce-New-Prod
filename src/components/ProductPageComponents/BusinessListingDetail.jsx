@@ -218,28 +218,83 @@ const CSS = `
   .b-nda-side-card p{font-size:12px;color:var(--amber);line-height:1.5;margin-bottom:12px;opacity:.9;}
   .b-btn-nda-side{width:100%;background:var(--amber);color:#fff;border:none;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .15s;}
   .b-btn-nda-side:hover{filter:brightness(0.88);}
-  /* NDA modal */
-  .b-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px;}
-  .b-modal-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.7);}
-  .b-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
-  .b-modal-title{font-size:15px;font-weight:700;color:var(--text);}
-  .b-modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;transition:all .14s;}
-  .b-modal-close:hover{background:var(--surface-2);color:var(--text);}
-  .b-modal-body{padding:18px 20px;}
-  .b-modal-foot{padding:12px 20px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
-  .b-nda-doc-text{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:12px;line-height:1.75;color:var(--text-2);max-height:180px;overflow-y:auto;margin-bottom:16px;font-family:Georgia,serif;}
-  .b-nda-doc-text h4{font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;color:var(--text);font-family:Georgia,serif;}
-  .b-nda-doc-text h5{font-size:10px;font-weight:700;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.07em;color:var(--text);}
-  .b-sig-field{border:2px solid var(--border);border-radius:6px;padding:12px;font-size:20px;font-style:italic;text-align:center;width:100%;color:var(--text);background:var(--surface-2);transition:border-color .15s;outline:none;font-family:Georgia,serif;}
-  .b-sig-field:focus{border-color:var(--pink);}
-  .b-agree-check{display:flex;align-items:flex-start;gap:9px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;padding:11px;margin-bottom:14px;}
-  .b-agree-check input{width:14px;height:14px;margin-top:2px;accent-color:var(--pink);flex-shrink:0;cursor:pointer;}
-  .b-agree-check label{font-size:12px;color:var(--text-2);cursor:pointer;line-height:1.5;}
-  .b-btn-sign{background:var(--pink);color:#fff;border:none;padding:11px 22px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
-  .b-btn-sign:hover{background:var(--pink-h);}
-  .b-btn-sign:disabled{background:var(--surface-3);color:var(--text-3);cursor:not-allowed;}
-  .b-btn-cancel{background:none;border:1.5px solid var(--border);color:var(--text-2);padding:11px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
-  .b-btn-cancel:hover{border-color:var(--border-2);}
+  /* NDA modal — variables redeclared here so they resolve outside .biz-root (position:fixed) */
+  .b-modal-overlay{
+    --surface:#141418;--surface-2:#1c1c22;--surface-3:#232329;
+    --border:#2a2a33;--border-2:#3a3a46;
+    --text:#f0f0f4;--text-2:#b0b0c0;--text-3:#66667a;
+    --pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.10);
+    position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    font-family:'DM Sans',sans-serif;
+  }
+  .b-modal-box{
+    background:#141418;border:1px solid #2a2a33;border-radius:14px;
+    max-width:600px;width:100%;max-height:92vh;overflow-y:auto;
+    box-shadow:0 24px 80px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.05);
+  }
+  .b-modal-header{
+    padding:20px 24px 18px;border-bottom:1px solid #2a2a33;
+    display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+    position:sticky;top:0;background:#141418;z-index:1;border-radius:14px 14px 0 0;
+  }
+  .b-modal-header-text{flex:1;}
+  .b-modal-title{font-size:16px;font-weight:700;color:#f0f0f4;margin-bottom:4px;letter-spacing:-.01em;}
+  .b-modal-subtitle{font-size:12px;color:#66667a;line-height:1.5;}
+  .b-modal-close{
+    background:none;border:none;font-size:16px;cursor:pointer;color:#66667a;
+    width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;border-radius:6px;transition:all .14s;margin-top:1px;
+  }
+  .b-modal-close:hover{background:#1c1c22;color:#f0f0f4;}
+  .b-modal-body{padding:20px 24px;}
+  .b-modal-foot{
+    padding:14px 24px 20px;border-top:1px solid #2a2a33;
+    display:flex;justify-content:flex-end;gap:10px;
+    background:#141418;border-radius:0 0 14px 14px;position:sticky;bottom:0;
+  }
+  .b-nda-doc-text{
+    background:#0d0d10;border:1px solid #2a2a33;border-radius:8px;
+    padding:14px 16px;font-size:12px;line-height:1.85;color:#b0b0c0;
+    max-height:160px;overflow-y:auto;margin-bottom:18px;font-family:Georgia,serif;
+  }
+  .b-nda-doc-text h4{
+    font-size:11px;font-weight:700;text-align:center;margin-bottom:10px;
+    color:#f0f0f4;font-family:Georgia,serif;letter-spacing:.08em;text-transform:uppercase;
+  }
+  .b-nda-doc-text h5{font-size:10px;font-weight:700;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.07em;color:#d0d0e0;}
+  .b-nda-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  @media(max-width:520px){.b-nda-fields-grid{grid-template-columns:1fr;}}
+  .b-sig-field{
+    width:100%;background:#0d0d10;border:2px solid #2a2a33;color:#f0318a;
+    border-radius:8px;padding:14px 16px;font-size:22px;font-style:italic;
+    text-align:center;outline:none;font-family:Georgia,'Times New Roman',serif;
+    transition:border-color .15s,box-shadow .15s;box-sizing:border-box;
+  }
+  .b-sig-field:focus{border-color:#f0318a;box-shadow:0 0 0 3px rgba(240,49,138,.12);}
+  .b-sig-field::placeholder{color:#36363f;font-size:16px;}
+  .b-sig-hint{font-size:11px;color:#66667a;margin-top:6px;line-height:1.4;}
+  /* Override form inputs inside modal so box-sizing is correct */
+  .b-modal-box .b-form-input,.b-modal-box .b-form-select{box-sizing:border-box;margin-bottom:0;}
+  .b-agree-check{
+    display:flex;align-items:flex-start;gap:10px;background:#1c1c22;
+    border:1.5px solid #2a2a33;border-radius:8px;padding:13px 14px;margin-bottom:4px;
+  }
+  .b-agree-check input{width:15px;height:15px;margin-top:1px;accent-color:#f0318a;flex-shrink:0;cursor:pointer;}
+  .b-agree-check label{font-size:12px;color:#b0b0c0;cursor:pointer;line-height:1.55;}
+  .b-btn-sign{
+    background:#f0318a;color:#fff;border:none;padding:11px 28px;border-radius:8px;
+    font-size:14px;font-weight:700;cursor:pointer;transition:background .15s,transform .1s;
+    letter-spacing:-.01em;white-space:nowrap;
+  }
+  .b-btn-sign:hover{background:#d4246f;transform:translateY(-1px);}
+  .b-btn-sign:disabled{background:#232329;color:#66667a;cursor:not-allowed;transform:none;}
+  .b-btn-cancel{
+    background:none;border:1.5px solid #2a2a33;color:#b0b0c0;padding:11px 20px;
+    border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;
+  }
+  .b-btn-cancel:hover{border-color:#3a3a46;color:#f0f0f4;}
   /* doc rows */
   .b-doc-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;transition:border-color .15s;}
   .b-doc-row:hover{border-color:var(--border-2);}
@@ -1435,15 +1490,14 @@ const BusinessListingDetail = ({
         <div className="b-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setNdaModalOpen(false); }}>
           <div className="b-modal-box">
             <div className="b-modal-header">
-              <div className="b-modal-title">🔒 Sign NDA to Access Financial Documents</div>
+              <div className="b-modal-header-text">
+                <div className="b-modal-title">🔒 Sign NDA to Access Financial Documents</div>
+                <div className="b-modal-subtitle">Signing instantly unlocks the protected financials. A countersigned copy is emailed to you and the seller.</div>
+              </div>
               <button className="b-modal-close" onClick={() => setNdaModalOpen(false)}>✕</button>
             </div>
 
             <div className="b-modal-body">
-              <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 14, lineHeight: 1.5 }}>
-                Signing this NDA instantly unlocks the financial details the seller has chosen to protect. A countersigned copy will be emailed to you and the seller.
-              </p>
-
               <div className="b-nda-doc-text">
                 <h4>NON-DISCLOSURE AGREEMENT</h4>
                 <p>This Agreement is between the Disclosing Party (Business Seller via PinkSurfing) and the Receiving Party (identified by signature below).</p>
@@ -1462,7 +1516,7 @@ const BusinessListingDetail = ({
               </div>
 
               {/* Form fields */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+              <div className="b-nda-fields-grid">
                 <div>
                   <label className="b-form-label">Full Legal Name *</label>
                   <input
@@ -1486,7 +1540,7 @@ const BusinessListingDetail = ({
                   />
                 </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+              <div className="b-nda-fields-grid" style={{ marginTop: 0 }}>
                 <div>
                   <label className="b-form-label">Company</label>
                   <input
@@ -1525,9 +1579,7 @@ const BusinessListingDetail = ({
                   value={ndaForm.signature}
                   onChange={(e) => setNdaForm((f) => ({ ...f, signature: e.target.value }))}
                 />
-                <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 5, lineHeight: 1.4 }}>
-                  By typing your name you confirm this is a legally binding electronic signature (ESIGN Act / UETA).
-                </div>
+                <div className="b-sig-hint">By typing your name you confirm this is a legally binding electronic signature (ESIGN Act / UETA).</div>
               </div>
 
               <div className="b-agree-check">
