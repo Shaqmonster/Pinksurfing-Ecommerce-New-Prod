@@ -108,8 +108,11 @@ const ProductDetailPage = () => {
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
   const [zoomCoordinates, setZoomCoordinates] = useState({ x: 0, y: 0 });
+  const { slug: urlSlug } = useParams();
   const searchParams = new URLSearchParams(location.search);
-  const rawProductId = searchParams.get("productId");
+  // ?productId= takes priority; fall back to the :slug URL param so NDA return links
+  // that only have a slug (no productId query param) can still load the product.
+  const rawProductId = searchParams.get("productId") || urlSlug || null;
   const [averageRating, setAverageRating] = useState(0);
   const [currentUrl, setCurrentUrl] = useState("");
   const [activeVisit, setActiveVisit] = useState(null);

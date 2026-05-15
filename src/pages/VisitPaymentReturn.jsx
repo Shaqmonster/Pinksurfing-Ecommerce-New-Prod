@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import Header from "../components/Header";
 
 const VisitPaymentReturn = () => {
   const [params] = useSearchParams();
@@ -14,7 +13,6 @@ const VisitPaymentReturn = () => {
 
   return (
     <>
-      <Header />
       <div className="min-h-[60vh] flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-md w-full rounded-3xl border border-purple-500/20 bg-white dark:bg-gray-900 p-10 text-center shadow-xl shadow-purple-500/10">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-2xl font-black">

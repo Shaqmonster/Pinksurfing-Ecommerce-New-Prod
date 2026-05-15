@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import Header from "../components/Header";
 
 const SERVER = import.meta.env.VITE_SERVER_URL || "";
 
@@ -12,13 +11,17 @@ const NdaPaymentReturn = () => {
   const [params] = useSearchParams();
   const ndaId = params.get("nda_id");
   const slug = params.get("slug");
+  const productId = params.get("product_id");
 
   const [phase, setPhase] = useState("verifying"); // verifying | pending_vendor | failed | not_found
   const pollCount = useRef(0);
   const timer = useRef(null);
 
-  const productLink = slug
-    ? `/product/productDetail/${encodeURIComponent(slug)}?nda_unlocked=1`
+  // Build the correct product detail URL: prefer ?productId= which is what ProductDetailPage reads
+  const productLink = productId
+    ? `/product/productDetail/${slug || productId}?productId=${productId}&nda_unlocked=1`
+    : slug
+    ? `/product/productDetail/${slug}?nda_unlocked=1`
     : "/";
 
   useEffect(() => {
@@ -56,7 +59,6 @@ const NdaPaymentReturn = () => {
 
   return (
     <>
-      <Header />
       <div className="min-h-[70vh] flex items-center justify-center px-4" style={{ background: "#0d0d10" }}>
         <div
           style={{
