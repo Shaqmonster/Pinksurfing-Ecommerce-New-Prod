@@ -160,6 +160,7 @@ function App() {
         <Route path="/gigs/orders/success" element={<GigOrderSuccess />} />
         <Route path="/gigs/orders/cancel" element={<GigOrderCancel />} />
         <Route path="/gigs/orders/:id" element={<GigOrderDetail />} />
+        <Route path="/gigs/:id/:slug" element={<GigDetailPage />} />
         <Route path="/gigs/:id" element={<GigDetailPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

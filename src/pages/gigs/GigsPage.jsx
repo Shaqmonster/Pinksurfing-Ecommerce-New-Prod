@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { listGigs, getGigCategories } from "../../api/gigs";
+import { listGigs, getGigCategories, gigUrl } from "../../api/gigs";
 import {
   IoSearchSharp,
   IoFilterOutline,
@@ -24,70 +24,71 @@ const GigCard = ({ gig }) => {
     : null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="bg-[#13131a] border border-white/5 rounded-2xl overflow-hidden shadow-lg hover:shadow-purple-500/10 hover:border-white/10 transition-all flex flex-col"
-    >
-      <div className="relative h-48 overflow-hidden bg-[#1a1a24] flex-shrink-0">
-        {mainImage ? (
-          <img src={mainImage.file} alt={gig.title}
-            className="w-full h-full object-contain transition-transform duration-500 hover:scale-105" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <FaBriefcase className="text-4xl text-white/10" />
-          </div>
-        )}
-        {gig.category_details && (
-          <span className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-medium px-2 py-1 rounded-full border border-white/10">
-            {gig.category_details.name}
-          </span>
-        )}
-      </div>
-
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white text-[10px] font-bold uppercase">
-            {(gig.worker?.name || gig.worker?.username)?.[0] || "?"}
-          </div>
-          <span className="text-white/50 text-xs truncate">{gig.worker?.name || gig.worker?.username}</span>
-          <div className="ml-auto flex items-center gap-1 flex-shrink-0">
-            <IoStarSharp className="text-yellow-400 text-xs" />
-            <span className="text-white/70 text-xs font-medium">{gig.rating}</span>
-            <span className="text-white/30 text-xs">({gig.total_orders_completed})</span>
-          </div>
-        </div>
-
-        <h3 className="text-white text-sm font-semibold leading-snug mb-3 line-clamp-2 flex-1">{gig.title}</h3>
-
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
-          {lowestPkg ? (
-            <>
-              <div className="flex items-center gap-1 text-white/40 text-xs">
-                <IoTimeOutline className="text-sm" />
-                <span>{lowestPkg.delivery_days}d delivery</span>
-              </div>
-              <div className="text-right">
-                <span className="text-white/40 text-[10px]">Starting at</span>
-                <p className="text-white font-bold text-base leading-tight">
-                  ${parseFloat(lowestPkg.price).toFixed(2)}
-                </p>
-              </div>
-            </>
+    <Link to={gigUrl(gig)} className="block">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        className="bg-[#13131a] border border-white/5 rounded-2xl overflow-hidden shadow-lg hover:shadow-purple-500/10 hover:border-white/10 transition-all flex flex-col cursor-pointer"
+      >
+        <div className="relative h-48 overflow-hidden bg-[#1a1a24] flex-shrink-0">
+          {mainImage ? (
+            <img src={mainImage.file} alt={gig.title}
+              className="w-full h-full object-contain transition-transform duration-500 hover:scale-105" />
           ) : (
-            <span className="text-white/30 text-xs">Contact for pricing</span>
+            <div className="w-full h-full flex items-center justify-center">
+              <FaBriefcase className="text-4xl text-white/10" />
+            </div>
+          )}
+          {gig.category_details && (
+            <span className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-medium px-2 py-1 rounded-full border border-white/10">
+              {gig.category_details.name}
+            </span>
           )}
         </div>
-      </div>
 
-      <Link to={`/gigs/${gig.gig_id || gig.id}`} className="block px-4 pb-4">
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          className="w-full py-2 rounded-xl bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 text-white text-sm font-semibold transition-all">
-          View Gig
-        </motion.button>
-      </Link>
-    </motion.div>
+        <div className="p-4 flex flex-col flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white text-[10px] font-bold uppercase">
+              {(gig.worker?.name || gig.worker?.username)?.[0] || "?"}
+            </div>
+            <span className="text-white/50 text-xs truncate">{gig.worker?.name || gig.worker?.username}</span>
+            <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+              <IoStarSharp className="text-yellow-400 text-xs" />
+              <span className="text-white/70 text-xs font-medium">{gig.rating}</span>
+              <span className="text-white/30 text-xs">({gig.total_orders_completed})</span>
+            </div>
+          </div>
+
+          <h3 className="text-white text-sm font-semibold leading-snug mb-3 line-clamp-2 flex-1">{gig.title}</h3>
+
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
+            {lowestPkg ? (
+              <>
+                <div className="flex items-center gap-1 text-white/40 text-xs">
+                  <IoTimeOutline className="text-sm" />
+                  <span>{lowestPkg.delivery_days}d delivery</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-white/40 text-[10px]">Starting at</span>
+                  <p className="text-white font-bold text-base leading-tight">
+                    ${parseFloat(lowestPkg.price).toFixed(2)}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <span className="text-white/30 text-xs">Contact for pricing</span>
+            )}
+          </div>
+        </div>
+
+        <div className="px-4 pb-4">
+          <div className="w-full py-2 rounded-xl bg-gradient-to-r from-purple-600/80 to-pink-500/80 hover:from-purple-600 hover:to-pink-500 text-white text-sm font-semibold transition-all text-center">
+            View Gig
+          </div>
+        </div>
+      </motion.div>
+    </Link>
   );
 };
 

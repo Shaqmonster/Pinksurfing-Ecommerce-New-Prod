@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { listGigs, getGigCategories } from "../../api/gigs";
+import { listGigs, getGigCategories, gigUrl } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import {
   IoSearchSharp,
@@ -221,7 +221,7 @@ const GigCard = ({ gig }) => {
         </div>
       </div>
 
-      <Link to={`/gigs/${gig.id}`} className="block px-4 pb-4">
+      <Link to={gigUrl(gig)} className="block px-4 pb-4">
         <button className="w-full py-2 rounded-xl bg-gradient-to-r from-purple-600/70 to-pink-500/70 hover:from-purple-600 hover:to-pink-500 text-white text-sm font-semibold transition-all">
           View Gig
         </button>

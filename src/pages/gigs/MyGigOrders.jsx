@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
-import { getMyGigOrders, submitOrderRequirements } from "../../api/gigs";
+import { getMyGigOrders, submitOrderRequirements, gigUrl } from "../../api/gigs";
 import {
   IoTimeOutline,
   IoCheckmarkCircle,
@@ -352,7 +352,7 @@ const MyGigOrders = () => {
                         </Link>
                         {order.gig?.id && (
                           <Link
-                            to={`/gigs/${order.gig.id}`}
+                            to={gigUrl(order.gig)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 text-xs font-semibold hover:bg-white/10 transition-all"
                           >
                             View Gig

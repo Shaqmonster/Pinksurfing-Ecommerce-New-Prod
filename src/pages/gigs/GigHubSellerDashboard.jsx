@@ -10,6 +10,7 @@ import {
   getMyGigs,
   getMyGigWorkerProfile,
   deleteGig,
+  gigUrl,
 } from "../../api/gigs";
 import {
   IoStarSharp,
@@ -382,14 +383,14 @@ const GigHubSellerDashboard = () => {
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <Link
-                            to={`/gigs/${gig.gig_id || gig.id}`}
+                            to={gigUrl(gig)}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/65 text-xs hover:border-pink-500/30 transition-all"
                           >
                             <IoEyeOutline /> View
                           </Link>
                           <button
                             type="button"
-                            onClick={() => navigate(`/gigs/create?edit=${gig.gig_id || gig.id}`)}
+                            onClick={() => navigate(`/gigs/create?edit=${gig.id}`)}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-pink-500/10 border border-pink-500/25 text-pink-300 text-xs hover:bg-pink-500/15 transition-all"
                           >
                             <IoPencilOutline /> Edit

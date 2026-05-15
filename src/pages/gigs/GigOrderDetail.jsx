@@ -15,6 +15,7 @@ import {
   createConversation,
   setGigOrderEscrowId,
   disputeOrder,
+  gigUrl,
 } from "../../api/gigs";
 import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard";
 import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
@@ -1442,7 +1443,7 @@ const GigOrderDetail = () => {
             {/* View gig link */}
             {order.gig?.id && (
               <Link
-                to={`/gigs/${order.gig.id}`}
+                to={gigUrl(order.gig)}
                 className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm hover:bg-white/10 transition-all"
               >
                 <FaBriefcase /> View Gig

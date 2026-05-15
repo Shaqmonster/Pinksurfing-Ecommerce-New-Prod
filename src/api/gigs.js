@@ -2,6 +2,22 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_SERVER_URL;
 
+/**
+ * Build a clean, human-readable gig URL.
+ * e.g. /gigs/abc123/professional-logo-design
+ */
+export function gigUrl(gig) {
+  const id = gig?.id;
+  const slug = (gig?.title || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 60);
+  return slug ? `/gigs/${id}/${slug}` : `/gigs/${id}`;
+}
+
 const authHeader = (token) => ({
   Authorization: `Bearer ${token}`,
 });
