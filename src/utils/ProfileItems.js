@@ -38,9 +38,17 @@ export const navigationItems = [
     route: "/my-bids"
   },
   {
-    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='22' y1='2' x2='11' y2='13'/%3E%3Cpolygon points='22 2 15 22 11 13 2 9 22 2'/%3E%3C/svg%3E",
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cpath d='M12 18v-6'/%3E%3Cpath d='M9 15h6'/%3E%3C/svg%3E",
     label: "My Offers",
     altText: "My Offers icon",
     route: "/bids/my-offers"
   }
 ];
+
+/** Appended in sidebar/header only when buyer has NDAs (route nav — does not shift profile tab indices). */
+export const myNdasNavigationItem = {
+  icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cpath d='M10 12h4'/%3E%3Cpath d='M12 10v4'/%3E%3Cpath d='M9 16h6'/%3E%3C/svg%3E",
+  label: "My NDAs",
+  altText: "My NDAs and confidentiality agreements",
+  route: "/my-ndas",
+};

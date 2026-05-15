@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { FaWallet, FaGavel, FaBriefcase } from "react-icons/fa";
+import { FaWallet, FaGavel, FaBriefcase, FaFileContract } from "react-icons/fa";
 
 import Profile from "./Profile";
 import Category from "./Category";
@@ -27,10 +27,12 @@ import { toast } from "react-toastify";
 import { currencyOptions } from "../utils/CurrencyList";
 import ProfilePopup from "./ProfilePopup";
 import ChatFloatingPanel from "./ChatFloatingPanel";
+import { useBuyerHasNdas } from "../hooks/useBuyerHasNdas";
 
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 
 const Header = () => {
+  const hasBuyerNdas = useBuyerHasNdas();
   const [cookies] = useCookies(["token", "refresh"]);
   const {
     user,
@@ -336,6 +338,17 @@ const Header = () => {
                     </div>
                   </motion.div>
 
+                  {user && hasBuyerNdas && (
+                    <Link
+                      to="/my-ndas"
+                      title="Business listing confidentiality agreements"
+                      className="hidden md:flex items-center gap-2 px-4 py-3 rounded-2xl border border-purple-500/25 bg-purple-500/10 hover:bg-purple-500/15 transition-colors text-[10px] font-black uppercase tracking-[0.18em] text-purple-200"
+                    >
+                      <FaFileContract className="text-sm opacity-90" />
+                      My NDAs
+                    </Link>
+                  )}
+
                   {user && (
                     <button
                       onClick={Logout}
@@ -417,6 +430,17 @@ const Header = () => {
                     <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">View Profile</p>
                   </div>
                 </Link>
+
+                {user && hasBuyerNdas && (
+                  <Link
+                    to="/my-ndas"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 p-4 rounded-3xl bg-purple-500/15 border border-purple-500/30 text-purple-200 text-xs font-black uppercase tracking-widest"
+                  >
+                    <FaFileContract className="text-lg shrink-0" />
+                    <span>My NDAs — business listings</span>
+                  </Link>
+                )}
 
                 {user && (
                   <button

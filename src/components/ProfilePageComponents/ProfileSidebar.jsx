@@ -1,12 +1,20 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { NavigationItem } from "./NavigationItem";
-import { navigationItems } from "../../utils/ProfileItems";
+import { navigationItems, myNdasNavigationItem } from "../../utils/ProfileItems";
 import { dataContext } from "../../context/dataContext";
 import { authContext } from "../../context/authContext";
+import { useBuyerHasNdas } from "../../hooks/useBuyerHasNdas";
 
 export function Sidebar() {
     const navigate = useNavigate();
+    const hasBuyerNdas = useBuyerHasNdas();
+
+    const sidebarNavItems = React.useMemo(() => {
+        if (!hasBuyerNdas) return navigationItems;
+        return [...navigationItems, myNdasNavigationItem];
+    }, [hasBuyerNdas]);
+
     const [isOpen, setIsOpen] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(0);
     const sidebarRef = React.useRef(null);
@@ -32,7 +40,7 @@ export function Sidebar() {
     };
 
     const handleItemClick = (index) => {
-        const item = navigationItems[index];
+        const item = sidebarNavItems[index];
         if (item.action === "logout") {
             Logout();
             setIsOpen(false);
@@ -50,14 +58,14 @@ export function Sidebar() {
     };
 
     // Get active item for mobile display
-    const activeItem = navigationItems[activeIndex];
+    const activeItem = sidebarNavItems[activeIndex];
 
     return (
         <div ref={sidebarRef} className="relative z-10">
             {/* Mobile: Quick Access Icons Bar */}
             <div className="hidden max-md:block mb-3">
                 <div className="flex items-center justify-between gap-2 p-2 bg-[#0E0F13] rounded-xl border border-gray-700/50">
-                    {navigationItems.slice(0, 5).map((item, index) => (
+                    {sidebarNavItems.slice(0, 5).map((item, index) => (
                         <button
                             key={item.label}
                             onClick={() => handleItemClick(index)}
@@ -110,7 +118,7 @@ export function Sidebar() {
                         <p className="text-xs text-gray-400">Manage your account</p>
                     </div>
                     <div className="py-2">
-                        {navigationItems.map((item, index) => (
+                        {sidebarNavItems.map((item, index) => (
                             <div key={item.label} onClick={() => handleItemClick(index)}>
                                 <NavigationItem
                                     {...item}
@@ -134,7 +142,7 @@ export function Sidebar() {
                     
                     {/* Navigation Items */}
                     <div className="py-8 px-4 space-y-2">
-                        {navigationItems.map((item, index) => (
+                        {sidebarNavItems.map((item, index) => (
                             <div key={item.label} onClick={() => handleItemClick(index)}>
                                 <NavigationItem
                                     {...item}
