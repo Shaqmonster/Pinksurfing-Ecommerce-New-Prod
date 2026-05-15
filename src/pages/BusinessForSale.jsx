@@ -207,13 +207,19 @@ const BusinessForSale = () => {
           <AnimatePresence>
             {displayData.map((biz) => (
               <motion.div key={biz.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="group bg-[#111] border border-white/10 rounded-lg hover:border-[#e8237a]/50 transition-all duration-300 shadow-xl overflow-hidden">
-                <div className="p-4 flex flex-col h-full">
+                <Link
+                  to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`}
+                  className="p-4 flex flex-col h-full cursor-pointer"
+                >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex flex-wrap gap-1">
                       <div className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-bold uppercase">{biz.industry}</div>
                       {biz.remote && <div className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[8px] font-bold uppercase">Remote</div>}
                     </div>
-                    <button className="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-gray-600 hover:text-[#e8237a] hover:border-[#e8237a] transition-all">
+                    <button
+                      className="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-gray-600 hover:text-[#e8237a] hover:border-[#e8237a] transition-all"
+                      onClick={(e) => e.preventDefault()}
+                    >
                       <IoHeartOutline className="text-sm" />
                     </button>
                   </div>
@@ -254,14 +260,11 @@ const BusinessForSale = () => {
                       ))}
                       <div className="px-2 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-[8px] font-bold uppercase">{biz.growth}</div>
                     </div>
-                    <Link
-                      to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`}
-                      className="text-[10px] font-bold text-[#e8237a] hover:underline flex items-center gap-1"
-                    >
+                    <span className="text-[10px] font-bold text-[#e8237a] flex items-center gap-1">
                       View <IoArrowForwardOutline />
-                    </Link>
+                    </span>
                   </div>
-                </div>
+                </Link>
               </motion.div>
             ))}
           </AnimatePresence>
