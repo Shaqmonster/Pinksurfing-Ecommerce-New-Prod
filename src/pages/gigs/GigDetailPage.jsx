@@ -352,6 +352,19 @@ const GigDetailPage = () => {
     if (liveRate) recalculateEscrowFromRate(liveRate);
   };
 
+  const handleBuy = () => {
+    if (!cookies.access_token) {
+      toast.error("Please sign in to purchase.");
+      navigate("/signin");
+      return;
+    }
+    if (!selectedPkg) {
+      toast.error("Please select a package first.");
+      return;
+    }
+    openCheckoutSetup();
+  };
+
   const handleCheckoutConfirm = async () => {
     if (!cookies.access_token) {
       toast.error("Please sign in to purchase.");
