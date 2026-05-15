@@ -37,6 +37,9 @@ const fmt = (n) => {
   return "$" + n.toLocaleString();
 };
 
+const GROWTH_TREND_OPTIONS = ["Declining", "Flat", "Moderate growth", "High growth", "Up", "Neutral", "Down"];
+const SALE_TYPE_OPTIONS = ["Asset Sale", "Stock Sale", "Merger", "Other"];
+
 const BusinessForSale = () => {
   const hook = useCategoryProducts();
   const { filteredProducts, loading } = hook;
@@ -45,63 +48,83 @@ const BusinessForSale = () => {
   const [industry, setIndustry] = useState("");
   const [pmin, setPmin] = useState("");
   const [pmax, setPmax] = useState("");
-  const [state, setState] = useState("");
+  const [stateFilter, setStateFilter] = useState("");
   const [zip, setZip] = useState("");
-  const [radius, setRadius] = useState("");
   const [growth, setGrowth] = useState("");
   const [saleType, setSaleType] = useState("");
-  
+  const [revMin, setRevMin] = useState("");
+  const [revMax, setRevMax] = useState("");
+
   const [isAdvOpen, setIsAdvOpen] = useState(false);
   const [activeSmarts, setActiveSmarts] = useState(new Set());
-  const [saved, setSaved] = useState(new Set());
   const [displayData, setDisplayData] = useState([]);
   const [sort, setSort] = useState("newest");
   const [view, setView] = useState("grid");
 
   const mapProduct = (p) => {
     const attrs = p.product_attributes || p.attributes || [];
-    const getAttr = (name) => attrs.find(a => a.name?.toLowerCase() === name.toLowerCase())?.value || "";
+    const getAttr = (...names) => {
+      for (const name of names) {
+        const found = attrs.find(a => a.name?.toLowerCase() === name.toLowerCase());
+        if (found?.value) return found.value;
+      }
+      return "";
+    };
     return {
       id: p.id,
       slug: p.slug || p.id,
       title: p.product_name || p.name,
       industry: p.subcategory?.name || "Other",
-      state: getAttr("state") || p.state || "—",
-      city: getAttr("city") || p.city || "—",
-      zip: getAttr("zip") || p.zip_code || "",
+      state: getAttr("state") || p.state || "",
+      city: getAttr("city") || p.city || "",
+      zip: getAttr("zip", "zip_code") || p.zip_code || "",
       asking: parseFloat(p.unit_price) || 0,
-      revenue: parseFloat(getAttr("annual revenue")) || 0,
+      revenue: parseFloat(getAttr("revenue", "annual revenue", "annual_revenue")) || 0,
       ebitda: parseFloat(getAttr("ebitda")) || 0,
       multi: parseFloat(getAttr("ebitda multiple")) || (parseFloat(p.unit_price) / (parseFloat(getAttr("ebitda")) || 1)).toFixed(1),
-      remote: getAttr("remote") === "Yes",
+      remote: getAttr("remote")?.toLowerCase() === "yes",
       smart: (getAttr("smart_tags") || "").split(",").map(s => s.trim()).filter(Boolean),
       tags: (getAttr("tags") || "").split(",").map(s => s.trim()).filter(Boolean),
-      growth: getAttr("growth trend") || "Stable",
-      desc: p.product_description || p.description
+      growth: getAttr("growth_trend", "growth trend", "growth") || "",
+      saleType: getAttr("sale_type", "sale type") || "",
+      desc: p.product_description || p.description || "",
     };
   };
 
-  const toggleSmart = (id) => {
+  // Derive unique industries and states from real data for dropdowns
+  const allMapped = filteredProducts.map(mapProduct);
+  const industryOptions = [...new Set(allMapped.map(l => l.industry).filter(Boolean))].sort();
+  const stateOptions = [...new Set(allMapped.map(l => l.state).filter(v => v && v !== "—"))].sort();
+
+  const toggleSmart = (tag) => {
     const next = new Set(activeSmarts);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
+    if (next.has(tag)) next.delete(tag);
+    else next.add(tag);
     setActiveSmarts(next);
   };
 
   const runFilters = useCallback(() => {
     const baseData = filteredProducts.map(mapProduct);
     let result = baseData.filter((l) => {
-      if (kw && !l.title.toLowerCase().includes(kw.toLowerCase()) && !l.industry.toLowerCase().includes(kw.toLowerCase())) return false;
+      if (kw && !l.title.toLowerCase().includes(kw.toLowerCase()) && !l.industry.toLowerCase().includes(kw.toLowerCase()) && !l.desc.toLowerCase().includes(kw.toLowerCase())) return false;
       if (industry && l.industry !== industry) return false;
       if (pmin && l.asking < parseFloat(pmin)) return false;
       if (pmax && l.asking > parseFloat(pmax)) return false;
+      if (revMin && l.revenue < parseFloat(revMin)) return false;
+      if (revMax && l.revenue > parseFloat(revMax)) return false;
+      if (stateFilter === "__remote__" && !l.remote) return false;
+      if (stateFilter && stateFilter !== "__remote__" && l.state.toLowerCase() !== stateFilter.toLowerCase()) return false;
+      if (zip && !l.zip.startsWith(zip.trim())) return false;
+      if (growth && l.growth.toLowerCase() !== growth.toLowerCase()) return false;
+      if (saleType && l.saleType.toLowerCase() !== saleType.toLowerCase()) return false;
       if (activeSmarts.size > 0 && ![...activeSmarts].some((s) => l.smart.includes(s))) return false;
       return true;
     });
     if (sort === "price-desc") result.sort((a, b) => b.asking - a.asking);
     else if (sort === "price-asc") result.sort((a, b) => a.asking - b.asking);
+    else result.sort((a, b) => b.asking - a.asking); // newest approx
     setDisplayData(result);
-  }, [filteredProducts, kw, industry, pmin, pmax, activeSmarts, sort]);
+  }, [filteredProducts, kw, industry, pmin, pmax, revMin, revMax, stateFilter, zip, growth, saleType, activeSmarts, sort]);
 
   useEffect(() => {
     runFilters();
@@ -126,6 +149,7 @@ const BusinessForSale = () => {
         {/* Unified Filter Panel */}
         <div className="bg-[#111] rounded-xl border border-white/5 shadow-2xl overflow-hidden mb-6">
           <div className="p-4 space-y-4">
+            {/* Row 1 */}
             <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1.2fr_1fr_1.2fr_auto] gap-3 items-end">
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Search</label>
@@ -135,44 +159,68 @@ const BusinessForSale = () => {
                 <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Industry</label>
                 <select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none cursor-pointer" value={industry} onChange={(e) => setIndustry(e.target.value)}>
                   <option value="">All Industries</option>
-                  <option>Healthcare</option><option>SaaS / Tech</option>
+                  {industryOptions.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Asking Price</label>
                 <div className="flex items-center gap-2">
-                  <input className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none" placeholder="Min $" />
+                  <input type="number" min="0" className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none focus:border-pink-500/50" placeholder="Min $" value={pmin} onChange={(e) => setPmin(e.target.value)} />
                   <span className="text-gray-700">−</span>
-                  <input className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none" placeholder="Max $" />
+                  <input type="number" min="0" className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none focus:border-pink-500/50" placeholder="Max $" value={pmax} onChange={(e) => setPmax(e.target.value)} />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">State</label>
-                <select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none"><option>Any State</option></select>
+                <select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none cursor-pointer" value={stateFilter} onChange={(e) => setStateFilter(e.target.value)}>
+                  <option value="">Any State</option>
+                  {stateOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Annual Revenue</label>
                 <div className="flex items-center gap-2">
-                  <input className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none" placeholder="Min $" />
+                  <input type="number" min="0" className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none focus:border-pink-500/50" placeholder="Min $" value={revMin} onChange={(e) => setRevMin(e.target.value)} />
                   <span className="text-gray-700">−</span>
-                  <input className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none" placeholder="Max $" />
+                  <input type="number" min="0" className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none focus:border-pink-500/50" placeholder="Max $" value={revMax} onChange={(e) => setRevMax(e.target.value)} />
                 </div>
               </div>
-              <button className="bg-[#e8237a] hover:bg-[#c91d69] text-white px-6 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all">
-                <IoSearchSharp /> Search
+              <button
+                onClick={() => { setKw(""); setIndustry(""); setPmin(""); setPmax(""); setRevMin(""); setRevMax(""); setStateFilter(""); setZip(""); setGrowth(""); setSaleType(""); setActiveSmarts(new Set()); }}
+                className="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 px-4 py-2.5 rounded-lg text-xs font-bold transition-all"
+              >
+                Clear
               </button>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1.5fr_1.5fr_1.5fr] gap-3 pt-4 border-t border-white/5">
-              <div className="space-y-1.5"><label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Search by Zip Code</label><input className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none" placeholder="e.g. 90210" /></div>
-              <div className="space-y-1.5"><label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Radius</label><select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none"><option>Any Distance</option></select></div>
-              <div className="space-y-1.5"><label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Growth Trend</label><select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none"><option>Any Trend</option></select></div>
-              <div className="space-y-1.5"><label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Sale Type</label><select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none"><option>Any</option></select></div>
-            </div>
 
-            <button onClick={() => setIsAdvOpen(!isAdvOpen)} className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-all pt-2">
-              <IoFilterOutline /> Advanced Filters {isAdvOpen ? <IoChevronUp /> : <IoChevronDown />}
-            </button>
+            {/* Row 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1.5fr_1.5fr_1.5fr] gap-3 pt-4 border-t border-white/5">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Search by Zip Code</label>
+                <input className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none focus:border-pink-500/50" placeholder="e.g. 90210" value={zip} onChange={(e) => setZip(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Remote Only</label>
+                <select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none cursor-pointer" value={stateFilter === "__remote__" ? "__remote__" : ""} onChange={(e) => setStateFilter(e.target.value)}>
+                  <option value="">All Listings</option>
+                  <option value="__remote__">Remote Only</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Growth Trend</label>
+                <select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none cursor-pointer" value={growth} onChange={(e) => setGrowth(e.target.value)}>
+                  <option value="">Any Trend</option>
+                  {GROWTH_TREND_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Sale Type</label>
+                <select className="w-full bg-white/5 border border-white/5 rounded-lg py-2.5 px-3 text-xs outline-none cursor-pointer" value={saleType} onChange={(e) => setSaleType(e.target.value)}>
+                  <option value="">Any</option>
+                  {SALE_TYPE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
