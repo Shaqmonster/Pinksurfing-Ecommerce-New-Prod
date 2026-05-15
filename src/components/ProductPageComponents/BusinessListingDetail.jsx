@@ -436,11 +436,17 @@ const BusinessListingDetail = ({
         return;
       }
 
-      // Pending review (already paid, awaiting vendor)
+      // Pending review — already paid, awaiting vendor, or Square temporarily down
       if (detail === "pending_review") {
-        setNdaStatus(ndaStatusResp || "pending_vendor");
+        const st = ndaStatusResp || "pending_vendor";
+        setNdaStatus(st);
         setNdaModalOpen(false);
-        toast.info("Your NDA request is awaiting seller review.", { position: "top-right" });
+        setNdaError("");
+        if (st === "pending_vendor") {
+          toast.info("✅ Your payment is confirmed — awaiting seller review. Check My NDA Dashboard for updates.", { position: "top-right" });
+        } else {
+          toast.info("Your NDA is being processed. Please check My NDA Dashboard for the current status.", { position: "top-right" });
+        }
         return;
       }
 
