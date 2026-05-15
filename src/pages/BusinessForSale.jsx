@@ -83,8 +83,18 @@ const BusinessForSale = () => {
       ebitda: parseFloat(getAttr("ebitda")) || 0,
       multi: parseFloat(getAttr("ebitda multiple")) || (parseFloat(p.unit_price) / (parseFloat(getAttr("ebitda")) || 1)).toFixed(1),
       remote: getAttr("remote")?.toLowerCase() === "yes",
-      smart: (getAttr("smart_tags") || "").split(",").map(s => s.trim()).filter(Boolean),
-      tags: (getAttr("tags") || "").split(",").map(s => s.trim()).filter(Boolean),
+      smart: (() => {
+        const v = getAttr("smart_tags");
+        if (!v) return [];
+        if (Array.isArray(v)) return v.map(s => String(s).trim()).filter(Boolean);
+        return String(v).split(",").map(s => s.trim()).filter(Boolean);
+      })(),
+      tags: (() => {
+        const v = getAttr("tags");
+        if (!v) return [];
+        if (Array.isArray(v)) return v.map(s => String(s).trim()).filter(Boolean);
+        return String(v).split(",").map(s => s.trim()).filter(Boolean);
+      })(),
       growth: getAttr("growth_trend", "growth trend", "growth") || "",
       saleType: getAttr("sale_type", "sale type") || "",
       desc: p.product_description || p.description || "",
@@ -253,7 +263,7 @@ const BusinessForSale = () => {
           </div>
         </div>
 
-        {/* Grid Display - 5 columns for density */}
+        {/* Loading / Empty states */}
         {loading ? (
           <div className="flex justify-center items-center py-24">
             <div className="w-8 h-8 border-2 border-[#e8237a]/20 border-t-[#e8237a] rounded-full animate-spin" />
@@ -265,72 +275,120 @@ const BusinessForSale = () => {
             <p className="text-gray-600 text-sm mt-1">Try adjusting your filters or check back soon.</p>
           </div>
         ) : null}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          <AnimatePresence>
-            {!loading && displayData.map((biz) => (
-              <motion.div key={biz.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="group bg-[#111] border border-white/10 rounded-lg hover:border-[#e8237a]/50 transition-all duration-300 shadow-xl overflow-hidden">
-                <Link
-                  to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`}
-                  className="p-4 flex flex-col h-full cursor-pointer"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex flex-wrap gap-1">
-                      <div className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-bold uppercase">{biz.industry}</div>
-                      {biz.remote && <div className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[8px] font-bold uppercase">Remote</div>}
-                    </div>
-                    <button
-                      className="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-gray-600 hover:text-[#e8237a] hover:border-[#e8237a] transition-all"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      <IoHeartOutline className="text-sm" />
-                    </button>
-                  </div>
 
-                  <div className="text-2xl font-bold text-[#e8237a] tracking-tight font-['Raleway',sans-serif] mb-1">{fmt(biz.asking)}</div>
-                  <h3 className="text-[13px] font-bold text-white leading-tight mb-2 line-clamp-2 h-[2.2rem] group-hover:text-[#e8237a] transition-colors">{biz.title}</h3>
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-medium mb-4">
-                    <IoLocationOutline className="text-pink-500" /> {biz.city}, {biz.state}
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-1 bg-white/[0.03] rounded p-2 mb-4">
-                    <div className="text-center">
-                      <div className="text-[11px] font-bold text-white">{fmt(biz.revenue)}</div>
-                      <div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Revenue</div>
-                    </div>
-                    <div className="text-center border-x border-white/5">
-                      <div className="text-[11px] font-bold text-white">{fmt(biz.ebitda)}</div>
-                      <div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">EBITDA</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-[11px] font-bold text-white">{biz.multi}x</div>
-                      <div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Multiple</div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {biz.smart.map(s => (
-                      <div key={s} className="px-2 py-0.5 rounded bg-[#e8237a]/10 border border-[#e8237a]/20 text-[#e8237a] text-[8px] font-bold uppercase tracking-tighter">
-                        {s.replace("-", " ")}
+        {/* ── GRID view ── */}
+        {view === "grid" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <AnimatePresence>
+              {!loading && displayData.map((biz) => (
+                <motion.div key={biz.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="group bg-[#111] border border-white/10 rounded-lg hover:border-[#e8237a]/50 transition-all duration-300 shadow-xl overflow-hidden">
+                  <Link to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`} className="p-4 flex flex-col h-full cursor-pointer">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex flex-wrap gap-1">
+                        <div className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-bold uppercase">{biz.industry}</div>
+                        {biz.remote && <div className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[8px] font-bold uppercase">Remote</div>}
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
-                    <div className="flex gap-1.5">
-                      {biz.tags.slice(0, 2).map(t => (
-                        <div key={t} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400 text-[8px] font-medium">{t}</div>
-                      ))}
-                      <div className="px-2 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-[8px] font-bold uppercase">{biz.growth}</div>
+                      <button className="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-gray-600 hover:text-[#e8237a] hover:border-[#e8237a] transition-all" onClick={(e) => e.preventDefault()}>
+                        <IoHeartOutline className="text-sm" />
+                      </button>
                     </div>
-                    <span className="text-[10px] font-bold text-[#e8237a] flex items-center gap-1">
-                      View <IoArrowForwardOutline />
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                    <div className="text-2xl font-bold text-[#e8237a] tracking-tight font-['Raleway',sans-serif] mb-1">{fmt(biz.asking)}</div>
+                    <h3 className="text-[13px] font-bold text-white leading-tight mb-2 line-clamp-2 h-[2.2rem] group-hover:text-[#e8237a] transition-colors">{biz.title}</h3>
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-medium mb-4">
+                      <IoLocationOutline className="text-pink-500" /> {biz.city}, {biz.state}
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 bg-white/[0.03] rounded p-2 mb-4">
+                      <div className="text-center"><div className="text-[11px] font-bold text-white">{fmt(biz.revenue)}</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Revenue</div></div>
+                      <div className="text-center border-x border-white/5"><div className="text-[11px] font-bold text-white">{fmt(biz.ebitda)}</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">EBITDA</div></div>
+                      <div className="text-center"><div className="text-[11px] font-bold text-white">{biz.multi}x</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Multiple</div></div>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {biz.smart.map(s => <div key={s} className="px-2 py-0.5 rounded bg-[#e8237a]/10 border border-[#e8237a]/20 text-[#e8237a] text-[8px] font-bold uppercase tracking-tighter">{s}</div>)}
+                    </div>
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
+                      <div className="flex gap-1.5">
+                        {biz.growth && <div className="px-2 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-[8px] font-bold uppercase">{biz.growth}</div>}
+                        {biz.saleType && <div className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400 text-[8px] font-medium">{biz.saleType}</div>}
+                      </div>
+                      <span className="text-[10px] font-bold text-[#e8237a] flex items-center gap-1">View <IoArrowForwardOutline /></span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* ── LIST view (2 columns, more info) ── */}
+        {view === "list" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AnimatePresence>
+              {!loading && displayData.map((biz) => (
+                <motion.div key={biz.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="group bg-[#111] border border-white/10 rounded-lg hover:border-[#e8237a]/50 transition-all duration-300 shadow-xl overflow-hidden">
+                  <Link to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`} className="p-5 flex gap-4 cursor-pointer">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        <div className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-bold uppercase">{biz.industry}</div>
+                        {biz.remote && <div className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[8px] font-bold uppercase">Remote</div>}
+                        {biz.growth && <div className="px-2 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-[8px] font-bold uppercase">{biz.growth}</div>}
+                      </div>
+                      <h3 className="text-sm font-bold text-white mb-1 line-clamp-2 group-hover:text-[#e8237a] transition-colors">{biz.title}</h3>
+                      <div className="flex items-center gap-1 text-[10px] text-gray-500 mb-2">
+                        <IoLocationOutline className="text-pink-500" /> {biz.city}, {biz.state}
+                      </div>
+                      {biz.desc && <p className="text-[11px] text-gray-600 line-clamp-2 mb-3">{biz.desc}</p>}
+                      <div className="flex flex-wrap gap-1">
+                        {biz.smart.map(s => <div key={s} className="px-2 py-0.5 rounded bg-[#e8237a]/10 border border-[#e8237a]/20 text-[#e8237a] text-[8px] font-bold uppercase">{s}</div>)}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 flex flex-col items-end justify-between">
+                      <div className="text-xl font-bold text-[#e8237a] font-['Raleway',sans-serif]">{fmt(biz.asking)}</div>
+                      <div className="space-y-1 text-right mt-2">
+                        <div className="text-[10px] text-gray-500">Rev: <span className="text-white font-semibold">{fmt(biz.revenue)}</span></div>
+                        <div className="text-[10px] text-gray-500">EBITDA: <span className="text-white font-semibold">{fmt(biz.ebitda)}</span></div>
+                        <div className="text-[10px] text-gray-500">Multiple: <span className="text-white font-semibold">{biz.multi}x</span></div>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#e8237a] flex items-center gap-1 mt-3">View <IoArrowForwardOutline /></span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* ── LINER view (compact single-row table) ── */}
+        {view === "liner" && (
+          <div className="flex flex-col gap-1">
+            {/* Header */}
+            {!loading && displayData.length > 0 && (
+              <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] gap-4 px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-gray-600 border-b border-white/5">
+                <span>Business</span><span>Asking</span><span>Revenue</span><span>EBITDA</span><span>Multiple</span><span></span>
+              </div>
+            )}
+            <AnimatePresence>
+              {!loading && displayData.map((biz) => (
+                <motion.div key={biz.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="group bg-[#111] border border-white/5 rounded-lg hover:border-[#e8237a]/30 transition-all">
+                  <Link to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] gap-4 px-4 py-3 items-center cursor-pointer">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[7px] font-bold uppercase">{biz.industry}</span>
+                        {biz.remote && <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[7px] font-bold uppercase">Remote</span>}
+                      </div>
+                      <p className="text-xs font-semibold text-white truncate group-hover:text-[#e8237a] transition-colors">{biz.title}</p>
+                      <p className="text-[10px] text-gray-600 truncate">{biz.city}, {biz.state}</p>
+                    </div>
+                    <span className="text-sm font-bold text-[#e8237a]">{fmt(biz.asking)}</span>
+                    <span className="text-xs text-white">{fmt(biz.revenue)}</span>
+                    <span className="text-xs text-white">{fmt(biz.ebitda)}</span>
+                    <span className="text-xs text-white">{biz.multi}x</span>
+                    <span className="text-[10px] font-bold text-[#e8237a] flex items-center gap-1">View <IoArrowForwardOutline /></span>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );
