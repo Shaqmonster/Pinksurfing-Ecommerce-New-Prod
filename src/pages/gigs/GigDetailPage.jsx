@@ -9,11 +9,11 @@ import {
   getGig,
   createGigOrder,
   createStripeCheckoutSession,
+  createSquareGigCheckoutSession,
   setGigOrderEscrowId,
 } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { createServicesEscrowForGigOrder } from "../../lib/gighubEscrowFlow";
-import { getGig, createGigOrder, createSquareGigCheckoutSession } from "../../api/gigs";
 import GigSellerChatModal from "../../components/gigs/GigSellerChatModal";
 import {
   IoStarSharp,
@@ -371,7 +371,7 @@ const GigDetailPage = () => {
         addons: selectedAddons.map((a) => a.id),
       });
       const order = orderRes.data;
-if (checkoutOptions.paymentMode === "escrow_wallet_only" || checkoutOptions.paymentMode === "escrow_plus_stripe") {
+      if (checkoutOptions.paymentMode === "escrow_wallet_only" || checkoutOptions.paymentMode === "escrow_plus_stripe") {
         // On-chain (GigHub only): create Services escrow for this order.
         try {
           // Prefer authoritative seller wallet from order serializer.
@@ -418,7 +418,6 @@ if (checkoutOptions.paymentMode === "escrow_wallet_only" || checkoutOptions.paym
       } else {
         toast.success("Order + escrow created. Continuing to order workspace.");
         navigate(`/gigs/orders/${order.id}`);
-      }
       }
     } catch (err) {
       const msg = err?.response?.data?.detail || err?.response?.data?.error || "Purchase failed.";

@@ -313,12 +313,13 @@ const BuyerDashboardContent = ({ orders, loading }) => {
                         ${parseFloat(order.total_price || 0).toFixed(2)}
                       </p>
                     </div>
-                  </Link>
-                );
-              })}
-          </div>
-        )}
-      </div>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       {/* Earnings + order review */}
       <div>
