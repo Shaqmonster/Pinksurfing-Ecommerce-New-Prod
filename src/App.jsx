@@ -56,6 +56,7 @@ import GigMessages from "./pages/gigs/GigMessages";
 import GigOrderDetail from "./pages/gigs/GigOrderDetail";
 import VisitPaymentReturn from "./pages/VisitPaymentReturn";
 import NdaPaymentReturn from "./pages/NdaPaymentReturn";
+import MyNdas from "./pages/MyNdas";
 
 function App() {
   const {
@@ -131,6 +132,7 @@ function App() {
         />
         <Route path="/visit-payment-return" element={<VisitPaymentReturn />} />
         <Route path="/nda-payment-return" element={<NdaPaymentReturn />} />
+        <Route path="/my-ndas" element={<MyNdas />} />
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />
         <Route path="/completion" element={<Completion />} />

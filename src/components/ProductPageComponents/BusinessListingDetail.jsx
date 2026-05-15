@@ -382,7 +382,10 @@ const BusinessListingDetail = ({
     .map((s) => s.trim())
     .filter((s) => s && NDA_DOC_MAP[s]);
   const ndaDocList = ndaDocIds.map((id) => ({ id, ...NDA_DOC_MAP[id] }));
-  const [ndaSigned, setNdaSigned] = useState(() => searchParams.get("nda_unlocked") === "1");
+  // ndaStatus: null | "pending_payment" | "pending_vendor" | "accepted" | "rejected" | "disputed"
+  const [ndaStatus, setNdaStatus] = useState(null);
+  // ndaSigned = true means vendor accepted + documents are available
+  const [ndaSigned, setNdaSigned] = useState(false);
   const [ndaModalOpen, setNdaModalOpen] = useState(false);
   const [ndaForm, setNdaForm] = useState({ name: "", email: "", company: "", role: "", signature: "", agreed: false });
   const [ndaSubmitting, setNdaSubmitting] = useState(false);
@@ -414,13 +417,22 @@ const BusinessListingDetail = ({
         agreed_to_terms: agreed,
       };
       const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/nda/sign/`, payload);
-      const { payment_url, detail } = res.data;
+      const { payment_url, detail, status: ndaStatusResp } = res.data;
 
-      // Already signed a previous NDA for this listing
+      // Already accepted (documents available)
       if (detail === "already_signed") {
         setNdaSigned(true);
+        setNdaStatus("accepted");
         setNdaModalOpen(false);
-        toast.success("✅ NDA already on record — financials are unlocked.", { position: "top-right" });
+        toast.success("✅ NDA accepted — check My NDA Dashboard for documents.", { position: "top-right" });
+        return;
+      }
+
+      // Pending review (already paid, awaiting vendor)
+      if (detail === "pending_review") {
+        setNdaStatus(ndaStatusResp || "pending_vendor");
+        setNdaModalOpen(false);
+        toast.info("Your NDA request is awaiting seller review.", { position: "top-right" });
         return;
       }
 
@@ -836,13 +848,23 @@ const BusinessListingDetail = ({
                               )
                           }
                         </div>
-                        <button className="b-btn-nda" onClick={() => setNdaModalOpen(true)}>
-                          ✍ Sign NDA to Unlock
-                        </button>
+                        {ndaStatus ? (
+                          <button className="b-btn-nda" style={{ opacity: 0.6, cursor: "default" }} disabled>
+                            {ndaStatus === "pending_vendor" ? "⏳ Awaiting Seller Review" : "✍ NDA Submitted"}
+                          </button>
+                        ) : (
+                          <button className="b-btn-nda" onClick={() => setNdaModalOpen(true)}>
+                            ✍ Sign NDA to Unlock
+                          </button>
+                        )}
                       </div>
                     ) : ndaSigned ? (
                       <div style={{ marginTop: 16, padding: 14, background: "var(--green-bg)", border: "1.5px solid var(--green-border)", borderRadius: 6, fontSize: 12, color: "var(--green)", lineHeight: 1.6 }}>
-                        ✅ <strong>NDA Signed</strong> — All financial details are now visible. Full documents accessible in the Documents tab.
+                        ✅ <strong>NDA Accepted</strong> — Documents are available. <a href="/my-ndas" style={{ color: "var(--green)", fontWeight: 700 }}>View in My NDA Dashboard →</a>
+                      </div>
+                    ) : ndaStatus === "pending_vendor" ? (
+                      <div style={{ marginTop: 16, padding: 14, background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)", borderRadius: 6, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>
+                        ⏳ <strong>Awaiting Seller Review</strong> — Your NDA payment is confirmed. The seller will review and share documents shortly. <a href="/my-ndas" style={{ color: "#fbbf24", fontWeight: 700 }}>Track status →</a>
                       </div>
                     ) : (
                       <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
@@ -1406,8 +1428,19 @@ const BusinessListingDetail = ({
               {(lockEbitda || lockFinancials) && (
                 ndaSigned ? (
                   <div className="b-nda-side-card" style={{ background: "var(--green-bg)", border: "1.5px solid var(--green-border)" }}>
-                    <h4 style={{ color: "var(--green)" }}>✅ NDA Signed</h4>
-                    <p style={{ color: "var(--green)" }}>All locked financial details are now visible. Check the Financials and Documents tabs.</p>
+                    <h4 style={{ color: "var(--green)" }}>✅ NDA Accepted</h4>
+                    <p style={{ color: "var(--green)" }}>Documents are ready. View them in your NDA Dashboard.</p>
+                    <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                      View Documents →
+                    </a>
+                  </div>
+                ) : ndaStatus === "pending_vendor" ? (
+                  <div className="b-nda-side-card" style={{ background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)" }}>
+                    <h4 style={{ color: "#fbbf24" }}>⏳ Awaiting Seller Review</h4>
+                    <p style={{ color: "#fbbf24" }}>Your NDA payment is confirmed. The seller will accept and upload documents shortly.</p>
+                    <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#b45309", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                      Track NDA Status →
+                    </a>
                   </div>
                 ) : (
                   <div className="b-nda-side-card">
@@ -1421,13 +1454,13 @@ const BusinessListingDetail = ({
                     </h4>
                     <p>
                       {lockEbitda && lockFinancials
-                        ? "Sign the NDA to instantly unlock EBITDA/SDE and the full financial breakdown."
+                        ? "Sign the NDA and pay $1 to request financial documents from the seller."
                         : lockEbitda
-                        ? "Sign the NDA to instantly view the SDE / EBITDA figure for this listing."
-                        : "Sign the NDA to unlock the full revenue breakdown, P&L, and documents."}
+                        ? "Sign the NDA and pay $1 to request SDE / EBITDA details."
+                        : "Sign the NDA and pay $1 to request the full financial package."}
                     </p>
                     <button className="b-btn-nda-side" onClick={() => setNdaModalOpen(true)}>
-                      ✍ Sign NDA to Unlock
+                      ✍ Sign NDA &amp; Pay $1
                     </button>
                   </div>
                 )

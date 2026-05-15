@@ -13,7 +13,7 @@ const NdaPaymentReturn = () => {
   const ndaId = params.get("nda_id");
   const slug = params.get("slug");
 
-  const [phase, setPhase] = useState("verifying"); // verifying | signed | failed | not_found
+  const [phase, setPhase] = useState("verifying"); // verifying | pending_vendor | failed | not_found
   const pollCount = useRef(0);
   const timer = useRef(null);
 
@@ -32,9 +32,10 @@ const NdaPaymentReturn = () => {
       try {
         const res = await axios.get(`${SERVER}/api/nda/status/${ndaId}/`);
         const { status } = res.data;
-        if (status === "signed") {
+        // Payment confirmed once we move past pending_payment
+        if (status && status !== "pending_payment") {
           clearInterval(timer.current);
-          setPhase("signed");
+          setPhase("pending_vendor");
           return;
         }
       } catch {
@@ -82,13 +83,13 @@ const NdaPaymentReturn = () => {
               fontSize: 28,
               margin: "0 auto 20px",
               background:
-                phase === "signed"
+                phase === "pending_vendor"
                   ? "rgba(52,211,153,.15)"
                   : phase === "failed" || phase === "not_found"
                   ? "rgba(248,113,113,.15)"
                   : "rgba(240,49,138,.12)",
               border: `1px solid ${
-                phase === "signed"
+                phase === "pending_vendor"
                   ? "rgba(52,211,153,.3)"
                   : phase === "failed" || phase === "not_found"
                   ? "rgba(248,113,113,.3)"
@@ -96,7 +97,7 @@ const NdaPaymentReturn = () => {
               }`,
             }}
           >
-            {phase === "signed" ? "🔓" : phase === "verifying" ? "⏳" : "❌"}
+            {phase === "pending_vendor" ? "✅" : phase === "verifying" ? "⏳" : "❌"}
           </div>
 
           {/* Heading */}
@@ -109,7 +110,7 @@ const NdaPaymentReturn = () => {
               letterSpacing: "-0.02em",
             }}
           >
-            {phase === "signed" && "NDA Signed & Financials Unlocked"}
+            {phase === "pending_vendor" && "Payment Confirmed — Awaiting Seller"}
             {phase === "verifying" && "Verifying Payment…"}
             {phase === "failed" && "Payment Not Yet Confirmed"}
             {phase === "not_found" && "NDA Not Found"}
@@ -117,8 +118,8 @@ const NdaPaymentReturn = () => {
 
           {/* Body */}
           <p style={{ fontSize: 13, color: "#b0b0c0", lineHeight: 1.65, marginBottom: 28 }}>
-            {phase === "signed" &&
-              "Your $1 NDA fee has been received. Your signature is on record and the seller's protected financials are now accessible on the listing page."}
+            {phase === "pending_vendor" &&
+              "Your $1 NDA fee has been received and your signature is on record. The seller has been notified and will review your request. Once accepted, the financial documents will be available in your NDA dashboard."}
             {phase === "verifying" &&
               "We're confirming your payment with Square. This usually takes a few seconds. Please don't close this page."}
             {phase === "failed" &&
@@ -141,23 +142,59 @@ const NdaPaymentReturn = () => {
             />
           )}
 
-          {/* CTA */}
-          {phase !== "verifying" && (
+          {/* CTAs */}
+          {phase === "pending_vendor" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Link
+                to="/my-ndas"
+                style={{
+                  display: "block",
+                  background: "#34d399",
+                  color: "#fff",
+                  padding: "13px 24px",
+                  borderRadius: 9,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  textDecoration: "none",
+                  textAlign: "center",
+                }}
+              >
+                Track NDA Status →
+              </Link>
+              <Link
+                to={productLink}
+                style={{
+                  display: "block",
+                  border: "1px solid #2a2a33",
+                  color: "#aaa",
+                  padding: "11px 24px",
+                  borderRadius: 9,
+                  fontWeight: 600,
+                  fontSize: 13,
+                  textDecoration: "none",
+                  textAlign: "center",
+                }}
+              >
+                Back to Listing
+              </Link>
+            </div>
+          )}
+          {(phase === "failed" || phase === "not_found") && (
             <Link
               to={productLink}
               style={{
                 display: "block",
-                background: phase === "signed" ? "#34d399" : "#f0318a",
+                background: "#f0318a",
                 color: "#fff",
                 padding: "13px 24px",
                 borderRadius: 9,
                 fontWeight: 700,
                 fontSize: 14,
                 textDecoration: "none",
-                letterSpacing: "-0.01em",
+                textAlign: "center",
               }}
             >
-              {phase === "signed" ? "View Unlocked Financials →" : "Back to Listing"}
+              Back to Listing
             </Link>
           )}
         </div>
