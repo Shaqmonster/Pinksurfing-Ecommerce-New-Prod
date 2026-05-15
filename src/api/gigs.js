@@ -3,11 +3,12 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_SERVER_URL;
 
 /**
- * Build a clean, human-readable gig URL.
- * e.g. /gigs/abc123/professional-logo-design
+ * Build a clean, human-readable gig URL using the short gig_id (7 chars).
+ * e.g. /gigs/AB3K7QX/professional-logo-design
+ * Falls back to UUID id if gig_id is not available.
  */
 export function gigUrl(gig) {
-  const id = gig?.id;
+  const id = gig?.gig_id || gig?.id;
   const slug = (gig?.title || "")
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")

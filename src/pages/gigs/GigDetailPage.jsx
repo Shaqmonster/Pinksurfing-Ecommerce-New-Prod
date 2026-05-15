@@ -11,6 +11,7 @@ import {
   createStripeCheckoutSession,
   createSquareGigCheckoutSession,
   setGigOrderEscrowId,
+  gigUrl,
 } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { createServicesEscrowForGigOrder } from "../../lib/gighubEscrowFlow";
@@ -285,10 +286,16 @@ const GigDetailPage = () => {
     setLoading(true);
     getGig(id)
       .then((res) => {
-        setGig(res.data);
-        const pkgs = res.data.packages || [];
+        const gigData = res.data;
+        setGig(gigData);
+        const pkgs = gigData.packages || [];
         if (pkgs.length > 0) {
           setSelectedPkg(pickDisplayPackage(pkgs));
+        }
+        // Canonicalise URL to short gig_id if we arrived via UUID
+        const canonicalId = gigData.gig_id || gigData.id;
+        if (canonicalId && canonicalId !== id) {
+          navigate(gigUrl(gigData), { replace: true });
         }
       })
       .catch(() => toast.error("Failed to load gig."))
