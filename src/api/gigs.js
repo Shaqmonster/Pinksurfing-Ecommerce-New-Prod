@@ -189,6 +189,13 @@ export const cancelOrder = (token, orderId) =>
     { headers: { ...authHeader(token), "Content-Type": "application/json" } }
   );
 
+export const setGigOrderEscrowId = (token, orderId, escrow_id) =>
+  axios.post(
+    `${BASE_URL}/api/gig-orders/${orderId}/set_escrow_id/`,
+    { escrow_id },
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
+
 // ─── Chat ────────────────────────────────────────────────────────────────────
 
 export const getConversations = (token) =>
