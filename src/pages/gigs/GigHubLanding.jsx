@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { listGigs, getGigCategories } from "../../api/gigs";
+import { useInAppWallet } from "../../context/inAppWalletContext";
 import {
   IoSearchSharp,
   IoStarSharp,
@@ -79,6 +80,77 @@ const TRUST_STATS = [
   { value: "95%", label: "Satisfaction Rate" },
   { value: "$2M+", label: "Paid to Sellers" },
 ];
+
+const InAppWalletBanner = () => {
+  const { status, address, createWallet, importMnemonic, lastError } = useInAppWallet();
+  const [mnemonic, setMnemonic] = useState("");
+  const [showPhrase, setShowPhrase] = useState(false);
+
+  if (status === "booting") return null;
+
+  const onCreate = async () => {
+    const res = await createWallet({ wordCount: 12 });
+    setMnemonic(res.mnemonic);
+    setShowPhrase(true);
+  };
+
+  const onImport = async () => {
+    const phrase = window.prompt("Paste your 12/24-word seed phrase");
+    if (!phrase) return;
+    await importMnemonic(phrase);
+    setMnemonic("");
+    setShowPhrase(false);
+  };
+
+  if (status === "ready") {
+    return (
+      <div className="mb-4 p-4 rounded-2xl bg-[#0f0f16] border border-white/10">
+        <div className="text-sm text-white/80">
+          In-app wallet connected (GigHub only):{" "}
+          <span className="font-mono text-white">{address}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-4 p-4 rounded-2xl bg-[#0f0f16] border border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="text-white font-semibold">Set up your GigHub wallet</div>
+          <div className="text-xs text-white/60">
+            This wallet is created inside the app and restores when you log in with the same account.
+          </div>
+          {lastError ? <div className="text-xs text-red-400 mt-1">{lastError}</div> : null}
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onCreate} className="px-3 py-2 rounded-xl bg-[#6EE7FF] text-black font-semibold">
+            Create wallet
+          </button>
+          <button onClick={onImport} className="px-3 py-2 rounded-xl border border-white/15 text-white/80">
+            Import seed
+          </button>
+        </div>
+      </div>
+
+      {showPhrase && mnemonic ? (
+        <div className="mt-3 p-3 rounded-xl bg-black/30 border border-white/10">
+          <div className="text-xs text-white/70 mb-1">Recovery phrase (save it somewhere safe):</div>
+          <div className="font-mono text-sm text-white break-words">{mnemonic}</div>
+          <button
+            className="mt-2 text-xs text-white/70 underline"
+            onClick={() => {
+              setShowPhrase(false);
+              setMnemonic("");
+            }}
+          >
+            Hide
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 const GigCard = ({ gig }) => {
   const mainImage = gig.media_files?.find((m) => m.is_main) || gig.media_files?.[0];
@@ -199,6 +271,9 @@ const GigHubLanding = () => {
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <InAppWalletBanner />
+      </div>
       {/* ── HERO ── */}
       <section className="relative overflow-hidden pt-20 pb-28 px-4">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-600/15 rounded-full blur-[140px] pointer-events-none" />

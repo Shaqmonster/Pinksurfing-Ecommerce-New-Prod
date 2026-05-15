@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
+import { ethers } from "ethers";
 import { authContext } from "../../context/authContext";
+import { useInAppWallet } from "../../context/inAppWalletContext";
 import {
   getGigOrderDetail,
   submitOrderRequirements,
@@ -11,8 +13,29 @@ import {
   completeOrder,
   cancelOrder,
   createConversation,
+  setGigOrderEscrowId,
   disputeOrder,
 } from "../../api/gigs";
+import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard";
+import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
+import ServiceReviewMatrix, {
+  defaultServiceScores,
+  defaultUnhappyServiceScores,
+} from "../../components/gigs/ServiceReviewMatrix";
+import ServicesFinalSliceBreakdown from "../../components/gigs/ServicesFinalSliceBreakdown";
+import {
+  createServicesEscrowForGigOrder,
+  setEscrowIdForOrder,
+} from "../../lib/gighubEscrowFlow";
+import { getGigHubContracts, getGigHubProvider } from "../../lib/gighubEscrowClient";
+import { servicesGates } from "../../lib/servicesEscrowFlowGates";
+import {
+  servicesFinalReviewMsgValue,
+  servicesFinalSatisfactionBreakdown,
+  servicesProtocolFeeWei,
+  servicesSellerNetAfterFeeWei,
+  servicesWeightedOverallStars,
+} from "../../lib/servicesEscrowMath";
 import {
   IoTimeOutline,
   IoCheckmarkCircle,
@@ -323,6 +346,7 @@ const GigOrderDetail = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
+  const { wallet: inAppWallet, address: inAppAddress } = useInAppWallet();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -333,6 +357,20 @@ const GigOrderDetail = () => {
   const [submittingDelivery, setSubmittingDelivery] = useState(false);
   const [submittingDispute, setSubmittingDispute] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [escrowId, setEscrowId] = useState("");
+  const [escrowState, setEscrowState] = useState(null);
+  const [pendingBuyer, setPendingBuyer] = useState("0.0000");
+  const [pendingSeller, setPendingSeller] = useState("0.0000");
+  const [chainBusy, setChainBusy] = useState(false);
+  const [midwayScores, setMidwayScores] = useState(() => defaultServiceScores());
+  const [finalScores, setFinalScores] = useState(() => defaultServiceScores());
+  const [finalUnhappyScores, setFinalUnhappyScores] = useState(() => defaultUnhappyServiceScores());
+  const [disputeEth, setDisputeEth] = useState("0.01");
+  const [resolveBuyerEth, setResolveBuyerEth] = useState("0");
+  const [resolveSellerEth, setResolveSellerEth] = useState("0");
+  const [creatingEscrow, setCreatingEscrow] = useState(false);
+  const [lastEscrowSyncAt, setLastEscrowSyncAt] = useState("");
+  const [escrowDetails, setEscrowDetails] = useState(null);
 
   useEffect(() => {
     if (!cookies.access_token) {
@@ -347,6 +385,7 @@ const GigOrderDetail = () => {
     try {
       const res = await getGigOrderDetail(cookies.access_token, id);
       setOrder(res.data);
+      setEscrowId(res.data.escrow_id || "");
     } catch {
       toast.error("Failed to load order details.");
       navigate("/gigs/orders");
@@ -357,6 +396,256 @@ const GigOrderDetail = () => {
 
   const isBuyer = order?.is_buyer === true;
   const isSeller = order?.is_seller === true;
+  const isRequirementsPending = order?.status === "pending_requirements";
+  const isEscrowFinalizeReached = Boolean(escrowState?.[12]) && (Boolean(escrowState?.[10]) || Boolean(escrowState?.[13]));
+  // Force mutually-exclusive control visibility for escrow actions.
+  const showBuyerControls = isBuyer;
+  const showSellerControls = !isBuyer && isSeller;
+  const gates = servicesGates(escrowState);
+  const gateBody = (key, base) => {
+    const x = gates?.[key];
+    if (!x) return base;
+    if (x.done && x.labelDone) return `${base} - ${x.labelDone}`;
+    if (!x.enabled && x.labelBlocked) return `${base} - ${x.labelBlocked}`;
+    return base;
+  };
+
+  const refreshEscrow = async () => {
+    if (!inAppWallet || !escrowId) return;
+    try {
+      const provider = getGigHubProvider();
+      const signer = inAppWallet.connect(provider);
+      const { services } = await getGigHubContracts({ signer });
+      const state = await services.getEscrowState(escrowId);
+      setEscrowState(state);
+      try {
+        const row = await services.escrows(escrowId);
+        setEscrowDetails(row);
+      } catch {
+        setEscrowDetails(null);
+      }
+      const pb = await services.pendingWithdrawals(state.buyer);
+      const ps = await services.pendingWithdrawals(state.seller);
+      setPendingBuyer(Number(ethers.formatEther(pb)).toFixed(4));
+      setPendingSeller(Number(ethers.formatEther(ps)).toFixed(4));
+      setLastEscrowSyncAt(new Date().toLocaleTimeString());
+    } catch {
+      setEscrowState(null);
+      setEscrowDetails(null);
+    }
+  };
+
+  useEffect(() => {
+    refreshEscrow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [escrowId, inAppWallet]);
+
+  useEffect(() => {
+    if (!escrowId || !inAppWallet) return undefined;
+    const t = setInterval(() => {
+      if (!chainBusy) refreshEscrow();
+    }, 7000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [escrowId, inAppWallet, chainBusy]);
+
+  // NOTE: We intentionally DO NOT auto-discover escrows from global chain logs here.
+  // It caused old escrows to bleed into new orders in local/dev testing.
+  // Escrow link must come from explicit Create&Link or manual Save Link for this order.
+
+  useEffect(() => {
+    setMidwayScores(defaultServiceScores());
+    setFinalScores(defaultServiceScores());
+    setFinalUnhappyScores(defaultUnhappyServiceScores());
+  }, [escrowId]);
+
+  const runServices = async (fn, args = [], valueWei = 0n) => {
+    if (!inAppWallet || !escrowId) {
+      toast.error("Wallet or escrow id missing.");
+      return;
+    }
+    try {
+      setChainBusy(true);
+      const provider = getGigHubProvider();
+      const signer = inAppWallet.connect(provider);
+      const signerAddress = (await signer.getAddress()).toLowerCase();
+      const { services } = await getGigHubContracts({ signer });
+      const state = escrowState || (await services.getEscrowState(escrowId));
+      const escrowBuyer = state?.buyer ? String(state.buyer).toLowerCase() : "";
+      const escrowSeller = state?.seller ? String(state.seller).toLowerCase() : "";
+
+      const buyerFns = new Set([
+        "releaseDeposit",
+        "submitMidwayReview",
+        "releaseCompletion",
+        "submitFinalReview",
+        "openDispute",
+        "cancelExpiredEscrow",
+      ]);
+      const sellerFns = new Set(["completeMilestone"]);
+
+      if (buyerFns.has(fn) && escrowBuyer && signerAddress !== escrowBuyer) {
+        toast.error(`Wrong wallet for ${fn}. Connected ${signerAddress.slice(0, 8)}... but escrow buyer is ${escrowBuyer.slice(0, 8)}...`);
+        setChainBusy(false);
+        return;
+      }
+      if (sellerFns.has(fn) && escrowSeller && signerAddress !== escrowSeller) {
+        toast.error(`Wrong wallet for ${fn}. Connected ${signerAddress.slice(0, 8)}... but escrow seller is ${escrowSeller.slice(0, 8)}...`);
+        setChainBusy(false);
+        return;
+      }
+      const tx =
+        valueWei > 0n
+          ? await services[fn](escrowId, ...args, { value: valueWei })
+          : await services[fn](escrowId, ...args);
+      await tx.wait();
+      toast.success(`${fn} confirmed.`);
+      await refreshEscrow();
+    } catch (e) {
+      toast.error(e?.shortMessage || e?.message || `${fn} failed`);
+    } finally {
+      setChainBusy(false);
+    }
+  };
+
+  const runWithdraw = async () => {
+    if (!inAppWallet) return;
+    try {
+      setChainBusy(true);
+      const provider = getGigHubProvider();
+      const signer = inAppWallet.connect(provider);
+      const { services } = await getGigHubContracts({ signer });
+      const tx = await services.withdraw();
+      await tx.wait();
+      toast.success("withdraw confirmed.");
+      await refreshEscrow();
+    } catch (e) {
+      toast.error(e?.shortMessage || e?.message || "withdraw failed");
+    } finally {
+      setChainBusy(false);
+    }
+  };
+
+  const escrowAmountWei = escrowState?.[2] ? BigInt(escrowState[2]) : 0n;
+  const breakdownBasisWei =
+    escrowDetails?.amount !== undefined && escrowDetails.amount != null ? BigInt(escrowDetails.amount) : escrowAmountWei;
+
+  const projectedFinalBreakdown = useMemo(
+    () =>
+      servicesFinalSatisfactionBreakdown(
+        breakdownBasisWei,
+        finalScores.respect,
+        finalScores.comm,
+        finalScores.timeliness,
+        finalScores.quality
+      ),
+    [breakdownBasisWei, finalScores.respect, finalScores.comm, finalScores.timeliness, finalScores.quality]
+  );
+
+  const sellerFinalBreakdown = useMemo(() => {
+    if (!escrowState?.[12] || !escrowDetails) return null;
+    const amt = escrowDetails.amount != null ? BigInt(escrowDetails.amount) : 0n;
+    if (amt <= 0n) return null;
+    return servicesFinalSatisfactionBreakdown(
+      amt,
+      Number(escrowDetails.finalRespect),
+      Number(escrowDetails.finalComm),
+      Number(escrowDetails.finalTimeliness),
+      Number(escrowDetails.finalQuality)
+    );
+  }, [escrowState, escrowDetails]);
+
+  const connectedLower = (inAppAddress || "").toLowerCase();
+  const escrowBuyerLower = escrowState?.buyer ? String(escrowState.buyer).toLowerCase() : "";
+  const escrowSellerLower = escrowState?.seller ? String(escrowState.seller).toLowerCase() : "";
+  const roleWalletMismatch =
+    (showBuyerControls && escrowBuyerLower && connectedLower && connectedLower !== escrowBuyerLower) ||
+    (showSellerControls && escrowSellerLower && connectedLower && connectedLower !== escrowSellerLower);
+  const finalHappyOverall = servicesWeightedOverallStars(
+    finalScores.respect,
+    finalScores.comm,
+    finalScores.timeliness,
+    finalScores.quality
+  );
+  const finalHappyValueWei = servicesFinalReviewMsgValue(
+    escrowAmountWei,
+    finalScores.respect,
+    finalScores.comm,
+    finalScores.timeliness,
+    finalScores.quality
+  );
+  const finalUnhappyValueWei = servicesFinalReviewMsgValue(
+    escrowAmountWei,
+    finalUnhappyScores.respect,
+    finalUnhappyScores.comm,
+    finalUnhappyScores.timeliness,
+    finalUnhappyScores.quality
+  );
+  const depositGrossWei = escrowAmountWei > 0n ? (escrowAmountWei * 2000n) / 7000n : 0n;
+  const halfwayGrossWei = escrowAmountWei > 0n ? (escrowAmountWei * 2500n) / 7000n : 0n;
+  const completionGrossWei = escrowAmountWei > 0n ? (escrowAmountWei * 2500n) / 7000n : 0n;
+  const platformDepositWei = servicesProtocolFeeWei(depositGrossWei);
+  const platformHalfwayWei = servicesProtocolFeeWei(halfwayGrossWei);
+  const platformCompletionWei = servicesProtocolFeeWei(completionGrossWei);
+  const platformFinalHappyWei = servicesProtocolFeeWei(finalHappyValueWei);
+  const sellerDepositNetWei = servicesSellerNetAfterFeeWei(depositGrossWei);
+  const sellerHalfwayNetWei = servicesSellerNetAfterFeeWei(halfwayGrossWei);
+  const sellerCompletionNetWei = servicesSellerNetAfterFeeWei(completionGrossWei);
+  const sellerFinalHappyNetWei = servicesSellerNetAfterFeeWei(finalHappyValueWei);
+  const finalReviewInfoText = `Seller net about ${Number(ethers.formatEther(sellerFinalHappyNetWei)).toFixed(4)} ETH on this slice after ~4% platform fee on gross. Timeliness 1–2 or 3 first shrinks gross (see numbered breakdown below).`;
+
+  const runResolveDispute = async () => {
+    if (!inAppWallet || !escrowId) return;
+    try {
+      setChainBusy(true);
+      const provider = getGigHubProvider();
+      const signer = inAppWallet.connect(provider);
+      const { services } = await getGigHubContracts({ signer });
+      const toBuyer = ethers.parseEther(resolveBuyerEth || "0");
+      const toSeller = ethers.parseEther(resolveSellerEth || "0");
+      const tx = await services.resolveDispute(escrowId, toBuyer, toSeller, { value: toBuyer + toSeller });
+      await tx.wait();
+      toast.success("resolveDispute confirmed.");
+      await refreshEscrow();
+    } catch (e) {
+      toast.error(e?.shortMessage || e?.message || "resolveDispute failed");
+    } finally {
+      setChainBusy(false);
+    }
+  };
+
+  const handleCreateAndLinkEscrow = async () => {
+    if (!showBuyerControls) {
+      toast.error("Only buyer can create escrow for this order.");
+      return;
+    }
+    if (!order || !inAppWallet) {
+      toast.error("Connect in-app wallet first.");
+      return;
+    }
+    try {
+      setCreatingEscrow(true);
+      const sellerAddress = order?.seller_wallet_address || "";
+      if (!sellerAddress) {
+        throw new Error("Seller has no in-app wallet yet. Seller must create/import wallet first.");
+      }
+      const { escrowId: createdEscrowId } = await createServicesEscrowForGigOrder({
+        order,
+        gig: order?.gig,
+        wallet: inAppWallet,
+        sellerAddress,
+      });
+      setEscrowId(createdEscrowId);
+      setEscrowIdForOrder(order.id, createdEscrowId);
+      await setGigOrderEscrowId(cookies.access_token, order.id, createdEscrowId);
+      toast.success("Escrow created and linked to this order.");
+      await refreshEscrow();
+    } catch (e) {
+      toast.error(e?.shortMessage || e?.message || "Escrow creation failed");
+    } finally {
+      setCreatingEscrow(false);
+    }
+  };
 
   const handleSubmitRequirements = async (answers) => {
     try {
@@ -608,6 +897,317 @@ const GigOrderDetail = () => {
               </div>
             )}
 
+            {/* Services Workspace (frontend-test style) */}
+            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Services Workspace</p>
+              {isRequirementsPending ? (
+                <div className="space-y-2">
+                  <p className="text-yellow-300/90 text-sm">
+                    Submit requirements first. Escrow creation and milestone/review controls appear after order moves to In Progress.
+                  </p>
+                </div>
+              ) : !escrowId ? (
+                <div className="space-y-2">
+                  <p className="text-white/45 text-sm">
+                    No escrow linked for this order yet. Create it now (recommended) or add a reference manually on the right.
+                  </p>
+                  <button
+                    onClick={handleCreateAndLinkEscrow}
+                    disabled={creatingEscrow || !inAppWallet}
+                    className="px-3 py-2 rounded-lg bg-purple-500/15 border border-purple-500/35 text-purple-200 text-xs disabled:opacity-50"
+                  >
+                    {creatingEscrow ? "Creating escrow..." : "Create & link Services escrow"}
+                  </button>
+                </div>
+              ) : !escrowState?.[0] ? (
+                <div className="space-y-2">
+                  <p className="text-yellow-300/80 text-sm">
+                    Escrow reference is set but no contract state found on current router/RPC.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setEscrowId("");
+                      if (order?.id) {
+                        setEscrowIdForOrder(order.id, "");
+                        setGigOrderEscrowId(cookies.access_token, order.id, "").catch(() => {});
+                      }
+                      toast.info("Cleared stale escrow link for this order.");
+                    }}
+                    className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-xs"
+                  >
+                    Clear stale escrow link
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {roleWalletMismatch && (
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                      Connected wallet does not match this role's escrow participant address. Switch/import the correct wallet
+                      for this account to see accurate receive/withdraw state.
+                    </div>
+                  )}
+                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                    <h4 className="text-white/80 text-sm font-semibold mb-2">Progress checklist</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-white/60">
+                      <span>Milestones done: {String(escrowState[6])} / {String(escrowState[5])}</span>
+                      <span>Deposit released: {escrowState[7] ? "Yes" : "No"}</span>
+                      <span>Halfway released: {escrowState[8] ? "Yes" : "No"}</span>
+                      <span>Completion released: {escrowState[9] ? "Yes" : "No"}</span>
+                      <span>Midway reviewed: {escrowState[11] ? "Yes" : "No"}</span>
+                      <span>Final reviewed: {escrowState[12] ? "Yes" : "No"}</span>
+                      <span>Disputed: {escrowState[13] ? "Yes" : "No"}</span>
+                      <span>Buyer pending: {pendingBuyer} ETH | Seller pending: {pendingSeller} ETH</span>
+                      <span>Escrow buyer: {escrowState?.buyer ? `${String(escrowState.buyer).slice(0, 10)}...` : "-"}</span>
+                      <span>Escrow seller: {escrowState?.seller ? `${String(escrowState.seller).slice(0, 10)}...` : "-"}</span>
+                      <span>Synced: {lastEscrowSyncAt || "just now"}</span>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                    <h4 className="text-white/80 text-sm font-semibold mb-2">Projected payout model (with 4% platform fee)</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-white/60">
+                      <span>Deposit gross: {Number(ethers.formatEther(depositGrossWei)).toFixed(4)} ETH</span>
+                      <span>Seller net deposit: {Number(ethers.formatEther(sellerDepositNetWei)).toFixed(4)} ETH</span>
+                      <span>Halfway gross: {Number(ethers.formatEther(halfwayGrossWei)).toFixed(4)} ETH</span>
+                      <span>Seller net halfway: {Number(ethers.formatEther(sellerHalfwayNetWei)).toFixed(4)} ETH</span>
+                      <span>Completion gross: {Number(ethers.formatEther(completionGrossWei)).toFixed(4)} ETH</span>
+                      <span>Seller net completion: {Number(ethers.formatEther(sellerCompletionNetWei)).toFixed(4)} ETH</span>
+                      <span>Final gross (current review): {Number(ethers.formatEther(finalHappyValueWei)).toFixed(4)} ETH</span>
+                      <span>Seller net final: {Number(ethers.formatEther(sellerFinalHappyNetWei)).toFixed(4)} ETH</span>
+                      <span>Platform cut (deposit+halfway+completion): {Number(ethers.formatEther(platformDepositWei + platformHalfwayWei + platformCompletionWei)).toFixed(4)} ETH</span>
+                      <span>Platform cut (final current): {Number(ethers.formatEther(platformFinalHappyWei)).toFixed(4)} ETH</span>
+                    </div>
+                    <p className="text-[11px] text-white/40 mt-2">
+                      Gross = released by escrow step, Seller net = after protocol fee. Released amounts may stay under pending withdrawals
+                      until the participant runs withdraw.
+                    </p>
+                  </div>
+
+                  {showBuyerControls && (
+                    <div className="space-y-2">
+                      <h4 className="text-white/80 text-sm font-semibold">Client actions</h4>
+                      <p className="text-[11px] text-white/45">
+                        Simple flow: release kickoff payment → freelancer marks milestones → submit midway review → release
+                        completion → submit final review.
+                      </p>
+                      <button disabled={chainBusy || !gates?.releaseDeposit?.enabled} onClick={() => runServices("releaseDeposit")} className="w-full px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs disabled:opacity-50">
+                        Release kickoff payment to freelancer
+                      </button>
+                      <p className="text-[11px] text-white/45">{gateBody("releaseDeposit", "First slice so they can start.")}</p>
+
+                      <ServiceReviewMatrix id="midway-main" title="Midway review (1-7 each)" values={midwayScores} onChange={setMidwayScores} disabled={chainBusy || !gates?.submitMidwayReview?.enabled} />
+                      <button disabled={chainBusy || !gates?.submitMidwayReview?.enabled} onClick={() => runServices("submitMidwayReview", [midwayScores.respect, midwayScores.comm, midwayScores.timeliness, midwayScores.quality])} className="w-full px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs disabled:opacity-50">
+                        Submit midway review on-chain
+                      </button>
+                      <p className="text-[11px] text-white/45">{gateBody("submitMidwayReview", "After half the milestones are done.")}</p>
+
+                      <button disabled={chainBusy || !gates?.releaseCompletion?.enabled} onClick={() => runServices("releaseCompletion")} className="w-full px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs disabled:opacity-50">
+                        Release completion payment
+                      </button>
+                      <p className="text-[11px] text-white/45">{gateBody("releaseCompletion", "After all milestones are marked done.")}</p>
+
+                      <ServiceReviewMatrix
+                        id="final-happy-main"
+                        title="Final review (client - workflow bands)"
+                        values={finalScores}
+                        onChange={setFinalScores}
+                        disabled={chainBusy || !gates?.submitFinalReview?.enabled}
+                      />
+                      <button
+                        disabled={chainBusy || !gates?.submitFinalReview?.enabled}
+                        onClick={() =>
+                          runServices(
+                            "submitFinalReview",
+                            [finalScores.respect, finalScores.comm, finalScores.timeliness, finalScores.quality],
+                            finalHappyValueWei
+                          )
+                        }
+                        className="w-full px-3 py-2 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-300 text-xs disabled:opacity-50"
+                      >
+                        {finalHappyOverall <= 2
+                          ? "Submit final review (0 ETH - dispute path)"
+                          : "Submit final review + satisfaction payment"}
+                      </button>
+                      <p className="text-[11px] text-white/45">
+                        {gateBody(
+                          "submitFinalReview",
+                          finalHappyOverall <= 2
+                            ? `Overall ${finalHappyOverall}*: sends 0 ETH; use dispute path if needed.`
+                            : `Sends ${Number(ethers.formatEther(finalHappyValueWei)).toFixed(4)} ETH with final review.`
+                        )}
+                      </p>
+                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2 text-[11px] text-white/55">
+                        <p>
+                          Final satisfaction score uses weighted percentages:
+                          Respect 10% + Communication 5% + Timeliness 30% + Quality 55%.
+                        </p>
+                        <p className="mt-1">
+                          Contract workflow then applies: 70% from (Respect/Communication/Quality blend) and 30% from Timeliness.
+                        </p>
+                        <p className="mt-1 text-amber-200/90">
+                          If final satisfaction score is low (especially 1-2 stars), final payout can be reduced or zero. In that case,
+                          start dispute review from Edge cases → Open Dispute.
+                        </p>
+                      </div>
+                      {breakdownBasisWei > 0n && (
+                        <ServicesFinalSliceBreakdown
+                          breakdown={projectedFinalBreakdown}
+                          viewer="buyer"
+                          satisfactionReleased={Boolean(escrowState?.[10])}
+                        />
+                      )}
+                      <div className="flex items-center gap-2 text-[11px] text-white/45">
+                        <button
+                          type="button"
+                          title={finalReviewInfoText}
+                          className="w-4 h-4 rounded-full border border-white/20 text-white/70 flex items-center justify-center text-[10px]"
+                        >
+                          i
+                        </button>
+                        <span>{finalReviewInfoText}</span>
+                      </div>
+
+                      <button
+                        disabled={chainBusy}
+                        onClick={runWithdraw}
+                        className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs disabled:opacity-50"
+                      >
+                        Move money to my wallet (client)
+                      </button>
+
+                      <details className="rounded-lg border border-white/10 bg-white/[0.02] p-2">
+                        <summary className="text-xs text-white/70 cursor-pointer">Edge cases & testing</summary>
+                        <div className="space-y-2 mt-2">
+                          <ServiceReviewMatrix
+                            id="final-unhappy-main"
+                            title="Final review - unhappy (test path)"
+                            values={finalUnhappyScores}
+                            onChange={setFinalUnhappyScores}
+                            disabled={chainBusy || !gates?.submitFinalReview?.enabled}
+                          />
+                          <button
+                            disabled={chainBusy || !gates?.submitFinalReview?.enabled}
+                            onClick={() =>
+                              runServices(
+                                "submitFinalReview",
+                                [
+                                  finalUnhappyScores.respect,
+                                  finalUnhappyScores.comm,
+                                  finalUnhappyScores.timeliness,
+                                  finalUnhappyScores.quality,
+                                ],
+                                finalUnhappyValueWei
+                              )
+                            }
+                            className="w-full px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs disabled:opacity-50"
+                          >
+                            {finalUnhappyValueWei === 0n
+                              ? "Submit low final review (0 ETH)"
+                              : "Submit final review (sends satisfaction slice)"}
+                          </button>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              value={disputeEth}
+                              onChange={(e) => setDisputeEth(e.target.value)}
+                              className="bg-[#1a1a24] border border-white/10 rounded-lg px-2 py-1.5 text-white text-[11px]"
+                              placeholder="Dispute ETH"
+                            />
+                            <button
+                              disabled={chainBusy || !gates?.openDispute?.enabled}
+                              onClick={() => runServices("openDispute", [ethers.parseEther(disputeEth || "0")])}
+                              className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-xs disabled:opacity-50"
+                            >
+                              Open Dispute
+                            </button>
+                          </div>
+                          <p className="text-[11px] text-white/45">{gateBody("openDispute", "Client only; unhappy path.")}</p>
+                          <button
+                            disabled={chainBusy || !gates?.cancelExpiredEscrow?.enabled}
+                            onClick={() => runServices("cancelExpiredEscrow")}
+                            className="w-full px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-xs disabled:opacity-50"
+                          >
+                            Cancel if job expired
+                          </button>
+                          <p className="text-[11px] text-white/45">{gateBody("cancelExpiredEscrow", "Use after deadlines/grace.")}</p>
+                        </div>
+                      </details>
+                    </div>
+                  )}
+
+                  {showSellerControls && (
+                    <div className="space-y-2">
+                      <h4 className="text-white/80 text-sm font-semibold">Freelancer actions</h4>
+                      <p className="text-[11px] text-white/45">
+                        Milestones unlock step-by-step. If blocked, read the line below each button for what to do next.
+                      </p>
+                      {escrowState?.[12] && sellerFinalBreakdown && (
+                        <ServicesFinalSliceBreakdown
+                          breakdown={sellerFinalBreakdown}
+                          viewer="seller"
+                          satisfactionReleased={Boolean(escrowState?.[10])}
+                        />
+                      )}
+                      {escrowState?.[12] && !sellerFinalBreakdown && (
+                        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2 text-[11px] text-amber-100/95">
+                          Final review is recorded on-chain, but this app couldn&apos;t load full row data (refresh the page or redeploy contracts
+                          to match ABI). Pending seller balance above still reflects credits.
+                        </div>
+                      )}
+                      {!escrowState?.[12] && escrowAmountWei > 0n && (
+                        <p className="text-[11px] text-white/45 rounded-lg border border-white/10 bg-white/[0.02] p-2">
+                          When the client submits the final review, a step-by-step breakdown appears here (30% slice, timeliness deduction if any,
+                          4% platform fee on gross, your net credit).
+                        </p>
+                      )}
+                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2 text-[11px] text-white/55">
+                        <p>
+                          Final satisfaction scoring (buyer review) weights are: Respect 10% + Communication 5% + Timeliness 30% + Quality 55%.
+                        </p>
+                        <p className="mt-1">
+                          Workflow applies 70% from RCQ blend and 30% from Timeliness. Low final scores can reduce or block final payout.
+                        </p>
+                        <p className="mt-1 text-amber-200/90">
+                          If outcome is unfair, use dispute workflow with buyer/admin to settle pending amount.
+                        </p>
+                      </div>
+                      {Array.from({ length: Number(escrowState?.[5] || 0) }).map((_, i) => {
+                        const key = `completeMilestone${i}`;
+                        return (
+                          <div key={key}>
+                            <button disabled={chainBusy || !gates?.[key]?.enabled} onClick={() => runServices("completeMilestone", [i])} className="w-full px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs disabled:opacity-50">
+                              Mark milestone {i + 1} as done
+                            </button>
+                            <p className="text-[11px] text-white/45 mt-1">{gateBody(key, `Complete slice ${i + 1} in order.`)}</p>
+                          </div>
+                        );
+                      })}
+                      <button
+                        disabled={chainBusy}
+                        onClick={runWithdraw}
+                        className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs disabled:opacity-50"
+                      >
+                        Move earnings to my wallet
+                      </button>
+                    </div>
+                  )}
+
+                  {isBuyer && order.status === "delivered" && isEscrowFinalizeReached && (
+                    <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-3">
+                      <p className="text-[12px] text-green-200 mb-2">
+                        Escrow final stage is done. You can now mark this order as completed in app.
+                      </p>
+                      <button
+                        onClick={handleComplete}
+                        disabled={actionLoading}
+                        className="px-3 py-2 rounded-lg bg-green-500/20 border border-green-500/40 text-green-200 text-xs disabled:opacity-50"
+                      >
+                        {actionLoading ? "Completing..." : "Mark order done"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Action buttons */}
             <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
               <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-4">Actions</p>
@@ -707,6 +1307,65 @@ const GigOrderDetail = () => {
 
           {/* ── RIGHT COL ── */}
           <div className="space-y-4">
+            <InAppWalletBalanceCard compact />
+            <WalletTxHistoryCard
+              address={inAppAddress}
+              escrowId={escrowId}
+              orderScoped
+              title={isBuyer ? "Buyer Wallet Transactions" : "Seller Wallet Transactions"}
+            />
+            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Services Escrow (On-chain)</p>
+              <div className="space-y-2">
+                <input
+                  value={escrowId}
+                  onChange={(e) => setEscrowId(e.target.value.trim())}
+                  placeholder="0x... escrowId (bytes32)"
+                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs outline-none focus:border-purple-400"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (order?.id && escrowId) {
+                        setEscrowIdForOrder(order.id, escrowId);
+                        setGigOrderEscrowId(cookies.access_token, order.id, escrowId).catch(() => {});
+                        toast.success("Escrow id linked to order.");
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs hover:bg-white/10"
+                  >
+                    Save Link
+                  </button>
+                  <button
+                    onClick={refreshEscrow}
+                    className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs hover:bg-white/10"
+                  >
+                    Refresh
+                  </button>
+                </div>
+                {escrowState && (
+                  <div className="pt-2 border-t border-white/5">
+                    <p className="text-[11px] text-white/45 mb-1">Progress checklist</p>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-white/55">
+                      <span>Milestones done: {Number(escrowState[6])}/{Number(escrowState[5])}</span>
+                      <span>Released to seller: {Number(ethers.formatEther(escrowState[4])).toFixed(4)} ETH</span>
+                      <span>Deposit released: {escrowState[7] ? "Yes" : "No"}</span>
+                      <span>Midway review: {escrowState[11] ? "Done" : "Pending"}</span>
+                      <span>Completion released: {escrowState[9] ? "Yes" : "No"}</span>
+                      <span>Final review: {escrowState[12] ? "Done" : "Pending"}</span>
+                      <span>Disputed: {escrowState[13] ? "Yes" : "No"}</span>
+                      <span>Satisfaction finalized: {escrowState[10] ? "Yes" : "No"}</span>
+                      <span>Buyer pending: {pendingBuyer} ETH</span>
+                      <span>Seller pending: {pendingSeller} ETH</span>
+                    </div>
+                  </div>
+                )}
+                <p className="text-[11px] text-white/45 border-t border-white/5 pt-2">
+                  Contract actions are shown only in the main <strong>Services Workspace</strong> panel on the left.
+                </p>
+              </div>
+            </div>
+
             {/* Price breakdown */}
             <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
               <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Price Breakdown</p>
@@ -716,7 +1375,7 @@ const GigOrderDetail = () => {
                   <span>${parseFloat(order.gig_price || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-white/40 text-xs">
-                  <span>Buyer Fee (5%)</span>
+                  <span>Marketplace Fee (5%)</span>
                   <span>${parseFloat(order.buyer_fee || 0).toFixed(2)}</span>
                 </div>
                 <div className="border-t border-white/5 pt-2 flex justify-between text-white font-bold">
