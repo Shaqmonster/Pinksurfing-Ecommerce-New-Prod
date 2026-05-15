@@ -87,7 +87,23 @@ const BusinessForSale = () => {
         const v = getAttr("smart_tags");
         if (!v) return [];
         if (Array.isArray(v)) return v.map(s => String(s).trim()).filter(Boolean);
-        return String(v).split(",").map(s => s.trim()).filter(Boolean);
+        const s = String(v).trim();
+        // Handle Python list notation: ['Absentee-Run', 'SBA Pre-Qualified', ...]
+        // This is what Django CharField stores when given a Python list via str()
+        if (s.startsWith("[") && s.endsWith("]")) {
+          try {
+            // Proper JSON array ["a", "b"]
+            const parsed = JSON.parse(s);
+            if (Array.isArray(parsed)) return parsed.map(x => String(x).trim()).filter(Boolean);
+          } catch {}
+          // Python-style ['a', 'b'] — strip brackets, split by comma, remove surrounding quotes
+          return s.slice(1, -1)
+            .split(",")
+            .map(item => item.trim().replace(/^['"]|['"]$/g, ""))
+            .filter(Boolean);
+        }
+        // Plain comma-separated: "Absentee-Run, SBA Pre-Qualified, ..."
+        return s.split(",").map(x => x.trim()).filter(Boolean);
       })(),
       tags: (() => {
         const v = getAttr("tags");

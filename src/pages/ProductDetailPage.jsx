@@ -1156,10 +1156,20 @@ const ProductDetailPage = () => {
                       const crmInPlace = getAttr("crm/erp in place", "crm/erp");
                       const expansion = getAttr("expansion opportunity", "expansion");
                       const licenses = getAttr("licenses required");
-                      const smartFeatures = (getAttr("smart features", "smart match") || "")
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean);
+                      const _smartRaw = getAttr("smart_tags", "smart features", "smart match") || "";
+                      const _smartStr = _smartRaw.trim();
+                      const smartFeatures = (() => {
+                        if (!_smartStr) return [];
+                        // Handle Python list notation ['a', 'b'] stored by old backend
+                        if (_smartStr.startsWith("[") && _smartStr.endsWith("]")) {
+                          try {
+                            const p = JSON.parse(_smartStr);
+                            if (Array.isArray(p)) return p.map(x => String(x).trim()).filter(Boolean);
+                          } catch {}
+                          return _smartStr.slice(1, -1).split(",").map(i => i.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean);
+                        }
+                        return _smartStr.split(",").map(s => s.trim()).filter(Boolean);
+                      })();
                       const staffRoles = getAttr("staff roles");
                       const techStack = getAttr("technology stack");
                       const keyVendors = getAttr("key vendors");
