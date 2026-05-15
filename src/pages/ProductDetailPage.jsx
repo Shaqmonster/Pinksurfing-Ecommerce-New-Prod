@@ -176,8 +176,9 @@ const ProductDetailPage = () => {
     const attrs = product?.attributes || [];
     for (const name of aliases) {
       if (!name) continue;
-      const lowerName = String(name).toLowerCase();
-      const attr = attrs.find((a) => a?.name?.toLowerCase() === lowerName);
+      // Normalize underscores ↔ spaces so "smart_tags" matches "Smart tags" (label-based DB name)
+      const norm = String(name).toLowerCase().replace(/_/g, " ");
+      const attr = attrs.find((a) => (a?.name || "").toLowerCase().replace(/_/g, " ") === norm);
       if (attr?.value !== undefined && attr?.value !== null && attr?.value !== "") {
         return attr.value;
       }

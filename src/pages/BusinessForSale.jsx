@@ -65,8 +65,13 @@ const BusinessForSale = () => {
     const attrs = p.product_attributes || p.attributes || [];
     const getAttr = (...names) => {
       for (const name of names) {
-        const found = attrs.find(a => a.name?.toLowerCase() === name.toLowerCase());
-        if (found?.value) return found.value;
+        // Normalize underscores ↔ spaces so "smart_tags" matches "Smart tags"
+        const norm = name.toLowerCase().replace(/_/g, " ");
+        const found = attrs.find(a => {
+          const n = (a.name || "").toLowerCase().replace(/_/g, " ");
+          return n === norm;
+        });
+        if (found?.value !== undefined && found?.value !== null && found?.value !== "") return found.value;
       }
       return "";
     };
