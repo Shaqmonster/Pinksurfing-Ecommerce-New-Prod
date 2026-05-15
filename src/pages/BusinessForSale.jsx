@@ -18,11 +18,14 @@ import {
 } from "react-icons/io5";
 import useCategoryProducts from "./categoryProducts/useCategoryProducts";
 
-const DATA = [
-  { id:1, title:"Revenue-Generating RPM & CCM Company — EMR, Website & Dev Team", industry:"Healthcare", state:"TX", city:"Dallas", zip:"75201", asking:850000, revenue:420000, ebitda:180000, multi:4.7, remote:true, smart:["cash-flow","ai-auto","hc-compliant"], tags:["Seller Financing", "Recurring Rev", "Growing"], growth:"Growing" },
-  { id:2, title:"SaaS HR Platform — 800+ MRR Customers, 78% Gross Margin", industry:"SaaS / Tech", state:"CA", city:"San Francisco", zip:"94105", asking:4200000, revenue:1800000, ebitda:620000, multi:6.8, remote:true, smart:["roll-up","cash-flow","ai-auto"], tags:["SBA-Eligible", "Recurring Rev", "High Margin"], growth:"Growing" },
-  { id:3, title:"E-Commerce Pet Supplies Brand — Amazon FBA & DTC, $2.1M Revenue", industry:"E-Commerce", state:"FL", city:"Miami", zip:"33101", asking:1100000, revenue:2100000, ebitda:310000, multi:3.5, remote:true, smart:["owner-op","ai-auto","undervalued"], tags:["Seller Financing", "SBA-Eligible", "Growing"], growth:"Growing" },
-  { id:4, title:"Regional HVAC Services — 22 Years Operating, Absentee Owner", industry:"Professional Services", state:"GA", city:"Atlanta", zip:"30301", asking:2800000, revenue:3400000, ebitda:580000, multi:4.8, remote:false, smart:["owner-op","cash-flow","roll-up"], tags:["Absentee Owner", "Multi-Location", "SBA-Eligible"], growth:"Stable" },
+// Smart tag labels must match exactly what the vendor wizard saves (SMART_TAG_DEFS labels)
+const SMART_TAG_OPTIONS = [
+  "Absentee-Run",
+  "SBA Pre-Qualified",
+  "Recurring Revenue",
+  "B2B",
+  "B2C",
+  "IP / Assets Included",
 ];
 
 const fmt = (n) => {
@@ -71,7 +74,7 @@ const BusinessForSale = () => {
       ebitda: parseFloat(getAttr("ebitda")) || 0,
       multi: parseFloat(getAttr("ebitda multiple")) || (parseFloat(p.unit_price) / (parseFloat(getAttr("ebitda")) || 1)).toFixed(1),
       remote: getAttr("remote") === "Yes",
-      smart: (getAttr("smart match") || "").split(",").map(s => s.trim()).filter(Boolean),
+      smart: (getAttr("smart_tags") || "").split(",").map(s => s.trim()).filter(Boolean),
       tags: (getAttr("tags") || "").split(",").map(s => s.trim()).filter(Boolean),
       growth: getAttr("growth trend") || "Stable",
       desc: p.product_description || p.description
@@ -86,7 +89,7 @@ const BusinessForSale = () => {
   };
 
   const runFilters = useCallback(() => {
-    const baseData = filteredProducts.length > 0 ? filteredProducts.map(mapProduct) : DATA;
+    const baseData = filteredProducts.map(mapProduct);
     let result = baseData.filter((l) => {
       if (kw && !l.title.toLowerCase().includes(kw.toLowerCase()) && !l.industry.toLowerCase().includes(kw.toLowerCase())) return false;
       if (industry && l.industry !== industry) return false;
@@ -176,7 +179,7 @@ const BusinessForSale = () => {
         {/* Smart Match Strip */}
         <div className="flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar pb-2 border-b border-white/5">
           <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500 mr-2 whitespace-nowrap">Smart Match:</span>
-          {["Owner-Operator", "Strong Cash Flow", "Roll-Up", "PE Add-On", "Turnaround", "AI-Automatable", "Undervalued", "HC Compliant"].map(s => (
+          {SMART_TAG_OPTIONS.map(s => (
             <button key={s} onClick={() => toggleSmart(s)} className={`px-4 py-1.5 rounded-full border border-white/10 text-[10px] font-semibold whitespace-nowrap transition-all ${activeSmarts.has(s) ? "bg-[#e8237a] text-white border-[#e8237a]" : "bg-white/5 text-gray-400 hover:border-white/20"}`}>
               {s}
             </button>
@@ -203,9 +206,20 @@ const BusinessForSale = () => {
         </div>
 
         {/* Grid Display - 5 columns for density */}
+        {loading ? (
+          <div className="flex justify-center items-center py-24">
+            <div className="w-8 h-8 border-2 border-[#e8237a]/20 border-t-[#e8237a] rounded-full animate-spin" />
+          </div>
+        ) : displayData.length === 0 ? (
+          <div className="text-center py-24">
+            <IoBusinessOutline className="text-5xl text-white/20 mx-auto mb-4" />
+            <p className="text-gray-400 font-semibold text-base">No listings found</p>
+            <p className="text-gray-600 text-sm mt-1">Try adjusting your filters or check back soon.</p>
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           <AnimatePresence>
-            {displayData.map((biz) => (
+            {!loading && displayData.map((biz) => (
               <motion.div key={biz.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="group bg-[#111] border border-white/10 rounded-lg hover:border-[#e8237a]/50 transition-all duration-300 shadow-xl overflow-hidden">
                 <Link
                   to={`/product/productDetail/${biz.slug}${biz.id ? `?productId=${biz.id}` : ""}`}
