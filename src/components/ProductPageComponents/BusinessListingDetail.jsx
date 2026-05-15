@@ -389,21 +389,29 @@ const BusinessListingDetail = ({
   const [ndaModalOpen, setNdaModalOpen] = useState(false);
   const [ndaForm, setNdaForm] = useState({ name: "", email: "", company: "", role: "", signature: "", agreed: false });
   const [ndaSubmitting, setNdaSubmitting] = useState(false);
+  // Inline error shown inside the modal so it is always visible
+  const [ndaError, setNdaError] = useState("");
+
+  const openNdaModal = () => { setNdaError(""); setNdaModalOpen(true); };
 
   const handleSignNda = async () => {
+    setNdaError("");
     const { name, email, role, signature, agreed } = ndaForm;
+
+    // Inline validation — shown inside the modal, not as a hidden toast
     if (!name || !email || !role || !signature || !agreed) {
-      toast.error("Please fill in all required fields and agree to the terms.", { position: "top-right" });
+      setNdaError("Please fill in all required fields and check the agreement box.");
       return;
     }
     if (signature.trim().toLowerCase() !== name.trim().toLowerCase()) {
-      toast.error("Your signature must match your full legal name exactly.", { position: "top-right" });
+      setNdaError("Your digital signature must match your Full Legal Name exactly.");
       return;
     }
     if (!user?.id) {
-      toast.error("Please sign in to continue.", { position: "top-right" });
+      setNdaError("You must be signed in to submit an NDA. Please log in and try again.");
       return;
     }
+
     setNdaSubmitting(true);
     try {
       const payload = {
@@ -438,16 +446,28 @@ const BusinessListingDetail = ({
 
       // Redirect to Square checkout for the $1 NDA fee
       if (payment_url) {
+        setNdaError("");
         toast.info("Redirecting to secure payment…", { position: "top-right" });
-        window.location.href = payment_url;
+        window.open(payment_url, "_blank", "noopener");
         return;
       }
 
-      toast.error("Could not start payment. Please try again.", { position: "top-right" });
+      setNdaError("Could not generate a payment link. Please try again in a moment.");
     } catch (err) {
       const data = err?.response?.data || {};
-      const msg = data.detail || data.full_name?.[0] || data.signature?.[0] || data.non_field_errors?.[0] || "Failed to submit NDA. Please try again.";
-      toast.error(msg, { position: "top-right" });
+      // Extract the most meaningful error message from any field
+      const msg =
+        data.detail ||
+        data.customer_id?.[0] ||
+        data.product_id?.[0] ||
+        data.buyer_role?.[0] ||
+        data.full_name?.[0] ||
+        data.signature?.[0] ||
+        data.agreed_to_terms?.[0] ||
+        data.non_field_errors?.[0] ||
+        (err?.message === "Network Error" ? "Network error — please check your connection and try again." : "") ||
+        "Something went wrong. Please try again.";
+      setNdaError(msg);
     } finally {
       setNdaSubmitting(false);
     }
@@ -637,7 +657,7 @@ const BusinessListingDetail = ({
                     </div>
                   )}
                   {lockEbitda && !ndaSigned ? (
-                    <div className="b-met" style={{ cursor: "pointer" }} onClick={() => setNdaModalOpen(true)} title="Sign NDA to reveal">
+                    <div className="b-met" style={{ cursor: "pointer" }} onClick={() => openNdaModal()} title="Sign NDA to reveal">
                       <div className="b-met-v amber" style={{ fontSize: 14 }}>🔒 NDA</div>
                       <div className="b-met-k">SDE / EBITDA</div>
                       <div className="b-met-note" style={{ color: "var(--amber)" }}>Tap to unlock</div>
@@ -794,7 +814,7 @@ const BusinessListingDetail = ({
                             <td>SDE / EBITDA</td>
                             <td>
                               <button
-                                onClick={() => setNdaModalOpen(true)}
+                                onClick={() => openNdaModal()}
                                 style={{ background: "none", border: "none", color: "var(--amber)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0, display: "flex", alignItems: "center", gap: 5 }}
                               >
                                 🔒 Sign NDA to reveal
@@ -853,7 +873,7 @@ const BusinessListingDetail = ({
                             {ndaStatus === "pending_vendor" ? "⏳ Awaiting Seller Review" : "✍ NDA Submitted"}
                           </button>
                         ) : (
-                          <button className="b-btn-nda" onClick={() => setNdaModalOpen(true)}>
+                          <button className="b-btn-nda" onClick={() => openNdaModal()}>
                             ✍ Sign NDA to Unlock
                           </button>
                         )}
@@ -1024,7 +1044,7 @@ const BusinessListingDetail = ({
                             </div>
                             <div className="b-doc-row-right">
                               <span className="b-doc-badge-nda">🔒 NDA Required</span>
-                              <button className="b-doc-btn locked" onClick={() => setNdaModalOpen(true)}>✍ Sign NDA</button>
+                              <button className="b-doc-btn locked" onClick={() => openNdaModal()}>✍ Sign NDA</button>
                             </div>
                           </div>
                         ))
@@ -1038,7 +1058,7 @@ const BusinessListingDetail = ({
                             </div>
                             <div className="b-doc-row-right">
                               <span className="b-doc-badge-nda">🔒 NDA Required</span>
-                              <button className="b-doc-btn locked" onClick={() => setNdaModalOpen(true)}>✍ Sign NDA</button>
+                              <button className="b-doc-btn locked" onClick={() => openNdaModal()}>✍ Sign NDA</button>
                             </div>
                           </div>
                         )
@@ -1459,7 +1479,7 @@ const BusinessListingDetail = ({
                         ? "Sign the NDA and pay $1 to request SDE / EBITDA details."
                         : "Sign the NDA and pay $1 to request the full financial package."}
                     </p>
-                    <button className="b-btn-nda-side" onClick={() => setNdaModalOpen(true)}>
+                    <button className="b-btn-nda-side" onClick={() => openNdaModal()}>
                       ✍ Sign NDA &amp; Pay $1
                     </button>
                   </div>
@@ -1582,14 +1602,14 @@ const BusinessListingDetail = ({
 
       {/* ── NDA MODAL ── */}
       {ndaModalOpen && (
-        <div className="b-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setNdaModalOpen(false); }}>
+        <div className="b-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setNdaModalOpen(false); setNdaError(""); } }}>
           <div className="b-modal-box">
             <div className="b-modal-header">
               <div className="b-modal-header-text">
                 <div className="b-modal-title">🔒 Sign NDA to Access Financial Documents</div>
                 <div className="b-modal-subtitle">A one-time $1 fee is charged to verify your identity and unlock protected financials. A countersigned copy is emailed to you and the seller.</div>
               </div>
-              <button className="b-modal-close" onClick={() => setNdaModalOpen(false)}>✕</button>
+              <button className="b-modal-close" onClick={() => { setNdaModalOpen(false); setNdaError(""); }}>✕</button>
             </div>
 
             <div className="b-modal-body">
@@ -1690,10 +1710,25 @@ const BusinessListingDetail = ({
               </div>
             </div>
 
+            {ndaError && (
+              <div style={{
+                margin: "0 0 12px",
+                padding: "10px 14px",
+                background: "rgba(220,38,38,0.12)",
+                border: "1px solid rgba(220,38,38,0.35)",
+                borderRadius: 8,
+                color: "#f87171",
+                fontSize: 13,
+                fontWeight: 500,
+                lineHeight: 1.5,
+              }}>
+                ⚠️ {ndaError}
+              </div>
+            )}
             <div className="b-modal-foot">
-              <button className="b-btn-cancel" onClick={() => setNdaModalOpen(false)}>Cancel</button>
+              <button className="b-btn-cancel" onClick={() => { setNdaModalOpen(false); setNdaError(""); }}>Cancel</button>
               <button className="b-btn-sign" onClick={handleSignNda} disabled={ndaSubmitting}>
-                {ndaSubmitting ? "⏳ Redirecting to payment…" : "✍ Sign NDA & Pay $1 to Unlock"}
+                {ndaSubmitting ? "⏳ Opening payment page…" : "✍ Sign NDA & Pay $1 to Unlock"}
               </button>
             </div>
           </div>
