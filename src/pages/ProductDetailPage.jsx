@@ -525,16 +525,15 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const GetProductData = async () => {
       if (!productId) {
-        // Without a productId we can't safely hit the API — bail out instead
-        // of firing requests like /api/product/product/null/.
         setLoading(false);
+        setProduct({});
         return;
       }
       try {
         setLoading(true);
+        const encoded = encodeURIComponent(productId);
         const productResponse = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL
-          }/api/product/product/${productId}/`,
+          `${import.meta.env.VITE_SERVER_URL}/api/product/product/${encoded}/`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -542,15 +541,15 @@ const ProductDetailPage = () => {
           }
         );
 
-        const productData = productResponse.data.Products;
+        const productData = productResponse.data?.Products;
+        if (!productData || typeof productData !== "object") {
+          throw new Error("Missing product payload");
+        }
         const normalizedProduct = withResolvedProductImages(productData);
         setProduct(normalizedProduct);
-        const isOwner = user?.email === normalizedProduct.vendor?.email;
-        setLoading(false);
         setActiveImage(firstProductImageUrl(normalizedProduct));
 
         // Build a lookup: attribute name (lowercase) → is_variant boolean
-        // from the subcategory's allowed_attributes list.
         const isVariantLookup = {};
         const allowedAttrs = normalizedProduct.subcategory?.allowed_attributes || [];
         allowedAttrs.forEach((aa) => {
@@ -563,14 +562,12 @@ const ProductDetailPage = () => {
         (normalizedProduct.attributes || []).forEach(({ name, value, additional_price }) => {
           if (!name) return;
           const lowerName = name.toLowerCase();
-          // Default to variant=true when not found (preserves existing behavior)
-          const isVariant = isVariantLookup.hasOwnProperty(lowerName)
+          const isVariant = Object.prototype.hasOwnProperty.call(isVariantLookup, lowerName)
             ? isVariantLookup[lowerName]
             : true;
 
           const target = isVariant ? variantAttrs : specAttrs;
           if (!target[name]) target[name] = [];
-          // De-duplicate by value
           if (!target[name].some((item) => item.value === value)) {
             target[name].push({ value, additional_price });
           }
@@ -579,35 +576,50 @@ const ProductDetailPage = () => {
         setVariantAttributeMap(variantAttrs);
         setSpecAttributeMap(specAttrs);
 
-        if (cookies.access_token) {
-          const addressId = user.addresses[0]?.id;
-          const ratesResponse = await axios.get(
-            `${import.meta.env.VITE_SERVER_URL
-            }/api/shipping/fetch-rates/${productId}/${addressId}/`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${cookies.access_token}`,
-              },
-            }
-          );
-          console.log("Rates:", ratesResponse.data);
+        if (cookies.access_token && normalizedProduct?.id && user?.addresses?.[0]?.id) {
+          try {
+            const shipId = encodeURIComponent(String(normalizedProduct.id));
+            const addressId = encodeURIComponent(String(user.addresses[0].id));
+            const ratesResponse = await axios.get(
+              `${import.meta.env.VITE_SERVER_URL}/api/shipping/fetch-rates/${shipId}/${addressId}/`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${cookies.access_token}`,
+                },
+              }
+            );
+            console.log("Rates:", ratesResponse.data);
+          } catch (shipErr) {
+            console.warn("Shipping rates skipped:", shipErr);
+          }
         }
       } catch (error) {
         console.error(error);
+        setProduct({});
+        const msg =
+          error?.response?.data?.Status ||
+          error?.response?.data?.detail ||
+          error?.message ||
+          "Could not load this listing.";
+        toast.error(typeof msg === "string" ? msg : "Could not load this listing.", {
+          position: "top-right",
+        });
+      } finally {
+        setLoading(false);
       }
     };
 
     GetProductData();
     GetCartProducts();
     const productInCart = cartProducts.find(
-      (product) => product.product.id === productId
+      (p) => p.product?.id === productId || p.product?.slug === productId
     );
 
     if (productInCart) {
       setProductQty(productInCart.quantity);
     }
-  }, [cookies, navigate, removeCookie]);
+  }, [productId, location.search, cookies.access_token, user?.addresses]);
 
   useEffect(() => {
     const getProductRatings = async (productId) => {

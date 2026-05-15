@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 const BASE = import.meta.env.VITE_SERVER_URL;
@@ -294,14 +294,14 @@ export default function MyNdas() {
                   </div>
                 )}
 
-                {/* View listing link */}
-                {nda.product_slug && (
-                  <a
-                    href={`/product/productDetail/${nda.product_slug}`}
+                {/* View listing — always pass productId so detail page can load (inactive/slug edge cases) */}
+                {nda.product_id && (
+                  <Link
+                    to={`/product/productDetail/${encodeURIComponent(nda.product_slug || nda.product_id)}?productId=${nda.product_id}`}
                     style={{ fontSize: 12, color: "#e040a8", marginTop: 4, display: "inline-block" }}
                   >
                     View listing →
-                  </a>
+                  </Link>
                 )}
 
                 {/* Documents (accepted only) */}
