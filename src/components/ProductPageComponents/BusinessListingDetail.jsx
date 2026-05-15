@@ -365,6 +365,23 @@ const BusinessListingDetail = ({
   // NDA gating — auto-unlock when returning from Square payment
   const lockEbitda = !!product.nda_lock_ebitda;
   const lockFinancials = !!product.nda_lock_full_financials;
+
+  // Parse the vendor's declared NDA document list
+  const NDA_DOC_MAP = {
+    pl_statement:       { icon: "📈", label: "P&L Statement (3yr)" },
+    tax_returns:        { icon: "🧾", label: "Tax Returns (3yr)" },
+    revenue_breakdown:  { icon: "💰", label: "Revenue Breakdown" },
+    cim:                { icon: "📊", label: "CIM / Info Memo" },
+    bank_statements:    { icon: "🏦", label: "Bank Statements" },
+    lease_agreement:    { icon: "📋", label: "Lease Agreement" },
+    franchise_agreement:{ icon: "🤝", label: "Franchise Agreement" },
+    asset_list:         { icon: "🏭", label: "Asset List" },
+  };
+  const ndaDocIds = (product.nda_available_docs || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s && NDA_DOC_MAP[s]);
+  const ndaDocList = ndaDocIds.map((id) => ({ id, ...NDA_DOC_MAP[id] }));
   const [ndaSigned, setNdaSigned] = useState(() => searchParams.get("nda_unlocked") === "1");
   const [ndaModalOpen, setNdaModalOpen] = useState(false);
   const [ndaForm, setNdaForm] = useState({ name: "", email: "", company: "", role: "", signature: "", agreed: false });
@@ -805,10 +822,19 @@ const BusinessListingDetail = ({
                         </p>
                         <div className="b-nda-chips">
                           {lockEbitda && <span className="b-nda-chip">📊 SDE / EBITDA</span>}
-                          {lockFinancials && <span className="b-nda-chip">💰 Revenue Breakdown</span>}
-                          {lockFinancials && <span className="b-nda-chip">📈 Full P&amp;L</span>}
-                          {lockFinancials && <span className="b-nda-chip">🧾 Tax Returns (3yr)</span>}
-                          <span className="b-nda-chip">📋 CIM / Documents</span>
+                          {ndaDocList.length > 0
+                            ? ndaDocList.map((doc) => (
+                                <span key={doc.id} className="b-nda-chip">{doc.icon} {doc.label}</span>
+                              ))
+                            : /* fallback when vendor hasn't specified docs yet */
+                              lockFinancials && (
+                                <>
+                                  <span className="b-nda-chip">💰 Revenue Breakdown</span>
+                                  <span className="b-nda-chip">📈 Full P&amp;L</span>
+                                  <span className="b-nda-chip">🧾 Tax Returns (3yr)</span>
+                                </>
+                              )
+                          }
                         </div>
                         <button className="b-btn-nda" onClick={() => setNdaModalOpen(true)}>
                           ✍ Sign NDA to Unlock
@@ -965,25 +991,36 @@ const BusinessListingDetail = ({
                           <button className="b-doc-btn" onClick={() => toast.info("📄 Teaser download — contact lister for file.", { position: "top-right" })}>Download</button>
                         </div>
                       </div>
-                      {/* NDA-gated docs */}
-                      {[
-                        { icon: "📊", name: "Confidential Information Memorandum (CIM)", sub: "Full business overview, competitive positioning, and growth plan" },
-                        { icon: "💰", name: "Redacted P&L (Last 3 Years)", sub: "Revenue and expenses with sensitive line items removed" },
-                        lockFinancials && { icon: "🔒", name: "Full Financials — Tax Returns (3 Years)", sub: "Complete IRS returns FY2022, FY2023, FY2024" },
-                        { icon: "📋", name: "Franchise / Operating Agreement Summary", sub: "Terms, royalties, and transfer process" },
-                      ].filter(Boolean).map((doc) => (
-                        <div className="b-doc-row" key={doc.name}>
-                          <div className="b-doc-row-icon">{doc.icon}</div>
-                          <div className="b-doc-row-info">
-                            <div className="b-doc-row-name">{doc.name}</div>
-                            <div className="b-doc-row-sub">{doc.sub}</div>
+                      {/* NDA-gated docs — real list from vendor */}
+                      {ndaDocList.length > 0
+                        ? ndaDocList.map((doc) => (
+                          <div className="b-doc-row" key={doc.id}>
+                            <div className="b-doc-row-icon">{doc.icon}</div>
+                            <div className="b-doc-row-info">
+                              <div className="b-doc-row-name">{doc.label}</div>
+                              <div className="b-doc-row-sub">Protected — sign the NDA to unlock instantly</div>
+                            </div>
+                            <div className="b-doc-row-right">
+                              <span className="b-doc-badge-nda">🔒 NDA Required</span>
+                              <button className="b-doc-btn locked" onClick={() => setNdaModalOpen(true)}>✍ Sign NDA</button>
+                            </div>
                           </div>
-                          <div className="b-doc-row-right">
-                            <span className="b-doc-badge-nda">🔒 NDA Required</span>
-                            <button className="b-doc-btn locked" onClick={() => setNdaModalOpen(true)}>✍ Sign NDA</button>
+                        ))
+                        : /* fallback when vendor hasn't specified docs */
+                          (lockEbitda || lockFinancials) && (
+                          <div className="b-doc-row">
+                            <div className="b-doc-row-icon">🔒</div>
+                            <div className="b-doc-row-info">
+                              <div className="b-doc-row-name">Financial Documents</div>
+                              <div className="b-doc-row-sub">Seller has protected financial documents — sign the NDA to access them</div>
+                            </div>
+                            <div className="b-doc-row-right">
+                              <span className="b-doc-badge-nda">🔒 NDA Required</span>
+                              <button className="b-doc-btn locked" onClick={() => setNdaModalOpen(true)}>✍ Sign NDA</button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      }
                     </div>
                     <div style={{ marginBottom: 20, padding: 12, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11, color: "var(--text-3)" }}>
                       🤖 AI agents cannot sign NDAs. Human signing authority required.
@@ -995,22 +1032,29 @@ const BusinessListingDetail = ({
                   <div className="b-panel" style={{ paddingBottom: 0, borderRadius: "0 0 0 0", borderBottom: "none" }}>
                     <h3 style={{ marginBottom: 14 }}>Documents</h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-                      {[
-                        { icon: "📄", name: "Business Teaser", sub: "High-level overview" },
-                        { icon: "📊", name: "Confidential Information Memorandum (CIM)", sub: "Full business overview" },
-                        { icon: "💰", name: "Redacted P&L (Last 3 Years)", sub: "Revenue and expenses" },
-                        { icon: "🔒", name: "Full Financials — Tax Returns (3 Years)", sub: "Complete IRS returns FY2022–FY2024" },
-                        { icon: "📋", name: "Franchise / Operating Agreement Summary", sub: "Terms, royalties, and transfer process" },
-                      ].map((doc) => (
-                        <div className="b-doc-row" key={doc.name}>
+                      {/* Business Teaser is always free */}
+                      <div className="b-doc-row">
+                        <div className="b-doc-row-icon">📄</div>
+                        <div className="b-doc-row-info">
+                          <div className="b-doc-row-name">Business Teaser</div>
+                          <div className="b-doc-row-sub">High-level overview · No NDA required</div>
+                        </div>
+                        <div className="b-doc-row-right">
+                          <span className="b-doc-badge-free">✅ Unlocked</span>
+                          <button className="b-doc-btn" onClick={() => toast.info("📥 Contact the lister for file access.", { position: "top-right" })}>📥 Download</button>
+                        </div>
+                      </div>
+                      {/* Real unlocked docs from vendor */}
+                      {ndaDocList.map((doc) => (
+                        <div className="b-doc-row" key={doc.id}>
                           <div className="b-doc-row-icon">{doc.icon}</div>
                           <div className="b-doc-row-info">
-                            <div className="b-doc-row-name">{doc.name}</div>
-                            <div className="b-doc-row-sub">{doc.sub}</div>
+                            <div className="b-doc-row-name">{doc.label}</div>
+                            <div className="b-doc-row-sub">NDA on file — you have access</div>
                           </div>
                           <div className="b-doc-row-right">
                             <span className="b-doc-badge-free">✅ Unlocked</span>
-                            <button className="b-doc-btn" onClick={() => toast.info("📥 Downloading — contact lister for file access.", { position: "top-right" })}>📥 Download</button>
+                            <button className="b-doc-btn" onClick={() => toast.info("📥 Contact the lister for file access.", { position: "top-right" })}>📥 Download</button>
                           </div>
                         </div>
                       ))}
