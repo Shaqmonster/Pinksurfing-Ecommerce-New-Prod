@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
@@ -392,11 +392,78 @@ const BusinessListingDetail = ({
   // Inline error shown inside the modal so it is always visible
   const [ndaError, setNdaError] = useState("");
 
-  const openNdaModal = () => { setNdaError(""); setNdaModalOpen(true); };
+  const isListingOwner = useMemo(() => {
+    const ue = user?.email?.trim().toLowerCase();
+    const ve = product?.vendor?.email?.trim().toLowerCase();
+    return Boolean(ue && ve && ue === ve);
+  }, [user?.email, product?.vendor?.email]);
+
+  const financialsUnlocked = ndaSigned || isListingOwner;
+
+  const cannotStartNewNda =
+    ndaSigned ||
+    ndaStatus === "pending_vendor" ||
+    ndaStatus === "disputed" ||
+    ndaStatus === "pending_payment";
+
+  useEffect(() => {
+    if (!isListingOwner) return;
+    setNdaSigned(false);
+    setNdaStatus(null);
+  }, [isListingOwner]);
+
+  useEffect(() => {
+    const pid = product?.id ?? productId;
+    if (!pid || isListingOwner) return;
+    const raw = cookies?.access_token;
+    const token = typeof raw === "string" ? raw.replace(/"/g, "") : "";
+    if (!token || !user?.id) return;
+
+    let cancelled = false;
+    axios
+      .get(`${import.meta.env.VITE_SERVER_URL}/api/nda/mine/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        if (cancelled) return;
+        const mine = Array.isArray(res.data) ? res.data : [];
+        const row = mine.find((n) => String(n.product_id) === String(pid));
+        if (!row) return;
+        if (row.status === "accepted") {
+          setNdaSigned(true);
+          setNdaStatus(null);
+        } else if (row.status === "pending_vendor" || row.status === "disputed") {
+          setNdaSigned(false);
+          setNdaStatus(row.status);
+        } else if (row.status === "rejected") {
+          setNdaSigned(false);
+          setNdaStatus(null);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [product?.id, productId, user?.id, cookies?.access_token, isListingOwner]);
+
+  const openNdaModal = () => {
+    if (isListingOwner || cannotStartNewNda) return;
+    setNdaError("");
+    setNdaModalOpen(true);
+  };
 
   const handleSignNda = async () => {
     setNdaError("");
     const { name, email, role, signature, agreed } = ndaForm;
+
+    if (isListingOwner) {
+      setNdaError("You cannot sign an NDA on your own listing.");
+      return;
+    }
+    if (cannotStartNewNda) {
+      setNdaError("You already have an NDA request in progress for this listing.");
+      return;
+    }
 
     // Inline validation — shown inside the modal, not as a hidden toast
     if (!name || !email || !role || !signature || !agreed) {
@@ -426,6 +493,13 @@ const BusinessListingDetail = ({
       };
       const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/nda/sign/`, payload);
       const { payment_url, detail, status: ndaStatusResp } = res.data;
+
+      if (detail === "Payment pending.") {
+        setNdaStatus("pending_payment");
+        setNdaModalOpen(false);
+        toast.info("Complete payment in the checkout tab to finish your NDA request.", { position: "top-right" });
+        return;
+      }
 
       // Already accepted (documents available)
       if (detail === "already_signed") {
@@ -662,7 +736,7 @@ const BusinessListingDetail = ({
                       <div className="b-met-k">Annual Revenue</div>
                     </div>
                   )}
-                  {lockEbitda && !ndaSigned ? (
+                  {lockEbitda && !financialsUnlocked ? (
                     <div className="b-met" style={{ cursor: "pointer" }} onClick={() => openNdaModal()} title="Sign NDA to reveal">
                       <div className="b-met-v amber" style={{ fontSize: 14 }}>🔒 NDA</div>
                       <div className="b-met-k">SDE / EBITDA</div>
@@ -809,13 +883,13 @@ const BusinessListingDetail = ({
                           </tr>
                         )}
                         {/* EBITDA — shown only if not locked or NDA signed */}
-                        {(!lockEbitda || ndaSigned) && isPositiveMoney(ebitda) && (
+                        {(!lockEbitda || financialsUnlocked) && isPositiveMoney(ebitda) && (
                           <tr className="highlight">
                             <td>SDE / EBITDA</td>
                             <td>{currency}{formatMoney(parseMoney(ebitda))}</td>
                           </tr>
                         )}
-                        {lockEbitda && !ndaSigned && (
+                        {lockEbitda && !financialsUnlocked && (
                           <tr>
                             <td>SDE / EBITDA</td>
                             <td>
@@ -828,7 +902,7 @@ const BusinessListingDetail = ({
                             </td>
                           </tr>
                         )}
-                        {(!lockEbitda || ndaSigned) && ebitdaMultiple && (
+                        {(!lockEbitda || financialsUnlocked) && ebitdaMultiple && (
                           <tr>
                             <td>Multiple</td>
                             <td>{ebitdaMultiple}x</td>
@@ -841,7 +915,7 @@ const BusinessListingDetail = ({
                     </table>
 
                     {/* NDA gate for full financials */}
-                    {(lockEbitda || lockFinancials) && !ndaSigned ? (
+                    {(lockEbitda || lockFinancials) && !financialsUnlocked ? (
                       <div className="b-nda-gate">
                         <div className="b-nda-gate-icon">🔒</div>
                         <h4>
@@ -876,13 +950,23 @@ const BusinessListingDetail = ({
                         </div>
                         {ndaStatus ? (
                           <button className="b-btn-nda" style={{ opacity: 0.6, cursor: "default" }} disabled>
-                            {ndaStatus === "pending_vendor" ? "⏳ Awaiting Seller Review" : "✍ NDA Submitted"}
+                            {ndaStatus === "pending_vendor"
+                              ? "⏳ Awaiting Seller Review"
+                              : ndaStatus === "disputed"
+                              ? "⚠️ Dispute in progress"
+                              : ndaStatus === "pending_payment"
+                              ? "💳 Complete payment to continue"
+                              : "✍ NDA Submitted"}
                           </button>
                         ) : (
                           <button className="b-btn-nda" onClick={() => openNdaModal()}>
                             ✍ Sign NDA to Unlock
                           </button>
                         )}
+                      </div>
+                    ) : isListingOwner ? (
+                      <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
+                        This is your listing. Buyers unlock protected financials after they complete the NDA.
                       </div>
                     ) : ndaSigned ? (
                       <div style={{ marginTop: 16, padding: 14, background: "var(--green-bg)", border: "1.5px solid var(--green-border)", borderRadius: 6, fontSize: 12, color: "var(--green)", lineHeight: 1.6 }}>
@@ -891,6 +975,14 @@ const BusinessListingDetail = ({
                     ) : ndaStatus === "pending_vendor" ? (
                       <div style={{ marginTop: 16, padding: 14, background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)", borderRadius: 6, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>
                         ⏳ <strong>Awaiting Seller Review</strong> — Your NDA payment is confirmed. The seller will review and share documents shortly. <a href="/my-ndas" style={{ color: "#fbbf24", fontWeight: 700 }}>Track status →</a>
+                      </div>
+                    ) : ndaStatus === "disputed" ? (
+                      <div style={{ marginTop: 16, padding: 14, background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)", borderRadius: 6, fontSize: 12, color: "#f87171", lineHeight: 1.6 }}>
+                        ⚠️ <strong>Dispute recorded</strong> — Follow progress in <a href="/my-ndas" style={{ color: "#f87171", fontWeight: 700 }}>My NDAs</a>.
+                      </div>
+                    ) : ndaStatus === "pending_payment" ? (
+                      <div style={{ marginTop: 16, padding: 14, background: "rgba(59,130,246,.08)", border: "1.5px solid rgba(59,130,246,.35)", borderRadius: 6, fontSize: 12, color: "#60a5fa", lineHeight: 1.6 }}>
+                        💳 <strong>Payment pending</strong> — Finish checkout to submit your NDA. You can close this page and return after paying.
                       </div>
                     ) : (
                       <div style={{ marginTop: 16, padding: 14, background: "var(--surface-2)", border: "1.5px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
@@ -1023,7 +1115,7 @@ const BusinessListingDetail = ({
                 )}
 
                 {/* ── DOCUMENTS ── */}
-                {activeTab === "documents" && !ndaSigned && (lockEbitda || lockFinancials) && (
+                {activeTab === "documents" && !financialsUnlocked && (lockEbitda || lockFinancials) && (
                   <div className="b-panel" style={{ paddingBottom: 0, borderRadius: "0 0 0 0", borderBottom: "none" }}>
                     <h3 style={{ marginBottom: 14 }}>Documents</h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
@@ -1076,7 +1168,7 @@ const BusinessListingDetail = ({
                   </div>
                 )}
 
-                {activeTab === "documents" && ndaSigned && (
+                {activeTab === "documents" && financialsUnlocked && (lockEbitda || lockFinancials) && (
                   <div className="b-panel" style={{ paddingBottom: 0, borderRadius: "0 0 0 0", borderBottom: "none" }}>
                     <h3 style={{ marginBottom: 14 }}>Documents</h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
@@ -1372,7 +1464,7 @@ const BusinessListingDetail = ({
                       <div className="b-side-met-k">Revenue</div>
                     </div>
                   )}
-                  {isPositiveMoney(ebitda) && (
+                  {(!lockEbitda || financialsUnlocked) && isPositiveMoney(ebitda) && (
                     <div className="b-side-met">
                       <div className="b-side-met-v">{currency}{formatMoney(parseMoney(ebitda))}</div>
                       <div className="b-side-met-k">SDE</div>
@@ -1451,7 +1543,7 @@ const BusinessListingDetail = ({
 
 
               {/* NDA sidebar card */}
-              {(lockEbitda || lockFinancials) && (
+              {!isListingOwner && (lockEbitda || lockFinancials) && (
                 ndaSigned ? (
                   <div className="b-nda-side-card" style={{ background: "var(--green-bg)", border: "1.5px solid var(--green-border)" }}>
                     <h4 style={{ color: "var(--green)" }}>✅ NDA Accepted</h4>
@@ -1466,6 +1558,22 @@ const BusinessListingDetail = ({
                     <p style={{ color: "#fbbf24" }}>Your NDA payment is confirmed. The seller will accept and upload documents shortly.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#b45309", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                       Track NDA Status →
+                    </a>
+                  </div>
+                ) : ndaStatus === "disputed" ? (
+                  <div className="b-nda-side-card" style={{ background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)" }}>
+                    <h4 style={{ color: "#f87171" }}>⚠️ Dispute in progress</h4>
+                    <p style={{ color: "#f87171" }}>This NDA is under dispute. Track updates in My NDAs.</p>
+                    <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#b91c1c", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                      Open My NDAs →
+                    </a>
+                  </div>
+                ) : ndaStatus === "pending_payment" ? (
+                  <div className="b-nda-side-card" style={{ background: "rgba(59,130,246,.08)", border: "1.5px solid rgba(59,130,246,.35)" }}>
+                    <h4 style={{ color: "#60a5fa" }}>💳 Complete payment</h4>
+                    <p style={{ color: "#60a5fa" }}>Finish the $1 checkout (check your other browser tab) to submit your NDA.</p>
+                    <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                      My NDAs — retry link →
                     </a>
                   </div>
                 ) : (
@@ -1485,7 +1593,7 @@ const BusinessListingDetail = ({
                         ? "Sign the NDA and pay $1 to request SDE / EBITDA details."
                         : "Sign the NDA and pay $1 to request the full financial package."}
                     </p>
-                    <button className="b-btn-nda-side" onClick={() => openNdaModal()}>
+                    <button type="button" className="b-btn-nda-side" onClick={() => openNdaModal()}>
                       ✍ Sign NDA &amp; Pay $1
                     </button>
                   </div>
@@ -1493,6 +1601,7 @@ const BusinessListingDetail = ({
               )}
 
               {/* Contact / Message */}
+              {!isListingOwner && (
               <div className="b-side-card">
                 <div className="b-side-head">
                   <h3>{isDealClosed ? "📩 Listing Closed" : "💬 Contact Lister"}</h3>
@@ -1560,7 +1669,7 @@ const BusinessListingDetail = ({
                   )}
                 </div>
               </div>
-            </div>
+              )}
           </div>
         </div>
       </div>
@@ -1733,7 +1842,12 @@ const BusinessListingDetail = ({
             )}
             <div className="b-modal-foot">
               <button className="b-btn-cancel" onClick={() => { setNdaModalOpen(false); setNdaError(""); }}>Cancel</button>
-              <button className="b-btn-sign" onClick={handleSignNda} disabled={ndaSubmitting}>
+              <button
+                type="button"
+                className="b-btn-sign"
+                onClick={handleSignNda}
+                disabled={ndaSubmitting || isListingOwner || cannotStartNewNda}
+              >
                 {ndaSubmitting ? "⏳ Opening payment page…" : "✍ Sign NDA & Pay $1 to Unlock"}
               </button>
             </div>
