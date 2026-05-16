@@ -144,7 +144,10 @@ const ProductDetailPage = () => {
     setSingleOrderProduct,
   } = useContext(authContext);
 
-  const isOwner = user?.email === product?.vendor?.email;
+  const isOwner =
+    !!user?.email &&
+    !!product?.vendor?.email &&
+    user.email.trim().toLowerCase() === product.vendor.email.trim().toLowerCase();
   const isDealClosed = product?.deal_active_until && new Date(product.deal_active_until) < new Date();
 
   // ── CATEGORY DETECTION ──
@@ -268,7 +271,6 @@ const ProductDetailPage = () => {
     }
 
     if (isOwner) {
-      toast.info("This is your own listing.", { position: "top-right" });
       return;
     }
 
@@ -820,12 +822,7 @@ const ProductDetailPage = () => {
           productId={productId}
           reviews={reviews}
           activeVisit={activeVisit}
-          openScheduleVisitModal={openScheduleVisitModal}
-          openRescheduleVisitModal={openRescheduleVisitModal}
-          continueVisitPayment={continueVisitPayment}
           respondToVendorReschedule={respondToVendorReschedule}
-          scheduleButtonLabel={scheduleButtonLabel}
-          canBuyerReschedule={canBuyerReschedule}
           setDisputeModalOpen={setDisputeModalOpen}
         />
         <VisitScheduleModal
@@ -1441,9 +1438,10 @@ const ProductDetailPage = () => {
                       </h3>
                       <div className="space-y-4">
                         <button
+                          type="button"
                           onClick={handleContactAgent}
-                          disabled={isDealClosed || contactingAgent}
-                          className={`w-full py-5 ${isDealClosed ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                          disabled={isDealClosed || contactingAgent || isOwner}
+                          className={`w-full py-5 ${isDealClosed || isOwner ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
                           {contactingAgent ? (
                             <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />

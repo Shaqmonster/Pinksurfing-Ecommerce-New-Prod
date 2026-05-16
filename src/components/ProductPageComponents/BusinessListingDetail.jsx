@@ -344,12 +344,7 @@ const BusinessListingDetail = ({
   productId,
   reviews,
   activeVisit,
-  openScheduleVisitModal,
-  openRescheduleVisitModal,
-  continueVisitPayment,
   respondToVendorReschedule,
-  scheduleButtonLabel,
-  canBuyerReschedule,
   setDisputeModalOpen,
 }) => {
   const navigate = useNavigate();
@@ -1601,14 +1596,15 @@ const BusinessListingDetail = ({
               )}
 
               {/* Contact / Message */}
-              {!isListingOwner && (
               <div className="b-side-card">
                 <div className="b-side-head">
                   <h3>{isDealClosed ? "📩 Listing Closed" : "💬 Contact Lister"}</h3>
                   <p>
                     {isDealClosed
                       ? "This deal is no longer accepting offers."
-                      : "Message the owner or show your interest to move forward."}
+                      : isListingOwner
+                      ? "Buyers message you here — you can’t message yourself on your own listing."
+                      : "Message the owner to move forward."}
                   </p>
                 </div>
                 <div className="b-side-body">
@@ -1619,15 +1615,16 @@ const BusinessListingDetail = ({
                         {new Date(activeVisit.pending_reschedule_at).toLocaleString(undefined, { weekday: "short", dateStyle: "medium", timeStyle: "short" })}
                       </p>
                       <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={() => respondToVendorReschedule(true)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "var(--indigo)", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Accept</button>
-                        <button onClick={() => respondToVendorReschedule(false)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "none", color: "var(--text-2)", border: "1px solid var(--border)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Decline</button>
+                        <button type="button" onClick={() => respondToVendorReschedule(true)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "var(--indigo)", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Accept</button>
+                        <button type="button" onClick={() => respondToVendorReschedule(false)} style={{ flex: 1, padding: "8px", borderRadius: 6, background: "none", color: "var(--text-2)", border: "1px solid var(--border)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Decline</button>
                       </div>
                     </div>
                   )}
 
                   <button
+                    type="button"
                     className={`b-btn-express${contactingAgent ? " sending" : ""}`}
-                    disabled={isDealClosed || contactingAgent}
+                    disabled={isDealClosed || contactingAgent || isListingOwner}
                     onClick={handleContactAgent}
                   >
                     {contactingAgent ? (
@@ -1639,28 +1636,9 @@ const BusinessListingDetail = ({
                     )}
                   </button>
 
-                  <button
-                    onClick={() => {
-                      if (isDealClosed) return;
-                      if (activeVisit?.status === "pending_payment") { continueVisitPayment(); return; }
-                      if (activeVisit?.status === "buyer_reschedule_pending") return;
-                      if (canBuyerReschedule) openRescheduleVisitModal();
-                      else openScheduleVisitModal();
-                    }}
-                    disabled={isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending"}
-                    style={{
-                      width: "100%", marginTop: 10, padding: "10px 12px", borderRadius: 6,
-                      background: "var(--surface-2)", border: "1.5px solid var(--border)",
-                      color: isDealClosed ? "var(--text-3)" : "var(--text-2)",
-                      fontSize: 13, fontWeight: 600, cursor: isDealClosed ? "not-allowed" : "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all .15s"
-                    }}
-                  >
-                    🤝 {isDealClosed ? "Deal Closed" : "Show Interest"}
-                  </button>
-
                   {activeVisit?.status === "accepted" && (
                     <button
+                      type="button"
                       onClick={() => setDisputeModalOpen(true)}
                       style={{ width: "100%", marginTop: 8, padding: "8px", borderRadius: 6, background: "none", border: "1px solid var(--red-border)", color: "var(--red)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
                     >
@@ -1669,7 +1647,6 @@ const BusinessListingDetail = ({
                   )}
                 </div>
               </div>
-              )}
           </div>
         </div>
       </div>
