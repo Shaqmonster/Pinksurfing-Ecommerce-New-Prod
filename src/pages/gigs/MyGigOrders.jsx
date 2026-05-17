@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
@@ -14,6 +14,7 @@ import {
   IoRefreshOutline,
 } from "react-icons/io5";
 import { FaBriefcase, FaSpinner } from "react-icons/fa";
+import { useBackgroundPoll } from "../../hooks/useBackgroundPoll";
 
 const STATUS_CONFIG = {
   pending_requirements: {
@@ -144,25 +145,55 @@ const MyGigOrders = () => {
   const [requirementsOrder, setRequirementsOrder] = useState(null);
   const [submittingReq, setSubmittingReq] = useState(false);
 
+  const fetchOrders = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setLoading(true);
+      try {
+        const res = await getMyGigOrders(cookies.access_token);
+        const next = Array.isArray(res.data) ? res.data : res.data.results || [];
+        setOrders((prev) => {
+          if (silent && prev.length && next.length) {
+            const prevById = Object.fromEntries(prev.map((o) => [o.id, o.status]));
+            const changed = next.filter((o) => prevById[o.id] && prevById[o.id] !== o.status);
+            if (changed.length === 1) {
+              toast.info("An order was updated.");
+            } else if (changed.length > 1) {
+              toast.info(`${changed.length} orders were updated.`);
+            }
+          }
+          return next;
+        });
+      } catch {
+        if (!silent) toast.error("Failed to load gig orders.");
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [cookies.access_token]
+  );
+
   useEffect(() => {
     if (!cookies.access_token) {
       navigate("/signin");
       return;
     }
     fetchOrders();
-  }, []);
+  }, [cookies.access_token, fetchOrders, navigate]);
 
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const res = await getMyGigOrders(cookies.access_token);
-      setOrders(Array.isArray(res.data) ? res.data : res.data.results || []);
-    } catch (err) {
-      toast.error("Failed to load gig orders.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const listBusyRef = useRef(false);
+  listBusyRef.current = submittingReq;
+
+  const hasActiveOrders = orders.some(
+    (o) => o.status !== "completed" && o.status !== "cancelled"
+  );
+
+  useBackgroundPoll(
+    () => {
+      if (listBusyRef.current) return;
+      fetchOrders({ silent: true });
+    },
+    { enabled: hasActiveOrders && Boolean(cookies.access_token), intervalMs: 5000 }
+  );
 
   const handleSubmitRequirements = async (orderId, answers) => {
     try {

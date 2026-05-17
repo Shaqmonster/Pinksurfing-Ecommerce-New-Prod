@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 import { getGigHubProvider } from "../lib/gighubEscrowClient";
+import { getRpcRateLimitMessage, isRpcRateLimited, withRpcRetry } from "../lib/gighubRpc";
 import { routerAbi } from "../abis/routerAbi";
 import { servicesAbi } from "../abis/servicesAbi";
 
-export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, maxRows = 60, orderScoped = false } = {}) {
+export function useEscrowPayoutHistory(
+  address,
+  escrowId,
+  { maxBlocks = 12000, maxRows = 60, orderScoped = false, autoScan = false } = {}
+) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +40,7 @@ export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, max
     setError("");
     try {
       const provider = getGigHubProvider();
-      const routerCode = await provider.getCode(routerAddress);
+      const routerCode = await withRpcRetry(() => provider.getCode(routerAddress));
       if (!routerCode || routerCode === "0x") {
         setRows([]);
         setError("Escrow contracts are not deployed on current local chain yet.");
@@ -43,14 +48,14 @@ export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, max
       }
       const router = new ethers.Contract(routerAddress, routerAbi, provider);
       const servicesAddress = await router.servicesEscrow();
-      const servicesCode = await provider.getCode(servicesAddress);
+      const servicesCode = await withRpcRetry(() => provider.getCode(servicesAddress));
       if (!servicesCode || servicesCode === "0x") {
         setRows([]);
         setError("Services escrow contract missing on current chain.");
         return;
       }
       const iface = new ethers.Interface(servicesAbi);
-      const latest = await provider.getBlockNumber();
+      const latest = await withRpcRetry(() => provider.getBlockNumber());
       const fromBlock = Math.max(0, latest - maxBlocks);
 
       const out = [];
@@ -61,12 +66,14 @@ export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, max
       const escrowTopic =
         escrowId && /^0x[0-9a-fA-F]{64}$/.test(escrowId) ? escrowId.toLowerCase() : null;
 
-      const paymentLogs = await provider.getLogs({
+      const paymentLogs = await withRpcRetry(() =>
+        provider.getLogs({
         address: servicesAddress,
         fromBlock,
         toBlock: latest,
         topics: escrowTopic ? [paymentTopic, escrowTopic] : [paymentTopic],
-      });
+        })
+      );
       for (const log of paymentLogs) {
         const parsed = iface.parseLog(log);
         const to = String(parsed?.args?.to || "").toLowerCase();
@@ -82,12 +89,14 @@ export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, max
       }
 
       if (!orderScoped) {
-        const queuedLogs = await provider.getLogs({
+        const queuedLogs = await withRpcRetry(() =>
+          provider.getLogs({
           address: servicesAddress,
           fromBlock,
           toBlock: latest,
           topics: [queuedTopic, accountTopic],
-        });
+          })
+        );
         for (const log of queuedLogs) {
           const parsed = iface.parseLog(log);
           const amount = parsed?.args?.amount ?? 0n;
@@ -99,12 +108,14 @@ export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, max
           });
         }
 
-        const execLogs = await provider.getLogs({
+        const execLogs = await withRpcRetry(() =>
+          provider.getLogs({
           address: servicesAddress,
           fromBlock,
           toBlock: latest,
           topics: [execTopic, accountTopic],
-        });
+          })
+        );
         for (const log of execLogs) {
           const parsed = iface.parseLog(log);
           const amount = parsed?.args?.amount ?? 0n;
@@ -121,7 +132,9 @@ export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, max
       setRows(out.slice(0, maxRows));
     } catch (e) {
       const msg = e?.message || "Failed to load escrow payout events.";
-      if (msg.includes("could not decode result data") || msg.includes("BAD_DATA")) {
+      if (isRpcRateLimited(e)) {
+        setError(getRpcRateLimitMessage());
+      } else if (msg.includes("could not decode result data") || msg.includes("BAD_DATA")) {
         setError("Escrow contracts not ready on this chain (restart/deploy needed).");
       } else {
         setError(msg);
@@ -133,8 +146,8 @@ export function useEscrowPayoutHistory(address, escrowId, { maxBlocks = 350, max
   }, [maxBlocks, maxRows, normalized, escrowId, orderScoped]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    if (autoScan) refresh();
+  }, [autoScan, refresh]);
 
   return { rows, loading, error, refresh };
 }

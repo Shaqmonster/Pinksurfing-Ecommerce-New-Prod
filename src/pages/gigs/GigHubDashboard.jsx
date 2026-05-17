@@ -1,32 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard";
 import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
 import { useInAppWallet } from "../../context/inAppWalletContext";
-import {
-  getMyGigOrders,
-  getMyGigs,
-  getMyGigWorkerProfile,
-  deleteGig,
-} from "../../api/gigs";
-import {
-  IoStarSharp,
-  IoTimeOutline,
-  IoCheckmarkCircle,
-  IoAlertCircleOutline,
-  IoAddCircleOutline,
-  IoTrashOutline,
-  IoPencilOutline,
-  IoEyeOutline,
-  IoTrendingUpOutline,
-  IoWalletOutline,
-  IoChatbubbleOutline,
-  IoStorefrontOutline,
-} from "react-icons/io5";
+import { getMyGigOrders } from "../../api/gigs";
+import { IoEyeOutline, IoWalletOutline, IoChatbubbleOutline, IoStorefrontOutline } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
 
 const STATUS_CONFIG = {
@@ -51,6 +33,19 @@ const STATUS_CONFIG = {
     dot: "bg-red-400",
   },
 };
+
+const TABS = [
+  {
+    key: "buying",
+    label: "Buying",
+    icon: <IoWalletOutline className="text-lg text-pink-400/90" />,
+  },
+  {
+    key: "selling",
+    label: "Selling",
+    icon: <IoStorefrontOutline className="text-lg text-violet-400/90" />,
+  },
+];
 
 const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
   const recentBuyer = [...buyerOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
@@ -121,11 +116,7 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
   );
 };
 
-// ── BUYER TAB ──────────────────────────────────────────────────────────────
-// Hide unpaid orders from the dashboard. The backend creates a gig-order in
-// `pending_payment` as soon as the buyer hits checkout — but until Square
-// confirms the payment the order isn't really theirs yet, so we treat it like
-// it doesn't exist on the buyer dashboard.
+// Hide unpaid orders from the dashboard.
 const PAID_BUYER_STATUSES = new Set([
   "pending_requirements",
   "in_progress",
@@ -141,7 +132,14 @@ const isPaidBuyerOrder = (o) => {
   return PAID_BUYER_STATUSES.has(o.status);
 };
 
-const BuyerDashboardContent = ({ orders, loading }) => {
+const isPaidSellerOrder = (o) => {
+  if (!o || o.is_seller !== true) return false;
+  if (o.status === "pending_payment") return false;
+  if (o.payment_status && ["pending", "unpaid", "failed"].includes(o.payment_status)) return false;
+  return true;
+};
+
+const BuyerTab = ({ orders, loading }) => {
   const [filter, setFilter] = useState("all");
 
   const matchesFilter = (o) => {
@@ -164,24 +162,6 @@ const BuyerDashboardContent = ({ orders, loading }) => {
   ).length;
   const completedCount = orders.filter((o) => o.status === "completed").length;
 
-  const completedOrders = sellerOrders.filter((o) => o.status === "completed").length;
-  const pendingEarnings = sellerOrders
-    .filter((o) => ["pending_requirements", "in_progress", "delivered"].includes(o.status))
-    .reduce((sum, o) => sum + parseFloat(o.seller_net_earnings || 0), 0);
-
-  const handleDeleteGig = async (gigId) => {
-    if (!window.confirm("Are you sure you want to delete this gig?")) return;
-    try {
-      setDeletingId(gigId);
-      await deleteGig(cookies.access_token, gigId);
-      toast.success("Gig deleted.");
-      refetchGigs();
-    } catch {
-      toast.error("Failed to delete gig.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
   const formatDate = (d) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
@@ -220,7 +200,7 @@ const BuyerDashboardContent = ({ orders, loading }) => {
         <div>
           <h2 className="text-white text-[26px] font-semibold tracking-tight">Your orders</h2>
           <p className="text-white/45 text-[15px] mt-2 max-w-lg leading-relaxed">
-            Status reflects where the gig is in delivery — not whether checkout has cleared. Open an order for full details.
+            Status reflects where the gig is in delivery — open an order for full details.
           </p>
         </div>
 
@@ -320,71 +300,88 @@ const BuyerDashboardContent = ({ orders, loading }) => {
           })}
         </ul>
       )}
+    </div>
+  );
+};
 
-      {/* Earnings + order review */}
-      <div>
-        <h3 className="text-white font-bold text-lg mb-4">Freelancer Earnings & Order Review</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+const SellerTab = ({ sellerOrders, loadingOrders }) => {
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const totalReceived = sellerOrders
+    .filter((o) => o.status === "completed")
+    .reduce((sum, o) => sum + parseFloat(o.seller_net_earnings || 0), 0);
+  const pending = sellerOrders
+    .filter((o) => ["pending_requirements", "in_progress", "delivered"].includes(o.status))
+    .reduce((sum, o) => sum + parseFloat(o.seller_net_earnings || 0), 0);
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
           <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-            <p className="text-white/40 text-xs">Received (completed orders)</p>
-            <p className="text-emerald-300 font-bold text-2xl mt-1">${totalEarnings.toFixed(2)}</p>
+            <p className="text-white/40 text-xs">Received (completed)</p>
+            <p className="text-emerald-300 font-bold text-2xl mt-1">${totalReceived.toFixed(2)}</p>
           </div>
           <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-            <p className="text-white/40 text-xs">Pending from active orders</p>
-            <p className="text-amber-300 font-bold text-2xl mt-1">${pendingEarnings.toFixed(2)}</p>
-          </div>
-          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-            <p className="text-white/40 text-xs">Total seller orders</p>
-            <p className="text-white font-bold text-2xl mt-1">{sellerOrders.length}</p>
+            <p className="text-white/40 text-xs">Pending (active)</p>
+            <p className="text-amber-300 font-bold text-2xl mt-1">${pending.toFixed(2)}</p>
           </div>
         </div>
+        <Link
+          to="/gighub/seller"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-pink-500 shadow-lg shrink-0"
+        >
+          <IoStorefrontOutline /> Seller studio
+        </Link>
+      </div>
 
-        {loadingOrders ? (
-          <div className="space-y-3">
-            {[1, 2].map((i) => <div key={i} className="bg-[#13131a] rounded-2xl p-5 animate-pulse h-20" />)}
-          </div>
-        ) : sellerOrders.length === 0 ? (
-          <div className="text-center py-10 bg-[#13131a] border border-white/5 rounded-2xl">
-            <p className="text-white/40 text-sm">No seller orders yet.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sellerOrders.map((order) => {
-              const statusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.in_progress;
-              return (
+      {loadingOrders ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-2xl h-[88px] bg-[#13131a]/50 animate-pulse border border-white/[0.04]" />
+          ))}
+        </div>
+      ) : sellerOrders.length === 0 ? (
+        <div className="text-center py-16 rounded-2xl border border-dashed border-white/10">
+          <p className="text-white/50 text-sm mb-4">No orders to fulfill yet.</p>
+          <Link to="/gighub/seller" className="text-pink-400 text-sm font-semibold hover:underline">
+            Open Seller studio →
+          </Link>
+        </div>
+      ) : (
+        <ul className="space-y-3 list-none p-0 m-0">
+          {sellerOrders.map((order) => {
+            const statusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.in_progress;
+            return (
+              <li key={order.id}>
                 <Link
-                  key={`seller-review-${order.id}`}
                   to={`/gigs/orders/${order.id}`}
                   className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[#13131a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-semibold line-clamp-1 mb-1">
-                      {order.gig?.title || `Order #${order.id}`}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className={`px-2 py-0.5 rounded-full border ${statusCfg.color}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${statusCfg.dot}`} />
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
                         {statusCfg.label}
                       </span>
-                      <span className="text-white/30">Order #{order.id}</span>
-                      <span className="text-white/30">{new Date(order.created_at).toLocaleDateString()}</span>
                     </div>
+                    <p className="text-white text-sm font-semibold line-clamp-1">
+                      {order.gig?.title || `Order #${order.id}`}
+                    </p>
+                    <p className="text-white/35 text-xs mt-1">#{order.id} · {formatDate(order.created_at)}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
-                    <div className="text-right">
-                      <p className="text-white/30">Gig total</p>
-                      <p className="text-white/80 font-semibold">${parseFloat(order.gig_price || 0).toFixed(2)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white/30">You get (net)</p>
-                      <p className="text-emerald-300 font-semibold">${parseFloat(order.seller_net_earnings || 0).toFixed(2)}</p>
-                    </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-white/40 text-[11px] uppercase tracking-wide mb-0.5">You receive (net)</p>
+                    <p className="text-emerald-300 font-semibold text-lg tabular-nums">
+                      ${parseFloat(order.seller_net_earnings || 0).toFixed(2)}
+                    </p>
                   </div>
                 </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 };
@@ -397,6 +394,7 @@ const GigHubDashboard = () => {
 
   const [allOrders, setAllOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [activeTab, setActiveTab] = useState("buying");
 
   useEffect(() => {
     if (!cookies.access_token) {
@@ -421,6 +419,7 @@ const GigHubDashboard = () => {
   };
 
   const buyerOrders = allOrders.filter((o) => o.is_buyer === true && isPaidBuyerOrder(o));
+  const sellerOrders = allOrders.filter(isPaidSellerOrder);
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
@@ -501,7 +500,7 @@ const GigHubDashboard = () => {
             >
               <InAppWalletBalanceCard compact />
               <WalletTxHistoryCard address={inAppAddress} title="Buyer Wallet Transactions" />
-              <BuyerTab orders={buyerOrders} loading={loadingOrders} refetch={fetchOrders} />
+              <BuyerTab orders={buyerOrders} loading={loadingOrders} />
             </motion.div>
           ) : (
             <motion.div
@@ -513,14 +512,7 @@ const GigHubDashboard = () => {
             >
               <InAppWalletBalanceCard compact />
               <WalletTxHistoryCard address={inAppAddress} title="Seller Wallet Transactions" />
-              <SellerTab
-                workerProfile={workerProfile}
-                sellerOrders={sellerOrders}
-                myGigs={myGigs}
-                loadingOrders={loadingOrders}
-                loadingGigs={loadingGigs}
-                refetchGigs={fetchWorkerAndGigs}
-              />
+              <SellerTab sellerOrders={sellerOrders} loadingOrders={loadingOrders} />
             </motion.div>
           )}
         </AnimatePresence>

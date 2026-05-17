@@ -16,13 +16,18 @@ export default function WalletTxHistoryCard({
   orderScoped = false,
   title = "Wallet Transaction History",
 }) {
-  const { rows, loading, error, refresh, range } = useAddressTxHistory(address, { maxBlocks: 350, maxRows: 50 });
+  const { rows, loading, error, refresh, range } = useAddressTxHistory(address, { maxRows: 50 });
   const {
     rows: escrowRows,
     loading: escrowLoading,
     error: escrowError,
     refresh: refreshEscrow,
-  } = useEscrowPayoutHistory(address, escrowId, { maxBlocks: 450, maxRows: 50, orderScoped });
+  } = useEscrowPayoutHistory(address, escrowId, {
+    maxBlocks: 12000,
+    maxRows: 50,
+    orderScoped,
+    autoScan: true,
+  });
 
   return (
     <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">

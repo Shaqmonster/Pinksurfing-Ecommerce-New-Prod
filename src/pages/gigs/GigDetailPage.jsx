@@ -13,6 +13,7 @@ import {
   setGigOrderEscrowId,
 } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
+import { getEscrowPartyIssues, resolveSellerAddress } from "../../lib/escrowParties";
 import { createServicesEscrowForGigOrder } from "../../lib/gighubEscrowFlow";
 import GigSellerChatModal from "../../components/gigs/GigSellerChatModal";
 import {
@@ -260,7 +261,7 @@ const GigDetailPage = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
-  const { wallet: inAppWallet } = useInAppWallet();
+  const { wallet: inAppWallet, status: walletStatus } = useInAppWallet();
 
   const [gig, setGig] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -345,6 +346,19 @@ const GigDetailPage = () => {
     if (liveRate) recalculateEscrowFromRate(liveRate);
   };
 
+  const handleBuy = () => {
+    if (!cookies.access_token) {
+      toast.error("Please sign in to purchase.");
+      navigate("/signin");
+      return;
+    }
+    if (!selectedPkg) {
+      toast.error("Please select a package.");
+      return;
+    }
+    openCheckoutSetup();
+  };
+
   const handleCheckoutConfirm = async () => {
     if (!cookies.access_token) {
       toast.error("Please sign in to purchase.");
@@ -362,6 +376,19 @@ const GigDetailPage = () => {
       toast.error("Enter a valid escrow ETH amount.");
       return;
     }
+    const sellerPreview = resolveSellerAddress(null, gig);
+    const escrowIssues = getEscrowPartyIssues({
+      buyerWallet: inAppWallet,
+      buyerStatus: walletStatus,
+      sellerAddress: sellerPreview,
+    });
+    if (
+      escrowIssues.length > 0 &&
+      (checkoutOptions.paymentMode === "escrow_wallet_only" || checkoutOptions.paymentMode === "escrow_plus_stripe")
+    ) {
+      toast.error(escrowIssues.join(" "), { autoClose: 8000 });
+      return;
+    }
     try {
       setPurchasing(true);
       setCheckoutOpen(false);
@@ -375,21 +402,25 @@ const GigDetailPage = () => {
         // On-chain (GigHub only): create Services escrow for this order.
         try {
           // Prefer authoritative seller wallet from order serializer.
-          const configuredSeller = order?.seller_wallet_address || gig?.worker?.wallet_address || "";
-          if (inAppWallet && configuredSeller) {
-            const chainRes = await createServicesEscrowForGigOrder({
-              order,
-              gig,
-              wallet: inAppWallet,
-              sellerAddress: configuredSeller,
-              milestoneCount: checkoutOptions.milestoneCount,
-              escrowEth: checkoutOptions.escrowEth,
-            });
-            await setGigOrderEscrowId(cookies.access_token, order.id, chainRes.escrowId);
-            toast.success(`Escrow created (${checkoutOptions.milestoneCount} milestones): ${chainRes.escrowId.slice(0, 10)}...`);
-          } else {
-            throw new Error("Buyer wallet or seller wallet address is missing for escrow.");
+          const sellerAddress = resolveSellerAddress(order, gig);
+          const escrowIssuesAfterOrder = getEscrowPartyIssues({
+            buyerWallet: inAppWallet,
+            buyerStatus: walletStatus,
+            sellerAddress,
+          });
+          if (escrowIssuesAfterOrder.length > 0) {
+            throw new Error(escrowIssuesAfterOrder.join(" "));
           }
+          const chainRes = await createServicesEscrowForGigOrder({
+            order,
+            gig,
+            wallet: inAppWallet,
+            sellerAddress,
+            milestoneCount: checkoutOptions.milestoneCount,
+            escrowEth: checkoutOptions.escrowEth,
+          });
+          await setGigOrderEscrowId(cookies.access_token, order.id, chainRes.escrowId);
+          toast.success(`Escrow created (${checkoutOptions.milestoneCount} milestones): ${chainRes.escrowId.slice(0, 10)}...`);
         } catch (chainErr) {
           const msg = chainErr?.shortMessage || chainErr?.message || "On-chain escrow create failed.";
           toast.warning(msg);

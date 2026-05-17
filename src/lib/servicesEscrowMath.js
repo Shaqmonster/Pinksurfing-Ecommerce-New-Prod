@@ -5,6 +5,11 @@ export const SERVICES_PROTOCOL_FEE_BPS = 400n;
 export const SERVICES_TIMELINESS_PENALTY_BPS = 900n;
 export const SERVICES_TIMELINESS_HALF_PENALTY_BPS = 450n;
 
+/** Weights for R/C/Q (sum = 70 → "70% of the final 30% satisfaction slice"). */
+export const RCQ_WEIGHT_BPS = { respect: 1000n, comm: 500n, quality: 5500n };
+export const RCQ_WEIGHT_SUM_BPS = 7000n;
+export const TIMELINESS_WEIGHT_BPS = 3000n;
+
 export function servicesInitialWei(totalWei) {
   return (BigInt(totalWei) * SERVICES_ESCROW_BPS) / BPS;
 }
@@ -13,6 +18,7 @@ export function servicesSatisfactionWei(totalWei) {
   return (BigInt(totalWei) * SERVICES_SATISFACTION_BPS) / BPS;
 }
 
+/** On-chain integer RCQ 1–7 (ServicesEscrow._starRCQ). */
 export function servicesStarRCQ(respect, comm, quality) {
   const s = Number(respect) * 10 + Number(comm) * 5 + Number(quality) * 55;
   let v = Math.floor((s + 35) / 70);
@@ -21,6 +27,31 @@ export function servicesStarRCQ(respect, comm, quality) {
   return v;
 }
 
+/** workflow.md worked example: (R/7·10% + C/7·5% + Q/7·55%) / 70% × 7 */
+export function servicesRcqStarsExact(respect, comm, quality) {
+  const r = Number(respect);
+  const c = Number(comm);
+  const q = Number(quality);
+  const raw =
+    (r / 7) * (Number(RCQ_WEIGHT_BPS.respect) / Number(BPS)) +
+    (c / 7) * (Number(RCQ_WEIGHT_BPS.comm) / Number(BPS)) +
+    (q / 7) * (Number(RCQ_WEIGHT_BPS.quality) / Number(BPS));
+  return (raw / (Number(RCQ_WEIGHT_SUM_BPS) / Number(BPS))) * 7;
+}
+
+export function servicesRcqWeightedParts(respect, comm, quality) {
+  const r = Number(respect);
+  const c = Number(comm);
+  const q = Number(quality);
+  return {
+    respect: (r / 7) * (Number(RCQ_WEIGHT_BPS.respect) / Number(BPS)),
+    comm: (c / 7) * (Number(RCQ_WEIGHT_BPS.comm) / Number(BPS)),
+    quality: (q / 7) * (Number(RCQ_WEIGHT_BPS.quality) / Number(BPS)),
+    sum: servicesRcqStarsExact(respect, comm, quality),
+  };
+}
+
+/** 70% × RCQ + 30% × timeliness (integer stars, matches _workflowOverallStars). */
 export function servicesWeightedOverallStars(respect, comm, timeliness, quality) {
   const rcq = servicesStarRCQ(respect, comm, quality);
   const t = Number(timeliness);
@@ -35,24 +66,34 @@ function servicesLowQualityDisputeOnly(respect, comm, quality) {
   return Number(quality) <= 2 || rcq <= 2;
 }
 
+/** True when R/C/Q band passes for auto satisfaction (≥3★), per workflow.md. */
+export function servicesRcqPassesForSatisfaction(respect, comm, quality) {
+  if (servicesLowQualityDisputeOnly(respect, comm, quality)) return false;
+  return servicesStarRCQ(respect, comm, quality) >= 3;
+}
+
 export function servicesFinalReviewMsgValue(amountWei, respect, comm, timeliness, quality) {
   const amount = BigInt(amountWei);
   if (amount <= 0n) return 0n;
-  if (servicesLowQualityDisputeOnly(respect, comm, quality)) return 0n;
+  if (!servicesRcqPassesForSatisfaction(respect, comm, quality)) return 0n;
+
   const t = Number(timeliness);
-  const overall = servicesWeightedOverallStars(respect, comm, t, quality);
   let totalRelease = servicesSatisfactionWei(amount);
-  if (overall >= 3) {
-    if (t <= 2) {
-      const penalty = (amount * SERVICES_TIMELINESS_PENALTY_BPS) / BPS;
-      totalRelease = penalty >= totalRelease ? 0n : totalRelease - penalty;
-    } else if (t === 3) {
-      const penalty = (amount * SERVICES_TIMELINESS_HALF_PENALTY_BPS) / BPS;
-      totalRelease = penalty >= totalRelease ? 0n : totalRelease - penalty;
-    }
-    return totalRelease;
+  if (t <= 2) {
+    const penalty = (amount * SERVICES_TIMELINESS_PENALTY_BPS) / BPS;
+    totalRelease = penalty >= totalRelease ? 0n : totalRelease - penalty;
+  } else if (t === 3) {
+    const penalty = (amount * SERVICES_TIMELINESS_HALF_PENALTY_BPS) / BPS;
+    totalRelease = penalty >= totalRelease ? 0n : totalRelease - penalty;
   }
-  return 0n;
+  return totalRelease;
+}
+
+/** Seller share of gig total after timeliness rules (before protocol fee). */
+export function servicesSellerGrossPercentOfTotal(respect, comm, timeliness, quality) {
+  const amount = 10000n;
+  const gross = servicesFinalReviewMsgValue(amount, respect, comm, timeliness, quality);
+  return Number((gross * 100n) / amount) / 100;
 }
 
 export function servicesProtocolFeeWei(grossWei) {
@@ -61,32 +102,46 @@ export function servicesProtocolFeeWei(grossWei) {
 
 export function servicesSellerNetAfterFeeWei(grossWei) {
   const gross = BigInt(grossWei);
-  const fee = servicesProtocolFeeWei(gross);
-  return gross - fee;
+  return gross - servicesProtocolFeeWei(gross);
 }
 
-/**
- * Explains final satisfaction leg in plain terms (mirrors ServicesEscrow.submitFinalReview).
- * `amountWei` is the gig total `e.amount` (100% basis), not the 70% escrow deposit.
- */
+export function servicesFinalPayoutPreview(amountWei, respect, comm, timeliness, quality) {
+  const rcq = servicesStarRCQ(respect, comm, quality);
+  const rcqExact = servicesRcqStarsExact(respect, comm, quality);
+  const parts = servicesRcqWeightedParts(respect, comm, quality);
+  const overall = servicesWeightedOverallStars(respect, comm, timeliness, quality);
+  const breakdown = servicesFinalSatisfactionBreakdown(amountWei, respect, comm, timeliness, quality);
+  const buyerSendsWei =
+    breakdown.grossBuyerSentWei ?? breakdown.grossAfterTimelinessWei ?? servicesFinalReviewMsgValue(
+      amountWei,
+      respect,
+      comm,
+      timeliness,
+      quality
+    );
+  const sellerPct = servicesSellerGrossPercentOfTotal(respect, comm, timeliness, quality);
+  return { rcq, rcqExact, parts, overall, buyerSendsWei, breakdown, sellerPct, rcqPasses: servicesRcqPassesForSatisfaction(respect, comm, quality) };
+}
+
 export function servicesFinalSatisfactionBreakdown(amountWei, respect, comm, timeliness, quality) {
   const amount = BigInt(amountWei);
   const t = Number(timeliness);
   const q = Number(quality);
   const rcq = servicesStarRCQ(respect, comm, quality);
+  const rcqExact = servicesRcqStarsExact(respect, comm, quality);
   const overall = servicesWeightedOverallStars(respect, comm, timeliness, quality);
   const nominal30SliceWei = amount > 0n ? (amount * SERVICES_SATISFACTION_BPS) / BPS : 0n;
 
   let timelinessPenaltyWei = 0n;
-  let timelinessSummary = "Timeliness 4–7: no timeliness deduction from the 30% slice.";
+  let timelinessSummary = "Timeliness 4–7: no deduction (9% / 4.5% penalties do not apply).";
   if (t <= 2) {
     timelinessPenaltyWei = (amount * SERVICES_TIMELINESS_PENALTY_BPS) / BPS;
     timelinessSummary =
-      "Timeliness 1–2: contract subtracts 9% of the gig total from the 30% satisfaction slice (before the 4% platform fee).";
+      "Timeliness 1–2: subtract 9% of gig total from the 30% satisfaction slice (30% of the final 30% leg).";
   } else if (t === 3) {
     timelinessPenaltyWei = (amount * SERVICES_TIMELINESS_HALF_PENALTY_BPS) / BPS;
     timelinessSummary =
-      "Timeliness 3: contract subtracts 4.5% of the gig total from the 30% satisfaction slice (half of the full timeliness penalty).";
+      "Timeliness 3: subtract 4.5% of gig total (half of the 9% timeliness penalty).";
   }
 
   const lowQualityBlocked = q <= 2 || rcq <= 2;
@@ -96,6 +151,7 @@ export function servicesFinalSatisfactionBreakdown(amountWei, respect, comm, tim
       path: "low_quality_no_auto",
       overall,
       rcq,
+      rcqExact,
       respect,
       comm,
       timeliness,
@@ -107,15 +163,16 @@ export function servicesFinalSatisfactionBreakdown(amountWei, respect, comm, tim
       protocolFeeWei: 0n,
       sellerNetWei: 0n,
       headline:
-        "No automatic final payment: quality or blended RCQ is in the 1–2 band. The buyer did not fund the satisfaction slice on final review; use the dispute path if applicable.",
+        "Quality ≤2 or RCQ ≤2: no automatic satisfaction payment — dispute / admin path.",
     };
   }
 
-  if (overall <= 2) {
+  if (!servicesRcqPassesForSatisfaction(respect, comm, quality)) {
     return {
-      path: "low_overall_no_auto",
+      path: "low_rcq_no_auto",
       overall,
       rcq,
+      rcqExact,
       respect,
       comm,
       timeliness,
@@ -127,7 +184,7 @@ export function servicesFinalSatisfactionBreakdown(amountWei, respect, comm, tim
       protocolFeeWei: 0n,
       sellerNetWei: 0n,
       headline:
-        "No automatic final payment: workflow overall is 1–2. The buyer sends 0 ETH on final review; dispute or admin resolution may follow.",
+        "RCQ below 3★: does not pass for the 70% (R/C/Q) portion — buyer sends 0 ETH; use dispute if overall is 1–2★.",
     };
   }
 
@@ -141,10 +198,13 @@ export function servicesFinalSatisfactionBreakdown(amountWei, respect, comm, tim
   const protocolFeeWei = servicesProtocolFeeWei(grossAfterTimelinessWei);
   const sellerNetWei = servicesSellerNetAfterFeeWei(grossAfterTimelinessWei);
 
+  const sellerPct = Number((grossAfterTimelinessWei * 10000n) / (amount || 1n)) / 100;
+
   return {
     path: "satisfaction",
     overall,
     rcq,
+    rcqExact,
     respect,
     comm,
     timeliness,
@@ -156,7 +216,7 @@ export function servicesFinalSatisfactionBreakdown(amountWei, respect, comm, tim
     grossBuyerSentWei: grossAfterTimelinessWei,
     protocolFeeWei,
     sellerNetWei,
-    headline:
-      "The client funds this satisfaction slice (gross). On-chain: ~4% of that gross goes to the platform; the remainder is credited to the freelancer (pending withdraw).",
+    sellerPctOfTotal: sellerPct,
+    headline: `RCQ ${rcqExact.toFixed(2)}★ (≥3 passes 70% leg). Buyer funds ${sellerPct.toFixed(1)}% of gig total on this submit (30% slice minus timeliness penalty).`,
   };
 }

@@ -8,6 +8,7 @@ import { DataProvider } from "./context/dataContext.jsx";
 import { InAppWalletProvider } from "./context/inAppWalletContext.jsx";
 import { CookiesProvider } from "react-cookie";
 import { ToastContainer } from "react-toastify";
+import { ThirdwebProvider } from "thirdweb/react";
 import "react-toastify/dist/ReactToastify.css";
 import LogRocket from 'logrocket';
 LogRocket.init('vdxhjc/pinksurfing-ecom');
@@ -17,14 +18,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <CookiesProvider defaultSetOptions={{ path: "/" }}>
       <BrowserRouter>
-        <AuthProvider>
-          <InAppWalletProvider>
-            <DataProvider>
-              <ToastContainer />
-              <App />
-            </DataProvider>
-          </InAppWalletProvider>
-        </AuthProvider>
+        <ThirdwebProvider>
+          <AuthProvider>
+            <InAppWalletProvider>
+              <DataProvider>
+                <ToastContainer />
+                <App />
+              </DataProvider>
+            </InAppWalletProvider>
+          </AuthProvider>
+        </ThirdwebProvider>
       </BrowserRouter>
     </CookiesProvider>
   </React.StrictMode>

@@ -1,8 +1,8 @@
 const DIMS = [
-  { k: "respect", label: "Respectfulness & attitude (10%)" },
-  { k: "comm", label: "Communication quality (5%)" },
-  { k: "timeliness", label: "Timeliness of work (30%)" },
-  { k: "quality", label: "Quality of work (55%)" },
+  { k: "respect", label: "Respect & attitude" },
+  { k: "comm", label: "Communication" },
+  { k: "timeliness", label: "Timeliness" },
+  { k: "quality", label: "Quality of work" },
 ];
 
 export function defaultServiceScores() {
@@ -13,13 +13,11 @@ export function defaultUnhappyServiceScores() {
   return { respect: 2, comm: 2, timeliness: 1, quality: 2 };
 }
 
-export default function ServiceReviewMatrix({ id = "service-review", title, values, onChange, disabled }) {
+export default function ServiceReviewMatrix({ id = "service-review", title, values, onChange, disabled, hint }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
       {title ? <h4 className="text-white/80 text-xs font-semibold mb-2">{title}</h4> : null}
-      <p className="text-[11px] text-white/45 mb-3">
-        1-7 each. Weighted overall uses R/C/Q + timeliness exactly like contract workflow.
-      </p>
+      {hint ? <p className="text-[11px] text-white/45 mb-3">{hint}</p> : null}
       <div className="space-y-2.5">
         {DIMS.map(({ k, label }) => (
           <div key={k}>

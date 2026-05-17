@@ -3,6 +3,7 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { deleteCookie } from "../utils/cookie";
+import { clearAuthLocalData } from "../lib/walletStorage";
 export const authContext = createContext();
 import { toast } from "react-toastify";
 
@@ -104,9 +105,8 @@ export const AuthProvider = ({ children }) => {
       deleteCookie("access_token");
       deleteCookie("refresh_token");
 
-      // 3. Clear local storage and state
-      localStorage.clear();
-      sessionStorage.clear();
+      // 3. Clear session data but keep per-account wallet vaults on this device
+      clearAuthLocalData();
       setUser("");
       setAuthToken("");
 
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }) => {
       // window.location.href = "/"; 
     } catch (error) {
       console.error("Logout error:", error);
-      localStorage.clear();
+      clearAuthLocalData();
       setUser("");
       setAuthToken("");
       navigate("/");

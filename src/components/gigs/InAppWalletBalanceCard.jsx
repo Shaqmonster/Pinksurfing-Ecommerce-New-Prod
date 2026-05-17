@@ -1,37 +1,58 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 import QRCode from "qrcode.react";
 import { IoWalletOutline, IoRefreshOutline, IoCopyOutline, IoCheckmarkDoneOutline } from "react-icons/io5";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { getGigHubProvider, getGigHubContracts } from "../../lib/gighubEscrowClient";
+import { fetchEthBalance, getRpcRateLimitMessage, isRpcRateLimited } from "../../lib/gighubRpc";
 import { useAddressTxHistory } from "../../hooks/useAddressTxHistory";
+import { isDevWalletFundingEnabled, isLocalAnvilEscrow } from "../../lib/devWalletFunding";
+import { useAnvilAutoFund } from "../../hooks/useAnvilAutoFund";
+import { getThirdwebClient } from "../../lib/thirdwebClient";
+import { getEscrowChainIdFromEnv } from "../../lib/thirdwebOnRampChain";
+import DevWalletFundingPanel from "./DevWalletFundingPanel";
+
+const GighubFundWalletModal = lazy(() => import("./GighubThirdwebOnRamp"));
 
 function shortHash(h = "") {
   return h.length > 18 ? `${h.slice(0, 10)}...${h.slice(-6)}` : h;
 }
 
-export default function InAppWalletBalanceCard({ compact = false }) {
-  const { status, wallet, address } = useInAppWallet();
+export default function InAppWalletBalanceCard({ compact = false, inlineFunding = false }) {
+  const {
+    status,
+    wallet,
+    address,
+    serverBackup,
+    syncingBackup,
+    ensureServerBackup,
+    lastError: walletError,
+  } = useInAppWallet();
   const [ethBalance, setEthBalance] = useState("0.0000");
   const [pendingEscrow, setPendingEscrow] = useState("0.0000");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
-  const { rows, loading: txLoading, refresh: refreshTx } = useAddressTxHistory(address, {
-    maxBlocks: 180,
+  const [onRampOpen, setOnRampOpen] = useState(false);
+  const thirdwebClient = useMemo(() => getThirdwebClient(), []);
+  const localAnvil = isLocalAnvilEscrow();
+  const showDevFunding = isDevWalletFundingEnabled();
+  const showThirdwebFunding = Boolean(thirdwebClient) && !localAnvil;
+  const canFundWallet = showDevFunding || showThirdwebFunding;
+  const escrowChainId = getEscrowChainIdFromEnv();
+  const { rows, loading: txLoading, error: txError, refresh: refreshTx } = useAddressTxHistory(address, {
     maxRows: compact ? 4 : 6,
   });
 
-  const canLoad = status === "ready" && wallet && address;
+  const canLoad = status === "ready" && Boolean(address) && Boolean(wallet);
 
   const refresh = async () => {
-    if (!canLoad) return;
+    if (!canLoad || !wallet) return;
     setLoading(true);
     setError("");
     try {
       const provider = getGigHubProvider();
-      const bal = await provider.getBalance(address);
-      setEthBalance(Number(ethers.formatEther(bal)).toFixed(4));
+      setEthBalance(await fetchEthBalance(address));
 
       try {
         const signer = wallet.connect(provider);
@@ -43,7 +64,9 @@ export default function InAppWalletBalanceCard({ compact = false }) {
         setPendingEscrow("0.0000");
       }
     } catch (e) {
-      setError(e?.message || "Failed to load wallet balance.");
+      setError(
+        isRpcRateLimited(e) ? getRpcRateLimitMessage() : e?.message || "Failed to load wallet balance."
+      );
     } finally {
       setLoading(false);
     }
@@ -53,6 +76,11 @@ export default function InAppWalletBalanceCard({ compact = false }) {
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canLoad, address]);
+
+  useAnvilAutoFund(address, status, () => {
+    refresh();
+    refreshTx();
+  });
 
   const copyAddress = async () => {
     if (!address) return;
@@ -91,11 +119,42 @@ export default function InAppWalletBalanceCard({ compact = false }) {
       </div>
 
       {!canLoad ? (
-        <div className="text-white/40 text-sm">
-          Wallet not connected yet. Go to <span className="font-mono">/gighub</span> and create/import it.
+        <div className="text-white/40 text-sm space-y-2">
+          <p>Wallet not connected yet.</p>
+          <p className="text-white/35 text-xs">
+            {inlineFunding
+              ? "Use Create wallet / Import seed above — test ETH is minted automatically on Anvil."
+              : (
+                <>
+                  Go to <span className="font-mono">/gighub</span> or profile wallet to create or import one.
+                </>
+              )}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            <span
+              className={`px-2 py-0.5 rounded-full border ${
+                serverBackup
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                  : "border-amber-500/30 bg-amber-500/10 text-amber-200"
+              }`}
+            >
+              {serverBackup ? "Backed up to account" : "This device only — sync account"}
+            </span>
+            {!serverBackup && (
+              <button
+                type="button"
+                onClick={() => ensureServerBackup()}
+                disabled={syncingBackup}
+                className="px-2 py-0.5 rounded-full border border-white/15 text-white/70 hover:bg-white/5 disabled:opacity-50"
+              >
+                {syncingBackup ? "Syncing…" : "Sync to account"}
+              </button>
+            )}
+          </div>
+          {walletError ? <p className="text-[11px] text-red-400/90">{walletError}</p> : null}
           <div className="flex items-center gap-2 text-white/60 text-xs">
             <IoWalletOutline className="text-sm text-purple-400" />
             <span className="font-mono break-all" title={address}>
@@ -120,15 +179,24 @@ export default function InAppWalletBalanceCard({ compact = false }) {
             </div>
           </div>
 
-          <div className="flex items-end justify-between">
+          <div className="flex items-end justify-between gap-3 flex-wrap">
             <div>
               <p className="text-white/35 text-xs">Wallet Balance</p>
               <p className="text-white font-bold text-xl">{ethBalance} ETH</p>
             </div>
-            <div className="text-right">
+            <div className="text-right flex-1 min-w-[120px]">
               <p className="text-white/35 text-xs">Escrow Pending (withdrawable)</p>
               <p className="text-white/80 font-semibold text-sm">{pendingEscrow} ETH</p>
             </div>
+            {canFundWallet ? (
+              <button
+                type="button"
+                onClick={() => setOnRampOpen(true)}
+                className="shrink-0 text-xs font-semibold px-3 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-95 shadow-lg"
+              >
+                Add funds
+              </button>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-2.5">
@@ -142,8 +210,15 @@ export default function InAppWalletBalanceCard({ compact = false }) {
                 {txLoading ? "Refreshing..." : "Refresh"}
               </button>
             </div>
+            {txError ? <p className="text-amber-400/90 text-[11px] mb-1.5">{txError}</p> : null}
             {rows.length === 0 ? (
-              <p className="text-white/35 text-xs">{txLoading ? "Scanning recent blocks..." : "No recent transactions."}</p>
+              <p className="text-white/35 text-xs">
+                {txLoading
+                  ? "Loading recent transfers…"
+                  : localAnvil
+                    ? "No transfers yet. Use Mint test ETH or wait for auto-fund."
+                    : `No transfers yet. Fund on chain ${escrowChainId ?? "?"}.`}
+              </p>
             ) : (
               <div className="space-y-1.5 max-h-28 overflow-auto pr-1">
                 {rows.map((r) => (
@@ -160,11 +235,64 @@ export default function InAppWalletBalanceCard({ compact = false }) {
           {error ? <p className="text-amber-400 text-xs">{error}</p> : null}
           {!error && canLoad && ethBalance === "0.0000" ? (
             <p className="text-amber-400 text-xs">
-              Dev note: this wallet has no local Anvil ETH yet. Fund this exact address from account #0 or import a pre-funded Anvil wallet.
+              {localAnvil
+                ? "Low balance — auto-funding on Anvil, or use Mint test ETH below."
+                : (
+                  <>
+                    No test ETH yet. Use <strong>Add funds</strong> below (chain {escrowChainId ?? "?"}).
+                  </>
+                )}
             </p>
+          ) : null}
+
+          {inlineFunding && canFundWallet ? (
+            <div className="pt-4 mt-1 border-t border-white/10 space-y-4">
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Fund wallet (testnet)</p>
+              {showDevFunding ? (
+                <DevWalletFundingPanel
+                  address={address}
+                  onFunded={() => {
+                    refresh();
+                    refreshTx();
+                  }}
+                />
+              ) : null}
+              {showThirdwebFunding ? (
+                <div className="rounded-xl border border-violet-500/25 bg-violet-500/5 p-3 space-y-2">
+                  <p className="text-white/75 text-xs font-semibold">Thirdweb (card or crypto)</p>
+                  <p className="text-white/45 text-[11px] leading-relaxed">
+                    Buy test ETH with a card or crypto (public testnets only).
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setOnRampOpen(true)}
+                    className="w-full py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-95"
+                  >
+                    Open Thirdweb checkout
+                  </button>
+                </div>
+              ) : null}
+              {!showDevFunding && !showThirdwebFunding ? (
+                <p className="text-white/40 text-xs">Set VITE_THIRDWEB_CLIENT_ID in .env.local to enable card funding.</p>
+              ) : null}
+            </div>
           ) : null}
         </div>
       )}
+
+      {canFundWallet && address ? (
+        <Suspense fallback={null}>
+          <GighubFundWalletModal
+            open={onRampOpen}
+            onClose={() => setOnRampOpen(false)}
+            receiverAddress={address}
+            onPurchaseSuccess={() => {
+              refresh();
+              refreshTx();
+            }}
+          />
+        </Suspense>
+      ) : null}
     </div>
   );
 }
