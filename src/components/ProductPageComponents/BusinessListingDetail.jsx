@@ -379,8 +379,9 @@ const BusinessListingDetail = ({
   const ndaDocList = ndaDocIds.map((id) => ({ id, ...NDA_DOC_MAP[id] }));
   // ndaStatus: null | "pending_payment" | "pending_vendor" | "accepted" | "rejected" | "disputed"
   const [ndaStatus, setNdaStatus] = useState(null);
-  // ndaSigned = true means vendor accepted + documents are available
+  // ndaSigned = true means NDA paid + accepted (instant unlock)
   const [ndaSigned, setNdaSigned] = useState(false);
+  const [listingDocuments, setListingDocuments] = useState([]);
   const [ndaModalOpen, setNdaModalOpen] = useState(false);
   const [ndaForm, setNdaForm] = useState({ name: "", email: "", company: "", role: "", signature: "", agreed: false });
   const [ndaSubmitting, setNdaSubmitting] = useState(false);
@@ -407,39 +408,106 @@ const BusinessListingDetail = ({
     setNdaStatus(null);
   }, [isListingOwner]);
 
-  useEffect(() => {
+  const fetchListingDocuments = useCallback(async () => {
+    const pid = product?.id ?? productId;
+    if (!pid || isListingOwner) return;
+    const raw = cookies?.access_token;
+    const token = typeof raw === "string" ? raw.replace(/"/g, "") : "";
+    if (!token) return;
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/nda/product/${pid}/listing-documents/buyer/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setListingDocuments(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setListingDocuments([]);
+    }
+  }, [product?.id, productId, cookies?.access_token, isListingOwner]);
+
+  const refreshNdaState = useCallback(async () => {
     const pid = product?.id ?? productId;
     if (!pid || isListingOwner) return;
     const raw = cookies?.access_token;
     const token = typeof raw === "string" ? raw.replace(/"/g, "") : "";
     if (!token || !user?.id) return;
 
-    let cancelled = false;
-    axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/api/nda/mine/`, {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/nda/mine/`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        if (cancelled) return;
-        const mine = Array.isArray(res.data) ? res.data : [];
-        const row = mine.find((n) => String(n.product_id) === String(pid));
-        if (!row) return;
-        if (row.status === "accepted") {
-          setNdaSigned(true);
-          setNdaStatus(null);
-        } else if (row.status === "pending_vendor" || row.status === "disputed") {
-          setNdaSigned(false);
-          setNdaStatus(row.status);
-        } else if (row.status === "rejected") {
-          setNdaSigned(false);
-          setNdaStatus(null);
+      });
+      const mine = Array.isArray(res.data) ? res.data : [];
+      const row = mine.find((n) => String(n.product_id) === String(pid));
+      if (!row) return;
+      if (row.status === "accepted") {
+        setNdaSigned(true);
+        setNdaStatus(null);
+        const docs = row.listing_documents?.length
+          ? row.listing_documents
+          : row.documents || [];
+        if (docs.length) setListingDocuments(docs);
+        else fetchListingDocuments();
+      } else if (row.status === "pending_vendor" || row.status === "disputed") {
+        setNdaSigned(false);
+        setNdaStatus(row.status);
+      } else if (row.status === "rejected") {
+        setNdaSigned(false);
+        setNdaStatus(null);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [product?.id, productId, user?.id, cookies?.access_token, isListingOwner, fetchListingDocuments]);
+
+  useEffect(() => {
+    refreshNdaState();
+  }, [refreshNdaState]);
+
+  // After Square checkout return (?nda_unlocked=1), poll until payment confirms
+  useEffect(() => {
+    if (searchParams.get("nda_unlocked") !== "1" || isListingOwner) return;
+    const ndaId = searchParams.get("nda_id");
+    let cancelled = false;
+    let attempts = 0;
+
+    const poll = async () => {
+      attempts += 1;
+      if (ndaId) {
+        try {
+          const res = await axios.get(
+            `${import.meta.env.VITE_SERVER_URL}/api/nda/status/${ndaId}/`
+          );
+          if (cancelled) return;
+          if (res.data?.status === "accepted") {
+            setNdaSigned(true);
+            setNdaStatus(null);
+            if (res.data.listing_documents?.length) {
+              setListingDocuments(res.data.listing_documents);
+            } else {
+              fetchListingDocuments();
+            }
+            return;
+          }
+        } catch {
+          /* keep polling */
         }
-      })
-      .catch(() => {});
+      }
+      if (attempts < 24) {
+        setTimeout(poll, 2500);
+      }
+      refreshNdaState();
+    };
+
+    poll();
     return () => {
       cancelled = true;
     };
-  }, [product?.id, productId, user?.id, cookies?.access_token, isListingOwner]);
+  }, [
+    searchParams,
+    isListingOwner,
+    fetchListingDocuments,
+    refreshNdaState,
+  ]);
 
   const openNdaModal = () => {
     if (isListingOwner || cannotStartNewNda) return;
@@ -499,22 +567,26 @@ const BusinessListingDetail = ({
       // Already accepted (documents available)
       if (detail === "already_signed") {
         setNdaSigned(true);
-        setNdaStatus("accepted");
+        setNdaStatus(null);
         setNdaModalOpen(false);
-        toast.success("✅ NDA accepted — check My NDA Dashboard for documents.", { position: "top-right" });
+        fetchListingDocuments();
+        toast.success("✅ NDA complete — financial documents are unlocked.", { position: "top-right" });
         return;
       }
 
       // Pending review — already paid, awaiting vendor, or Square temporarily down
       if (detail === "pending_review") {
         const st = ndaStatusResp || "pending_vendor";
-        setNdaStatus(st);
         setNdaModalOpen(false);
         setNdaError("");
-        if (st === "pending_vendor") {
-          toast.info("✅ Your payment is confirmed — awaiting seller review. Check My NDA Dashboard for updates.", { position: "top-right" });
+        if (st === "accepted") {
+          setNdaSigned(true);
+          setNdaStatus(null);
+          fetchListingDocuments();
+          toast.success("✅ NDA complete — financial documents are unlocked.", { position: "top-right" });
         } else {
-          toast.info("Your NDA is being processed. Please check My NDA Dashboard for the current status.", { position: "top-right" });
+          setNdaStatus(st);
+          toast.info("Your NDA is being processed. Check My NDA Dashboard for status.", { position: "top-right" });
         }
         return;
       }
@@ -965,11 +1037,13 @@ const BusinessListingDetail = ({
                       </div>
                     ) : ndaSigned ? (
                       <div style={{ marginTop: 16, padding: 14, background: "var(--green-bg)", border: "1.5px solid var(--green-border)", borderRadius: 6, fontSize: 12, color: "var(--green)", lineHeight: 1.6 }}>
-                        ✅ <strong>NDA Accepted</strong> — Documents are available. <a href="/my-ndas" style={{ color: "var(--green)", fontWeight: 700 }}>View in My NDA Dashboard →</a>
+                        ✅ <strong>NDA Complete</strong> — Financial documents are unlocked.
+                        {listingDocuments.length > 0 ? " Open the Documents tab or " : " "}
+                        <a href="/my-ndas" style={{ color: "var(--green)", fontWeight: 700 }}>My NDA Dashboard →</a>
                       </div>
                     ) : ndaStatus === "pending_vendor" ? (
                       <div style={{ marginTop: 16, padding: 14, background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)", borderRadius: 6, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>
-                        ⏳ <strong>Awaiting Seller Review</strong> — Your NDA payment is confirmed. The seller will review and share documents shortly. <a href="/my-ndas" style={{ color: "#fbbf24", fontWeight: 700 }}>Track status →</a>
+                        ⏳ <strong>Processing</strong> — Your payment is confirmed. Documents will unlock shortly. <a href="/my-ndas" style={{ color: "#fbbf24", fontWeight: 700 }}>Track status →</a>
                       </div>
                     ) : ndaStatus === "disputed" ? (
                       <div style={{ marginTop: 16, padding: 14, background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)", borderRadius: 6, fontSize: 12, color: "#f87171", lineHeight: 1.6 }}>
@@ -1179,20 +1253,42 @@ const BusinessListingDetail = ({
                           <button className="b-doc-btn" onClick={() => toast.info("📥 Contact the lister for file access.", { position: "top-right" })}>📥 Download</button>
                         </div>
                       </div>
-                      {/* Real unlocked docs from vendor */}
-                      {ndaDocList.map((doc) => (
-                        <div className="b-doc-row" key={doc.id}>
-                          <div className="b-doc-row-icon">{doc.icon}</div>
-                          <div className="b-doc-row-info">
-                            <div className="b-doc-row-name">{doc.label}</div>
-                            <div className="b-doc-row-sub">NDA on file — you have access</div>
+                      {listingDocuments.length > 0
+                        ? listingDocuments.map((doc) => (
+                          <div className="b-doc-row" key={doc.id}>
+                            <div className="b-doc-row-icon">📎</div>
+                            <div className="b-doc-row-info">
+                              <div className="b-doc-row-name">{doc.document_name}</div>
+                              <div className="b-doc-row-sub">
+                                {(NDA_DOC_MAP[doc.document_type]?.label || doc.document_type)} · NDA on file
+                              </div>
+                            </div>
+                            <div className="b-doc-row-right">
+                              <span className="b-doc-badge-free">✅ Unlocked</span>
+                              <a
+                                className="b-doc-btn"
+                                href={doc.file}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+                              >
+                                📥 Download
+                              </a>
+                            </div>
                           </div>
-                          <div className="b-doc-row-right">
-                            <span className="b-doc-badge-free">✅ Unlocked</span>
-                            <button className="b-doc-btn" onClick={() => toast.info("📥 Contact the lister for file access.", { position: "top-right" })}>📥 Download</button>
+                        ))
+                        : ndaDocList.map((doc) => (
+                          <div className="b-doc-row" key={doc.id}>
+                            <div className="b-doc-row-icon">{doc.icon}</div>
+                            <div className="b-doc-row-info">
+                              <div className="b-doc-row-name">{doc.label}</div>
+                              <div className="b-doc-row-sub">NDA on file — seller has not uploaded this file yet</div>
+                            </div>
+                            <div className="b-doc-row-right">
+                              <span className="b-doc-badge-free">✅ Unlocked</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 )}

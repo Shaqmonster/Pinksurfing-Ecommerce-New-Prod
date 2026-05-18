@@ -13,7 +13,7 @@ const NdaPaymentReturn = () => {
   const slug = params.get("slug");
   const productId = params.get("product_id");
 
-  const [phase, setPhase] = useState("verifying"); // verifying | pending_vendor | failed | not_found
+  const [phase, setPhase] = useState("verifying"); // verifying | accepted | failed | not_found
   const pollCount = useRef(0);
   const timer = useRef(null);
 
@@ -35,10 +35,15 @@ const NdaPaymentReturn = () => {
       try {
         const res = await axios.get(`${SERVER}/api/nda/status/${ndaId}/`);
         const { status } = res.data;
-        // Payment confirmed once we move past pending_payment
-        if (status && status !== "pending_payment") {
+        if (status === "accepted") {
           clearInterval(timer.current);
-          setPhase("pending_vendor");
+          setPhase("accepted");
+          return;
+        }
+        // Legacy: still waiting on seller (older NDAs in pending_vendor)
+        if (status === "pending_vendor") {
+          clearInterval(timer.current);
+          setPhase("accepted");
           return;
         }
       } catch {
@@ -85,13 +90,13 @@ const NdaPaymentReturn = () => {
               fontSize: 28,
               margin: "0 auto 20px",
               background:
-                phase === "pending_vendor"
+                phase === "accepted"
                   ? "rgba(52,211,153,.15)"
                   : phase === "failed" || phase === "not_found"
                   ? "rgba(248,113,113,.15)"
                   : "rgba(240,49,138,.12)",
               border: `1px solid ${
-                phase === "pending_vendor"
+                phase === "accepted"
                   ? "rgba(52,211,153,.3)"
                   : phase === "failed" || phase === "not_found"
                   ? "rgba(248,113,113,.3)"
@@ -99,7 +104,7 @@ const NdaPaymentReturn = () => {
               }`,
             }}
           >
-            {phase === "pending_vendor" ? "✅" : phase === "verifying" ? "⏳" : "❌"}
+            {phase === "accepted" ? "✅" : phase === "verifying" ? "⏳" : "❌"}
           </div>
 
           {/* Heading */}
@@ -112,7 +117,7 @@ const NdaPaymentReturn = () => {
               letterSpacing: "-0.02em",
             }}
           >
-            {phase === "pending_vendor" && "Payment Confirmed — Awaiting Seller"}
+            {phase === "accepted" && "NDA Complete — Documents Unlocked"}
             {phase === "verifying" && "Verifying Payment…"}
             {phase === "failed" && "Payment Not Yet Confirmed"}
             {phase === "not_found" && "NDA Not Found"}
@@ -120,8 +125,8 @@ const NdaPaymentReturn = () => {
 
           {/* Body */}
           <p style={{ fontSize: 13, color: "#b0b0c0", lineHeight: 1.65, marginBottom: 28 }}>
-            {phase === "pending_vendor" &&
-              "Your $1 NDA fee has been received and your signature is on record. The seller has been notified and will review your request. Once accepted, the financial documents will be available in your NDA dashboard."}
+            {phase === "accepted" &&
+              "Your $1 NDA fee has been received and your signature is on record. Financial documents for this listing are unlocked now — view them on the listing or in My NDA Dashboard."}
             {phase === "verifying" &&
               "We're confirming your payment with Square. This usually takes a few seconds. Please don't close this page."}
             {phase === "failed" &&
@@ -145,10 +150,10 @@ const NdaPaymentReturn = () => {
           )}
 
           {/* CTAs */}
-          {phase === "pending_vendor" && (
+          {phase === "accepted" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <Link
-                to="/my-ndas"
+                to={productLink}
                 style={{
                   display: "block",
                   background: "#34d399",
@@ -161,10 +166,10 @@ const NdaPaymentReturn = () => {
                   textAlign: "center",
                 }}
               >
-                Track NDA Status →
+                View Unlocked Documents →
               </Link>
               <Link
-                to={productLink}
+                to="/my-ndas"
                 style={{
                   display: "block",
                   border: "1px solid #2a2a33",
@@ -177,7 +182,7 @@ const NdaPaymentReturn = () => {
                   textAlign: "center",
                 }}
               >
-                Back to Listing
+                My NDA Dashboard
               </Link>
             </div>
           )}

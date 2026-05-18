@@ -11,7 +11,7 @@ function authHeader(token) {
 
 const STATUS_LABEL = {
   pending_vendor:   "Awaiting Seller Review",
-  accepted:         "Accepted — Documents Available",
+  accepted:         "NDA Complete — Documents Unlocked",
   rejected:         "Rejected & Refunded",
   disputed:         "Disputed",
   dispute_refunded: "Closed (Refunded)",
@@ -228,8 +228,8 @@ export default function MyNdas() {
       <div style={styles.container}>
         <h1 style={styles.heading}>My NDA Requests</h1>
         <p style={styles.sub}>
-          Track the status of your NDA requests. Once accepted by the seller,
-          the financial documents will appear below.
+          Track your NDA requests. After you pay the $1 NDA fee, financial
+          documents unlock instantly — no seller approval required.
         </p>
 
         {error && (
@@ -263,6 +263,10 @@ export default function MyNdas() {
             const color = STATUS_COLOR[nda.status] || {};
             const isAccepted = nda.status === "accepted";
             const isDisputed = nda.status === "disputed";
+            const allDocs = [
+              ...(nda.listing_documents || []),
+              ...(nda.documents || []),
+            ];
 
             return (
               <div key={nda.id} style={styles.card}>
@@ -305,13 +309,13 @@ export default function MyNdas() {
                 )}
 
                 {/* Documents (accepted only) */}
-                {isAccepted && nda.documents?.length > 0 && (
+                {isAccepted && allDocs.length > 0 && (
                   <>
                     <div style={styles.divider} />
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#ccc", marginBottom: 10 }}>
                       Financial Documents
                     </p>
-                    {nda.documents.map((doc) => (
+                    {allDocs.map((doc) => (
                       <div key={doc.id} style={styles.docRow}>
                         <div>
                           <div style={styles.docName}>{doc.document_name}</div>
@@ -333,13 +337,13 @@ export default function MyNdas() {
                 )}
 
                 {/* Accepted but no docs yet — invite dispute */}
-                {isAccepted && nda.documents?.length === 0 && (
+                {isAccepted && allDocs.length === 0 && (
                   <>
                     <div style={styles.divider} />
                     <p style={{ fontSize: 13, color: "#8888a0" }}>
-                      The seller has accepted your NDA but has not yet uploaded
-                      the documents. If they do not share the documents, you can
-                      raise a dispute to get a refund.
+                      Your NDA is active but the seller has not uploaded financial
+                      files for this listing yet. You can raise a dispute for a refund
+                      if documents are not provided.
                     </p>
                     <button
                       style={{ ...styles.actionBtn("danger"), marginTop: 12 }}
