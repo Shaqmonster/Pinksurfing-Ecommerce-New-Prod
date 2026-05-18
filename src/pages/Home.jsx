@@ -20,6 +20,8 @@ import { IoClose } from "react-icons/io5";
 import { Country, State, City } from "country-state-city";
 import ProductCard from "../components/ProductCard";
 import StoreCard from "../components/StoreCard";
+import PageSEO from "../components/PageSEO";
+import { HOME_FAQ, HOME_META, homeJsonLd } from "../constants/homeSeo";
 
 
 const responsive = {
@@ -340,6 +342,14 @@ const Home = () => {
 
   return (
     <>
+      <PageSEO
+        title={HOME_META.title}
+        description={HOME_META.description}
+        path="/"
+        ogTitle={HOME_META.ogTitle}
+        ogDescription={HOME_META.ogDescription}
+        jsonLd={homeJsonLd}
+      />
       {/* Main Container */}
       <div className="w-full min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#13131a] to-[#0a0a0f] relative overflow-hidden">
 
@@ -354,12 +364,34 @@ const Home = () => {
           <div className="text-center mb-10">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3">
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                Discover Amazing Deals
+                PinkSurfing — Shop, Sell &amp; Hire
               </span>
             </h1>
-            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-              Shop from thousands of products across multiple categories
+            <p className="text-gray-400 text-base sm:text-lg max-w-3xl mx-auto">
+              PinkSurfing is a multi-vendor marketplace for products, businesses for sale,
+              real estate, vehicles, and freelance services on GigHub—buy, list, or hire in one place.
             </p>
+            <motion.div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/shoppingMall"
+                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:from-purple-700 hover:to-pink-700 transition-colors"
+              >
+                Explore Shopping Mall
+              </Link>
+              <button
+                type="button"
+                onClick={handleMyStoreClick}
+                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-200 text-sm font-semibold hover:border-purple-500/50 transition-colors"
+              >
+                Sell on PinkSurfing
+              </button>
+              <Link
+                to="/gighub"
+                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-200 text-sm font-semibold hover:border-purple-500/50 transition-colors"
+              >
+                Hire on GigHub
+              </Link>
+            </motion.div>
           </div>
 
           {/* Main Category Cards - Mobile Carousel */}
@@ -392,7 +424,7 @@ const Home = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
                         <img
                           src={item.image}
-                          alt={item.name}
+                          alt={`${item.name} on PinkSurfing marketplace`}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
@@ -468,7 +500,7 @@ const Home = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
                   <img
                     src={item.image}
-                    alt={item.name}
+                    alt={`${item.name} on PinkSurfing marketplace`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
@@ -496,8 +528,8 @@ const Home = () => {
                 Browse by Category
               </span>
             </h2>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-lg mx-auto">
-              Explore listings across our active categories
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+              Explore businesses for sale, real estate, vehicles, perfumes, trading cards, and more on the PinkSurfing marketplace.
             </p>
 
             <div
@@ -551,7 +583,7 @@ const Home = () => {
                         />
                         <img
                           src={imgSrc}
-                          alt={item.name}
+                          alt={`${item.name} category on PinkSurfing`}
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                           loading="lazy"
                         />
@@ -563,10 +595,10 @@ const Home = () => {
                           </div>
                         )}
                         <div className="absolute bottom-0 left-0 right-0 z-[4] p-2 sm:p-3 pt-8 sm:pt-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                          <p className="text-[11px] sm:text-xs lg:text-sm font-semibold text-white text-center leading-tight line-clamp-2 drop-shadow-md group-hover:text-purple-100 transition-colors">
+                          <h3 className="text-[11px] sm:text-xs lg:text-sm font-semibold text-white text-center leading-tight line-clamp-2 drop-shadow-md group-hover:text-purple-100 transition-colors">
                             {item.name}
-                          </p>
-                        </div>
+                          </h3>
+                        </motion.div>
                       </div>
                     </button>
                   </motion.div>
