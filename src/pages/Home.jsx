@@ -372,12 +372,12 @@ const Home = () => {
               real estate, vehicles, and freelance services on GigHub—buy, list, or hire in one place.
             </p>
             <motion.div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link
-                to="/shoppingMall"
-                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:from-purple-700 hover:to-pink-700 transition-colors"
+              <span
+                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/10 border border-white/15 text-gray-400 text-sm font-semibold cursor-not-allowed"
+                aria-disabled="true"
               >
-                Explore Shopping Mall
-              </Link>
+                Shopping Mall — Coming soon
+              </span>
               <button
                 type="button"
                 onClick={handleMyStoreClick}

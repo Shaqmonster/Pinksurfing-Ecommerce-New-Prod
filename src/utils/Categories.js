@@ -4,12 +4,14 @@ export const categories = [
     name: "Shopping Mall",
     image: "/new/shopping mall.jpg",
     link: "/shoppingMall/all",
+    coming_soon: true,
   },
   {
     id: 2,
     name: "Shop by Store concierge game",
     image: "/new/shp.jpg",
     link: "/home",
+    coming_soon: true,
   },
   {
     id: 3,
