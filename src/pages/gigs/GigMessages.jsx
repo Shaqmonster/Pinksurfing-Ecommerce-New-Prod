@@ -11,10 +11,18 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
+  createConversation,
   getConversations,
   getConversationMessages,
   sendMessage,
 } from "../../api/gigs";
+import {
+  CHAT_FILE_ACCEPT,
+  fileNameFromUrl,
+  getEmailFromToken,
+  getWsBaseUrl,
+  timeAgo,
+} from "../../utils/chatHelpers";
 import {
   IoSendSharp,
   IoAttachOutline,
@@ -23,42 +31,11 @@ import {
   IoChevronBackOutline,
   IoChevronDown,
   IoCloseOutline,
-  IoImageOutline,
+  IoDocumentOutline,
+  IoFolderOutline,
+  IoVideocamOutline,
+  IoCodeSlashOutline,
 } from "react-icons/io5";
-
-const BASE_URL = import.meta.env.VITE_SERVER_URL;
-
-/* ─── Helpers ─────────────────────────────────────────────────── */
-
-const getWsBaseUrl = () => {
-  const url = BASE_URL.replace(/\/$/, "");
-  return url.startsWith("https://")
-    ? url.replace("https://", "wss://")
-    : url.replace("http://", "ws://");
-};
-
-const getEmailFromToken = (token) => {
-  try {
-    return JSON.parse(atob(token.split(".")[1])).email || null;
-  } catch {
-    return null;
-  }
-};
-
-const timeAgo = (iso) => {
-  const d = new Date(iso);
-  const now = new Date();
-  const diffMs = now - d;
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffH = Math.floor(diffMin / 60);
-  const diffD = Math.floor(diffH / 24);
-  if (diffD > 6) return d.toLocaleDateString([], { month: "short", day: "numeric" });
-  if (diffD > 1) return `${diffD}d ago`;
-  if (diffD === 1) return "Yesterday";
-  if (diffH >= 1) return `${diffH}h ago`;
-  if (diffMin >= 1) return `${diffMin}m ago`;
-  return "Now";
-};
 
 const dateBanner = (iso) => {
   const d = new Date(iso);
@@ -113,12 +90,22 @@ const getAvatarColor = (name) => {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 };
 
+const AttachmentIcon = ({ name }) => {
+  const ext = (name || "").split(".").pop()?.toLowerCase() || "";
+  if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)) return <IoDocumentOutline className="text-[15px] flex-shrink-0" />;
+  if (["mp4", "mov", "webm"].includes(ext)) return <IoVideocamOutline className="text-[15px] flex-shrink-0" />;
+  if (["zip", "rar", "7z"].includes(ext)) return <IoFolderOutline className="text-[15px] flex-shrink-0" />;
+  if (["js", "ts", "py", "html", "css", "json"].includes(ext)) return <IoCodeSlashOutline className="text-[15px] flex-shrink-0" />;
+  return <IoDocumentOutline className="text-[15px] flex-shrink-0" />;
+};
+
 /* ─── Conversation Sidebar Item ───────────────────────────────── */
 
 const ConversationItem = ({ conv, isActive, myEmail, onClick }) => {
   const other = conv.participants?.find((p) => p.email !== myEmail);
   const last = conv.last_message;
   const colors = getAvatarColor(other?.username);
+  const unread = conv.unread_count || 0;
 
   return (
     <button onClick={onClick} className="w-full text-left group">
@@ -129,7 +116,6 @@ const ConversationItem = ({ conv, isActive, myEmail, onClick }) => {
             : "hover:bg-white/[0.025]"
         }`}
       >
-        {/* Avatar */}
         <div
           className="w-[44px] h-[44px] rounded-[14px] flex items-center justify-center text-white font-semibold text-[16px] uppercase flex-shrink-0"
           style={{
@@ -150,10 +136,17 @@ const ConversationItem = ({ conv, isActive, myEmail, onClick }) => {
               {last ? timeAgo(last.created_at) : ""}
             </span>
           </div>
-          <p className="text-[12.5px] truncate text-white/30 leading-snug">
+          <div className="flex items-center gap-2">
+          <p className={`text-[12.5px] truncate leading-snug flex-1 ${unread ? "text-white/70 font-medium" : "text-white/30"}`}>
             {last?.sender?.email === myEmail && <span className="text-white/20">You: </span>}
-            {last?.content || "No messages yet"}
+            {last?.content || (last?.attachments?.length ? "📎 Attachment" : "No messages yet")}
           </p>
+          {unread > 0 && (
+            <span className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+          </div>
         </div>
       </div>
     </button>
@@ -182,6 +175,8 @@ const GigMessages = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileList, setShowMobileList] = useState(true);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [openingWith, setOpeningWith] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messageContainerRef = useRef(null);
@@ -204,26 +199,80 @@ const GigMessages = () => {
     }
   }, [searchParams, conversations]);
 
+  useEffect(() => {
+    const withEmail = searchParams.get("with");
+    if (!withEmail || openingWith || !cookies.access_token) return;
+    const existing = conversations.find((c) =>
+      c.participants?.some((p) => p.email === withEmail)
+    );
+    if (existing) {
+      selectConversation(existing);
+      navigate(`/gighub/messages?conversation=${existing.id}`, { replace: true });
+      return;
+    }
+
+    const open = async () => {
+      setOpeningWith(true);
+      try {
+        const res = await createConversation(cookies.access_token, withEmail);
+        const conv = res.data;
+        setConversations((prev) => (prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]));
+        selectConversation(conv);
+        navigate(`/gighub/messages?conversation=${conv.id}`, { replace: true });
+      } catch {
+        toast.error("Could not open chat with that user.");
+      } finally {
+        setOpeningWith(false);
+      }
+    };
+    open();
+  }, [searchParams, cookies.access_token, conversations, openingWith]);
+
+  useEffect(() => {
+    if (!cookies.access_token) return;
+    const id = setInterval(() => fetchConversations(true), 20000);
+    return () => clearInterval(id);
+  }, [cookies.access_token]);
+
+  useEffect(() => {
+    if (!activeConv?.id || !cookies.access_token) return;
+    const id = setInterval(() => fetchMessages(activeConv.id, true), 5000);
+    return () => clearInterval(id);
+  }, [activeConv?.id, cookies.access_token]);
+
   /* ── conversations ── */
-  const fetchConversations = async () => {
-    setLoadingConvs(true);
+  const fetchConversations = async (silent = false) => {
+    if (!silent) setLoadingConvs(true);
     try {
       const res = await getConversations(cookies.access_token);
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
       setConversations(data);
-    } catch { toast.error("Failed to load conversations."); }
-    finally { setLoadingConvs(false); }
+    } catch {
+      if (!silent) toast.error("Failed to load conversations.");
+    } finally {
+      if (!silent) setLoadingConvs(false);
+    }
   };
 
   /* ── messages ── */
-  const fetchMessages = useCallback(async (convId) => {
-    setLoadingMsgs(true);
+  const fetchMessages = useCallback(async (convId, silent = false) => {
+    if (!silent) setLoadingMsgs(true);
     try {
       const res = await getConversationMessages(cookies.access_token, convId);
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
-      setMessages(data);
-    } catch { toast.error("Failed to load messages."); }
-    finally { setLoadingMsgs(false); }
+      setMessages((prev) => {
+        if (silent && prev.length === data.length) {
+          const lastPrev = prev[prev.length - 1]?.id;
+          const lastNew = data[data.length - 1]?.id;
+          if (lastPrev === lastNew) return prev;
+        }
+        return data;
+      });
+    } catch {
+      if (!silent) toast.error("Failed to load messages.");
+    } finally {
+      if (!silent) setLoadingMsgs(false);
+    }
   }, [cookies.access_token]);
 
   const selectConversation = (conv) => {
@@ -239,7 +288,12 @@ const GigMessages = () => {
     if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
     clearTimeout(reconnectRef.current);
     const ws = new WebSocket(`${getWsBaseUrl()}/ws/chat/${convId}/`);
-    ws.onopen = () => console.log("[Chat] WS connected", convId);
+    ws.onopen = () => {
+      setWsConnected(true);
+      if (myEmail) {
+        ws.send(JSON.stringify({ type: "identity", email: myEmail }));
+      }
+    };
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
@@ -254,8 +308,11 @@ const GigMessages = () => {
         setConversations((prev) => prev.map((c) => c.id === convId ? { ...c, last_message: newMsg, updated_at: newMsg.created_at } : c));
       } catch { /* ignore */ }
     };
-    ws.onclose = () => { reconnectRef.current = setTimeout(() => { if (wsRef.current === ws) connectWs(convId); }, 3000); };
-    ws.onerror = () => ws.close();
+    ws.onclose = () => {
+      setWsConnected(false);
+      reconnectRef.current = setTimeout(() => { if (wsRef.current === ws) connectWs(convId); }, 3000);
+    };
+    ws.onerror = () => { setWsConnected(false); ws.close(); };
     wsRef.current = ws;
   }, [myEmail]);
 
@@ -313,7 +370,7 @@ const GigMessages = () => {
 
   const handleAttachment = (e) => {
     const files = Array.from(e.target.files || []);
-    setAttachments((prev) => [...prev, ...files].slice(0, 5));
+    setAttachments((prev) => [...prev, ...files].slice(0, 10));
     e.target.value = "";
   };
 
@@ -426,6 +483,10 @@ const GigMessages = () => {
                 <p className="text-white font-semibold text-[15px] tracking-[-0.01em] truncate">
                   {otherUser?.username || "Unknown"}
                 </p>
+                <p className="text-[11px] text-white/30 flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${wsConnected ? "bg-green-400" : "bg-amber-400 animate-pulse"}`} />
+                  {wsConnected ? "Live" : "Syncing…"}
+                </p>
               </div>
             </header>
 
@@ -517,16 +578,19 @@ const GigMessages = () => {
                               {/* Attachments */}
                               {msg.attachments?.length > 0 && (
                                 <div className="mt-2 space-y-1.5">
-                                  {msg.attachments.map((att, i) => (
-                                    <a key={i} href={att.file} target="_blank" rel="noopener noreferrer"
+                                  {msg.attachments.map((att, i) => {
+                                    const fname = fileNameFromUrl(att.file);
+                                    return (
+                                    <a key={i} href={att.file} target="_blank" rel="noopener noreferrer" download
                                       className={`flex items-center gap-2.5 text-[12px] rounded-xl px-3.5 py-2.5 transition-all duration-200 font-medium ${
                                         mine ? "bg-white/[0.1] hover:bg-white/[0.15] text-white/80" : "bg-white/[0.03] hover:bg-white/[0.05] text-white/40 border border-white/[0.04]"
                                       }`}
                                     >
-                                      <IoImageOutline className="text-[15px] flex-shrink-0" />
-                                      <span className="truncate">Attachment {i + 1}</span>
+                                      <AttachmentIcon name={fname} />
+                                      <span className="truncate max-w-[200px]">{fname}</span>
                                     </a>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               )}
                             </motion.div>
@@ -583,7 +647,7 @@ const GigMessages = () => {
               >
                 <IoAttachOutline className="text-[19px] rotate-45" />
               </button>
-              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleAttachment} />
+              <input ref={fileInputRef} type="file" multiple accept={CHAT_FILE_ACCEPT} className="hidden" onChange={handleAttachment} />
 
               <div className="flex-1">
                 <textarea

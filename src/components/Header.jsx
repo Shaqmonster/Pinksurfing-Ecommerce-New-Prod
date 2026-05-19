@@ -28,12 +28,15 @@ import { currencyOptions } from "../utils/CurrencyList";
 import ProfilePopup from "./ProfilePopup";
 import ChatFloatingPanel from "./ChatFloatingPanel";
 import { useBuyerHasNdas } from "../hooks/useBuyerHasNdas";
+import { getConversations } from "../api/gigs";
+import { sumUnreadCount } from "../utils/chatHelpers";
 
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 
 const Header = () => {
   const hasBuyerNdas = useBuyerHasNdas();
-  const [cookies] = useCookies(["token", "refresh"]);
+  const [cookies] = useCookies(["token", "refresh", "access_token"]);
+  const [chatUnread, setChatUnread] = useState(0);
   const {
     user,
     isDarkMode,
@@ -109,6 +112,25 @@ const Header = () => {
     );
     return response.data.balance;
   };
+
+  useEffect(() => {
+    if (!user || !cookies.access_token) {
+      setChatUnread(0);
+      return;
+    }
+    const load = async () => {
+      try {
+        const res = await getConversations(cookies.access_token);
+        const data = Array.isArray(res.data) ? res.data : res.data?.results || [];
+        setChatUnread(sumUnreadCount(data));
+      } catch {
+        /* ignore */
+      }
+    };
+    load();
+    const id = setInterval(load, 25000);
+    return () => clearInterval(id);
+  }, [user, cookies.access_token, isChatOpen]);
 
   const getCartProducts = async () => {
     if (!cookies.access_token) return;
@@ -293,13 +315,25 @@ const Header = () => {
                     )}
                   </div>
 
-                  <div 
+                  <div
                     className="relative group cursor-pointer"
                     onClick={() => { setIsProfileOpen(false); setIsChatOpen(!isChatOpen); }}
+                    title="Messages"
                   >
                     <IoChatbubbleOutline className="text-2xl text-gray-500 hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
-                    <span className="absolute -top-1 -right-1 bg-red-500 w-2 h-2 rounded-full ring-2 ring-[#0E0F13] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {chatUnread > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-[9px] font-black min-w-[18px] h-[18px] flex items-center justify-center rounded-full ring-2 ring-[#0E0F13] px-1">
+                        {chatUnread > 9 ? "9+" : chatUnread}
+                      </span>
+                    )}
                   </div>
+                  <Link
+                    to="/gighub/messages"
+                    className="hidden lg:flex items-center text-[10px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-purple-300 transition-colors"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    Inbox
+                  </Link>
                 </div>
               )}
 

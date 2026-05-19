@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useRef, useContext, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import { IoChatbubbleOutline, IoCloseOutline, IoSendSharp, IoChevronBackOutline, IoSearchOutline, IoAttachOutline } from "react-icons/io5";
 import { getConversations, getConversationMessages, sendMessage } from "../api/gigs";
 import { authContext } from "../context/authContext";
-
-const BASE_URL = import.meta.env.VITE_SERVER_URL;
-
-const getWsBaseUrl = () => {
-  const url = BASE_URL.replace(/\/$/, "");
-  return url.startsWith("https://")
-    ? url.replace("https://", "wss://")
-    : url.replace("http://", "ws://");
-};
+import { CHAT_FILE_ACCEPT, fileNameFromUrl, getWsBaseUrl } from "../utils/chatHelpers";
 
 const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingConversation }) => {
   const [cookies] = useCookies(["access_token"]);
@@ -21,22 +14,33 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
+  const [attachments, setAttachments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [otherUserStatus, setOtherUserStatus] = useState({ isOnline: false, lastSeen: null });
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const pollRef = useRef(null);
   const myEmail = user?.email || "";
+
+  const fetchConversations = useCallback(async () => {
+    if (!cookies.access_token) return;
+    try {
+      const res = await getConversations(cookies.access_token);
+      setConversations(Array.isArray(res.data) ? res.data : res.data.results || []);
+    } catch (err) {
+      console.error("Failed to fetch conversations", err);
+    }
+  }, [cookies.access_token]);
 
   useEffect(() => {
     if (isOpen && cookies.access_token) {
       fetchConversations();
     }
-  }, [isOpen, cookies.access_token]);
+  }, [isOpen, cookies.access_token, fetchConversations]);
 
-  // When the panel is opened with a specific conversation (e.g. "Message Agent"
-  // on a listing), surface it immediately and open the thread without waiting
-  // for the conversations list to refetch.
   useEffect(() => {
     if (!isOpen || !pendingConversation) return;
     setConversations((prev) => {
@@ -47,39 +51,41 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
     clearPendingConversation?.();
   }, [isOpen, pendingConversation]);
 
-  const fetchConversations = async () => {
-    try {
-      const res = await getConversations(cookies.access_token);
-      setConversations(Array.isArray(res.data) ? res.data : res.data.results || []);
-    } catch (err) {
-      console.error("Failed to fetch conversations", err);
+  useEffect(() => {
+    if (!isOpen) {
+      clearInterval(pollRef.current);
+      return;
     }
-  };
+    pollRef.current = setInterval(() => {
+      fetchConversations();
+      if (activeConv?.id) fetchMessages(activeConv.id, true);
+    }, 8000);
+    return () => clearInterval(pollRef.current);
+  }, [isOpen, activeConv?.id, fetchConversations]);
 
-  const fetchMessages = async (convId) => {
-    setLoading(true);
+  const fetchMessages = async (convId, silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await getConversationMessages(cookies.access_token, convId);
       setMessages(Array.isArray(res.data) ? res.data : res.data.results || []);
     } catch (err) {
       console.error("Failed to fetch messages", err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   const connectWs = (convId) => {
     if (wsRef.current) wsRef.current.close();
     const ws = new WebSocket(`${getWsBaseUrl()}/ws/chat/${convId}/`);
-    
+
     ws.onopen = () => {
-      // Send identity to mark as online
-      ws.send(JSON.stringify({ type: "identity", email: myEmail }));
+      if (myEmail) ws.send(JSON.stringify({ type: "identity", email: myEmail }));
     };
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      
+
       if (data.type === "user_status") {
         const other = otherUser(activeConv);
         if (data.email === other?.email) {
@@ -93,9 +99,13 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
           id: data.message_id,
           content: data.message,
           sender: { email: data.sender_email, username: data.sender_username },
-          created_at: data.created_at
+          created_at: data.created_at,
+          attachments: [],
         };
-        setMessages((prev) => [...prev, newMsg]);
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
       }
     };
     wsRef.current = ws;
@@ -119,30 +129,44 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!messageInput.trim() || !activeConv) return;
+    if (!activeConv) return;
+    if (!messageInput.trim() && attachments.length === 0) return;
     const text = messageInput.trim();
-    
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ message: text, sender_email: myEmail }));
-      setMessageInput("");
-    } else {
-      try {
+    setSending(true);
+
+    try {
+      if (attachments.length > 0) {
+        await sendMessage(cookies.access_token, activeConv.id, text, attachments);
+        setAttachments([]);
+        setMessageInput("");
+        fetchMessages(activeConv.id);
+      } else if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ message: text, sender_email: myEmail }));
+        setMessageInput("");
+      } else {
         await sendMessage(cookies.access_token, activeConv.id, text);
         setMessageInput("");
         fetchMessages(activeConv.id);
-      } catch (err) {
-        console.error("Failed to send message", err);
       }
+      fetchConversations();
+    } catch (err) {
+      console.error("Failed to send message", err);
+    } finally {
+      setSending(false);
     }
   };
 
-  const otherUser = (conv) => conv.participants?.find(p => p.email !== myEmail);
+  const handleAttachment = (e) => {
+    const files = Array.from(e.target.files || []);
+    setAttachments((prev) => [...prev, ...files].slice(0, 10));
+    e.target.value = "";
+  };
+
+  const otherUser = (conv) => conv?.participants?.find((p) => p.email !== myEmail);
 
   useEffect(() => {
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
+      if (wsRef.current) wsRef.current.close();
     };
   }, []);
 
@@ -154,6 +178,12 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
     }
   };
 
+  const filtered = conversations.filter((conv) => {
+    if (!searchQuery) return true;
+    const other = otherUser(conv);
+    return other?.username?.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -163,7 +193,6 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
           exit={{ opacity: 0, scale: 0.9, y: 20, x: 20 }}
           className="fixed bottom-24 right-8 w-[380px] h-[550px] bg-[#0E0F13] border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden flex flex-col backdrop-blur-xl"
         >
-          {/* Header */}
           <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
             {activeConv ? (
               <div className="flex items-center gap-3">
@@ -182,11 +211,7 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
                         Online
                       </p>
                     ) : (
-                      <p className="text-[10px] text-gray-500 font-medium">
-                        {otherUserStatus.lastSeen 
-                          ? `Last seen ${new Date(otherUserStatus.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                          : "Offline"}
-                      </p>
+                      <p className="text-[10px] text-gray-500 font-medium">Offline</p>
                     )}
                   </div>
                 </div>
@@ -194,12 +219,20 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
             ) : (
               <h3 className="text-lg font-black tracking-tight text-white px-2">Messages</h3>
             )}
-            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-colors text-gray-400">
-              <IoCloseOutline className="text-2xl" />
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                to={activeConv ? `/gighub/messages?conversation=${activeConv.id}` : "/gighub/messages"}
+                className="text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300 px-2"
+                onClick={onClose}
+              >
+                Full chat
+              </Link>
+              <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-colors text-gray-400">
+                <IoCloseOutline className="text-2xl" />
+              </button>
+            </div>
           </div>
 
-          {/* Content */}
           <div className="flex-1 overflow-hidden flex flex-col">
             {!activeConv ? (
               <div className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -213,27 +246,30 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
                     className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-500/30 transition-all"
                   />
                 </div>
-                {conversations.length > 0 ? (
-                  conversations.map((conv) => {
+                {filtered.length > 0 ? (
+                  filtered.map((conv) => {
                     const other = otherUser(conv);
+                    const unread = conv.unread_count || 0;
                     return (
                       <button
                         key={conv.id}
                         onClick={() => selectConversation(conv)}
                         className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-white/[0.03] transition-all group"
                       >
-                        <div className="w-12 h-12 rounded-2xl bg-white/[0.05] flex items-center justify-center text-white font-bold group-hover:scale-105 transition-transform">
+                        <div className="w-12 h-12 rounded-2xl bg-white/[0.05] flex items-center justify-center text-white font-bold">
                           {other?.username?.[0]?.toUpperCase()}
                         </div>
-                        <div className="flex-1 text-left">
-                          <p className="text-sm font-bold text-white mb-0.5">{other?.username}</p>
+                        <div className="flex-1 text-left min-w-0">
+                          <p className="text-sm font-bold text-white mb-0.5 truncate">{other?.username}</p>
                           <p className="text-xs text-gray-500 truncate max-w-[180px]">
                             {conv.last_message?.content || "Start a conversation"}
                           </p>
                         </div>
-                        <div className="text-[10px] text-gray-600 font-medium">
-                          {conv.last_message ? new Date(conv.last_message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
-                        </div>
+                        {unread > 0 && (
+                          <span className="bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {unread > 9 ? "9+" : unread}
+                          </span>
+                        )}
                       </button>
                     );
                   })
@@ -247,40 +283,73 @@ const ChatFloatingPanel = ({ isOpen, onClose, pendingConversation, clearPendingC
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden bg-white/[0.01]">
                 <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                  {messages.map((msg, i) => {
-                    const isMe = msg.sender?.email === myEmail;
-                    return (
-                      <div key={i} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${
-                          isMe 
-                            ? "bg-purple-600 text-white rounded-tr-none shadow-lg shadow-purple-900/20" 
-                            : "bg-white/5 text-gray-200 rounded-tl-none border border-white/5"
-                        }`}>
-                          {msg.content}
+                  {loading ? (
+                    <div className="flex justify-center py-10">
+                      <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                    </div>
+                  ) : (
+                    messages.map((msg, i) => {
+                      const isMe = msg.sender?.email === myEmail;
+                      return (
+                        <div key={msg.id || i} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${
+                              isMe
+                                ? "bg-purple-600 text-white rounded-tr-none"
+                                : "bg-white/5 text-gray-200 rounded-tl-none border border-white/5"
+                            }`}
+                          >
+                            {msg.content}
+                            {msg.attachments?.map((att, j) => (
+                              <a
+                                key={j}
+                                href={att.file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block mt-2 text-xs underline truncate"
+                              >
+                                📎 {fileNameFromUrl(att.file)}
+                              </a>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
-                
-                {/* Input Area */}
+
+                {attachments.length > 0 && (
+                  <div className="px-4 py-2 border-t border-white/5 flex flex-wrap gap-2">
+                    {attachments.map((f, i) => (
+                      <span key={i} className="text-[10px] bg-white/5 px-2 py-1 rounded-lg text-gray-400 truncate max-w-[120px]">
+                        {f.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 <form onSubmit={handleSend} className="p-5 border-t border-white/5 bg-white/[0.02]">
                   <div className="relative flex items-center gap-2">
-                    <button type="button" className="p-2 text-gray-500 hover:text-white transition-colors">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 text-gray-500 hover:text-white transition-colors"
+                    >
                       <IoAttachOutline className="text-xl" />
                     </button>
+                    <input ref={fileInputRef} type="file" multiple accept={CHAT_FILE_ACCEPT} className="hidden" onChange={handleAttachment} />
                     <input
                       type="text"
                       value={messageInput}
                       onChange={(e) => setMessageInput(e.target.value)}
-                      placeholder="Message..."
+                      placeholder="Message… PDF, ZIP, images, video"
                       className="flex-1 bg-white/[0.05] border border-white/5 rounded-2xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/30 transition-all"
                     />
-                    <button 
+                    <button
                       type="submit"
-                      disabled={!messageInput.trim()}
-                      className="p-2.5 bg-purple-600 rounded-xl text-white hover:bg-purple-500 disabled:opacity-50 disabled:grayscale transition-all"
+                      disabled={sending || (!messageInput.trim() && attachments.length === 0)}
+                      className="p-2.5 bg-purple-600 rounded-xl text-white hover:bg-purple-500 disabled:opacity-50 transition-all"
                     >
                       <IoSendSharp className="text-sm" />
                     </button>

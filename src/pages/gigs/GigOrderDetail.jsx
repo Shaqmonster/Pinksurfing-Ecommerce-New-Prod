@@ -720,17 +720,22 @@ const GigOrderDetail = () => {
 
   const handleOpenChat = async () => {
     if (!order) return;
-    // buyer FK is user ID, seller_user_id is the seller's Django User ID
-    const targetUserId = isBuyer ? order.seller_user_id : order.buyer;
-    if (!targetUserId) {
+    const targetEmail = isBuyer ? order.seller_email : order.buyer_email;
+    if (!targetEmail) {
+      toast.error("Could not find the other party's email for chat.");
       navigate("/gighub/messages");
       return;
     }
     try {
-      const res = await createConversation(cookies.access_token, targetUserId);
-      navigate(`/gighub/messages?conversation=${res.data.id}`);
+      const res = await createConversation(cookies.access_token, targetEmail);
+      const convId = res.data?.id;
+      if (convId) {
+        navigate(`/gighub/messages?conversation=${convId}`);
+      } else {
+        navigate(`/gighub/messages?with=${encodeURIComponent(targetEmail)}`);
+      }
     } catch {
-      navigate("/gighub/messages");
+      navigate(`/gighub/messages?with=${encodeURIComponent(targetEmail)}`);
     }
   };
 

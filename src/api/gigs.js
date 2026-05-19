@@ -242,3 +242,10 @@ export const sendMessage = (token, conversationId, content, attachments = []) =>
     { headers: authHeader(token) }
   );
 };
+
+export const markConversationRead = (token, conversationId) =>
+  axios.post(
+    `${BASE_URL}/api/chat/conversations/${conversationId}/mark-read/`,
+    {},
+    { headers: authHeader(token) }
+  );
