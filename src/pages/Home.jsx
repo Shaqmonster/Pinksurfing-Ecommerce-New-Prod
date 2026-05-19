@@ -598,7 +598,7 @@ const Home = () => {
                           <h3 className="text-[11px] sm:text-xs lg:text-sm font-semibold text-white text-center leading-tight line-clamp-2 drop-shadow-md group-hover:text-purple-100 transition-colors">
                             {item.name}
                           </h3>
-                        </motion.div>
+                        </div>
                       </div>
                     </button>
                   </motion.div>
