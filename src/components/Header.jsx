@@ -57,6 +57,9 @@ const Header = () => {
     pendingChatConversation,
     setPendingChatConversation,
     closeChat,
+    openChatInbox,
+    pendingChatParticipantEmail,
+    setPendingChatParticipantEmail,
   } = useContext(authContext);
   const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
     useContext(dataContext);
@@ -232,6 +235,8 @@ const Header = () => {
             onClose={closeChat}
             pendingConversation={pendingChatConversation}
             clearPendingConversation={() => setPendingChatConversation(null)}
+            pendingParticipantEmail={pendingChatParticipantEmail}
+            clearPendingParticipantEmail={() => setPendingChatParticipantEmail(null)}
           />
         </>
       )}
@@ -327,13 +332,6 @@ const Header = () => {
                       </span>
                     )}
                   </div>
-                  <Link
-                    to="/gighub/messages"
-                    className="hidden lg:flex items-center text-[10px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-purple-300 transition-colors"
-                    onClick={() => setIsProfileOpen(false)}
-                  >
-                    Inbox
-                  </Link>
                 </div>
               )}
 
@@ -440,13 +438,16 @@ const Header = () => {
               >
                 Support
               </Link>
-              <Link 
-                to="/gighub/messages" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openChatInbox();
+                }}
+                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors text-left"
               >
                 Messages
-              </Link>
+              </button>
               
               <div className="mt-auto flex flex-col gap-4">
                 <Link 

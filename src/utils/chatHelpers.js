@@ -58,3 +58,28 @@ export function attachmentIcon(name) {
 export function sumUnreadCount(conversations) {
   return (conversations || []).reduce((n, c) => n + (c.unread_count || 0), 0);
 }
+
+/** Human-readable presence for chat header */
+export function formatLastSeen(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const diffMs = Date.now() - d.getTime();
+  if (diffMs < 0) return "Last seen just now";
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "Last seen just now";
+  if (diffMin < 60) return `Last seen ${diffMin}m ago`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `Last seen ${diffH}h ago`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD === 1) return "Last seen yesterday";
+  if (diffD < 7) return `Last seen ${diffD}d ago`;
+  return `Last seen ${d.toLocaleDateString([], { month: "short", day: "numeric" })}`;
+}
+
+export function presenceLabel({ isOnline, lastSeen } = {}) {
+  if (isOnline) return { text: "Online", online: true };
+  const seen = formatLastSeen(lastSeen);
+  if (seen) return { text: seen, online: false };
+  return { text: "Offline", online: false };
+}

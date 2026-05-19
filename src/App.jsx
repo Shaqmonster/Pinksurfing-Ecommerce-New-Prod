@@ -52,7 +52,7 @@ import GigOrderCancel from "./pages/gigs/GigOrderCancel";
 import GigHubLanding from "./pages/gigs/GigHubLanding";
 import GigHubDashboard from "./pages/gigs/GigHubDashboard";
 import GigHubSellerDashboard from "./pages/gigs/GigHubSellerDashboard";
-import GigMessages from "./pages/gigs/GigMessages";
+import ChatMessagesRedirect from "./pages/gigs/ChatMessagesRedirect";
 import GigHubEscrowPlayground from "./pages/gigs/GigHubEscrowPlayground";
 import GigOrderDetail from "./pages/gigs/GigOrderDetail";
 import VisitPaymentReturn from "./pages/VisitPaymentReturn";
@@ -150,7 +150,7 @@ function App() {
         <Route path="/gighub" element={<GigHubLanding />} />
         <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
         <Route path="/gighub/seller" element={<GigHubSellerDashboard />} />
-        <Route path="/gighub/messages" element={<GigMessages />} />
+        <Route path="/gighub/messages" element={<ChatMessagesRedirect />} />
         <Route path="/gighub/escrow" element={<GigHubEscrowPlayground />} />
 
         {/* Gigs routes — static paths before dynamic :id */}

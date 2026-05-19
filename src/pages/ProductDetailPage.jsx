@@ -286,10 +286,6 @@ const ProductDetailPage = () => {
       const conversation = res?.data;
       if (conversation?.id && typeof openChatWithConversation === "function") {
         openChatWithConversation(conversation);
-      } else if (conversation?.id) {
-        navigate(`/gighub/messages?conversation=${conversation.id}`);
-      } else {
-        navigate(`/gighub/messages`);
       }
     } catch (err) {
       const detail = err?.response?.data?.detail || err?.response?.data?.error;

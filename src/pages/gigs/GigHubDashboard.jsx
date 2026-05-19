@@ -314,7 +314,7 @@ const BuyerDashboardContent = ({ orders, loading }) => {
 const GigHubDashboard = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user } = useContext(authContext);
+  const { user, openChatInbox } = useContext(authContext);
   const { address: inAppAddress } = useInAppWallet();
 
   const [allOrders, setAllOrders] = useState([]);
@@ -376,12 +376,13 @@ const GigHubDashboard = () => {
             >
               <IoEyeOutline className="text-base text-pink-400/90" /> Browse
             </Link>
-            <Link
-              to="/gighub/messages"
+            <button
+              type="button"
+              onClick={openChatInbox}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold bg-[#13131a]/90 border border-white/[0.08] text-white/80 hover:border-pink-500/30 hover:text-white transition-colors"
             >
               <IoChatbubbleOutline className="text-base text-pink-400/90" /> Messages
-            </Link>
+            </button>
             <Link
               to="/gighub/seller"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold text-white bg-gradient-to-r from-violet-600 to-pink-500 shadow-lg shadow-pink-500/20 hover:opacity-95 transition-opacity"

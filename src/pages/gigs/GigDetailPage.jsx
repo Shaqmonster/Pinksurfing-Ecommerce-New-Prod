@@ -15,7 +15,6 @@ import {
 } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { createServicesEscrowForGigOrder } from "../../lib/gighubEscrowFlow";
-import GigSellerChatModal from "../../components/gigs/GigSellerChatModal";
 import {
   IoStarSharp,
   IoTimeOutline,
@@ -260,7 +259,7 @@ const GigDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user } = useContext(authContext);
+  const { user, openChatWithParticipantEmail } = useContext(authContext);
   const { wallet: inAppWallet } = useInAppWallet();
 
   const [gig, setGig] = useState(null);
@@ -279,8 +278,13 @@ const GigDetailPage = () => {
   const [rateLoading, setRateLoading] = useState(false);
   const [rateError, setRateError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
-  const [chatOpen, setChatOpen] = useState(false);
   const isOwner = user?.email === gig?.worker?.email;
+
+  const sellerChatEmail =
+    gig?.worker?.email ||
+    gig?.worker?.customer?.email ||
+    gig?.worker?.vendor?.email ||
+    "";
 
   useEffect(() => {
     setLoading(true);
@@ -896,7 +900,11 @@ const GigDetailPage = () => {
                           navigate("/signin");
                           return;
                         }
-                        setChatOpen(true);
+                        if (!sellerChatEmail) {
+                          toast.error("Seller contact is not available.");
+                          return;
+                        }
+                        openChatWithParticipantEmail(sellerChatEmail);
                       }}
                       className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
                     >
@@ -1102,7 +1110,11 @@ const GigDetailPage = () => {
                         navigate("/signin");
                         return;
                       }
-                      setChatOpen(true);
+                      if (!sellerChatEmail) {
+                        toast.error("Seller contact is not available.");
+                        return;
+                      }
+                      openChatWithParticipantEmail(sellerChatEmail);
                     }}
                     className="mt-4 w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 transition-all flex items-center justify-center gap-2"
                   >
@@ -1119,16 +1131,6 @@ const GigDetailPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Seller Chat Modal */}
-      <GigSellerChatModal
-        isOpen={chatOpen}
-        onClose={() => setChatOpen(false)}
-        accessToken={cookies.access_token}
-        sellerEmail={gig.worker?.email}
-        sellerName={workerName}
-        currentUserEmail={user?.email}
-      />
 
       <AnimatePresence>
         <CheckoutFlowModal

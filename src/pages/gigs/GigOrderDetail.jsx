@@ -12,7 +12,6 @@ import {
   deliverOrder,
   completeOrder,
   cancelOrder,
-  createConversation,
   setGigOrderEscrowId,
   disputeOrder,
   gigUrl,
@@ -346,7 +345,7 @@ const GigOrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user } = useContext(authContext);
+  const { user, openChatWithParticipantEmail } = useContext(authContext);
   const { wallet: inAppWallet, address: inAppAddress } = useInAppWallet();
 
   const [order, setOrder] = useState(null);
@@ -718,25 +717,14 @@ const GigOrderDetail = () => {
     }
   };
 
-  const handleOpenChat = async () => {
+  const handleOpenChat = () => {
     if (!order) return;
     const targetEmail = isBuyer ? order.seller_email : order.buyer_email;
     if (!targetEmail) {
       toast.error("Could not find the other party's email for chat.");
-      navigate("/gighub/messages");
       return;
     }
-    try {
-      const res = await createConversation(cookies.access_token, targetEmail);
-      const convId = res.data?.id;
-      if (convId) {
-        navigate(`/gighub/messages?conversation=${convId}`);
-      } else {
-        navigate(`/gighub/messages?with=${encodeURIComponent(targetEmail)}`);
-      }
-    } catch {
-      navigate(`/gighub/messages?with=${encodeURIComponent(targetEmail)}`);
-    }
+    openChatWithParticipantEmail(targetEmail);
   };
 
   if (loading) {

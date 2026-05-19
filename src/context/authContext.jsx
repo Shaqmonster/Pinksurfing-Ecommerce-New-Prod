@@ -45,15 +45,32 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [pendingChatConversation, setPendingChatConversation] = useState(null);
+  const [pendingChatParticipantEmail, setPendingChatParticipantEmail] = useState(null);
 
   const openChatWithConversation = (conversation) => {
+    setPendingChatParticipantEmail(null);
     if (conversation) setPendingChatConversation(conversation);
+    setIsChatOpen(true);
+  };
+
+  /** Opens floating chat and jumps straight into a 1:1 thread with this email */
+  const openChatWithParticipantEmail = (email) => {
+    if (!email) return;
+    setPendingChatConversation(null);
+    setPendingChatParticipantEmail(String(email).trim());
+    setIsChatOpen(true);
+  };
+
+  const openChatInbox = () => {
+    setPendingChatConversation(null);
+    setPendingChatParticipantEmail(null);
     setIsChatOpen(true);
   };
 
   const closeChat = () => {
     setIsChatOpen(false);
     setPendingChatConversation(null);
+    setPendingChatParticipantEmail(null);
   };
 
   const Logout = async () => {
@@ -340,7 +357,11 @@ export const AuthProvider = ({ children }) => {
         setIsChatOpen,
         pendingChatConversation,
         setPendingChatConversation,
+        pendingChatParticipantEmail,
+        setPendingChatParticipantEmail,
         openChatWithConversation,
+        openChatWithParticipantEmail,
+        openChatInbox,
         closeChat,
       }}
     >

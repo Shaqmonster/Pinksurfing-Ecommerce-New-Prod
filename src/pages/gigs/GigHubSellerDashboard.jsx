@@ -60,7 +60,7 @@ const STATUS_CONFIG = {
 const GigHubSellerDashboard = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user } = useContext(authContext);
+  const { user, openChatInbox } = useContext(authContext);
 
   const [workerProfile, setWorkerProfile] = useState(null);
   const [allOrders, setAllOrders] = useState([]);
@@ -211,12 +211,13 @@ const GigHubSellerDashboard = () => {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Link
-              to="/gighub/messages"
+            <button
+              type="button"
+              onClick={openChatInbox}
               className="flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium bg-white/[0.04] border border-pink-500/15 text-white/75 hover:border-pink-500/35 hover:bg-pink-500/[0.06] transition-all"
             >
               <IoChatbubbleOutline className="text-[15px] text-pink-400/90" /> Messages
-            </Link>
+            </button>
             <Link
               to="/gigs/create"
               className="flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold text-white bg-gradient-to-r from-violet-600 to-pink-500 shadow-lg shadow-pink-500/15 hover:opacity-95 transition-opacity"
