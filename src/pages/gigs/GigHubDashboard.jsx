@@ -7,23 +7,9 @@ import { authContext } from "../../context/authContext";
 import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard";
 import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
 import { useInAppWallet } from "../../context/inAppWalletContext";
+import { getMyGigOrders } from "../../api/gigs";
 import {
-  getMyGigOrders,
-  getMyGigs,
-  getMyGigWorkerProfile,
-  deleteGig,
-} from "../../api/gigs";
-import {
-  IoStarSharp,
-  IoTimeOutline,
-  IoCheckmarkCircle,
-  IoAlertCircleOutline,
-  IoAddCircleOutline,
-  IoTrashOutline,
-  IoPencilOutline,
   IoEyeOutline,
-  IoTrendingUpOutline,
-  IoWalletOutline,
   IoChatbubbleOutline,
   IoStorefrontOutline,
 } from "react-icons/io5";
@@ -53,8 +39,12 @@ const STATUS_CONFIG = {
 };
 
 const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
-  const recentBuyer = [...buyerOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
-  const recentSeller = [...sellerOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+  const recentBuyer = [...buyerOrders]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
+  const recentSeller = [...sellerOrders]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
 
   const statusLabel = (s) => STATUS_CONFIG[s]?.label || "In Progress";
 
@@ -78,11 +68,17 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
                   className="flex items-center justify-between rounded-lg border border-white/10 p-2 hover:bg-white/[0.03]"
                 >
                   <div className="min-w-0">
-                    <p className="text-white text-xs font-semibold truncate">{o.gig?.title || `Order #${o.id}`}</p>
-                    <p className="text-white/45 text-[11px]">#{o.id} • {statusLabel(o.status)}</p>
+                    <p className="text-white text-xs font-semibold truncate">
+                      {o.gig?.title || `Order #${o.id}`}
+                    </p>
+                    <p className="text-white/45 text-[11px]">
+                      #{o.id} • {statusLabel(o.status)}
+                    </p>
                   </div>
                   <div className="text-right ml-3">
-                    <p className="text-white/80 text-xs font-semibold">${parseFloat(o.total_price || 0).toFixed(2)}</p>
+                    <p className="text-white/80 text-xs font-semibold">
+                      ${parseFloat(o.total_price || 0).toFixed(2)}
+                    </p>
                     <p className="text-white/35 text-[11px]">you paid</p>
                   </div>
                 </Link>
@@ -94,7 +90,12 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
           <p className="text-white/70 text-sm font-semibold mb-2">As Seller (orders you fulfill)</p>
           {recentSeller.length === 0 ? (
-            <p className="text-white/40 text-xs">No seller orders yet.</p>
+            <p className="text-white/40 text-xs">
+              No seller orders yet.{" "}
+              <Link to="/gighub/seller" className="text-pink-400 hover:underline">
+                Open Seller studio
+              </Link>
+            </p>
           ) : (
             <div className="space-y-2">
               {recentSeller.map((o) => (
@@ -104,11 +105,17 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
                   className="flex items-center justify-between rounded-lg border border-white/10 p-2 hover:bg-white/[0.03]"
                 >
                   <div className="min-w-0">
-                    <p className="text-white text-xs font-semibold truncate">{o.gig?.title || `Order #${o.id}`}</p>
-                    <p className="text-white/45 text-[11px]">#{o.id} • {statusLabel(o.status)}</p>
+                    <p className="text-white text-xs font-semibold truncate">
+                      {o.gig?.title || `Order #${o.id}`}
+                    </p>
+                    <p className="text-white/45 text-[11px]">
+                      #{o.id} • {statusLabel(o.status)}
+                    </p>
                   </div>
                   <div className="text-right ml-3">
-                    <p className="text-emerald-300 text-xs font-semibold">${parseFloat(o.seller_net_earnings || 0).toFixed(2)}</p>
+                    <p className="text-emerald-300 text-xs font-semibold">
+                      ${parseFloat(o.seller_net_earnings || 0).toFixed(2)}
+                    </p>
                     <p className="text-white/35 text-[11px]">you receive</p>
                   </div>
                 </Link>
@@ -121,11 +128,6 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
   );
 };
 
-// ── BUYER TAB ──────────────────────────────────────────────────────────────
-// Hide unpaid orders from the dashboard. The backend creates a gig-order in
-// `pending_payment` as soon as the buyer hits checkout — but until Square
-// confirms the payment the order isn't really theirs yet, so we treat it like
-// it doesn't exist on the buyer dashboard.
 const PAID_BUYER_STATUSES = new Set([
   "pending_requirements",
   "in_progress",
@@ -164,24 +166,6 @@ const BuyerDashboardContent = ({ orders, loading }) => {
   ).length;
   const completedCount = orders.filter((o) => o.status === "completed").length;
 
-  const completedOrders = sellerOrders.filter((o) => o.status === "completed").length;
-  const pendingEarnings = sellerOrders
-    .filter((o) => ["pending_requirements", "in_progress", "delivered"].includes(o.status))
-    .reduce((sum, o) => sum + parseFloat(o.seller_net_earnings || 0), 0);
-
-  const handleDeleteGig = async (gigId) => {
-    if (!window.confirm("Are you sure you want to delete this gig?")) return;
-    try {
-      setDeletingId(gigId);
-      await deleteGig(cookies.access_token, gigId);
-      toast.success("Gig deleted.");
-      refetchGigs();
-    } catch {
-      toast.error("Failed to delete gig.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
   const formatDate = (d) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
@@ -220,7 +204,7 @@ const BuyerDashboardContent = ({ orders, loading }) => {
         <div>
           <h2 className="text-white text-[26px] font-semibold tracking-tight">Your orders</h2>
           <p className="text-white/45 text-[15px] mt-2 max-w-lg leading-relaxed">
-            Status reflects where the gig is in delivery — not whether checkout has cleared. Open an order for full details.
+            Status reflects where the gig is in delivery. Open an order for full details and chat.
           </p>
         </div>
 
@@ -247,7 +231,10 @@ const BuyerDashboardContent = ({ orders, loading }) => {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-3xl h-[100px] bg-[#13131a]/50 animate-pulse border border-white/[0.04]" />
+            <div
+              key={i}
+              className="rounded-3xl h-[100px] bg-[#13131a]/50 animate-pulse border border-white/[0.04]"
+            />
           ))}
         </div>
       ) : filteredOrders.length === 0 ? (
@@ -320,71 +307,6 @@ const BuyerDashboardContent = ({ orders, loading }) => {
           })}
         </ul>
       )}
-
-      {/* Earnings + order review */}
-      <div>
-        <h3 className="text-white font-bold text-lg mb-4">Freelancer Earnings & Order Review</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-            <p className="text-white/40 text-xs">Received (completed orders)</p>
-            <p className="text-emerald-300 font-bold text-2xl mt-1">${totalEarnings.toFixed(2)}</p>
-          </div>
-          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-            <p className="text-white/40 text-xs">Pending from active orders</p>
-            <p className="text-amber-300 font-bold text-2xl mt-1">${pendingEarnings.toFixed(2)}</p>
-          </div>
-          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-            <p className="text-white/40 text-xs">Total seller orders</p>
-            <p className="text-white font-bold text-2xl mt-1">{sellerOrders.length}</p>
-          </div>
-        </div>
-
-        {loadingOrders ? (
-          <div className="space-y-3">
-            {[1, 2].map((i) => <div key={i} className="bg-[#13131a] rounded-2xl p-5 animate-pulse h-20" />)}
-          </div>
-        ) : sellerOrders.length === 0 ? (
-          <div className="text-center py-10 bg-[#13131a] border border-white/5 rounded-2xl">
-            <p className="text-white/40 text-sm">No seller orders yet.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sellerOrders.map((order) => {
-              const statusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.in_progress;
-              return (
-                <Link
-                  key={`seller-review-${order.id}`}
-                  to={`/gigs/orders/${order.id}`}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[#13131a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-semibold line-clamp-1 mb-1">
-                      {order.gig?.title || `Order #${order.id}`}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className={`px-2 py-0.5 rounded-full border ${statusCfg.color}`}>
-                        {statusCfg.label}
-                      </span>
-                      <span className="text-white/30">Order #{order.id}</span>
-                      <span className="text-white/30">{new Date(order.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
-                    <div className="text-right">
-                      <p className="text-white/30">Gig total</p>
-                      <p className="text-white/80 font-semibold">${parseFloat(order.gig_price || 0).toFixed(2)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white/30">You get (net)</p>
-                      <p className="text-emerald-300 font-semibold">${parseFloat(order.seller_net_earnings || 0).toFixed(2)}</p>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
   );
 };
@@ -421,6 +343,7 @@ const GigHubDashboard = () => {
   };
 
   const buyerOrders = allOrders.filter((o) => o.is_buyer === true && isPaidBuyerOrder(o));
+  const sellerOrders = allOrders.filter((o) => o.is_seller === true);
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
@@ -468,62 +391,13 @@ const GigHubDashboard = () => {
           </div>
         </motion.div>
 
-        {/* Tab selector */}
-        <div className="flex gap-1 bg-[#13131a] border border-white/5 rounded-2xl p-1 w-fit mb-8">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                activeTab === tab.key
-                  ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md"
-                  : "text-white/50 hover:text-white/70"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
         <SimpleOrderCenter buyerOrders={buyerOrders} sellerOrders={sellerOrders} />
 
-        {/* Tab content */}
-        <AnimatePresence mode="wait">
-          {activeTab === "buying" ? (
-            <motion.div
-              key="buying"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              className="space-y-6"
-            >
-              <InAppWalletBalanceCard compact />
-              <WalletTxHistoryCard address={inAppAddress} title="Buyer Wallet Transactions" />
-              <BuyerTab orders={buyerOrders} loading={loadingOrders} refetch={fetchOrders} />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="selling"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="space-y-6"
-            >
-              <InAppWalletBalanceCard compact />
-              <WalletTxHistoryCard address={inAppAddress} title="Seller Wallet Transactions" />
-              <SellerTab
-                workerProfile={workerProfile}
-                sellerOrders={sellerOrders}
-                myGigs={myGigs}
-                loadingOrders={loadingOrders}
-                loadingGigs={loadingGigs}
-                refetchGigs={fetchWorkerAndGigs}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="space-y-6">
+          <InAppWalletBalanceCard compact />
+          <WalletTxHistoryCard address={inAppAddress} title="Buyer Wallet Transactions" />
+          <BuyerDashboardContent orders={buyerOrders} loading={loadingOrders} />
+        </div>
       </div>
     </div>
   );
