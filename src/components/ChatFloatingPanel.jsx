@@ -19,6 +19,7 @@ import { authContext } from "../context/authContext";
 import {
   CHAT_FILE_ACCEPT,
   fileNameFromUrl,
+  getEmailFromToken,
   getWsBaseUrl,
   presenceLabel,
   sumUnreadCount,
@@ -47,12 +48,15 @@ const ChatFloatingPanel = ({
   const [openingThread, setOpeningThread] = useState(false);
 
   const wsRef = useRef(null);
+  const wsReconnectRef = useRef(null);
+  const wsConnectedRef = useRef(false);
+  const connectWsRef = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const pollRef = useRef(null);
   const activeConvRef = useRef(null);
   const messagesRef = useRef([]);
-  const myEmail = (user?.email || "").toLowerCase();
+  const myEmail = (user?.email || getEmailFromToken(cookies.access_token) || "").toLowerCase();
 
   messagesRef.current = messages;
   activeConvRef.current = activeConv;
@@ -69,6 +73,16 @@ const ChatFloatingPanel = ({
       lastSeen: other.last_seen || null,
     });
   }, []);
+
+  const applyPresenceForEmail = useCallback((email, isOnline, lastSeen) => {
+    const other = otherUser(activeConvRef.current);
+    if (!other || !email) return;
+    if (email.toLowerCase() !== (other.email || "").toLowerCase()) return;
+    setOtherUserStatus({
+      isOnline: Boolean(isOnline),
+      lastSeen: lastSeen || null,
+    });
+  }, [otherUser]);
 
   const fetchConversations = useCallback(
     async (silent = false) => {
@@ -110,30 +124,45 @@ const ChatFloatingPanel = ({
     [cookies.access_token]
   );
 
+  const sendWsIdentity = useCallback(() => {
+    if (!myEmail || wsRef.current?.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(JSON.stringify({ type: "identity", email: myEmail }));
+  }, [myEmail]);
+
   const connectWs = useCallback(
     (convId) => {
+      const wsBase = getWsBaseUrl();
+      if (!wsBase || !convId) return;
+
+      clearTimeout(wsReconnectRef.current);
       if (wsRef.current) {
+        wsRef.current.onclose = null;
         wsRef.current.close();
         wsRef.current = null;
       }
-      const ws = new WebSocket(`${getWsBaseUrl()}/ws/chat/${convId}/`);
+
+      wsConnectedRef.current = false;
+
+      const ws = new WebSocket(`${wsBase}/ws/chat/${convId}/`);
 
       ws.onopen = () => {
-        if (myEmail) ws.send(JSON.stringify({ type: "identity", email: myEmail }));
+        wsConnectedRef.current = true;
+        sendWsIdentity();
       };
 
       ws.onmessage = (e) => {
         try {
           const data = JSON.parse(e.data);
 
+          if (data.type === "presence_snapshot" && Array.isArray(data.users)) {
+            data.users.forEach((u) => {
+              applyPresenceForEmail(u.email, u.is_online, u.last_seen);
+            });
+            return;
+          }
+
           if (data.type === "user_status") {
-            const other = otherUser(activeConvRef.current);
-            if (other && (data.email || "").toLowerCase() === (other.email || "").toLowerCase()) {
-              setOtherUserStatus({
-                isOnline: Boolean(data.is_online),
-                lastSeen: data.last_seen || other.last_seen || null,
-              });
-            }
+            applyPresenceForEmail(data.email, data.is_online, data.last_seen);
             return;
           }
 
@@ -150,7 +179,13 @@ const ChatFloatingPanel = ({
             };
             setMessages((prev) => {
               if (prev.some((m) => m.id === newMsg.id)) return prev;
-              return [...prev, newMsg];
+              const withoutOptimistic = prev.filter(
+                (m) =>
+                  !String(m.id).startsWith("local-") ||
+                  m.content !== newMsg.content ||
+                  (m.sender?.email || "").toLowerCase() !== (newMsg.sender?.email || "").toLowerCase()
+              );
+              return [...withoutOptimistic, newMsg];
             });
             fetchConversations(true);
           }
@@ -159,10 +194,46 @@ const ChatFloatingPanel = ({
         }
       };
 
+      ws.onerror = () => {
+        wsConnectedRef.current = false;
+      };
+
+      ws.onclose = () => {
+        wsConnectedRef.current = false;
+        if (wsRef.current === ws) wsRef.current = null;
+        if (activeConvRef.current?.id !== convId) return;
+        clearTimeout(wsReconnectRef.current);
+        wsReconnectRef.current = setTimeout(() => {
+          if (activeConvRef.current?.id === convId) {
+            connectWsRef.current?.(convId);
+          }
+        }, 2000);
+      };
+
       wsRef.current = ws;
     },
-    [myEmail, otherUser, fetchConversations]
+    [sendWsIdentity, applyPresenceForEmail, fetchConversations]
   );
+
+  connectWsRef.current = connectWs;
+
+  useEffect(() => {
+    sendWsIdentity();
+  }, [sendWsIdentity, activeConv?.id]);
+
+  useEffect(() => {
+    if (!isOpen || !myEmail || !activeConv?.id) return undefined;
+    const heartbeat = () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: "heartbeat", email: myEmail }));
+      } else if (activeConvRef.current?.id) {
+        connectWs(activeConvRef.current.id);
+      }
+    };
+    heartbeat();
+    const id = setInterval(heartbeat, 30000);
+    return () => clearInterval(id);
+  }, [isOpen, myEmail, activeConv?.id, connectWs]);
 
   const openConversation = useCallback(
     async (conv, { silentMessages = false } = {}) => {
@@ -229,18 +300,23 @@ const ChatFloatingPanel = ({
   useEffect(() => {
     if (!isOpen) {
       clearInterval(pollRef.current);
+      clearTimeout(wsReconnectRef.current);
       if (wsRef.current) {
+        wsRef.current.onclose = null;
         wsRef.current.close();
         wsRef.current = null;
       }
+      wsConnectedRef.current = false;
       return;
     }
-    pollRef.current = setInterval(() => {
+    const tick = () => {
       fetchConversations(true);
       if (activeConvRef.current?.id) {
         fetchMessages(activeConvRef.current.id, { silent: true });
       }
-    }, 12000);
+    };
+    tick();
+    pollRef.current = setInterval(tick, 5000);
     return () => clearInterval(pollRef.current);
   }, [isOpen, fetchConversations, fetchMessages]);
 
@@ -252,7 +328,11 @@ const ChatFloatingPanel = ({
 
   useEffect(() => {
     return () => {
-      if (wsRef.current) wsRef.current.close();
+      clearTimeout(wsReconnectRef.current);
+      if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.close();
+      }
     };
   }, []);
 
@@ -279,18 +359,9 @@ const ChatFloatingPanel = ({
     setSending(true);
 
     try {
-      if (files.length > 0) {
-        appendOptimisticMessage(text, files);
-        await sendMessage(cookies.access_token, activeConv.id, text, files);
-        await fetchMessages(activeConv.id, { silent: true });
-      } else if (wsRef.current?.readyState === WebSocket.OPEN) {
-        appendOptimisticMessage(text);
-        wsRef.current.send(JSON.stringify({ message: text, sender_email: myEmail }));
-      } else {
-        appendOptimisticMessage(text);
-        await sendMessage(cookies.access_token, activeConv.id, text);
-        await fetchMessages(activeConv.id, { silent: true });
-      }
+      appendOptimisticMessage(text, files);
+      await sendMessage(cookies.access_token, activeConv.id, text, files);
+      await fetchMessages(activeConv.id, { silent: true });
       fetchConversations(true);
     } catch (err) {
       console.error("Failed to send message", err);
@@ -310,10 +381,13 @@ const ChatFloatingPanel = ({
   const handleBack = () => {
     setActiveConv(null);
     setMessages([]);
+    clearTimeout(wsReconnectRef.current);
     if (wsRef.current) {
+      wsRef.current.onclose = null;
       wsRef.current.close();
       wsRef.current = null;
     }
+    wsConnectedRef.current = false;
   };
 
   const filtered = conversations.filter((conv) => {
