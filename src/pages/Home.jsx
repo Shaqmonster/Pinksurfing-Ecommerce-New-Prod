@@ -408,34 +408,42 @@ const Home = () => {
                   >
                     <div
                       onClick={() => {
-                        if (item.id === 3) {
-                          handleMyStoreClick();
-                        } else if (item.id === 2) {
-                          navigate(`/coming-soon`);
-                        } else if (item.id === 1) {
-                          navigate(`/shoppingMall`);
-                        } else {
-                          navigate(`/shoppingMall`);
+                        if (item.coming_soon) {
+                          toast.info(`${item.name} is coming soon!`, {
+                            position: "top-right",
+                            autoClose: 2200,
+                          });
+                          return;
                         }
+                        if (item.id === 3) handleMyStoreClick();
                       }}
-                      className="group cursor-pointer"
+                      className={`group ${item.coming_soon ? "cursor-default" : "cursor-pointer"}`}
                     >
                       <div className="rounded-2xl overflow-hidden h-[350px] relative border border-white/10">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
                         <img
                           src={item.image}
                           alt={`${item.name} on PinkSurfing marketplace`}
-                          className="w-full h-full object-cover"
+                          className={`w-full h-full object-cover ${item.coming_soon ? "opacity-80" : ""}`}
                           loading="lazy"
                         />
+                        {item.coming_soon && (
+                          <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+                            <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white tracking-wide">
+                              Coming soon
+                            </span>
+                          </div>
+                        )}
                         <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
                           <h3 className="text-white text-2xl font-bold mb-2">{item.name}</h3>
-                          <div className="flex items-center text-purple-300">
-                            <span className="text-sm font-semibold">Explore Now</span>
-                            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                          </div>
+                          {!item.coming_soon && (
+                            <div className="flex items-center text-purple-300">
+                              <span className="text-sm font-semibold">Explore Now</span>
+                              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                              </svg>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -486,32 +494,46 @@ const Home = () => {
               <div
                 key={item.id}
                 onClick={() => {
-                  if (item.id === 3) {
-                    handleMyStoreClick();
-                  } else if (item.id === 2) {
-                    navigate(`/coming-soon`);
-                  } else {
-                    navigate(`/shoppingMall`);
+                  if (item.coming_soon) {
+                    toast.info(`${item.name} is coming soon!`, {
+                      position: "top-right",
+                      autoClose: 2200,
+                    });
+                    return;
                   }
+                  if (item.id === 3) handleMyStoreClick();
                 }}
-                className="group cursor-pointer transform hover:-translate-y-1 transition-transform duration-200"
+                className={`group transform transition-transform duration-200 ${
+                  item.coming_soon
+                    ? "cursor-default"
+                    : "cursor-pointer hover:-translate-y-1"
+                }`}
               >
-                <div className="rounded-2xl overflow-hidden h-[260px] sm:h-[280px] relative border border-white/10 hover:border-purple-500/30 transition-colors">
+                <div className={`rounded-2xl overflow-hidden h-[260px] sm:h-[280px] relative border border-white/10 transition-colors ${item.coming_soon ? "" : "hover:border-purple-500/30"}`}>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
                   <img
                     src={item.image}
                     alt={`${item.name} on PinkSurfing marketplace`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className={`w-full h-full object-cover transition-transform duration-300 ${item.coming_soon ? "opacity-80" : "group-hover:scale-105"}`}
                     loading="lazy"
                   />
+                  {item.coming_soon && (
+                    <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+                      <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white tracking-wide">
+                        Coming soon
+                      </span>
+                    </div>
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
                     <h3 className="text-white text-lg sm:text-xl font-bold mb-1">{item.name}</h3>
-                    <div className="flex items-center text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <span className="text-sm font-medium">Explore Now</span>
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </div>
+                    {!item.coming_soon && (
+                      <div className="flex items-center text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <span className="text-sm font-medium">Explore Now</span>
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -675,20 +697,6 @@ const Home = () => {
               )}
             </div>
 
-            {/* View All Button */}
-            {(selectedCategory === 1 || selectedCategory === 3) && (
-              <div className="text-center mt-10">
-                <Link
-                  to={selectedCategory === 1 ? "/shoppingMall" : "/shoppingMall"}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-colors duration-200 shadow-lg"
-                >
-                  <span>View All</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </div>
-            )}
           </div>
         </section>
       </div>
