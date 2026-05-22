@@ -46,6 +46,7 @@ import MyOffersPage from "./pages/bids/MyOffersPage";
 import GigsPage from "./pages/gigs/GigsPage";
 import GigDetailPage from "./pages/gigs/GigDetailPage";
 import CreateGigPage from "./pages/gigs/CreateGigPage";
+import IdentityVerify from "./pages/IdentityVerify";
 import MyGigOrders from "./pages/gigs/MyGigOrders";
 import GigOrderSuccess from "./pages/gigs/GigOrderSuccess";
 import GigOrderCancel from "./pages/gigs/GigOrderCancel";
@@ -155,6 +156,7 @@ function App() {
 
         {/* Gigs routes — static paths before dynamic :id */}
         <Route path="/gigs" element={<GigsPage />} />
+        <Route path="/identity/verify" element={<IdentityVerify />} />
         <Route path="/gigs/create" element={<CreateGigPage />} />
         <Route path="/gigs/orders" element={<MyGigOrders />} />
         <Route path="/gigs/orders/success" element={<GigOrderSuccess />} />

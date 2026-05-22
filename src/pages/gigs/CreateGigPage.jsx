@@ -21,6 +21,7 @@ import {
   IoTrashOutline,
 } from "react-icons/io5";
 import { FaBriefcase, FaPlus } from "react-icons/fa";
+import DiditVerificationGate from "../../components/DiditVerificationGate";
 
 const TIERS = ["basic", "standard", "premium"];
 const TIER_LABELS = { basic: "Basic", standard: "Standard", premium: "Premium" };
@@ -227,6 +228,12 @@ const CreateGigPage = () => {
       navigate(`/gigs/${finalGigId}`);
     } catch (err) {
       const errData = err?.response?.data;
+      const code = errData?.code || errData?.errors?.[0]?.code;
+      if (code === "kyc_required" || err?.response?.status === 403) {
+        toast.error("Identity verification is required before publishing a gig.");
+        navigate("/identity/verify?context=gig_seller&returnUrl=/gigs/create");
+        return;
+      }
       const msg =
         errData?.detail ||
         (typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
@@ -244,6 +251,12 @@ const CreateGigPage = () => {
   };
 
   return (
+    <DiditVerificationGate
+      context="gig_seller"
+      callbackPath="/identity/verify"
+      title="Verify before publishing"
+      description="Complete identity verification once to post gigs on GigHub. If you already verified as a vendor, you will not be asked again."
+    >
     <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden py-8 px-4">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[130px] pointer-events-none" />
 
@@ -650,6 +663,7 @@ const CreateGigPage = () => {
         </AnimatePresence>
       </div>
     </div>
+    </DiditVerificationGate>
   );
 };
 

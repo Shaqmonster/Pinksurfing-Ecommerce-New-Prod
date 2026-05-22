@@ -187,7 +187,12 @@ export default function VendorDetailsForm() {
         toast.success("You're now a vendor on Pinksurfing", {
           position: "top-center",
         });
-        window.location.href = "https://vendors.pinksurfing.com/";
+        if (response.data?.kyc_required) {
+          const returnUrl = encodeURIComponent("https://vendors.pinksurfing.com/");
+          window.location.href = `${window.location.origin}/identity/verify?context=vendor&returnUrl=${returnUrl}`;
+        } else {
+          window.location.href = "https://vendors.pinksurfing.com/";
+        }
       })
       .catch((error) => {
         handleError(error.response.data.message || error.response.data.status || "Unable to Register as Vendor");

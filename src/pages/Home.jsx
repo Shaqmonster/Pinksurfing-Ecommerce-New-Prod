@@ -225,10 +225,16 @@ const Home = () => {
       // Close dialog
       setIsVendorDialogOpen(false);
 
-      // Redirect to vendor login after a short delay
-      setTimeout(() => {
-        window.open("https://vendors.pinksurfing.com", "_blank");
-      }, 2000);
+      if (response.data?.kyc_required) {
+        const returnUrl = encodeURIComponent("https://vendors.pinksurfing.com/");
+        setTimeout(() => {
+          window.location.href = `${window.location.origin}/identity/verify?context=vendor&returnUrl=${returnUrl}`;
+        }, 800);
+      } else {
+        setTimeout(() => {
+          window.open("https://vendors.pinksurfing.com", "_blank");
+        }, 2000);
+      }
 
     } catch (error) {
       console.error("Vendor registration error:", error);
