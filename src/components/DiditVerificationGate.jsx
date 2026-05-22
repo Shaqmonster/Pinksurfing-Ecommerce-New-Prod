@@ -91,17 +91,24 @@ const DiditVerificationGate = ({
         onVerified?.();
         return;
       }
-      const url = data.verification_url;
+      const url = data.verification_url || data.url;
       if (!url) {
-        toast.error("Could not start verification. Please try again.");
+        toast.error(
+          data.detail ||
+            "Could not start verification. Please try again later."
+        );
         return;
       }
       startPolling();
       DiditSdk.shared.startVerification({ url });
     } catch (err) {
       console.error("Failed to create identity session", err);
+      const d = err.response?.data;
       toast.error(
-        err.response?.data?.detail || "Could not start identity verification."
+        d?.detail ||
+          d?.didit_error ||
+          err.message ||
+          "Could not start identity verification."
       );
     } finally {
       setStarting(false);
