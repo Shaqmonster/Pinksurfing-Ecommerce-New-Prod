@@ -42,6 +42,7 @@ const Home = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [categoryCarouselIndex, setCategoryCarouselIndex] = useState(0);
   const [isVendorDialogOpen, setIsVendorDialogOpen] = useState(false);
+  const [isShoppingMallDialogOpen, setIsShoppingMallDialogOpen] = useState(false);
   const [vendorFormData, setVendorFormData] = useState({
     store_name: "",
     website: "",
@@ -89,6 +90,17 @@ const Home = () => {
   useEffect(() => {
     setCountries(Country.getAllCountries());
   }, []);
+
+  const handleComingSoonClick = (item) => {
+    if (item.id === 1) {
+      setIsShoppingMallDialogOpen(true);
+      return;
+    }
+    toast.info(`${item.name} is coming soon!`, {
+      position: "top-right",
+      autoClose: 2200,
+    });
+  };
 
   // Handle My Store click
   const handleMyStoreClick = () => {
@@ -378,12 +390,13 @@ const Home = () => {
               real estate, vehicles, and freelance services on GigHub—buy, list, or hire in one place.
             </p>
             <motion.div className="mt-6 flex flex-wrap justify-center gap-3">
-              <span
-                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/10 border border-white/15 text-gray-400 text-sm font-semibold cursor-not-allowed"
-                aria-disabled="true"
+              <button
+                type="button"
+                onClick={() => setIsShoppingMallDialogOpen(true)}
+                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/10 border border-white/15 text-gray-400 text-sm font-semibold hover:border-purple-500/50 transition-colors"
               >
                 Shopping Mall — Coming soon
-              </span>
+              </button>
               <button
                 type="button"
                 onClick={handleMyStoreClick}
@@ -415,10 +428,7 @@ const Home = () => {
                     <div
                       onClick={() => {
                         if (item.coming_soon) {
-                          toast.info(`${item.name} is coming soon!`, {
-                            position: "top-right",
-                            autoClose: 2200,
-                          });
+                          handleComingSoonClick(item);
                           return;
                         }
                         if (item.id === 3) handleMyStoreClick();
@@ -501,10 +511,7 @@ const Home = () => {
                 key={item.id}
                 onClick={() => {
                   if (item.coming_soon) {
-                    toast.info(`${item.name} is coming soon!`, {
-                      position: "top-right",
-                      autoClose: 2200,
-                    });
+                    handleComingSoonClick(item);
                     return;
                   }
                   if (item.id === 3) handleMyStoreClick();
@@ -708,6 +715,86 @@ const Home = () => {
       </div>
 
       {/* <ChannelsForSale /> */}
+
+      {/* Shopping Mall Coming Soon Dialog */}
+      <Transition appear show={isShoppingMallDialogOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={() => setIsShoppingMallDialogOpen(false)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-3xl glass bg-[#1a1a24] border border-purple-500/30 p-8 text-left align-middle shadow-2xl shadow-purple-500/20 transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-xl font-bold mb-4 flex items-center justify-between"
+                  >
+                    <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                      Shopping Mall
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsShoppingMallDialogOpen(false)}
+                      className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
+                    >
+                      <IoClose size={24} />
+                    </button>
+                  </Dialog.Title>
+
+                  <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                    Shopping Mall coming soon. Do you want an open marketplace to list products right away? Then email us at{" "}
+                    <a
+                      href="mailto:marketing@pinksurfing.com?subject=Want%20marketplace%20now"
+                      className="text-purple-400 hover:text-pink-400 underline"
+                    >
+                      marketing@pinksurfing.com
+                    </a>{" "}
+                    and say &ldquo;want marketplace now&rdquo;, and any specific category you want to sell.
+                  </p>
+
+                  <div className="flex flex-wrap gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsShoppingMallDialogOpen(false)}
+                      className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-colors"
+                    >
+                      Close
+                    </button>
+                    <a
+                      href="mailto:marketing@pinksurfing.com?subject=Want%20marketplace%20now&body=Want%20marketplace%20now%0A%0ACategory%20I%20want%20to%20sell%3A%20"
+                      className="inline-flex items-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:from-purple-500 hover:to-pink-500 transition-colors"
+                    >
+                      Email us
+                    </a>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
 
       {/* Vendor Registration Dialog */}
       <Transition appear show={isVendorDialogOpen} as={Fragment}>
