@@ -23,8 +23,10 @@ export const categories = [
 
 /**
  * Order: (1) Business for sale → (2–3) Real estate → (4) Cars & trucks →
- * (5) Perfumes → (6) Trading cards. Remaining categories are coming soon.
- * Removed: Toys, Computer Parts.
+ * (5) Perfumes → (6) Trading cards → (7) Electronics (Computer Parts is a subcategory).
+ * Remaining categories are coming soon.
+ * Computer Parts is a subcategory under Electronics (see filter.json), not a top-level tile.
+ * Removed: Toys.
  */
 export const subCategories = [
   // —— Live / ordered ——
@@ -77,21 +79,20 @@ export const subCategories = [
     extraclass: "object-cover",
     link: "/home",
   },
+  {
+    id: "4",
+    name: "Electronics",
+    category: "electronics",
+    image: "/new/electronics.jpg",
+    extraclass: "object-cover",
+    link: "/home",
+  },
   // —— Coming soon ——
   // {
   //   id: "2",
   //   name: "Beauty/Makeup",
   //   category: "beauty-makeup",
   //   image: "/new/beauty_makeup.jpg",
-  //   extraclass: "object-cover",
-  //   link: "/home",
-  //   coming_soon: true,
-  // },
-  // {
-  //   id: "4",
-  //   name: "Electronics",
-  //   category: "electronics",
-  //   image: "/new/electronics.jpg",
   //   extraclass: "object-cover",
   //   link: "/home",
   //   coming_soon: true,

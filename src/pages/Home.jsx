@@ -564,7 +564,7 @@ const Home = () => {
               </span>
             </h2>
             <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-              Explore businesses for sale, real estate, vehicles, perfumes, trading cards, and more on the PinkSurfing marketplace.
+              Explore businesses for sale, real estate, vehicles, perfumes, trading cards, electronics, and more on the PinkSurfing marketplace.
             </p>
 
             <div
