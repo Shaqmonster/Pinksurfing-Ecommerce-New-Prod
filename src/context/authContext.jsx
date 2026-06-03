@@ -3,20 +3,20 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
-  attachSharedSsoSync,
   clearClientAuthStorage,
   ensureSession,
   fetchCustomerProfile,
   getAccessToken,
-  invalidateLocalSession,
+  getRefreshToken,
   isSsoLoggedOutGlobally,
-  reconcileSharedSession,
+  persistAuthSession,
   refreshAccessToken,
   signOut,
   syncReactAuthCookies,
 } from "../utils/authSession";
-export const authContext = createContext();
 import { toast } from "react-toastify";
+
+export const authContext = createContext();
 
 const Loader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -33,8 +33,8 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [authToken, setAuthToken] = useState("");
   const [authReady, setAuthReady] = useState(false);
+  const [user, setUser] = useState(null);
   const [currency, setCurrency] = useState("$");
-  const [user, setUser] = useState("");
   const [shopHeading, setShopHeading] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -55,23 +55,77 @@ export const AuthProvider = ({ children }) => {
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
   const [isUserWalletOpen, setIsUserWalletOpen] = useState(false);
-  const authInitRef = useRef(false);
-  const lastSyncedAccessRef = useRef("");
-  const profileInflightRef = useRef(null);
-  const ssoSyncInflightRef = useRef(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [pendingChatConversation, setPendingChatConversation] = useState(null);
   const [pendingChatParticipantEmail, setPendingChatParticipantEmail] = useState(null);
 
-  const clearSessionState = useCallback(() => {
-    setUser("");
+  const bootstrappedRef = useRef(false);
+  const profileLoadRef = useRef(null);
+
+  const clearSession = useCallback(() => {
+    clearClientAuthStorage(setCookie);
     setAuthToken("");
+    setUser(null);
+  }, [setCookie]);
+
+  const loadProfile = useCallback(async (token) => {
+    if (!token) return null;
+    try {
+      return await fetchCustomerProfile(token);
+    } catch (error) {
+      console.error("Profile load failed:", error?.response?.status || error);
+      return null;
+    }
   }, []);
 
-  const invalidateSession = useCallback(() => {
-    invalidateLocalSession(setCookie);
-    clearSessionState();
-  }, [setCookie, clearSessionState]);
+  const establishSession = useCallback(
+    async (access, refresh) => {
+      if (!access) {
+        clearSession();
+        return false;
+      }
+
+      persistAuthSession(access, refresh);
+      syncReactAuthCookies(access, refresh, setCookie);
+      setAuthToken(access);
+
+      if (profileLoadRef.current) return profileLoadRef.current;
+
+      profileLoadRef.current = (async () => {
+        const profile = await loadProfile(access);
+        if (profile) setUser(profile);
+        profileLoadRef.current = null;
+        return true;
+      })();
+
+      return profileLoadRef.current;
+    },
+    [clearSession, loadProfile, setCookie]
+  );
+
+  const login = useCallback(
+    async (access, refresh) => {
+      return establishSession(access, refresh);
+    },
+    [establishSession]
+  );
+
+  const Logout = async () => {
+    try {
+      const token = getAccessToken() || cookies.access_token;
+      await signOut(token, setCookie);
+      clearSession();
+      toast.success("Logged out successfully", {
+        position: "top-right",
+        autoClose: 2500,
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      clearSession();
+      navigate("/");
+    }
+  };
 
   const openChatWithConversation = (conversation) => {
     setPendingChatParticipantEmail(null);
@@ -79,7 +133,6 @@ export const AuthProvider = ({ children }) => {
     setIsChatOpen(true);
   };
 
-  /** Opens floating chat and jumps straight into a 1:1 thread with this email */
   const openChatWithParticipantEmail = (email) => {
     if (!email) return;
     setPendingChatConversation(null);
@@ -99,111 +152,6 @@ export const AuthProvider = ({ children }) => {
     setPendingChatParticipantEmail(null);
   };
 
-  const Logout = async () => {
-    try {
-      const token = getAccessToken() || cookies.access_token;
-      await signOut(token, setCookie);
-      clearSessionState();
-      toast.success("Logged out successfully", {
-        position: "top-right",
-        autoClose: 2500,
-      });
-      navigate("/");
-    } catch (error) {
-      console.error("Logout error:", error);
-      invalidateSession();
-      navigate("/");
-    }
-  };
-
-  const loadProfile = useCallback(
-    async (token) => {
-      if (!token) return false;
-      if (profileInflightRef.current) return profileInflightRef.current;
-
-      profileInflightRef.current = (async () => {
-        try {
-          const profile = await fetchCustomerProfile(token);
-          setUser(profile);
-          return true;
-        } catch (error) {
-          console.error("GetProfile error:", error);
-          const status = error?.response?.status;
-          if (status === 401 || status === 403) {
-            try {
-              const newAccessToken = await refreshAccessToken();
-              syncReactAuthCookies(
-                newAccessToken,
-                cookies.refresh_token,
-                setCookie
-              );
-              setAuthToken(newAccessToken);
-              const profile = await fetchCustomerProfile(newAccessToken);
-              setUser(profile);
-              return true;
-            } catch (refreshError) {
-              console.error("Profile auth recovery failed:", refreshError);
-              invalidateSession();
-              return false;
-            }
-          }
-          return false;
-        } finally {
-          profileInflightRef.current = null;
-        }
-      })();
-
-      return profileInflightRef.current;
-    },
-    [cookies.refresh_token, invalidateSession, setCookie]
-  );
-
-  const applySession = useCallback(
-    async (session) => {
-      if (session?.access) {
-        if (lastSyncedAccessRef.current !== session.access) {
-          syncReactAuthCookies(session.access, session.refresh, setCookie);
-          lastSyncedAccessRef.current = session.access;
-        }
-        setAuthToken(session.access);
-        await loadProfile(session.access);
-        return true;
-      }
-      clearSessionState();
-      return false;
-    },
-    [clearSessionState, loadProfile, setCookie]
-  );
-
-  const syncFromSharedSession = useCallback(async () => {
-    if (ssoSyncInflightRef.current) return;
-    ssoSyncInflightRef.current = true;
-    try {
-      if (isSsoLoggedOutGlobally()) {
-        if (user || authToken) {
-          clearClientAuthStorage(setCookie);
-          clearSessionState();
-        }
-        return;
-      }
-
-      const session = await reconcileSharedSession();
-      if (session?.access) {
-        if (session.access !== authToken || !user) {
-          await applySession(session);
-        }
-        return;
-      }
-
-      if (user || authToken) {
-        clearClientAuthStorage(setCookie);
-        clearSessionState();
-      }
-    } finally {
-      ssoSyncInflightRef.current = false;
-    }
-  }, [applySession, authToken, clearSessionState, setCookie, user]);
-
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -214,82 +162,72 @@ export const AuthProvider = ({ children }) => {
     }
   }, [isDarkMode]);
 
-  const getRefreshToken = async () => {
-    try {
-      const newAccessToken = await refreshAccessToken();
-      syncReactAuthCookies(newAccessToken, cookies.refresh_token, setCookie);
-      setAuthToken(newAccessToken);
-      await loadProfile(newAccessToken);
-      return true;
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      invalidateSession();
-      return false;
-    }
-  };
-
-  // Setup axios interceptor for automatic token refresh
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-
-          try {
-            const refreshSuccess = await getRefreshToken();
-            const latestToken = getAccessToken();
-
-            if (refreshSuccess && latestToken) {
-              originalRequest.headers.Authorization = `Bearer ${latestToken}`;
-              return axios(originalRequest);
-            }
-
-            invalidateSession();
-            return Promise.reject(error);
-          } catch (refreshError) {
-            invalidateSession();
-            return Promise.reject(refreshError);
-          }
+        if (error.response?.status !== 401 || originalRequest._retry) {
+          return Promise.reject(error);
         }
-
-        return Promise.reject(error);
+        originalRequest._retry = true;
+        try {
+          const newAccess = await refreshAccessToken();
+          syncReactAuthCookies(newAccess, getRefreshToken(), setCookie);
+          setAuthToken(newAccess);
+          originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+          return axios(originalRequest);
+        } catch {
+          clearSession();
+          return Promise.reject(error);
+        }
       }
     );
-
-    return () => {
-      axios.interceptors.response.eject(interceptor);
-    };
-  }, [cookies.refresh_token, invalidateSession, loadProfile, setCookie]);
+    return () => axios.interceptors.response.eject(interceptor);
+  }, [clearSession, setCookie]);
 
   useEffect(() => {
-    if (authInitRef.current) return;
-    authInitRef.current = true;
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
 
     void (async () => {
       try {
+        if (isSsoLoggedOutGlobally()) {
+          clearSession();
+          return;
+        }
         const session = await ensureSession();
-        await applySession(session);
+        if (session?.access) {
+          await establishSession(session.access, session.refresh);
+        }
       } finally {
         setAuthReady(true);
       }
     })();
-  }, [applySession]);
+  }, [clearSession, establishSession]);
 
   useEffect(() => {
     if (!authReady) return undefined;
-    return attachSharedSsoSync(() => {
-      void syncFromSharedSession();
-    });
-  }, [authReady, syncFromSharedSession]);
 
-  useEffect(() => {
-    if (!authToken) return;
-    if (user) return;
-    void loadProfile(authToken);
-  }, [authToken, user, loadProfile]);
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+
+      if (isSsoLoggedOutGlobally()) {
+        if (authToken) clearSession();
+        return;
+      }
+
+      if (authToken) return;
+
+      const token = getAccessToken();
+      if (token) {
+        void establishSession(token, getRefreshToken() || undefined);
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [authReady, authToken, clearSession, establishSession]);
 
   if (!authReady) {
     return <Loader />;
@@ -300,7 +238,9 @@ export const AuthProvider = ({ children }) => {
       value={{
         authToken,
         authReady,
+        isAuthenticated: Boolean(authToken),
         setAuthToken,
+        login,
         isDarkMode,
         openDrawer,
         currency,
@@ -341,7 +281,6 @@ export const AuthProvider = ({ children }) => {
         singleOrderProduct,
         setSingleOrderProduct,
         Logout,
-        invalidateSession,
         isChatOpen,
         setIsChatOpen,
         pendingChatConversation,

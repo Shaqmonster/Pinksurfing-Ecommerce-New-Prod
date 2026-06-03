@@ -68,7 +68,7 @@ function App() {
     isVendorFormOpen,
     isSingleOrderFormOpen,
     isMobileCategoryOpen,
-    user,
+    authToken,
   } = useContext(authContext);
 
   const location = useLocation();
@@ -84,9 +84,9 @@ function App() {
       {!hideHeaderFooter && <Header />}
       <Routes>
         {/* Auth routes — redirect to home if already logged in */}
-        <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
-        <Route path="/signin" element={user ? <Navigate to="/" replace /> : <Signin />} />
-        <Route path="/forgotPassword" element={user ? <Navigate to="/" replace /> : <ForgotPassword />} />
+        <Route path="/signup" element={authToken ? <Navigate to="/" replace /> : <Signup />} />
+        <Route path="/signin" element={authToken ? <Navigate to="/" replace /> : <Signin />} />
+        <Route path="/forgotPassword" element={authToken ? <Navigate to="/" replace /> : <ForgotPassword />} />
 
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Home />} />

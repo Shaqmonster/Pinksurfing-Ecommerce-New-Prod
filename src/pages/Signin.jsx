@@ -5,23 +5,17 @@ import "react-toastify/dist/ReactToastify.css";
 import { dataContext } from "../context/dataContext.jsx";
 import { IoEyeSharp } from "react-icons/io5";
 import { IoIosEyeOff } from "react-icons/io";
-import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import axios from "axios";
-import {
-  persistAuthSession,
-  syncReactAuthCookies,
-} from "../utils/authSession";
 
 const Signin = () => {
   const navigate = useNavigate();
-  const { setUser, setAuthToken, setIsProfileOpen } = useContext(authContext);
+  const { login, setIsProfileOpen } = useContext(authContext);
   const [passwordHidden, setPasswordHidden] = useState(true);
   const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const { handleError, handleSuccess } = useContext(dataContext);
-  const [_cookies, setCookie] = useCookies(["access_token", "refresh_token"]);
   const [inputValue, setInputValue] = useState({
     email: "",
     password: "",
@@ -77,22 +71,7 @@ const Signin = () => {
   
       const data = response.data;
 
-      persistAuthSession(data.access, data.refresh);
-      syncReactAuthCookies(data.access, data.refresh, setCookie);
-      setAuthToken(data.access);
-
-      // Sync local customer row (non-blocking for auth cookies)
-      try {
-        await axios.post(
-          `${import.meta.env.VITE_SERVER_URL}/api/customer/create-customer-from-sso/`,
-          {},
-          { headers: { Authorization: `Bearer ${data.access}` } }
-        );
-      } catch (syncError) {
-        console.error("create-customer-from-sso failed:", syncError?.response?.data || syncError);
-      }
-
-      setUser(data);
+      await login(data.access, data.refresh);
       setIsProfileOpen(false);
       handleSuccess("Signed In Successfully");
       setInputValue({ email: "", password: "" });

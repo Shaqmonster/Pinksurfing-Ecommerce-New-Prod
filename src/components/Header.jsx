@@ -39,6 +39,7 @@ const Header = () => {
   const [chatUnread, setChatUnread] = useState(0);
   const {
     user,
+    authToken,
     isDarkMode,
     setIsDarkMode,
     currency,
@@ -52,7 +53,6 @@ const Header = () => {
     isMobileCategoryOpen,
     setIsMobileCategoryOpen,
     Logout,
-    invalidateSession,
     isChatOpen,
     setIsChatOpen,
     pendingChatConversation,
@@ -137,7 +137,7 @@ const Header = () => {
   }, [user, cookies.access_token, isChatOpen]);
 
   const getCartProducts = async () => {
-    if (!user || !cookies.access_token) return;
+    if (!authToken || !cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
@@ -150,17 +150,12 @@ const Header = () => {
       );
       setCartProducts(response.data);
     } catch (error) {
-      const status = error?.response?.status;
-      if (status === 401 || status === 403) {
-        invalidateSession();
-        return;
-      }
       console.error("Failed to fetch cart products:", error);
     }
   };
 
   const getWishlist = async () => {
-    if (!user || !cookies.access_token) return;
+    if (!authToken || !cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`,
@@ -173,11 +168,6 @@ const Header = () => {
       );
       setWishlistProducts(response.data.items);
     } catch (error) {
-      const status = error?.response?.status;
-      if (status === 401 || status === 403) {
-        invalidateSession();
-        return;
-      }
       console.error("Failed to fetch wishlist:", error);
     }
   };
@@ -188,7 +178,7 @@ const Header = () => {
   }, [updateWalletBalance]);
 
   useEffect(() => {
-    if (!user || !cookies.access_token) return;
+    if (!authToken || !cookies.access_token) return;
 
     const fetchData = async () => {
       await getAllProducts();
@@ -197,7 +187,7 @@ const Header = () => {
     };
 
     fetchData();
-  }, [user, cookies.access_token]);
+  }, [authToken, cookies.access_token]);
 
   const handleWalletClick = () => {
     setShowQRCode(true);
