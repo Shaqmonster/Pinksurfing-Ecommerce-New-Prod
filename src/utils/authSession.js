@@ -58,6 +58,7 @@ export function getSsoEpoch() {
 
 export function markSsoLoggedOut() {
   if (typeof window === "undefined") return;
+  if (isSsoLoggedOutGlobally()) return;
   const sharedDomain = getSharedAuthCookieDomain();
   writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, undefined);
   if (sharedDomain) writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, sharedDomain);
@@ -112,6 +113,8 @@ export function getRefreshToken() {
 export function persistAuthSession(access, refresh) {
   if (typeof window === "undefined" || !access) return;
 
+  const prevAccess = localStorage.getItem("access_token");
+
   clearSsoLoggedOutFlag();
   localStorage.setItem("access_token", access);
   localStorage.removeItem("access");
@@ -130,7 +133,6 @@ export function persistAuthSession(access, refresh) {
     if (refresh) writeCookie("refresh_token", refresh, 7 * 24 * 60 * 60, undefined);
   }
 
-  const prevAccess = localStorage.getItem("access_token");
   if (prevAccess !== access) bumpSsoEpoch();
 }
 
@@ -170,11 +172,18 @@ export function clearReactAuthCookies(setCookie) {
   setCookie("refresh_token", "", opts);
 }
 
-/** Drop client session without calling SSO logout (breaks redirect / retry loops). */
-export function invalidateLocalSession(setCookie) {
-  markSsoLoggedOut();
+/** Clear tokens/cookies only — does not set the global logout flag. */
+export function clearClientAuthStorage(setCookie) {
   clearAuthStorage();
   clearReactAuthCookies(setCookie);
+}
+
+/** Drop client session without calling SSO logout (breaks redirect / retry loops). */
+export function invalidateLocalSession(setCookie) {
+  if (!isSsoLoggedOutGlobally()) {
+    markSsoLoggedOut();
+  }
+  clearClientAuthStorage(setCookie);
 }
 
 export function clearAuthStorage() {
@@ -263,36 +272,34 @@ export async function reconcileSharedSession() {
   return ensureSession();
 }
 
-/** Poll shared SSO state when this tab becomes visible (cross-subdomain sync). */
+/** Notify other tabs when login/logout happens on another *.pinksurfing.com app. */
 export function attachSharedSsoSync(onSync) {
   if (typeof window === "undefined") return () => {};
 
   let lastEpoch = getSsoEpoch();
   let timer = null;
 
-  const scheduleSync = () => {
+  const checkEpoch = () => {
+    const epoch = getSsoEpoch();
+    if (!epoch || epoch === lastEpoch) return;
+    lastEpoch = epoch;
+    onSync();
+  };
+
+  const scheduleEpochCheck = () => {
     if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      const epoch = getSsoEpoch();
-      const epochChanged = epoch && epoch !== lastEpoch;
-      if (epochChanged) lastEpoch = epoch;
-      if (epochChanged || document.visibilityState === "visible") {
-        onSync();
-      }
-    }, 250);
+    timer = setTimeout(checkEpoch, 300);
   };
 
   const onVisible = () => {
-    if (document.visibilityState === "visible") scheduleSync();
+    if (document.visibilityState === "visible") scheduleEpochCheck();
   };
 
   window.addEventListener("visibilitychange", onVisible);
-  window.addEventListener("focus", scheduleSync);
 
   return () => {
     if (timer) clearTimeout(timer);
     window.removeEventListener("visibilitychange", onVisible);
-    window.removeEventListener("focus", scheduleSync);
   };
 }
 

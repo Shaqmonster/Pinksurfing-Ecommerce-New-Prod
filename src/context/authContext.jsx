@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   attachSharedSsoSync,
+  clearClientAuthStorage,
   ensureSession,
   fetchCustomerProfile,
   getAccessToken,
@@ -179,7 +180,10 @@ export const AuthProvider = ({ children }) => {
     ssoSyncInflightRef.current = true;
     try {
       if (isSsoLoggedOutGlobally()) {
-        if (user || authToken) invalidateSession();
+        if (user || authToken) {
+          clearClientAuthStorage(setCookie);
+          clearSessionState();
+        }
         return;
       }
 
@@ -191,11 +195,14 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      if (user || authToken) invalidateSession();
+      if (user || authToken) {
+        clearClientAuthStorage(setCookie);
+        clearSessionState();
+      }
     } finally {
       ssoSyncInflightRef.current = false;
     }
-  }, [applySession, authToken, invalidateSession, user]);
+  }, [applySession, authToken, clearSessionState, setCookie, user]);
 
   useEffect(() => {
     if (isDarkMode) {
