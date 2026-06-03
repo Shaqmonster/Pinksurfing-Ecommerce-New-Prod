@@ -1,82 +1,34 @@
 import axios from "axios";
 import { getCookie, getSharedAuthCookieDomain } from "./cookie";
 
-const LOGOUT_GUARD_KEY = "ps_sso_logout_at";
 const SSO_LOGOUT_COOKIE = "ps_sso_logged_out";
 const AUTH_REFRESH_URL = "https://auth.pinksurfing.com/api/token/refresh/";
 const AUTH_LOGOUT_URL = "https://auth.pinksurfing.com/api/logout/";
+const ACCESS_SKEW_SECONDS = 60;
 
-export function markSsoLoggedOut() {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(LOGOUT_GUARD_KEY, String(Date.now()));
-  writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, undefined);
-  const sharedDomain = getSharedAuthCookieDomain();
-  if (sharedDomain) writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, sharedDomain);
-}
+let ensureSessionInflight = null;
 
-export function clearSsoLogoutGuard() {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(LOGOUT_GUARD_KEY);
-  clearSsoLoggedOutFlag();
-}
-
-export function clearSsoLoggedOutFlag() {
-  if (typeof window === "undefined") return;
-  writeCookie(SSO_LOGOUT_COOKIE, "", 0, undefined);
-  const sharedDomain = getSharedAuthCookieDomain();
-  if (sharedDomain) writeCookie(SSO_LOGOUT_COOKIE, "", 0, sharedDomain);
-}
-
-export function isSsoLoggedOutGlobally() {
-  return getCookie(SSO_LOGOUT_COOKIE) === "1";
-}
-
-export function shouldSkipSsoBootstrap() {
-  if (typeof window === "undefined") return false;
-  const raw = sessionStorage.getItem(LOGOUT_GUARD_KEY);
-  if (!raw) return false;
-  if (Date.now() - Number(raw) > 5 * 60 * 1000) {
-    sessionStorage.removeItem(LOGOUT_GUARD_KEY);
-    return false;
-  }
-  return true;
-}
-
-export function getJwtUserId(token) {
+export function decodeJwt(token) {
   if (!token) return null;
   try {
     const part = token.split(".")[1];
-    const json = JSON.parse(
-      atob(part.replace(/-/g, "+").replace(/_/g, "/"))
-    );
-    const id = json.user_id ?? json.sub;
-    return id != null ? String(id) : null;
+    if (!part) return null;
+    return JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
   } catch {
     return null;
   }
 }
 
-/** Readable cookie only (not localStorage). */
-export function getReadableAccessCookie() {
-  return getCookie("access_token");
+export function isAccessTokenValid(token, skewSeconds = ACCESS_SKEW_SECONDS) {
+  const payload = decodeJwt(token);
+  if (!payload?.exp) return false;
+  return payload.exp * 1000 > Date.now() + skewSeconds * 1000;
 }
 
-export function getAccessToken() {
-  if (typeof window === "undefined") return null;
-  return (
-    getReadableAccessCookie() ||
-    localStorage.getItem("access_token") ||
-    null
-  );
-}
-
-export function getRefreshToken() {
-  if (typeof window === "undefined") return null;
-  return (
-    getCookie("refresh_token") ||
-    localStorage.getItem("refresh_token") ||
-    null
-  );
+export function getJwtUserId(token) {
+  const payload = decodeJwt(token);
+  const id = payload?.user_id ?? payload?.sub;
+  return id != null ? String(id) : null;
 }
 
 function writeCookie(name, value, maxAgeSeconds, domain) {
@@ -86,24 +38,84 @@ function writeCookie(name, value, maxAgeSeconds, domain) {
   document.cookie = `${name}=${encoded}; path=/${domainPart}; max-age=${maxAgeSeconds}; SameSite=Lax${secure}`;
 }
 
-/** Mirror tokens to .pinksurfing.com so vendor + storefront both see the session. */
+function deleteAuthCookie(name, domain) {
+  writeCookie(name, "", 0, domain);
+}
+
+export function markSsoLoggedOut() {
+  if (typeof window === "undefined") return;
+  const sharedDomain = getSharedAuthCookieDomain();
+  writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, undefined);
+  if (sharedDomain) writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, sharedDomain);
+}
+
+export function clearSsoLoggedOutFlag() {
+  if (typeof window === "undefined") return;
+  const sharedDomain = getSharedAuthCookieDomain();
+  deleteAuthCookie(SSO_LOGOUT_COOKIE, undefined);
+  if (sharedDomain) deleteAuthCookie(SSO_LOGOUT_COOKIE, sharedDomain);
+}
+
+export function isSsoLoggedOutGlobally() {
+  return getCookie(SSO_LOGOUT_COOKIE) === "1";
+}
+
+export function getCachedAccessToken() {
+  if (typeof window === "undefined") return null;
+  const candidates = [
+    localStorage.getItem("access_token"),
+    localStorage.getItem("access"),
+  ].filter(Boolean);
+  for (const raw of candidates) {
+    const token = String(raw).replaceAll('"', "");
+    if (isAccessTokenValid(token)) return token;
+  }
+  return null;
+}
+
+export function getAccessToken() {
+  const cached = getCachedAccessToken();
+  if (cached) return cached;
+  const fromCookie = getCookie("access_token");
+  if (fromCookie && isAccessTokenValid(fromCookie.replaceAll('"', ""))) {
+    return fromCookie.replaceAll('"', "");
+  }
+  return null;
+}
+
+export function getRefreshToken() {
+  if (typeof window === "undefined") return null;
+  return (
+    localStorage.getItem("refresh_token") ||
+    localStorage.getItem("refresh") ||
+    getCookie("refresh_token") ||
+    null
+  );
+}
+
+/** Mirror tokens to .pinksurfing.com (shared) or host-only on localhost. */
 export function persistAuthSession(access, refresh) {
   if (typeof window === "undefined" || !access) return;
 
-  clearSsoLogoutGuard();
+  clearSsoLoggedOutFlag();
   localStorage.setItem("access_token", access);
-  if (refresh) localStorage.setItem("refresh_token", refresh);
+  localStorage.removeItem("access");
+
+  if (refresh) {
+    localStorage.setItem("refresh_token", refresh);
+    localStorage.removeItem("refresh");
+  }
 
   const sharedDomain = getSharedAuthCookieDomain();
-  writeCookie("access_token", access, 60 * 60, undefined);
-  if (refresh) writeCookie("refresh_token", refresh, 7 * 24 * 60 * 60, undefined);
   if (sharedDomain) {
     writeCookie("access_token", access, 60 * 60, sharedDomain);
     if (refresh) writeCookie("refresh_token", refresh, 7 * 24 * 60 * 60, sharedDomain);
+  } else {
+    writeCookie("access_token", access, 60 * 60, undefined);
+    if (refresh) writeCookie("refresh_token", refresh, 7 * 24 * 60 * 60, undefined);
   }
 }
 
-/** Sync react-cookie state after persistAuthSession (optional). */
 export function syncReactAuthCookies(access, refresh, setCookie) {
   if (!setCookie || !access) return;
   const sharedDomain = getSharedAuthCookieDomain();
@@ -125,64 +137,72 @@ export function syncReactAuthCookies(access, refresh, setCookie) {
   }
 }
 
-/**
- * Exchange shared HttpOnly refresh cookie (from login on any *.pinksurfing.com app).
- */
-export async function bootstrapAccessFromSsoCookies() {
-  if (shouldSkipSsoBootstrap()) return null;
-  try {
-    const response = await axios.post(AUTH_REFRESH_URL, {}, { withCredentials: true });
-    const access = response.data?.access;
-    if (!access) return null;
-    return { access, refresh: response.data?.refresh };
-  } catch {
-    return null;
-  }
+export function clearAuthStorage() {
+  if (typeof window === "undefined") return;
+  ["access_token", "refresh_token", "user_id", "access", "refresh"].forEach((k) =>
+    localStorage.removeItem(k)
+  );
+  const sharedDomain = getSharedAuthCookieDomain();
+  const names = ["access_token", "refresh_token", "user_id"];
+  names.forEach((n) => {
+    deleteAuthCookie(n, undefined);
+    if (sharedDomain) deleteAuthCookie(n, sharedDomain);
+  });
+}
+
+async function refreshFromSsoCookies() {
+  const response = await axios.post(AUTH_REFRESH_URL, {}, { withCredentials: true });
+  const access = response.data?.access;
+  if (!access) return null;
+  return { access, refresh: response.data?.refresh };
 }
 
 /**
- * Resolve session without rotating refresh on every page load.
- * Bootstrap only when there is no readable access token on this origin.
+ * Single SSO entry point: valid cached JWT, else HttpOnly refresh via credentials.
  */
-export async function resolveSharedSession() {
-  if (isSsoLoggedOutGlobally()) {
-    clearAuthStorage();
-    return null;
-  }
+export async function ensureSession() {
+  if (typeof window === "undefined") return null;
+  if (ensureSessionInflight) return ensureSessionInflight;
 
-  if (shouldSkipSsoBootstrap()) return null;
+  ensureSessionInflight = (async () => {
+    if (isSsoLoggedOutGlobally()) {
+      clearAuthStorage();
+      return null;
+    }
 
-  const readable = getReadableAccessCookie();
-  if (readable) {
-    return { access: readable, refresh: getRefreshToken() || undefined };
-  }
+    const cached = getCachedAccessToken();
+    if (cached) {
+      return { access: cached, refresh: getRefreshToken() || undefined };
+    }
 
-  const boot = await bootstrapAccessFromSsoCookies();
-  if (boot?.access) {
-    clearSsoLoggedOutFlag();
-    persistAuthSession(boot.access, boot.refresh);
-    return boot;
-  }
+    try {
+      const refreshed = await refreshFromSsoCookies();
+      if (!refreshed?.access) {
+        clearAuthStorage();
+        return null;
+      }
+      persistAuthSession(refreshed.access, refreshed.refresh);
+      return refreshed;
+    } catch (error) {
+      console.error("SSO refresh failed:", error?.response?.status || error);
+      clearAuthStorage();
+      return null;
+    }
+  })().finally(() => {
+    ensureSessionInflight = null;
+  });
 
-  const stored = localStorage.getItem("access_token");
-  if (stored) {
-    return { access: stored, refresh: getRefreshToken() || undefined };
-  }
-
-  return null;
+  return ensureSessionInflight;
 }
+
+/** @deprecated Use ensureSession() */
+export const resolveSharedSession = ensureSession;
 
 export async function refreshAccessToken() {
-  const refresh = getRefreshToken();
-  const response = await axios.post(
-    AUTH_REFRESH_URL,
-    refresh ? { refresh } : {},
-    { withCredentials: true, headers: { "Content-Type": "application/json" } }
-  );
-  const access = response.data?.access;
-  if (!access) throw new Error("No access token in refresh response");
-  persistAuthSession(access, response.data?.refresh ?? refresh);
-  return access;
+  const refreshed = await refreshFromSsoCookies();
+  if (!refreshed?.access) throw new Error("No access token in refresh response");
+  persistAuthSession(refreshed.access, refreshed.refresh);
+  return refreshed.access;
 }
 
 export async function signOut(accessToken) {
@@ -207,7 +227,6 @@ export async function signOut(accessToken) {
 
 const API_BASE = import.meta.env.VITE_SERVER_URL;
 
-/** Load customer profile; auto-create customer row for vendor-only SSO users. */
 export async function fetchCustomerProfile(accessToken) {
   const headers = {
     "Content-Type": "application/json",
@@ -219,9 +238,7 @@ export async function fetchCustomerProfile(accessToken) {
     return response.data;
   } catch (error) {
     const status = error?.response?.status;
-    if (status === 401 || status === 403) {
-      throw error;
-    }
+    if (status === 401 || status === 403) throw error;
     if (status === 400 || status === 404) {
       try {
         await axios.post(
@@ -237,17 +254,4 @@ export async function fetchCustomerProfile(accessToken) {
     }
     throw error;
   }
-}
-
-export function clearAuthStorage() {
-  if (typeof window === "undefined") return;
-  ["access_token", "refresh_token", "user_id"].forEach((k) =>
-    localStorage.removeItem(k)
-  );
-  const sharedDomain = getSharedAuthCookieDomain();
-  const names = ["access_token", "refresh_token", "user_id"];
-  names.forEach((n) => {
-    writeCookie(n, "", 0, undefined);
-    if (sharedDomain) writeCookie(n, "", 0, sharedDomain);
-  });
 }

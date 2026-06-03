@@ -2,13 +2,11 @@ import React, { createContext, useState, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { deleteCookie, getSharedAuthCookieDomain } from "../utils/cookie";
 import {
-  clearAuthStorage,
-  getAccessToken,
+  ensureSession,
   fetchCustomerProfile,
-  isSsoLoggedOutGlobally,
-  resolveSharedSession,
+  getAccessToken,
+  refreshAccessToken,
   signOut,
   syncReactAuthCookies,
 } from "../utils/authSession";
@@ -26,7 +24,7 @@ const Loader = () => (
 );
 
 export const AuthProvider = ({ children }) => {
-  const [cookies, setCookie, removeCookie] = useCookies(["access_token", "refresh_token"]);
+  const [cookies, setCookie] = useCookies(["access_token", "refresh_token"]);
   const navigate = useNavigate();
   const [authToken, setAuthToken] = useState("");
   const [currency, setCurrency] = useState("$");
@@ -88,37 +86,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = getAccessToken() || cookies.access_token;
       await signOut(token);
-
-      const domain = getSharedAuthCookieDomain();
-      const cookieOptions = { path: "/" };
-      const domainOptions = domain ? { path: "/", domain } : { path: "/" };
-
-      removeCookie("access_token", cookieOptions);
-      removeCookie("refresh_token", cookieOptions);
-      removeCookie("user_id", cookieOptions);
-      if (domain) {
-        removeCookie("access_token", domainOptions);
-        removeCookie("refresh_token", domainOptions);
-        removeCookie("user_id", domainOptions);
-      }
-      deleteCookie("access_token", domain);
-      deleteCookie("refresh_token", domain);
-      deleteCookie("user_id", domain);
-      deleteCookie("access_token");
-      deleteCookie("refresh_token");
-
       setUser("");
       setAuthToken("");
-
       toast.success("Logged out successfully", {
         position: "top-right",
         autoClose: 2500,
       });
-
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
-      clearAuthStorage();
       setUser("");
       setAuthToken("");
       navigate("/");
@@ -225,55 +201,19 @@ export const AuthProvider = ({ children }) => {
     if (authInitRef.current) return;
     authInitRef.current = true;
 
-    const applySession = async () => {
-      if (isSsoLoggedOutGlobally()) {
-        setAuthToken("");
-        setUser("");
-        clearAuthStorage();
-        return;
-      }
-
-      const session = await resolveSharedSession();
-
+    void (async () => {
+      const session = await ensureSession();
       if (session?.access) {
         if (lastSyncedAccessRef.current !== session.access) {
           syncReactAuthCookies(session.access, session.refresh, setCookie);
           lastSyncedAccessRef.current = session.access;
         }
         setAuthToken(session.access);
-        return;
-      }
-
-      setAuthToken("");
-      setUser("");
-    };
-
-    void applySession();
-  }, [setCookie]);
-
-  useEffect(() => {
-    const syncOnFocus = async () => {
-      if (isSsoLoggedOutGlobally()) {
-        setAuthToken("");
-        setUser("");
-        clearAuthStorage();
-        return;
-      }
-      const session = await resolveSharedSession();
-      if (session?.access) {
-        if (lastSyncedAccessRef.current !== session.access) {
-          syncReactAuthCookies(session.access, session.refresh, setCookie);
-          lastSyncedAccessRef.current = session.access;
-        }
-        setAuthToken((prev) => (prev !== session.access ? session.access : prev));
       } else {
         setAuthToken("");
         setUser("");
       }
-    };
-
-    window.addEventListener("focus", syncOnFocus);
-    return () => window.removeEventListener("focus", syncOnFocus);
+    })();
   }, [setCookie]);
 
 
