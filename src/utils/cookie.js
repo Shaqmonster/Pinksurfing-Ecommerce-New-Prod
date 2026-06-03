@@ -1,3 +1,14 @@
+/** Shared across pinksurfing.com and vendors.pinksurfing.com (not on localhost). */
+export function getSharedAuthCookieDomain() {
+  if (typeof window === "undefined") return undefined;
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") return undefined;
+  if (host.endsWith(".pinksurfing.com") || host === "pinksurfing.com") {
+    return ".pinksurfing.com";
+  }
+  return undefined;
+}
+
 /**
  * Get a cookie value by name
  */

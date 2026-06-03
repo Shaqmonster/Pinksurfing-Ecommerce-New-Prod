@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { deleteCookie } from "../utils/cookie";
+import { deleteCookie, getSharedAuthCookieDomain } from "../utils/cookie";
 export const authContext = createContext();
 import { toast } from "react-toastify";
 
@@ -206,11 +206,13 @@ export const AuthProvider = ({ children }) => {
         const newAccessToken = response.data.access;
 
         // Store new access token in both cookie and localStorage
+        const sharedDomain = getSharedAuthCookieDomain();
         setCookie("access_token", newAccessToken, {
           path: "/",
-          expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+          expires: new Date(Date.now() + 60 * 60 * 1000),
           secure: true,
-          sameSite: "strict",
+          sameSite: "lax",
+          ...(sharedDomain ? { domain: sharedDomain } : {}),
         });
         localStorage.setItem("access_token", newAccessToken);
 

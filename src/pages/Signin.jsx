@@ -8,6 +8,7 @@ import { IoIosEyeOff } from "react-icons/io";
 import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import axios from "axios";
+import { getSharedAuthCookieDomain } from "../utils/cookie";
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -77,10 +78,12 @@ const Signin = () => {
       const isLocalhost =
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1";
+      const sharedDomain = getSharedAuthCookieDomain();
       const cookieOptions = {
         path: "/",
         secure: !isLocalhost,
-        sameSite: isLocalhost ? "lax" : "strict",
+        sameSite: "lax",
+        ...(sharedDomain ? { domain: sharedDomain } : {}),
       };
 
       setCookie("access_token", data.access, {
