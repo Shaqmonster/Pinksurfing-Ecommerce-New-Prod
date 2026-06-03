@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useRef } from "react";
+import React, { createContext, useState, useEffect, useRef, useCallback } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,6 +6,7 @@ import {
   ensureSession,
   fetchCustomerProfile,
   getAccessToken,
+  invalidateLocalSession,
   refreshAccessToken,
   signOut,
   syncReactAuthCookies,
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }) => {
   const [cookies, setCookie] = useCookies(["access_token", "refresh_token"]);
   const navigate = useNavigate();
   const [authToken, setAuthToken] = useState("");
+  const [authReady, setAuthReady] = useState(false);
   const [currency, setCurrency] = useState("$");
   const [user, setUser] = useState("");
   const [shopHeading, setShopHeading] = useState("");
@@ -49,12 +51,22 @@ export const AuthProvider = ({ children }) => {
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
   const [isUserWalletOpen, setIsUserWalletOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const authInitRef = useRef(false);
   const lastSyncedAccessRef = useRef("");
+  const profileInflightRef = useRef(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [pendingChatConversation, setPendingChatConversation] = useState(null);
   const [pendingChatParticipantEmail, setPendingChatParticipantEmail] = useState(null);
+
+  const clearSessionState = useCallback(() => {
+    setUser("");
+    setAuthToken("");
+  }, []);
+
+  const invalidateSession = useCallback(() => {
+    invalidateLocalSession(setCookie);
+    clearSessionState();
+  }, [setCookie, clearSessionState]);
 
   const openChatWithConversation = (conversation) => {
     setPendingChatParticipantEmail(null);
@@ -85,9 +97,8 @@ export const AuthProvider = ({ children }) => {
   const Logout = async () => {
     try {
       const token = getAccessToken() || cookies.access_token;
-      await signOut(token);
-      setUser("");
-      setAuthToken("");
+      await signOut(token, setCookie);
+      clearSessionState();
       toast.success("Logged out successfully", {
         position: "top-right",
         autoClose: 2500,
@@ -95,39 +106,53 @@ export const AuthProvider = ({ children }) => {
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
-      setUser("");
-      setAuthToken("");
+      invalidateSession();
       navigate("/");
     }
   };
 
-  const GetProfile = async (token = authToken) => {
-    if (!token) return false;
-    try {
-      setLoading(true);
-      const profile = await fetchCustomerProfile(token);
-      setUser(profile);
-      return true;
-    } catch (error) {
-      console.error("GetProfile error:", error);
-      const status = error?.response?.status;
-      if (status === 401) {
-        const refreshSuccess = await getRefreshToken();
-        if (!refreshSuccess) {
-          Logout();
+  const loadProfile = useCallback(
+    async (token) => {
+      if (!token) return false;
+      if (profileInflightRef.current) return profileInflightRef.current;
+
+      profileInflightRef.current = (async () => {
+        try {
+          const profile = await fetchCustomerProfile(token);
+          setUser(profile);
+          return true;
+        } catch (error) {
+          console.error("GetProfile error:", error);
+          const status = error?.response?.status;
+          if (status === 401 || status === 403) {
+            try {
+              const newAccessToken = await refreshAccessToken();
+              syncReactAuthCookies(
+                newAccessToken,
+                cookies.refresh_token,
+                setCookie
+              );
+              setAuthToken(newAccessToken);
+              const profile = await fetchCustomerProfile(newAccessToken);
+              setUser(profile);
+              return true;
+            } catch (refreshError) {
+              console.error("Profile auth recovery failed:", refreshError);
+              invalidateSession();
+              return false;
+            }
+          }
           return false;
+        } finally {
+          profileInflightRef.current = null;
         }
-        return true;
-      }
-      if (status === 403) {
-        Logout();
-        return false;
-      }
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+      })();
+
+      return profileInflightRef.current;
+    },
+    [cookies.refresh_token, invalidateSession, setCookie]
+  );
+
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -137,24 +162,18 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("theme", "light");
     }
   }, [isDarkMode]);
+
   const getRefreshToken = async () => {
     try {
-      setLoading(true);
       const newAccessToken = await refreshAccessToken();
-      syncReactAuthCookies(
-        newAccessToken,
-        cookies.refresh_token,
-        setCookie
-      );
+      syncReactAuthCookies(newAccessToken, cookies.refresh_token, setCookie);
       setAuthToken(newAccessToken);
-      await GetProfile(newAccessToken);
+      await loadProfile(newAccessToken);
       return true;
     } catch (error) {
       console.error("Error refreshing token:", error);
-      Logout();
+      invalidateSession();
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -165,24 +184,22 @@ export const AuthProvider = ({ children }) => {
       async (error) => {
         const originalRequest = error.config;
 
-        // If error is 401 and we haven't retried yet
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           try {
             const refreshSuccess = await getRefreshToken();
+            const latestToken = getAccessToken();
 
-            if (refreshSuccess && authToken) {
-              // Update the authorization header with new token
-              originalRequest.headers.Authorization = `Bearer ${authToken}`;
-              // Retry the original request
+            if (refreshSuccess && latestToken) {
+              originalRequest.headers.Authorization = `Bearer ${latestToken}`;
               return axios(originalRequest);
-            } else {
-              Logout();
-              return Promise.reject(error);
             }
+
+            invalidateSession();
+            return Promise.reject(error);
           } catch (refreshError) {
-            Logout();
+            invalidateSession();
             return Promise.reject(refreshError);
           }
         }
@@ -191,39 +208,41 @@ export const AuthProvider = ({ children }) => {
       }
     );
 
-    // Cleanup interceptor on unmount
     return () => {
       axios.interceptors.response.eject(interceptor);
     };
-  }, [authToken]);
+  }, [cookies.refresh_token, invalidateSession, loadProfile, setCookie]);
 
   useEffect(() => {
     if (authInitRef.current) return;
     authInitRef.current = true;
 
     void (async () => {
-      const session = await ensureSession();
-      if (session?.access) {
-        if (lastSyncedAccessRef.current !== session.access) {
-          syncReactAuthCookies(session.access, session.refresh, setCookie);
-          lastSyncedAccessRef.current = session.access;
+      try {
+        const session = await ensureSession();
+        if (session?.access) {
+          if (lastSyncedAccessRef.current !== session.access) {
+            syncReactAuthCookies(session.access, session.refresh, setCookie);
+            lastSyncedAccessRef.current = session.access;
+          }
+          setAuthToken(session.access);
+          await loadProfile(session.access);
+        } else {
+          clearSessionState();
         }
-        setAuthToken(session.access);
-      } else {
-        setAuthToken("");
-        setUser("");
+      } finally {
+        setAuthReady(true);
       }
     })();
-  }, [setCookie]);
-
+  }, [clearSessionState, loadProfile, setCookie]);
 
   useEffect(() => {
-    if (authToken) {
-      GetProfile();
-    }
-  }, [authToken]);
+    if (!authToken) return;
+    if (user) return;
+    void loadProfile(authToken);
+  }, [authToken, user, loadProfile]);
 
-  if (loading) {
+  if (!authReady) {
     return <Loader />;
   }
 
@@ -231,6 +250,7 @@ export const AuthProvider = ({ children }) => {
     <authContext.Provider
       value={{
         authToken,
+        authReady,
         setAuthToken,
         isDarkMode,
         openDrawer,
@@ -272,6 +292,7 @@ export const AuthProvider = ({ children }) => {
         singleOrderProduct,
         setSingleOrderProduct,
         Logout,
+        invalidateSession,
         isChatOpen,
         setIsChatOpen,
         pendingChatConversation,

@@ -137,6 +137,28 @@ export function syncReactAuthCookies(access, refresh, setCookie) {
   }
 }
 
+export function clearReactAuthCookies(setCookie) {
+  if (!setCookie || typeof window === "undefined") return;
+  const sharedDomain = getSharedAuthCookieDomain();
+  const opts = {
+    path: "/",
+    secure: window.location.protocol === "https:",
+    sameSite: "lax",
+    maxAge: 0,
+    expires: new Date(0),
+    ...(sharedDomain ? { domain: sharedDomain } : {}),
+  };
+  setCookie("access_token", "", opts);
+  setCookie("refresh_token", "", opts);
+}
+
+/** Drop client session without calling SSO logout (breaks redirect / retry loops). */
+export function invalidateLocalSession(setCookie) {
+  markSsoLoggedOut();
+  clearAuthStorage();
+  clearReactAuthCookies(setCookie);
+}
+
 export function clearAuthStorage() {
   if (typeof window === "undefined") return;
   ["access_token", "refresh_token", "user_id", "access", "refresh"].forEach((k) =>
@@ -205,7 +227,7 @@ export async function refreshAccessToken() {
   return refreshed.access;
 }
 
-export async function signOut(accessToken) {
+export async function signOut(accessToken, setCookie) {
   markSsoLoggedOut();
   const refresh = getRefreshToken();
   try {
@@ -223,6 +245,7 @@ export async function signOut(accessToken) {
     console.error("Auth logout failed (clearing client session anyway):", error);
   }
   clearAuthStorage();
+  clearReactAuthCookies(setCookie);
 }
 
 const API_BASE = import.meta.env.VITE_SERVER_URL;

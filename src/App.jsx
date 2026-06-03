@@ -35,8 +35,6 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
 import ComingSoon from "./pages/ComingSoon";
-import { getCookie } from "./utils/cookie";
-import { getAccessToken } from "./utils/authSession";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 import CreateBidPage from "./pages/CreateBidPage";
 import MyBidsPage from "./pages/MyBidsPage";
@@ -70,7 +68,7 @@ function App() {
     isVendorFormOpen,
     isSingleOrderFormOpen,
     isMobileCategoryOpen,
-    authToken,
+    user,
   } = useContext(authContext);
 
   const location = useLocation();
@@ -80,26 +78,15 @@ function App() {
   // Footer only on the home page
   const showFooter = location.pathname === "/";
 
-  const cookieAccess = getAccessToken() || getCookie("access_token");
-
-  // If an access token cookie exists, redirect away from auth pages
-  // useEffect(() => {
-  //   const protectedPaths = ["/signup", "/signin", "/forgotPassword"];
-  //   if (cookieAccess && protectedPaths.includes(location.pathname)) {
-  //     // Use replace so the back button doesn't go back to the auth page
-  //     window.location.replace("/");
-  //   }
-  // }, [cookieAccess, location.pathname]);
-
   return (
     <main className={`${isDarkMode && "dark"} `}>
       <ScrollToTop />
       {!hideHeaderFooter && <Header />}
       <Routes>
         {/* Auth routes — redirect to home if already logged in */}
-        <Route path="/signup" element={cookieAccess ? <Navigate to="/" replace /> : <Signup />} />
-        <Route path="/signin" element={cookieAccess ? <Navigate to="/" replace /> : <Signin />} />
-        <Route path="/forgotPassword" element={cookieAccess ? <Navigate to="/" replace /> : <ForgotPassword />} />
+        <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+        <Route path="/signin" element={user ? <Navigate to="/" replace /> : <Signin />} />
+        <Route path="/forgotPassword" element={user ? <Navigate to="/" replace /> : <ForgotPassword />} />
 
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Home />} />
