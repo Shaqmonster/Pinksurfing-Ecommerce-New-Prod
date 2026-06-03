@@ -15,13 +15,12 @@ import {
 
 const Signin = () => {
   const navigate = useNavigate();
-  const { setUser } = useContext(authContext);
+  const { setUser, setAuthToken, setIsProfileOpen } = useContext(authContext);
   const [passwordHidden, setPasswordHidden] = useState(true);
   const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const { handleError, handleSuccess } = useContext(dataContext);
-  const { setIsProfileOpen } = useContext(authContext);
   const [_cookies, setCookie] = useCookies(["access_token", "refresh_token"]);
   const [inputValue, setInputValue] = useState({
     email: "",
@@ -80,6 +79,7 @@ const Signin = () => {
 
       persistAuthSession(data.access, data.refresh);
       syncReactAuthCookies(data.access, data.refresh, setCookie);
+      setAuthToken(data.access);
 
       // Sync local customer row (non-blocking for auth cookies)
       try {

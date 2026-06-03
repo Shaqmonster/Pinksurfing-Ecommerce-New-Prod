@@ -2,17 +2,33 @@ import axios from "axios";
 import { getCookie, getSharedAuthCookieDomain } from "./cookie";
 
 const LOGOUT_GUARD_KEY = "ps_sso_logout_at";
+const SSO_LOGOUT_COOKIE = "ps_sso_logged_out";
 const AUTH_REFRESH_URL = "https://auth.pinksurfing.com/api/token/refresh/";
 const AUTH_LOGOUT_URL = "https://auth.pinksurfing.com/api/logout/";
 
 export function markSsoLoggedOut() {
   if (typeof window === "undefined") return;
   sessionStorage.setItem(LOGOUT_GUARD_KEY, String(Date.now()));
+  writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, undefined);
+  const sharedDomain = getSharedAuthCookieDomain();
+  if (sharedDomain) writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, sharedDomain);
 }
 
 export function clearSsoLogoutGuard() {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(LOGOUT_GUARD_KEY);
+  clearSsoLoggedOutFlag();
+}
+
+export function clearSsoLoggedOutFlag() {
+  if (typeof window === "undefined") return;
+  writeCookie(SSO_LOGOUT_COOKIE, "", 0, undefined);
+  const sharedDomain = getSharedAuthCookieDomain();
+  if (sharedDomain) writeCookie(SSO_LOGOUT_COOKIE, "", 0, sharedDomain);
+}
+
+export function isSsoLoggedOutGlobally() {
+  return getCookie(SSO_LOGOUT_COOKIE) === "1";
 }
 
 export function shouldSkipSsoBootstrap() {
@@ -129,6 +145,11 @@ export async function bootstrapAccessFromSsoCookies() {
  * Bootstrap only when there is no readable access token on this origin.
  */
 export async function resolveSharedSession() {
+  if (isSsoLoggedOutGlobally()) {
+    clearAuthStorage();
+    return null;
+  }
+
   if (shouldSkipSsoBootstrap()) return null;
 
   const readable = getReadableAccessCookie();
@@ -136,15 +157,16 @@ export async function resolveSharedSession() {
     return { access: readable, refresh: getRefreshToken() || undefined };
   }
 
+  const boot = await bootstrapAccessFromSsoCookies();
+  if (boot?.access) {
+    clearSsoLoggedOutFlag();
+    persistAuthSession(boot.access, boot.refresh);
+    return boot;
+  }
+
   const stored = localStorage.getItem("access_token");
   if (stored) {
     return { access: stored, refresh: getRefreshToken() || undefined };
-  }
-
-  const boot = await bootstrapAccessFromSsoCookies();
-  if (boot?.access) {
-    persistAuthSession(boot.access, boot.refresh);
-    return boot;
   }
 
   return null;

@@ -7,6 +7,7 @@ import {
   clearAuthStorage,
   getAccessToken,
   fetchCustomerProfile,
+  isSsoLoggedOutGlobally,
   resolveSharedSession,
   signOut,
   syncReactAuthCookies,
@@ -224,7 +225,14 @@ export const AuthProvider = ({ children }) => {
     if (authInitRef.current) return;
     authInitRef.current = true;
 
-    const verifyToken = async () => {
+    const applySession = async () => {
+      if (isSsoLoggedOutGlobally()) {
+        setAuthToken("");
+        setUser("");
+        clearAuthStorage();
+        return;
+      }
+
       const session = await resolveSharedSession();
 
       if (session?.access) {
@@ -240,7 +248,32 @@ export const AuthProvider = ({ children }) => {
       setUser("");
     };
 
-    void verifyToken();
+    void applySession();
+  }, [setCookie]);
+
+  useEffect(() => {
+    const syncOnFocus = async () => {
+      if (isSsoLoggedOutGlobally()) {
+        setAuthToken("");
+        setUser("");
+        clearAuthStorage();
+        return;
+      }
+      const session = await resolveSharedSession();
+      if (session?.access) {
+        if (lastSyncedAccessRef.current !== session.access) {
+          syncReactAuthCookies(session.access, session.refresh, setCookie);
+          lastSyncedAccessRef.current = session.access;
+        }
+        setAuthToken((prev) => (prev !== session.access ? session.access : prev));
+      } else {
+        setAuthToken("");
+        setUser("");
+      }
+    };
+
+    window.addEventListener("focus", syncOnFocus);
+    return () => window.removeEventListener("focus", syncOnFocus);
   }, [setCookie]);
 
 
