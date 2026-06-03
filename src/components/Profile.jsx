@@ -25,7 +25,7 @@ const Profile = ({ user }) => {
   const navigate = useNavigate();
   
   const handleStoreClick = () => {
-    if (user.is_vendor) {
+    if (user?.is_vendor) {
       setIsProfileOpen(false);
       navigate(`/store/${user.vendor.slug}`);
     } else {

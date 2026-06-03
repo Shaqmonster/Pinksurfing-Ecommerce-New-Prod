@@ -112,7 +112,7 @@ const Home = () => {
     }
 
     // Check if user is already a vendor
-    const isVendor = user.is_vendor || localStorage.getItem("user.vendorAccess") === "true";
+    const isVendor = user?.is_vendor || localStorage.getItem("user.vendorAccess") === "true";
 
     if (isVendor) {
       window.open("https://vendors.pinksurfing.com", "_blank");

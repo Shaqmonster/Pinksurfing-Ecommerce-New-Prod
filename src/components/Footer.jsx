@@ -184,7 +184,7 @@ const Footer = () => {
                 </h2>
                 <ul className="text-gray-400 flex flex-col text-[13.5px] space-y-3">
                   {item.list
-                    .filter((e) => !(user.is_vendor && e.id === "2.4"))
+                    .filter((e) => !(user?.is_vendor && e.id === "2.4"))
                     .map((e, idx) => {
                       let link = e.link;
                       if (e.id === "2.2" && cookies.access_token) {
