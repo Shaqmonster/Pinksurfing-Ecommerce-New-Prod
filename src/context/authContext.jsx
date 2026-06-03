@@ -4,12 +4,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { deleteCookie, getSharedAuthCookieDomain } from "../utils/cookie";
 import {
-  bootstrapAccessFromSsoCookies,
   clearAuthStorage,
   getAccessToken,
-  persistAuthSession,
   refreshAccessToken,
-  shouldSkipSsoBootstrap,
+  resolveSharedSession,
   signOut,
   syncReactAuthCookies,
 } from "../utils/authSession";
@@ -227,22 +225,12 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyToken = async () => {
-      if (shouldSkipSsoBootstrap()) return;
+      const session = await resolveSharedSession();
 
-      let accessToken = cookies.access_token || getAccessToken();
-
-      if (!accessToken) {
-        const boot = await bootstrapAccessFromSsoCookies();
-        if (boot?.access) {
-          persistAuthSession(boot.access, boot.refresh);
-          syncReactAuthCookies(boot.access, boot.refresh, setCookie);
-          accessToken = boot.access;
-        }
-      }
-
-      if (accessToken) {
-        if (!authToken || authToken !== accessToken) {
-          setAuthToken(accessToken);
+      if (session?.access) {
+        syncReactAuthCookies(session.access, session.refresh, setCookie);
+        if (!authToken || authToken !== session.access) {
+          setAuthToken(session.access);
         }
         return;
       }

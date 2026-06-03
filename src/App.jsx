@@ -36,12 +36,7 @@ import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
 import ComingSoon from "./pages/ComingSoon";
 import { getCookie } from "./utils/cookie";
-import {
-  bootstrapAccessFromSsoCookies,
-  getAccessToken,
-  persistAuthSession,
-  shouldSkipSsoBootstrap,
-} from "./utils/authSession";
+import { getAccessToken, resolveSharedSession } from "./utils/authSession";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 import CreateBidPage from "./pages/CreateBidPage";
 import MyBidsPage from "./pages/MyBidsPage";
@@ -88,14 +83,8 @@ function App() {
 
   useEffect(() => {
     const checkAuthentication = async () => {
-      let token = getAccessToken() || getCookie("access_token");
-      if (!token && !shouldSkipSsoBootstrap()) {
-        const boot = await bootstrapAccessFromSsoCookies();
-        if (boot?.access) {
-          persistAuthSession(boot.access, boot.refresh);
-          token = boot.access;
-        }
-      }
+      const session = await resolveSharedSession();
+      const token = session?.access || getAccessToken() || getCookie("access_token");
       if (token) setAuthToken(token);
     };
 

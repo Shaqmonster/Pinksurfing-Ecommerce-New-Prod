@@ -26,10 +26,29 @@ export function shouldSkipSsoBootstrap() {
   return true;
 }
 
+export function getJwtUserId(token) {
+  if (!token) return null;
+  try {
+    const part = token.split(".")[1];
+    const json = JSON.parse(
+      atob(part.replace(/-/g, "+").replace(/_/g, "/"))
+    );
+    const id = json.user_id ?? json.sub;
+    return id != null ? String(id) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Readable cookie only (not localStorage). */
+export function getReadableAccessCookie() {
+  return getCookie("access_token");
+}
+
 export function getAccessToken() {
   if (typeof window === "undefined") return null;
   return (
-    getCookie("access_token") ||
+    getReadableAccessCookie() ||
     localStorage.getItem("access_token") ||
     null
   );
@@ -103,6 +122,39 @@ export async function bootstrapAccessFromSsoCookies() {
   } catch {
     return null;
   }
+}
+
+/**
+ * Single source of truth: shared HttpOnly SSO cookies first, then local cache.
+ * Prevents stale per-site localStorage from showing a different user.
+ */
+export async function resolveSharedSession() {
+  if (shouldSkipSsoBootstrap()) return null;
+
+  const previous = getAccessToken();
+  const boot = await bootstrapAccessFromSsoCookies();
+
+  if (boot?.access) {
+    const prevUid = getJwtUserId(previous);
+    const bootUid = getJwtUserId(boot.access);
+    if (previous && prevUid && bootUid && prevUid !== bootUid) {
+      clearAuthStorage();
+    }
+    persistAuthSession(boot.access, boot.refresh);
+    return boot;
+  }
+
+  const cookieAccess = getReadableAccessCookie();
+  if (cookieAccess) {
+    return { access: cookieAccess, refresh: getRefreshToken() || undefined };
+  }
+
+  const stored = localStorage.getItem("access_token");
+  if (stored) {
+    return { access: stored, refresh: getRefreshToken() || undefined };
+  }
+
+  return null;
 }
 
 export async function refreshAccessToken() {
