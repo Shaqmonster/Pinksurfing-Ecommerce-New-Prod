@@ -73,50 +73,61 @@ const Signin = () => {
       }
   
       const data = response.data;
-      console.log(data);
-      // Second API request to create a customer
-      const customerResponse = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/api/customer/create-customer-from-sso/`,
-        {},
-        { headers: { Authorization: `Bearer ${data.access}` } }
-      );
-      if (customerResponse.status === 200 || customerResponse.status === 201) {
-        const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-        const cookieOptions = {
-          path: "/",
-          secure: !isLocalhost,
-          sameSite: isLocalhost ? "lax" : "strict",
-        };
 
-        setCookie("access_token", data.access, {
-          ...cookieOptions,
-          expires: new Date(Date.now() + 60 * 60 * 1000),
-        });
-        setCookie("refresh_token", data.refresh, {
-          ...cookieOptions,
-          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        });
-        localStorage.setItem("access_token", data.access);
-  
-        setUser(data);
-        setIsProfileOpen(false);
-        handleSuccess("Signed In Successfully");
-        setInputValue({ email: "", password: "" });
-  
-        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-        if (redirectPath) {
-          sessionStorage.removeItem("redirectAfterLogin");
-          window.location.href = redirectPath;
-        } else {
-          navigate("/", { replace: true });
-        }
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      const cookieOptions = {
+        path: "/",
+        secure: !isLocalhost,
+        sameSite: isLocalhost ? "lax" : "strict",
+      };
+
+      setCookie("access_token", data.access, {
+        ...cookieOptions,
+        expires: new Date(Date.now() + 60 * 60 * 1000),
+      });
+      setCookie("refresh_token", data.refresh, {
+        ...cookieOptions,
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+      localStorage.setItem("access_token", data.access);
+
+      // Sync local customer row (non-blocking for auth cookies)
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_SERVER_URL}/api/customer/create-customer-from-sso/`,
+          {},
+          { headers: { Authorization: `Bearer ${data.access}` } }
+        );
+      } catch (syncError) {
+        console.error("create-customer-from-sso failed:", syncError?.response?.data || syncError);
+      }
+
+      setUser(data);
+      setIsProfileOpen(false);
+      handleSuccess("Signed In Successfully");
+      setInputValue({ email: "", password: "" });
+
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        window.location.href = redirectPath;
       } else {
-        handleError("Login Failed");
+        navigate("/", { replace: true });
       }
     } catch (error) {
-      console.log(error)
-      // Use error.response.data.message if available, otherwise use a default message
-      handleError("Invalid email or password");
+      console.error("Sign in failed:", error?.response?.data || error);
+      const authFailed = error?.config?.url?.includes("auth.pinksurfing.com");
+      if (authFailed) {
+        handleError("Invalid email or password");
+      } else {
+        handleError(
+          error?.response?.data?.detail ||
+            error?.response?.data?.message ||
+            "Sign in failed. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
