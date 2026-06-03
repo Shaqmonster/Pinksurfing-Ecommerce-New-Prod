@@ -19,9 +19,7 @@ export default function Cart() {
   const [cookies, removeCookie] = useCookies([]);
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (!cookies.access_token) {
-      return navigate("/signin");
-    }
+    if (!cookies.access_token) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
@@ -43,8 +41,9 @@ export default function Cart() {
       });
   };
   useEffect(() => {
+    if (!isCartOpen || !cookies.access_token) return;
     GetCartProducts();
-  }, [cookies, navigate, removeCookie]);
+  }, [isCartOpen, cookies.access_token]);
 
   //   remove product--------------------------------------------------------
   const RemoveCartProduct = (productId) => {

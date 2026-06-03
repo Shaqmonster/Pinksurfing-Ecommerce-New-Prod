@@ -155,9 +155,10 @@ const Checkout = () => {
   };
 
   useEffect(() => {
+    if (!cookies.access_token) return;
     GetAddresses();
     GetCartProducts();
-  }, [cookies, navigate, isAddressFormOpen, removeCookie]);
+  }, [cookies.access_token, isAddressFormOpen]);
 
   useEffect(() => {
     if (addresses.length > 0) {

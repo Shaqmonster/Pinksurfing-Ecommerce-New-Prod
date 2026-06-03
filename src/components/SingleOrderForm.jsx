@@ -43,9 +43,7 @@ export default function SingleOrderForm() {
   }
 
   const GetAddresses = async () => {
-    if (!cookies.access_token) {
-      navigate("/signin");
-    }
+    if (!cookies.access_token) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/address/`, {
         headers: {
@@ -115,8 +113,9 @@ export default function SingleOrderForm() {
   };
 
   useEffect(() => {
+    if (!isSingleOrderFormOpen || !cookies.access_token) return;
     GetAddresses();
-  }, [cookies, isAddressFormOpen, navigate, removeCookie]);
+  }, [isSingleOrderFormOpen, cookies.access_token, isAddressFormOpen]);
 
   useEffect(() => {
     if (addresses.length > 0) {

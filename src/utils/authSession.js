@@ -333,6 +333,11 @@ export async function signOut(accessToken, setCookie) {
 
 const API_BASE = import.meta.env.VITE_SERVER_URL;
 
+export function isEcommerceApiUrl(url) {
+  if (!url || !API_BASE) return false;
+  return url.startsWith(API_BASE) || url.includes("ecommerceapi.pinksurfing.com");
+}
+
 export async function fetchCustomerProfile(accessToken) {
   const headers = {
     "Content-Type": "application/json",

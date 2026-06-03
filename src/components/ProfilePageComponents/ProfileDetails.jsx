@@ -110,9 +110,7 @@ export default function ProfileDetails() {
     };
 
     const GetProfile = async () => {
-        if (!cookies.access_token) {
-            navigate("/signin");
-        }
+        if (!cookies.access_token) return;
         axios
             .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`, {
                 headers: {
@@ -131,8 +129,9 @@ export default function ProfileDetails() {
     };
 
     useEffect(() => {
+        if (!cookies.access_token) return;
         GetProfile();
-    }, [cookies, navigate, removeCookie]);
+    }, [cookies.access_token]);
 
     const UpdateProfile = async (e) => {
         e.preventDefault();

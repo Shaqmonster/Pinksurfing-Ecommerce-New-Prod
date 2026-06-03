@@ -21,9 +21,7 @@ export default function Wishlist() {
   const [cookies, removeCookie] = useCookies([]);
   const [subTotal, setSubTotal] = useState(0);
   const GetWishlist = async () => {
-    if (!cookies.access_token) {
-      navigate("/signin");
-    }
+    if (!cookies.access_token) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`, {
         headers: {
@@ -44,9 +42,7 @@ export default function Wishlist() {
   // const additionalPrice = 2;
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (!cookies.access_token) {
-      navigate("/signin");
-    }
+    if (!cookies.access_token) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
@@ -63,8 +59,9 @@ export default function Wishlist() {
       });
   };
   useEffect(() => {
+    if (!isWishlistOpen || !cookies.access_token) return;
     GetWishlist();
-  }, [cookies, navigate, removeCookie]);
+  }, [isWishlistOpen, cookies.access_token]);
   const AddtoCart = (productId) => {
     // console.log(cookies.access_token);
     axios

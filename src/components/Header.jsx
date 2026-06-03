@@ -137,7 +137,7 @@ const Header = () => {
   }, [user, cookies.access_token, isChatOpen]);
 
   const getCartProducts = async () => {
-    if (!authToken || !cookies.access_token) return;
+    if (!user || !cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
@@ -155,7 +155,7 @@ const Header = () => {
   };
 
   const getWishlist = async () => {
-    if (!authToken || !cookies.access_token) return;
+    if (!user || !cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`,
@@ -178,7 +178,7 @@ const Header = () => {
   }, [updateWalletBalance]);
 
   useEffect(() => {
-    if (!authToken || !cookies.access_token) return;
+    if (!user || !cookies.access_token) return;
 
     const fetchData = async () => {
       await getAllProducts();
@@ -187,7 +187,7 @@ const Header = () => {
     };
 
     fetchData();
-  }, [authToken, cookies.access_token]);
+  }, [user, cookies.access_token]);
 
   const handleWalletClick = () => {
     setShowQRCode(true);

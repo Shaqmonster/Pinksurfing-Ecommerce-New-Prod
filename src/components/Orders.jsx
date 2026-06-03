@@ -61,8 +61,9 @@ export default function Orders() {
   };
 
   useEffect(() => {
+    if (!cookies.access_token) return;
     GetOrders();
-  }, [cookies, navigate, removeCookie]);
+  }, [cookies.access_token]);
 
   const groupOrdersByOrderId = (orders) => {
     return orders.reduce((acc, order) => {
