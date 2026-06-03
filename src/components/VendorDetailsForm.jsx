@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import { CountriesISO } from "../utils/CountriesISO";
 import { Country, State, City } from "country-state-city";
-import { dataContext } from "../context/dataContext";
+import { getAccessToken } from "../utils/authSession";
 
 export default function VendorDetailsForm() {
   const { isVendorFormOpen, isDarkMode, user, setUser, setIsVendorFormOpen } =
@@ -121,15 +121,14 @@ export default function VendorDetailsForm() {
     setStoreImage(null);
   };
 
-  const GetProfile = async (e) => {
-    if (!cookies.access_token) {
-      navigate("/signin");
-    }
+  const GetProfile = async () => {
+    const token = getAccessToken();
+    if (!token) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
@@ -143,8 +142,9 @@ export default function VendorDetailsForm() {
   };
 
   useEffect(() => {
+    if (!isVendorFormOpen) return;
     GetProfile();
-  }, [cookies, navigate, removeCookie]);
+  }, [isVendorFormOpen]);
 
   const UpdateProfile = async (e) => {
     e.preventDefault();

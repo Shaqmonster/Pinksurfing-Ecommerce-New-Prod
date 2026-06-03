@@ -53,6 +53,11 @@ const Header = () => {
     isMobileCategoryOpen,
     setIsMobileCategoryOpen,
     Logout,
+    isCartOpen,
+    isWishlistOpen,
+    isVendorFormOpen,
+    isProfilePopupOpen,
+    isSingleOrderFormOpen,
     isChatOpen,
     setIsChatOpen,
     pendingChatConversation,
@@ -222,22 +227,20 @@ const Header = () => {
   return (
     <>
       {/* <CategoriesMobile /> */}
-      {authToken && user && (
-        <>
-          <Cart />
-          <Wishlist />
-          <SingleOrderForm />
-          <VendorDetailsForm />
-          <ProfilePopup />
-          <ChatFloatingPanel
-            isOpen={isChatOpen}
-            onClose={closeChat}
-            pendingConversation={pendingChatConversation}
-            clearPendingConversation={() => setPendingChatConversation(null)}
-            pendingParticipantEmail={pendingChatParticipantEmail}
-            clearPendingParticipantEmail={() => setPendingChatParticipantEmail(null)}
-          />
-        </>
+      {authToken && isCartOpen && <Cart />}
+      {authToken && isWishlistOpen && <Wishlist />}
+      {authToken && isSingleOrderFormOpen && <SingleOrderForm />}
+      {authToken && isVendorFormOpen && <VendorDetailsForm />}
+      {authToken && isProfilePopupOpen && <ProfilePopup />}
+      {authToken && (
+        <ChatFloatingPanel
+          isOpen={isChatOpen}
+          onClose={closeChat}
+          pendingConversation={pendingChatConversation}
+          clearPendingConversation={() => setPendingChatConversation(null)}
+          pendingParticipantEmail={pendingChatParticipantEmail}
+          clearPendingParticipantEmail={() => setPendingChatParticipantEmail(null)}
+        />
       )}
       
       {/* Unified Compact Header */}

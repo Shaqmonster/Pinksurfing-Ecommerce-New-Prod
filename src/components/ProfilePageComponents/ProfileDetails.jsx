@@ -9,25 +9,17 @@ import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "../Loader";
 import { FaEdit, FaCopy, FaCheck } from 'react-icons/fa';
+import { getAccessToken } from "../../utils/authSession";
 import { storeUrl, STOREFRONT_BASE } from "../../utils/envUrls";
 
 export default function ProfileDetails() {
     const [isEditing, setIsEditing] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    const {
-        isProfilePopupOpen,
-        isDarkMode,
-        setIsProfilePopupOpen,
-        setIsVendorFormOpen,
-    } = useContext(authContext);
-    const [cookies, removeCookie] = useCookies([]);
+    const { user: authUser, authToken } = useContext(authContext);
+    const [cookies] = useCookies([]);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
-
-    function closeModal() {
-        setIsProfilePopupOpen(false);
-    }
 
     let [profile, setProfile] = useState({
         customer_phone: "",
@@ -109,29 +101,30 @@ export default function ProfileDetails() {
         setProfile({ ...profile, addresses: updatedAddresses });
     };
 
-    const GetProfile = async () => {
-        if (!cookies.access_token) return;
+    useEffect(() => {
+        if (authUser?.id) {
+            setProfile(authUser);
+            setInitialData(authUser);
+            return;
+        }
+        const token = authToken || getAccessToken();
+        if (!token) return;
+
         axios
             .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`, {
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${cookies.access_token}`,
+                    Authorization: `Bearer ${token}`,
                 },
             })
             .then((response) => {
                 setProfile(response.data);
                 setInitialData(response.data);
-                console.log(response.data);
             })
             .catch((error) => {
                 console.error(error);
             });
-    };
-
-    useEffect(() => {
-        if (!cookies.access_token) return;
-        GetProfile();
-    }, [cookies.access_token]);
+    }, [authUser?.id, authToken]);
 
     const UpdateProfile = async (e) => {
         e.preventDefault();

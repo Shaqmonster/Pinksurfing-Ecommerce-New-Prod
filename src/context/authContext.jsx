@@ -62,11 +62,13 @@ export const AuthProvider = ({ children }) => {
 
   const bootstrappedRef = useRef(false);
   const profileLoadRef = useRef(null);
+  const lastProfileTokenRef = useRef("");
 
   const clearSession = useCallback(() => {
     clearClientAuthStorage(setCookie);
     setAuthToken("");
     setUser(null);
+    lastProfileTokenRef.current = "";
   }, [setCookie]);
 
   const applyJwtFallbackUser = useCallback((token) => {
@@ -95,6 +97,9 @@ export const AuthProvider = ({ children }) => {
 
   const hydrateUser = useCallback(
     async (access) => {
+      if (lastProfileTokenRef.current === access) return null;
+      lastProfileTokenRef.current = access;
+
       const profile = await loadProfile(access);
       if (profile) {
         setUser(profile);
