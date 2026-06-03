@@ -3,10 +3,13 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
+  attachSharedSsoSync,
   ensureSession,
   fetchCustomerProfile,
   getAccessToken,
   invalidateLocalSession,
+  isSsoLoggedOutGlobally,
+  reconcileSharedSession,
   refreshAccessToken,
   signOut,
   syncReactAuthCookies,
@@ -54,6 +57,7 @@ export const AuthProvider = ({ children }) => {
   const authInitRef = useRef(false);
   const lastSyncedAccessRef = useRef("");
   const profileInflightRef = useRef(null);
+  const ssoSyncInflightRef = useRef(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [pendingChatConversation, setPendingChatConversation] = useState(null);
   const [pendingChatParticipantEmail, setPendingChatParticipantEmail] = useState(null);
@@ -153,6 +157,46 @@ export const AuthProvider = ({ children }) => {
     [cookies.refresh_token, invalidateSession, setCookie]
   );
 
+  const applySession = useCallback(
+    async (session) => {
+      if (session?.access) {
+        if (lastSyncedAccessRef.current !== session.access) {
+          syncReactAuthCookies(session.access, session.refresh, setCookie);
+          lastSyncedAccessRef.current = session.access;
+        }
+        setAuthToken(session.access);
+        await loadProfile(session.access);
+        return true;
+      }
+      clearSessionState();
+      return false;
+    },
+    [clearSessionState, loadProfile, setCookie]
+  );
+
+  const syncFromSharedSession = useCallback(async () => {
+    if (ssoSyncInflightRef.current) return;
+    ssoSyncInflightRef.current = true;
+    try {
+      if (isSsoLoggedOutGlobally()) {
+        if (user || authToken) invalidateSession();
+        return;
+      }
+
+      const session = await reconcileSharedSession();
+      if (session?.access) {
+        if (session.access !== authToken || !user) {
+          await applySession(session);
+        }
+        return;
+      }
+
+      if (user || authToken) invalidateSession();
+    } finally {
+      ssoSyncInflightRef.current = false;
+    }
+  }, [applySession, authToken, invalidateSession, user]);
+
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -220,21 +264,19 @@ export const AuthProvider = ({ children }) => {
     void (async () => {
       try {
         const session = await ensureSession();
-        if (session?.access) {
-          if (lastSyncedAccessRef.current !== session.access) {
-            syncReactAuthCookies(session.access, session.refresh, setCookie);
-            lastSyncedAccessRef.current = session.access;
-          }
-          setAuthToken(session.access);
-          await loadProfile(session.access);
-        } else {
-          clearSessionState();
-        }
+        await applySession(session);
       } finally {
         setAuthReady(true);
       }
     })();
-  }, [clearSessionState, loadProfile, setCookie]);
+  }, [applySession]);
+
+  useEffect(() => {
+    if (!authReady) return undefined;
+    return attachSharedSsoSync(() => {
+      void syncFromSharedSession();
+    });
+  }, [authReady, syncFromSharedSession]);
 
   useEffect(() => {
     if (!authToken) return;

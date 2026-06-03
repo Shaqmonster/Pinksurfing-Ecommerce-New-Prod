@@ -2,6 +2,7 @@ import axios from "axios";
 import { getCookie, getSharedAuthCookieDomain } from "./cookie";
 
 const SSO_LOGOUT_COOKIE = "ps_sso_logged_out";
+const SSO_EPOCH_COOKIE = "ps_sso_epoch";
 const AUTH_REFRESH_URL = "https://auth.pinksurfing.com/api/token/refresh/";
 const AUTH_LOGOUT_URL = "https://auth.pinksurfing.com/api/logout/";
 const ACCESS_SKEW_SECONDS = 60;
@@ -42,11 +43,25 @@ function deleteAuthCookie(name, domain) {
   writeCookie(name, "", 0, domain);
 }
 
+export function bumpSsoEpoch() {
+  if (typeof window === "undefined") return null;
+  const epoch = String(Date.now());
+  const sharedDomain = getSharedAuthCookieDomain();
+  writeCookie(SSO_EPOCH_COOKIE, epoch, 60 * 60, undefined);
+  if (sharedDomain) writeCookie(SSO_EPOCH_COOKIE, epoch, 60 * 60, sharedDomain);
+  return epoch;
+}
+
+export function getSsoEpoch() {
+  return getCookie(SSO_EPOCH_COOKIE);
+}
+
 export function markSsoLoggedOut() {
   if (typeof window === "undefined") return;
   const sharedDomain = getSharedAuthCookieDomain();
   writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, undefined);
   if (sharedDomain) writeCookie(SSO_LOGOUT_COOKIE, "1", 60 * 60, sharedDomain);
+  bumpSsoEpoch();
 }
 
 export function clearSsoLoggedOutFlag() {
@@ -114,6 +129,9 @@ export function persistAuthSession(access, refresh) {
     writeCookie("access_token", access, 60 * 60, undefined);
     if (refresh) writeCookie("refresh_token", refresh, 7 * 24 * 60 * 60, undefined);
   }
+
+  const prevAccess = localStorage.getItem("access_token");
+  if (prevAccess !== access) bumpSsoEpoch();
 }
 
 export function syncReactAuthCookies(access, refresh, setCookie) {
@@ -192,7 +210,7 @@ export async function ensureSession() {
       return null;
     }
 
-    const cached = getCachedAccessToken();
+    const cached = getAccessToken();
     if (cached) {
       return { access: cached, refresh: getRefreshToken() || undefined };
     }
@@ -219,6 +237,64 @@ export async function ensureSession() {
 
 /** @deprecated Use ensureSession() */
 export const resolveSharedSession = ensureSession;
+
+/**
+ * Re-read session after login/logout on another *.pinksurfing.com tab.
+ * Uses shared cookies first, then HttpOnly refresh.
+ */
+export async function reconcileSharedSession() {
+  if (typeof window === "undefined") return null;
+  if (isSsoLoggedOutGlobally()) {
+    clearAuthStorage();
+    return null;
+  }
+
+  const token = getAccessToken();
+  if (token) {
+    const refresh = getRefreshToken() || undefined;
+    const prevAccess = localStorage.getItem("access_token");
+    if (prevAccess !== token) {
+      persistAuthSession(token, refresh);
+    }
+    return { access: token, refresh };
+  }
+
+  ensureSessionInflight = null;
+  return ensureSession();
+}
+
+/** Poll shared SSO state when this tab becomes visible (cross-subdomain sync). */
+export function attachSharedSsoSync(onSync) {
+  if (typeof window === "undefined") return () => {};
+
+  let lastEpoch = getSsoEpoch();
+  let timer = null;
+
+  const scheduleSync = () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      const epoch = getSsoEpoch();
+      const epochChanged = epoch && epoch !== lastEpoch;
+      if (epochChanged) lastEpoch = epoch;
+      if (epochChanged || document.visibilityState === "visible") {
+        onSync();
+      }
+    }, 250);
+  };
+
+  const onVisible = () => {
+    if (document.visibilityState === "visible") scheduleSync();
+  };
+
+  window.addEventListener("visibilitychange", onVisible);
+  window.addEventListener("focus", scheduleSync);
+
+  return () => {
+    if (timer) clearTimeout(timer);
+    window.removeEventListener("visibilitychange", onVisible);
+    window.removeEventListener("focus", scheduleSync);
+  };
+}
 
 export async function refreshAccessToken() {
   const refreshed = await refreshFromSsoCookies();
