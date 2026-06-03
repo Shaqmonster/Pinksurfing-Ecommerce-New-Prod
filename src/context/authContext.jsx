@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   clearClientAuthStorage,
+  decodeJwt,
   ensureSession,
   fetchCustomerProfile,
   getAccessToken,
   getRefreshToken,
-  isEcommerceApiUrl,
   isSsoLoggedOutGlobally,
   persistAuthSession,
   refreshAccessToken,
@@ -62,7 +62,6 @@ export const AuthProvider = ({ children }) => {
 
   const bootstrappedRef = useRef(false);
   const profileLoadRef = useRef(null);
-  const ecommerce403Ref = useRef(false);
 
   const clearSession = useCallback(() => {
     clearClientAuthStorage(setCookie);
@@ -70,30 +69,43 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, [setCookie]);
 
-  const handleEcommerce403 = useCallback(() => {
-    if (ecommerce403Ref.current) return;
-    ecommerce403Ref.current = true;
-    clearSession();
-    toast.error("Could not verify your session with the store API. Please sign in again.", {
-      position: "top-right",
-      autoClose: 4000,
-    });
-  }, [clearSession]);
-
-  const loadProfile = useCallback(async (token) => {
-    if (!token) return { profile: null, rejected: false };
-    try {
-      const profile = await fetchCustomerProfile(token);
-      return { profile, rejected: false };
-    } catch (error) {
-      const status = error?.response?.status;
-      if (status === 403) {
-        return { profile: null, rejected: true };
-      }
-      console.error("Profile load failed:", status || error);
-      return { profile: null, rejected: false };
-    }
+  const applyJwtFallbackUser = useCallback((token) => {
+    const payload = decodeJwt(token);
+    if (!payload?.email) return null;
+    return {
+      email: payload.email,
+      first_name: payload.first_name || payload.email.split("@")[0],
+      last_name: payload.last_name || "",
+      is_vendor: false,
+    };
   }, []);
+
+  const loadProfile = useCallback(
+    async (token) => {
+      if (!token) return null;
+      try {
+        return await fetchCustomerProfile(token);
+      } catch (error) {
+        console.error("Profile load failed:", error?.response?.status || error);
+        return null;
+      }
+    },
+    []
+  );
+
+  const hydrateUser = useCallback(
+    async (access) => {
+      const profile = await loadProfile(access);
+      if (profile) {
+        setUser(profile);
+        return profile;
+      }
+      const fallback = applyJwtFallbackUser(access);
+      if (fallback) setUser(fallback);
+      return fallback;
+    },
+    [applyJwtFallbackUser, loadProfile]
+  );
 
   const establishSession = useCallback(
     async (access, refresh) => {
@@ -107,30 +119,19 @@ export const AuthProvider = ({ children }) => {
       profileLoadRef.current = (async () => {
         persistAuthSession(access, refresh);
         syncReactAuthCookies(access, refresh, setCookie);
-
-        const { profile, rejected } = await loadProfile(access);
-        if (rejected) {
-          handleEcommerce403();
-          profileLoadRef.current = null;
-          return false;
-        }
-
-        if (profile) setUser(profile);
         setAuthToken(access);
+        await hydrateUser(access);
         profileLoadRef.current = null;
         return true;
       })();
 
       return profileLoadRef.current;
     },
-    [clearSession, handleEcommerce403, loadProfile, setCookie]
+    [clearSession, hydrateUser, setCookie]
   );
 
   const login = useCallback(
-    async (access, refresh) => {
-      ecommerce403Ref.current = false;
-      return establishSession(access, refresh);
-    },
+    async (access, refresh) => establishSession(access, refresh),
     [establishSession]
   );
 
@@ -192,12 +193,6 @@ export const AuthProvider = ({ children }) => {
       async (error) => {
         const originalRequest = error.config;
         const status = error.response?.status;
-        const url = originalRequest?.url || "";
-
-        if (status === 403 && isEcommerceApiUrl(url)) {
-          handleEcommerce403();
-          return Promise.reject(error);
-        }
 
         if (status !== 401 || originalRequest._retry) {
           return Promise.reject(error);
@@ -216,7 +211,7 @@ export const AuthProvider = ({ children }) => {
       }
     );
     return () => axios.interceptors.response.eject(interceptor);
-  }, [clearSession, handleEcommerce403, setCookie]);
+  }, [clearSession, setCookie]);
 
   useEffect(() => {
     if (bootstrappedRef.current) return;

@@ -137,7 +137,7 @@ const Header = () => {
   }, [user, cookies.access_token, isChatOpen]);
 
   const getCartProducts = async () => {
-    if (!user || !cookies.access_token) return;
+    if (!authToken || !user || !cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
@@ -155,7 +155,7 @@ const Header = () => {
   };
 
   const getWishlist = async () => {
-    if (!user || !cookies.access_token) return;
+    if (!authToken || !user || !cookies.access_token) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`,
@@ -178,7 +178,7 @@ const Header = () => {
   }, [updateWalletBalance]);
 
   useEffect(() => {
-    if (!user || !cookies.access_token) return;
+    if (!authToken || !user || !cookies.access_token) return;
 
     const fetchData = async () => {
       await getAllProducts();
@@ -187,7 +187,7 @@ const Header = () => {
     };
 
     fetchData();
-  }, [user, cookies.access_token]);
+  }, [authToken, user, cookies.access_token]);
 
   const handleWalletClick = () => {
     setShowQRCode(true);
@@ -222,7 +222,7 @@ const Header = () => {
   return (
     <>
       {/* <CategoriesMobile /> */}
-      {user && (
+      {authToken && user && (
         <>
           <Cart />
           <Wishlist />
@@ -301,7 +301,7 @@ const Header = () => {
             </div>
 
             <div className="flex items-center gap-6 border-l border-white/10 pl-8">
-              {user && (
+              {authToken && user && (
                 <div className="flex items-center gap-6">
                   <div className="relative group cursor-pointer" onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}>
                     <FaHeart className="text-xl text-gray-500 hover:text-pink-500 transition-all duration-300 transform group-hover:scale-110" />
@@ -348,45 +348,62 @@ const Header = () => {
                 </div>
 
                 <div className="hidden md:flex items-center gap-4">
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate("/profile")}
-                    className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
-                  >
-                    <img
-                      src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
-                      alt="avatar"
-                      className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
-                    />
-                    <div className="hidden sm:flex flex-col">
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1">
-                        {user?.first_name}
-                      </span>
-                      <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
-                        Account
-                      </span>
+                  {authToken ? (
+                    <>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate("/profile")}
+                        className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
+                      >
+                        <img
+                          src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
+                          alt="avatar"
+                          className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
+                        />
+                        <div className="hidden sm:flex flex-col">
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1">
+                            {user?.first_name || "Account"}
+                          </span>
+                          <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
+                            Account
+                          </span>
+                        </div>
+                      </motion.div>
+
+                      {user && hasBuyerNdas && (
+                        <Link
+                          to="/my-ndas"
+                          title="Business listing confidentiality agreements"
+                          className="hidden md:flex items-center gap-2 px-4 py-3 rounded-2xl border border-purple-500/25 bg-purple-500/10 hover:bg-purple-500/15 transition-colors text-[10px] font-black uppercase tracking-[0.18em] text-purple-200"
+                        >
+                          <FaFileContract className="text-sm opacity-90" />
+                          My NDAs
+                        </Link>
+                      )}
+
+                      <button
+                        onClick={Logout}
+                        className="px-6 py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.2em] border border-white/5 hover:border-white/20 rounded-2xl transition-all duration-300 bg-white/[0.02] hover:bg-white/[0.05]"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <Link
+                        to="/signin"
+                        className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
+                      >
+                        Sign Up
+                      </Link>
                     </div>
-                  </motion.div>
-
-                  {user && hasBuyerNdas && (
-                    <Link
-                      to="/my-ndas"
-                      title="Business listing confidentiality agreements"
-                      className="hidden md:flex items-center gap-2 px-4 py-3 rounded-2xl border border-purple-500/25 bg-purple-500/10 hover:bg-purple-500/15 transition-colors text-[10px] font-black uppercase tracking-[0.18em] text-purple-200"
-                    >
-                      <FaFileContract className="text-sm opacity-90" />
-                      My NDAs
-                    </Link>
-                  )}
-
-                  {user && (
-                    <button
-                      onClick={Logout}
-                      className="px-6 py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.2em] border border-white/5 hover:border-white/20 rounded-2xl transition-all duration-300 bg-white/[0.02] hover:bg-white/[0.05]"
-                    >
-                      Logout
-                    </button>
                   )}
                 </div>
               </div>
@@ -449,40 +466,59 @@ const Header = () => {
               </button>
               
               <div className="mt-auto flex flex-col gap-4">
-                <Link 
-                  to="/profile" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/10"
-                >
-                  <img
-                    src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
-                    alt="avatar"
-                    className="w-12 h-12 rounded-2xl object-cover ring-1 ring-white/10"
-                  />
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{user?.first_name}</p>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">View Profile</p>
+                {authToken ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/10"
+                    >
+                      <img
+                        src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
+                        alt="avatar"
+                        className="w-12 h-12 rounded-2xl object-cover ring-1 ring-white/10"
+                      />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{user?.first_name || "Account"}</p>
+                        <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">View Profile</p>
+                      </div>
+                    </Link>
+
+                    {user && hasBuyerNdas && (
+                      <Link
+                        to="/my-ndas"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 p-4 rounded-3xl bg-purple-500/15 border border-purple-500/30 text-purple-200 text-xs font-black uppercase tracking-widest"
+                      >
+                        <FaFileContract className="text-lg shrink-0" />
+                        <span>My NDAs — business listings</span>
+                      </Link>
+                    )}
+
+                    <button
+                      onClick={() => { Logout(); setIsMobileMenuOpen(false); }}
+                      className="w-full py-6 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-3xl text-red-400 text-[10px] font-black uppercase tracking-[0.3em] transition-all"
+                    >
+                      Logout Session
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      to="/signin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full py-6 text-center bg-purple-600 hover:bg-purple-500 rounded-3xl text-white text-[10px] font-black uppercase tracking-[0.3em] transition-all"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full py-6 text-center bg-white/[0.03] border border-white/10 rounded-3xl text-white text-[10px] font-black uppercase tracking-[0.3em] transition-all"
+                    >
+                      Sign Up
+                    </Link>
                   </div>
-                </Link>
-
-                {user && hasBuyerNdas && (
-                  <Link
-                    to="/my-ndas"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-4 rounded-3xl bg-purple-500/15 border border-purple-500/30 text-purple-200 text-xs font-black uppercase tracking-widest"
-                  >
-                    <FaFileContract className="text-lg shrink-0" />
-                    <span>My NDAs — business listings</span>
-                  </Link>
-                )}
-
-                {user && (
-                  <button
-                    onClick={() => { Logout(); setIsMobileMenuOpen(false); }}
-                    className="w-full py-6 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-3xl text-red-400 text-[10px] font-black uppercase tracking-[0.3em] transition-all"
-                  >
-                    Logout Session
-                  </button>
                 )}
               </div>
             </nav>

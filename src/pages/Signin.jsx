@@ -73,9 +73,7 @@ const Signin = () => {
 
       const ok = await login(data.access, data.refresh);
       if (!ok) {
-        handleError(
-          "Signed in with SSO, but the store could not verify your account. Please try again or contact support."
-        );
+        handleError("Sign in failed. Please try again.");
         return;
       }
       setIsProfileOpen(false);

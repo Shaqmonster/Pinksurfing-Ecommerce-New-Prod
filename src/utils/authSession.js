@@ -349,8 +349,8 @@ export async function fetchCustomerProfile(accessToken) {
     return response.data;
   } catch (error) {
     const status = error?.response?.status;
-    if (status === 401 || status === 403) throw error;
-    if (status === 400 || status === 404) {
+    if (status === 401) throw error;
+    if (status === 400 || status === 404 || status === 403) {
       try {
         await axios.post(
           `${API_BASE}/api/customer/create-customer-from-sso/`,
