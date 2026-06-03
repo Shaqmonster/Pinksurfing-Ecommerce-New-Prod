@@ -36,7 +36,7 @@ import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
 import ComingSoon from "./pages/ComingSoon";
 import { getCookie } from "./utils/cookie";
-import { getAccessToken, resolveSharedSession } from "./utils/authSession";
+import { getAccessToken } from "./utils/authSession";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 import CreateBidPage from "./pages/CreateBidPage";
 import MyBidsPage from "./pages/MyBidsPage";
@@ -71,7 +71,6 @@ function App() {
     isSingleOrderFormOpen,
     isMobileCategoryOpen,
     authToken,
-    setAuthToken,
   } = useContext(authContext);
 
   const location = useLocation();
@@ -80,16 +79,6 @@ function App() {
 
   // Footer only on the home page
   const showFooter = location.pathname === "/";
-
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      const session = await resolveSharedSession();
-      const token = session?.access || getAccessToken() || getCookie("access_token");
-      if (token) setAuthToken(token);
-    };
-
-    checkAuthentication();
-  }, [setAuthToken]);
 
   const cookieAccess = getAccessToken() || getCookie("access_token");
 

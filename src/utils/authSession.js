@@ -125,33 +125,26 @@ export async function bootstrapAccessFromSsoCookies() {
 }
 
 /**
- * Single source of truth: shared HttpOnly SSO cookies first, then local cache.
- * Prevents stale per-site localStorage from showing a different user.
+ * Resolve session without rotating refresh on every page load.
+ * Bootstrap only when there is no readable access token on this origin.
  */
 export async function resolveSharedSession() {
   if (shouldSkipSsoBootstrap()) return null;
 
-  const previous = getAccessToken();
-  const boot = await bootstrapAccessFromSsoCookies();
-
-  if (boot?.access) {
-    const prevUid = getJwtUserId(previous);
-    const bootUid = getJwtUserId(boot.access);
-    if (previous && prevUid && bootUid && prevUid !== bootUid) {
-      clearAuthStorage();
-    }
-    persistAuthSession(boot.access, boot.refresh);
-    return boot;
-  }
-
-  const cookieAccess = getReadableAccessCookie();
-  if (cookieAccess) {
-    return { access: cookieAccess, refresh: getRefreshToken() || undefined };
+  const readable = getReadableAccessCookie();
+  if (readable) {
+    return { access: readable, refresh: getRefreshToken() || undefined };
   }
 
   const stored = localStorage.getItem("access_token");
   if (stored) {
     return { access: stored, refresh: getRefreshToken() || undefined };
+  }
+
+  const boot = await bootstrapAccessFromSsoCookies();
+  if (boot?.access) {
+    persistAuthSession(boot.access, boot.refresh);
+    return boot;
   }
 
   return null;
@@ -188,6 +181,40 @@ export async function signOut(accessToken) {
     console.error("Auth logout failed (clearing client session anyway):", error);
   }
   clearAuthStorage();
+}
+
+const API_BASE = import.meta.env.VITE_SERVER_URL;
+
+/** Load customer profile; auto-create customer row for vendor-only SSO users. */
+export async function fetchCustomerProfile(accessToken) {
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  try {
+    const response = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
+    return response.data;
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 401 || status === 403) {
+      throw error;
+    }
+    if (status === 400 || status === 404) {
+      try {
+        await axios.post(
+          `${API_BASE}/api/customer/create-customer-from-sso/`,
+          {},
+          { headers }
+        );
+        const retry = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
+        return retry.data;
+      } catch (syncError) {
+        console.error("create-customer-from-sso failed:", syncError?.response?.data || syncError);
+      }
+    }
+    throw error;
+  }
 }
 
 export function clearAuthStorage() {

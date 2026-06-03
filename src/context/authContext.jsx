@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,7 +6,7 @@ import { deleteCookie, getSharedAuthCookieDomain } from "../utils/cookie";
 import {
   clearAuthStorage,
   getAccessToken,
-  refreshAccessToken,
+  fetchCustomerProfile,
   resolveSharedSession,
   signOut,
   syncReactAuthCookies,
@@ -51,6 +51,8 @@ export const AuthProvider = ({ children }) => {
   const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
   const [isUserWalletOpen, setIsUserWalletOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const authInitRef = useRef(false);
+  const lastSyncedAccessRef = useRef("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [pendingChatConversation, setPendingChatConversation] = useState(null);
   const [pendingChatParticipantEmail, setPendingChatParticipantEmail] = useState(null);
@@ -123,33 +125,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   const GetProfile = async (token = authToken) => {
+    if (!token) return false;
     try {
-      setLoading(true)
-      const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setUser(response.data);
+      setLoading(true);
+      const profile = await fetchCustomerProfile(token);
+      setUser(profile);
       return true;
     } catch (error) {
       console.error("GetProfile error:", error);
-      if (error.response && error.response.status === 401) {
-        // Access token expired, try to refresh
+      const status = error?.response?.status;
+      if (status === 401) {
         const refreshSuccess = await getRefreshToken();
         if (!refreshSuccess) {
           Logout();
           return false;
         }
         return true;
-      } else {
+      }
+      if (status === 403) {
         Logout();
         return false;
       }
+      return false;
     } finally {
       setLoading(false);
     }
@@ -224,28 +221,27 @@ export const AuthProvider = ({ children }) => {
   }, [authToken]);
 
   useEffect(() => {
+    if (authInitRef.current) return;
+    authInitRef.current = true;
+
     const verifyToken = async () => {
       const session = await resolveSharedSession();
 
       if (session?.access) {
-        syncReactAuthCookies(session.access, session.refresh, setCookie);
-        if (!authToken || authToken !== session.access) {
-          setAuthToken(session.access);
+        if (lastSyncedAccessRef.current !== session.access) {
+          syncReactAuthCookies(session.access, session.refresh, setCookie);
+          lastSyncedAccessRef.current = session.access;
         }
+        setAuthToken(session.access);
         return;
       }
 
-      try {
-        const refreshed = await refreshAccessToken();
-        syncReactAuthCookies(refreshed, cookies.refresh_token, setCookie);
-        setAuthToken(refreshed);
-      } catch {
-        /* not signed in on any PinkSurfing app */
-      }
+      setAuthToken("");
+      setUser("");
     };
 
-    verifyToken();
-  }, [cookies.access_token, cookies.refresh_token]);
+    void verifyToken();
+  }, [setCookie]);
 
 
   useEffect(() => {
