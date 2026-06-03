@@ -8,7 +8,10 @@ import { IoIosEyeOff } from "react-icons/io";
 import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import axios from "axios";
-import { getSharedAuthCookieDomain } from "../utils/cookie";
+import {
+  persistAuthSession,
+  syncReactAuthCookies,
+} from "../utils/authSession";
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -75,26 +78,8 @@ const Signin = () => {
   
       const data = response.data;
 
-      const isLocalhost =
-        window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1";
-      const sharedDomain = getSharedAuthCookieDomain();
-      const cookieOptions = {
-        path: "/",
-        secure: !isLocalhost,
-        sameSite: "lax",
-        ...(sharedDomain ? { domain: sharedDomain } : {}),
-      };
-
-      setCookie("access_token", data.access, {
-        ...cookieOptions,
-        expires: new Date(Date.now() + 60 * 60 * 1000),
-      });
-      setCookie("refresh_token", data.refresh, {
-        ...cookieOptions,
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      });
-      localStorage.setItem("access_token", data.access);
+      persistAuthSession(data.access, data.refresh);
+      syncReactAuthCookies(data.access, data.refresh, setCookie);
 
       // Sync local customer row (non-blocking for auth cookies)
       try {

@@ -3,6 +3,16 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { deleteCookie, getSharedAuthCookieDomain } from "../utils/cookie";
+import {
+  bootstrapAccessFromSsoCookies,
+  clearAuthStorage,
+  getAccessToken,
+  persistAuthSession,
+  refreshAccessToken,
+  shouldSkipSsoBootstrap,
+  signOut,
+  syncReactAuthCookies,
+} from "../utils/authSession";
 export const authContext = createContext();
 import { toast } from "react-toastify";
 
@@ -75,55 +85,27 @@ export const AuthProvider = ({ children }) => {
 
   const Logout = async () => {
     try {
-      console.log("Logging out user...");
-      const token = cookies.access_token;
-      
-      // 1. Attempt server-side logout
-      if (token) {
-        try {
-          await axios.post(
-            `https://auth.pinksurfing.com/api/logout/`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token.replaceAll('"', "")}`,
-              },
-            }
-          );
-        } catch (error) {
-          console.error("Server logout error:", error);
-        }
-      }
+      const token = getAccessToken() || cookies.access_token;
+      await signOut(token);
 
-      // 2. Clear cookies using multiple methods to be sure
-      const domain = window.location.hostname.includes('localhost')
-        ? undefined
-        : '.pinksurfing.com';
-
-      // Method A: Using react-cookie's removeCookie
+      const domain = getSharedAuthCookieDomain();
       const cookieOptions = { path: "/" };
-      const domainOptions = { path: "/", domain: domain };
-      
+      const domainOptions = domain ? { path: "/", domain } : { path: "/" };
+
       removeCookie("access_token", cookieOptions);
       removeCookie("refresh_token", cookieOptions);
       removeCookie("user_id", cookieOptions);
-      
       if (domain) {
         removeCookie("access_token", domainOptions);
         removeCookie("refresh_token", domainOptions);
         removeCookie("user_id", domainOptions);
       }
-
-      // Method B: Manual deletion for safety
       deleteCookie("access_token", domain);
       deleteCookie("refresh_token", domain);
       deleteCookie("user_id", domain);
       deleteCookie("access_token");
       deleteCookie("refresh_token");
 
-      // 3. Clear local storage and state
-      localStorage.clear();
-      sessionStorage.clear();
       setUser("");
       setAuthToken("");
 
@@ -132,14 +114,10 @@ export const AuthProvider = ({ children }) => {
         autoClose: 2500,
       });
 
-      // 4. Redirect
       navigate("/");
-      // Force a reload to ensure all states are reset if needed, 
-      // but navigate should usually be enough.
-      // window.location.href = "/"; 
     } catch (error) {
       console.error("Logout error:", error);
-      localStorage.clear();
+      clearAuthStorage();
       setUser("");
       setAuthToken("");
       navigate("/");
@@ -188,52 +166,23 @@ export const AuthProvider = ({ children }) => {
     }
   }, [isDarkMode]);
   const getRefreshToken = async () => {
-    let refresh = cookies.refresh_token;
-
-    if (refresh) {
-      try {
-        setLoading(true)
-        const response = await axios.post(
-          "https://auth.pinksurfing.com/api/token/refresh/",
-          { refresh: refresh },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const newAccessToken = response.data.access;
-
-        // Store new access token in both cookie and localStorage
-        const sharedDomain = getSharedAuthCookieDomain();
-        setCookie("access_token", newAccessToken, {
-          path: "/",
-          expires: new Date(Date.now() + 60 * 60 * 1000),
-          secure: true,
-          sameSite: "lax",
-          ...(sharedDomain ? { domain: sharedDomain } : {}),
-        });
-        localStorage.setItem("access_token", newAccessToken);
-
-        setAuthToken(newAccessToken);
-
-        // Retry getting profile with new token
-        await GetProfile(newAccessToken);
-
-        return true;
-      } catch (error) {
-        console.error("Error refreshing token:", error);
-        // Refresh token is invalid or expired
-        Logout();
-        return false;
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      // No refresh token available
+    try {
+      setLoading(true);
+      const newAccessToken = await refreshAccessToken();
+      syncReactAuthCookies(
+        newAccessToken,
+        cookies.refresh_token,
+        setCookie
+      );
+      setAuthToken(newAccessToken);
+      await GetProfile(newAccessToken);
+      return true;
+    } catch (error) {
+      console.error("Error refreshing token:", error);
       Logout();
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -278,21 +227,32 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyToken = async () => {
-      // Check both cookies and localStorage for access token
-      const accessToken = cookies.access_token;
+      if (shouldSkipSsoBootstrap()) return;
+
+      let accessToken = cookies.access_token || getAccessToken();
+
+      if (!accessToken) {
+        const boot = await bootstrapAccessFromSsoCookies();
+        if (boot?.access) {
+          persistAuthSession(boot.access, boot.refresh);
+          syncReactAuthCookies(boot.access, boot.refresh, setCookie);
+          accessToken = boot.access;
+        }
+      }
 
       if (accessToken) {
-        // We have an access token, set it
         if (!authToken || authToken !== accessToken) {
           setAuthToken(accessToken);
         }
-      } else {
-        // No access token, check for refresh token
-        const refresh = cookies.refresh_token;
-        if (refresh) {
-          await getRefreshToken();
-        }
-        // Don't logout here - let the GetProfile call handle auth failures
+        return;
+      }
+
+      try {
+        const refreshed = await refreshAccessToken();
+        syncReactAuthCookies(refreshed, cookies.refresh_token, setCookie);
+        setAuthToken(refreshed);
+      } catch {
+        /* not signed in on any PinkSurfing app */
       }
     };
 

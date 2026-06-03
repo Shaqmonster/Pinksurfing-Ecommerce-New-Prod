@@ -35,7 +35,13 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import CategoryProducts from "./pages/CategoryProducts";
 import ComingSoon from "./pages/ComingSoon";
-import { getCookie, setCookie } from "./utils/cookie";
+import { getCookie } from "./utils/cookie";
+import {
+  bootstrapAccessFromSsoCookies,
+  getAccessToken,
+  persistAuthSession,
+  shouldSkipSsoBootstrap,
+} from "./utils/authSession";
 import ShoppingMallwithStores from "./pages/ShoppingMallwithStores";
 import CreateBidPage from "./pages/CreateBidPage";
 import MyBidsPage from "./pages/MyBidsPage";
@@ -80,20 +86,23 @@ function App() {
   // Footer only on the home page
   const showFooter = location.pathname === "/";
 
-  // Check for existing tokens on first page load
   useEffect(() => {
-    const checkAuthentication = () => {
-      const cookieAccess = getCookie("access_token");
-      if (cookieAccess) {
-        console.log("Tokens found in localStorage,setting auth token");
-        setAuthToken(cookieAccess);
+    const checkAuthentication = async () => {
+      let token = getAccessToken() || getCookie("access_token");
+      if (!token && !shouldSkipSsoBootstrap()) {
+        const boot = await bootstrapAccessFromSsoCookies();
+        if (boot?.access) {
+          persistAuthSession(boot.access, boot.refresh);
+          token = boot.access;
+        }
       }
+      if (token) setAuthToken(token);
     };
 
     checkAuthentication();
-  }, []); // Run only once on mount
+  }, [setAuthToken]);
 
-  const cookieAccess = getCookie("access_token");
+  const cookieAccess = getAccessToken() || getCookie("access_token");
 
   // If an access token cookie exists, redirect away from auth pages
   // useEffect(() => {
