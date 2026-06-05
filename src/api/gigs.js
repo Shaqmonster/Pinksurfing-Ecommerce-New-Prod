@@ -145,13 +145,6 @@ export const createGigOrder = (token, { gig_id, package_id, addons = [] }) =>
     { headers: { ...authHeader(token), "Content-Type": "application/json" } }
   );
 
-export const createStripeCheckoutSession = (token, orderId) =>
-  axios.post(
-    `${BASE_URL}/api/gig-orders/payments/create-checkout-session/${orderId}/`,
-    {},
-    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
-  );
-
 export const createSquareGigCheckoutSession = (token, orderId) =>
   axios.post(
     `${BASE_URL}/api/gig-orders/payments/create-square-payment-link/${orderId}/`,

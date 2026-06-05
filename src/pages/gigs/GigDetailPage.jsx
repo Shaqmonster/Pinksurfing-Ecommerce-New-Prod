@@ -8,7 +8,6 @@ import { authContext } from "../../context/authContext";
 import {
   getGig,
   createGigOrder,
-  createStripeCheckoutSession,
   createSquareGigCheckoutSession,
   setGigOrderEscrowId,
   gigUrl,
@@ -425,12 +424,12 @@ const GigDetailPage = () => {
       }
 
       if (checkoutOptions.paymentMode === "escrow_plus_stripe") {
-        const sessionRes = await createStripeCheckoutSession(cookies.access_token, order.id);
+        const sessionRes = await createSquareGigCheckoutSession(cookies.access_token, order.id);
         const { url } = sessionRes.data;
         if (url) {
           window.location.href = url;
         } else {
-          toast.error("Failed to create Stripe session.");
+          toast.error("Failed to create Square payment link.");
         }
       } else if (checkoutOptions.paymentMode === "square") {
         // If you still want to support the old Square path:
