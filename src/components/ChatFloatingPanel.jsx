@@ -18,10 +18,11 @@ import {
 import { authContext } from "../context/authContext";
 import {
   CHAT_FILE_ACCEPT,
+  buildChatWebSocketUrl,
   fileNameFromUrl,
   getEmailFromToken,
-  getWsBaseUrl,
   presenceLabel,
+  resolveChatAccessToken,
   sumUnreadCount,
 } from "../utils/chatHelpers";
 
@@ -34,7 +35,8 @@ const ChatFloatingPanel = ({
   clearPendingParticipantEmail,
 }) => {
   const [cookies] = useCookies(["access_token"]);
-  const { user } = useContext(authContext);
+  const { user, authToken } = useContext(authContext);
+  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
   const [conversations, setConversations] = useState([]);
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -56,7 +58,7 @@ const ChatFloatingPanel = ({
   const pollRef = useRef(null);
   const activeConvRef = useRef(null);
   const messagesRef = useRef([]);
-  const myEmail = (user?.email || getEmailFromToken(cookies.access_token) || "").toLowerCase();
+  const myEmail = (user?.email || getEmailFromToken(accessToken) || "").toLowerCase();
 
   messagesRef.current = messages;
   activeConvRef.current = activeConv;
@@ -86,10 +88,10 @@ const ChatFloatingPanel = ({
 
   const fetchConversations = useCallback(
     async (silent = false) => {
-      if (!cookies.access_token) return;
+      if (!accessToken) return;
       if (!silent) setLoadingList(true);
       try {
-        const res = await getConversations(cookies.access_token);
+        const res = await getConversations(accessToken);
         setConversations(Array.isArray(res.data) ? res.data : res.data.results || []);
       } catch (err) {
         console.error("Failed to fetch conversations", err);
@@ -97,15 +99,15 @@ const ChatFloatingPanel = ({
         if (!silent) setLoadingList(false);
       }
     },
-    [cookies.access_token]
+    [accessToken]
   );
 
   const fetchMessages = useCallback(
     async (convId, { silent = false } = {}) => {
-      if (!cookies.access_token || !convId) return;
+      if (!accessToken || !convId) return;
       if (!silent) setLoadingThread(true);
       try {
-        const res = await getConversationMessages(cookies.access_token, convId);
+        const res = await getConversationMessages(accessToken, convId);
         const data = Array.isArray(res.data) ? res.data : res.data.results || [];
         setMessages((prev) => {
           if (silent && prev.length > 0 && data.length >= prev.length) {
@@ -121,7 +123,7 @@ const ChatFloatingPanel = ({
         if (!silent) setLoadingThread(false);
       }
     },
-    [cookies.access_token]
+    [accessToken]
   );
 
   const sendWsIdentity = useCallback(() => {
@@ -131,8 +133,8 @@ const ChatFloatingPanel = ({
 
   const connectWs = useCallback(
     (convId) => {
-      const wsBase = getWsBaseUrl();
-      if (!wsBase || !convId) return;
+      const wsUrl = buildChatWebSocketUrl(convId, accessToken);
+      if (!wsUrl) return;
 
       clearTimeout(wsReconnectRef.current);
       if (wsRef.current) {
@@ -143,7 +145,7 @@ const ChatFloatingPanel = ({
 
       wsConnectedRef.current = false;
 
-      const ws = new WebSocket(`${wsBase}/ws/chat/${convId}/`);
+      const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         wsConnectedRef.current = true;
@@ -212,7 +214,7 @@ const ChatFloatingPanel = ({
 
       wsRef.current = ws;
     },
-    [sendWsIdentity, applyPresenceForEmail, fetchConversations]
+    [accessToken, sendWsIdentity, applyPresenceForEmail, fetchConversations]
   );
 
   connectWsRef.current = connectWs;
@@ -248,7 +250,7 @@ const ChatFloatingPanel = ({
 
   const openConversationByEmail = useCallback(
     async (email) => {
-      if (!email || !cookies.access_token) return;
+      if (!email || !accessToken) return;
       setOpeningThread(true);
       try {
         const normalized = String(email).trim().toLowerCase();
@@ -259,7 +261,7 @@ const ChatFloatingPanel = ({
           await openConversation(existing);
           return;
         }
-        const res = await createConversation(cookies.access_token, normalized);
+        const res = await createConversation(accessToken, normalized);
         const conv = res.data;
         setConversations((prev) => (prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]));
         await openConversation(conv);
@@ -271,7 +273,7 @@ const ChatFloatingPanel = ({
       }
     },
     [
-      cookies.access_token,
+      accessToken,
       conversations,
       openConversation,
       clearPendingParticipantEmail,
@@ -279,8 +281,8 @@ const ChatFloatingPanel = ({
   );
 
   useEffect(() => {
-    if (isOpen && cookies.access_token) fetchConversations(true);
-  }, [isOpen, cookies.access_token, fetchConversations]);
+    if (isOpen && accessToken) fetchConversations(true);
+  }, [isOpen, accessToken, fetchConversations]);
 
   useEffect(() => {
     if (!isOpen || !pendingConversation) return;
@@ -360,7 +362,7 @@ const ChatFloatingPanel = ({
 
     try {
       appendOptimisticMessage(text, files);
-      await sendMessage(cookies.access_token, activeConv.id, text, files);
+      await sendMessage(accessToken, activeConv.id, text, files);
       await fetchMessages(activeConv.id, { silent: true });
       fetchConversations(true);
     } catch (err) {

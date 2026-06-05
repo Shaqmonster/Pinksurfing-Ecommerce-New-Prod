@@ -29,7 +29,7 @@ import ProfilePopup from "./ProfilePopup";
 import ChatFloatingPanel from "./ChatFloatingPanel";
 import { useBuyerHasNdas } from "../hooks/useBuyerHasNdas";
 import { getConversations } from "../api/gigs";
-import { sumUnreadCount } from "../utils/chatHelpers";
+import { sumUnreadCount, resolveChatAccessToken } from "../utils/chatHelpers";
 
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 
@@ -67,6 +67,7 @@ const Header = () => {
     pendingChatParticipantEmail,
     setPendingChatParticipantEmail,
   } = useContext(authContext);
+  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
   const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
     useContext(dataContext);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -123,13 +124,13 @@ const Header = () => {
   };
 
   useEffect(() => {
-    if (!user || !cookies.access_token) {
+    if (!user || !accessToken) {
       setChatUnread(0);
       return;
     }
     const load = async () => {
       try {
-        const res = await getConversations(cookies.access_token);
+        const res = await getConversations(accessToken);
         const data = Array.isArray(res.data) ? res.data : res.data?.results || [];
         setChatUnread(sumUnreadCount(data));
       } catch {
@@ -139,7 +140,7 @@ const Header = () => {
     load();
     const id = setInterval(load, 25000);
     return () => clearInterval(id);
-  }, [user, cookies.access_token, isChatOpen]);
+  }, [user, accessToken, isChatOpen]);
 
   const getCartProducts = async () => {
     if (!authToken || !user || !cookies.access_token) return;

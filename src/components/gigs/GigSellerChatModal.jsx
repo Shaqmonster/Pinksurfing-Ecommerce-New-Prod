@@ -11,14 +11,7 @@ import {
   getConversationMessages,
   sendMessage,
 } from "../../api/gigs";
-
-const BASE_URL = import.meta.env.VITE_SERVER_URL;
-
-const getWsBaseUrl = () => {
-  const url = BASE_URL.replace(/\/$/, "");
-  if (url.startsWith("https://")) return url.replace("https://", "wss://");
-  return url.replace("http://", "ws://");
-};
+import { buildChatWebSocketUrl } from "../../utils/chatHelpers";
 
 /* ─── Avatar Colors ───────────────────────────────────────────── */
 const AVATAR_COLORS = [
@@ -124,9 +117,11 @@ const GigSellerChatModal = ({
 
   // ─── WebSocket ───
   const connectWs = useCallback(() => {
-    if (!conversationId) return;
+    if (!conversationId || !accessToken) return;
     if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
-    const ws = new WebSocket(`${getWsBaseUrl()}/ws/chat/${conversationId}/`);
+    const wsUrl = buildChatWebSocketUrl(conversationId, accessToken);
+    if (!wsUrl) return;
+    const ws = new WebSocket(wsUrl);
     ws.onopen = () => console.log("[GigChat] WS connected", conversationId);
     ws.onmessage = (event) => {
       try {
@@ -144,7 +139,7 @@ const GigSellerChatModal = ({
     ws.onclose = () => { reconnectTimer.current = setTimeout(() => { if (wsRef.current === ws) connectWs(); }, 3000); };
     ws.onerror = () => ws.close();
     wsRef.current = ws;
-  }, [conversationId]);
+  }, [conversationId, accessToken]);
 
   useEffect(() => {
     if (isOpen && conversationId) connectWs();

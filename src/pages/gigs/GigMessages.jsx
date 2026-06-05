@@ -18,9 +18,10 @@ import {
 } from "../../api/gigs";
 import {
   CHAT_FILE_ACCEPT,
+  buildChatWebSocketUrl,
   fileNameFromUrl,
   getEmailFromToken,
-  getWsBaseUrl,
+  resolveChatAccessToken,
   timeAgo,
 } from "../../utils/chatHelpers";
 import {
@@ -159,9 +160,10 @@ const GigMessages = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [cookies] = useCookies(["access_token"]);
-  const { user } = useContext(authContext);
+  const { user, authToken } = useContext(authContext);
+  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
 
-  const myEmail = user?.email || getEmailFromToken(cookies.access_token) || "";
+  const myEmail = user?.email || getEmailFromToken(accessToken) || "";
 
   /* ── state ── */
   const [conversations, setConversations] = useState([]);
@@ -187,9 +189,9 @@ const GigMessages = () => {
 
   /* ── init ── */
   useEffect(() => {
-    if (!cookies.access_token) { navigate("/signin"); return; }
+    if (!accessToken) { navigate("/signin"); return; }
     fetchConversations();
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   useEffect(() => {
     const convId = searchParams.get("conversation");
@@ -201,7 +203,7 @@ const GigMessages = () => {
 
   useEffect(() => {
     const withEmail = searchParams.get("with");
-    if (!withEmail || openingWith || !cookies.access_token) return;
+    if (!withEmail || openingWith || !accessToken) return;
     const existing = conversations.find((c) =>
       c.participants?.some((p) => p.email === withEmail)
     );
@@ -214,7 +216,7 @@ const GigMessages = () => {
     const open = async () => {
       setOpeningWith(true);
       try {
-        const res = await createConversation(cookies.access_token, withEmail);
+        const res = await createConversation(accessToken, withEmail);
         const conv = res.data;
         setConversations((prev) => (prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]));
         selectConversation(conv);
@@ -226,25 +228,25 @@ const GigMessages = () => {
       }
     };
     open();
-  }, [searchParams, cookies.access_token, conversations, openingWith]);
+  }, [searchParams, accessToken, conversations, openingWith]);
 
   useEffect(() => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     const id = setInterval(() => fetchConversations(true), 20000);
     return () => clearInterval(id);
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   useEffect(() => {
-    if (!activeConv?.id || !cookies.access_token) return;
+    if (!activeConv?.id || !accessToken) return;
     const id = setInterval(() => fetchMessages(activeConv.id, true), 5000);
     return () => clearInterval(id);
-  }, [activeConv?.id, cookies.access_token]);
+  }, [activeConv?.id, accessToken]);
 
   /* ── conversations ── */
   const fetchConversations = async (silent = false) => {
     if (!silent) setLoadingConvs(true);
     try {
-      const res = await getConversations(cookies.access_token);
+      const res = await getConversations(accessToken);
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
       setConversations(data);
     } catch {
@@ -258,7 +260,7 @@ const GigMessages = () => {
   const fetchMessages = useCallback(async (convId, silent = false) => {
     if (!silent) setLoadingMsgs(true);
     try {
-      const res = await getConversationMessages(cookies.access_token, convId);
+      const res = await getConversationMessages(accessToken, convId);
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
       setMessages((prev) => {
         if (silent && prev.length === data.length) {
@@ -273,7 +275,7 @@ const GigMessages = () => {
     } finally {
       if (!silent) setLoadingMsgs(false);
     }
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const selectConversation = (conv) => {
     setActiveConv(conv);
@@ -287,7 +289,9 @@ const GigMessages = () => {
   const connectWs = useCallback((convId) => {
     if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
     clearTimeout(reconnectRef.current);
-    const ws = new WebSocket(`${getWsBaseUrl()}/ws/chat/${convId}/`);
+    const wsUrl = buildChatWebSocketUrl(convId, accessToken);
+    if (!wsUrl) return;
+    const ws = new WebSocket(wsUrl);
     ws.onopen = () => {
       setWsConnected(true);
       if (myEmail) {
@@ -314,7 +318,7 @@ const GigMessages = () => {
     };
     ws.onerror = () => { setWsConnected(false); ws.close(); };
     wsRef.current = ws;
-  }, [myEmail]);
+  }, [accessToken, myEmail]);
 
   useEffect(() => () => {
     clearTimeout(reconnectRef.current);
@@ -351,13 +355,13 @@ const GigMessages = () => {
     setSending(true);
     try {
       if (attachments.length > 0) {
-        await sendMessage(cookies.access_token, activeConv.id, text, attachments);
+        await sendMessage(accessToken, activeConv.id, text, attachments);
         setAttachments([]);
         fetchMessages(activeConv.id);
       } else if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({ message: text, sender_email: myEmail }));
       } else {
-        await sendMessage(cookies.access_token, activeConv.id, text);
+        await sendMessage(accessToken, activeConv.id, text);
         fetchMessages(activeConv.id);
       }
       setMessageInput("");

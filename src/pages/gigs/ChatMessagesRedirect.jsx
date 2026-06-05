@@ -3,17 +3,19 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { authContext } from "../../context/authContext";
 import { getConversations } from "../../api/gigs";
+import { resolveChatAccessToken } from "../../utils/chatHelpers";
 
 /** Legacy /gighub/messages URLs → floating chat only (no full-page inbox). */
 const ChatMessagesRedirect = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [cookies] = useCookies(["access_token"]);
-  const { openChatWithConversation, openChatWithParticipantEmail, openChatInbox } =
+  const { authToken, openChatWithConversation, openChatWithParticipantEmail, openChatInbox } =
     useContext(authContext);
+  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
 
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin", { replace: true });
       return;
     }
@@ -32,7 +34,7 @@ const ChatMessagesRedirect = () => {
     if (convId) {
       (async () => {
         try {
-          const res = await getConversations(cookies.access_token);
+          const res = await getConversations(accessToken);
           const list = Array.isArray(res.data) ? res.data : res.data?.results || [];
           const found = list.find((c) => String(c.id) === String(convId));
           if (found) openChatWithConversation(found);

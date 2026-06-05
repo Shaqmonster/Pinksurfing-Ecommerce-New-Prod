@@ -15,6 +15,7 @@ import {
 } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { createServicesEscrowForGigOrder } from "../../lib/gighubEscrowFlow";
+import { resolveChatAccessToken } from "../../utils/chatHelpers";
 import {
   IoStarSharp,
   IoTimeOutline,
@@ -259,7 +260,8 @@ const GigDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user, openChatWithParticipantEmail } = useContext(authContext);
+  const { user, authToken, openChatWithParticipantEmail } = useContext(authContext);
+  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
   const { wallet: inAppWallet } = useInAppWallet();
 
   const [gig, setGig] = useState(null);
@@ -895,7 +897,7 @@ const GigDetailPage = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
-                        if (!cookies.access_token) {
+                        if (!accessToken) {
                           toast.error("Please sign in to message this seller.");
                           navigate("/signin");
                           return;
@@ -1105,7 +1107,7 @@ const GigDetailPage = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      if (!cookies.access_token) {
+                      if (!accessToken) {
                         toast.error("Please sign in to message this seller.");
                         navigate("/signin");
                         return;
