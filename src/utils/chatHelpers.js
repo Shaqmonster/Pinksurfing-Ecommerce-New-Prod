@@ -1,6 +1,6 @@
 /** Shared chat UI helpers */
 
-import { getAccessToken } from "./authSession";
+import { resolveAccessToken } from "./authSession";
 
 export const CHAT_FILE_ACCEPT =
   ".pdf,.csv,.xlsx,.xls,.doc,.docx,.zip,.rar,.7z,.txt,.md,.json,.js,.ts,.jsx,.tsx,.py,.java,.html,.css,.xml,.mp4,.mov,.webm,.mp3,.wav,.jpg,.jpeg,.png,.gif,.webp,.svg,.psd,.ai";
@@ -15,7 +15,7 @@ export const getWsBaseUrl = () => {
 
 /** Match REST auth: react-cookie, auth context, or localStorage SSO session. */
 export function resolveChatAccessToken(authToken, cookieToken) {
-  return authToken || cookieToken || getAccessToken() || "";
+  return resolveAccessToken(authToken, cookieToken);
 }
 
 /** WebSocket handshake must include JWT (cookies are not sent cross-origin). */

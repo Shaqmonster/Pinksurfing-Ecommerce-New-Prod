@@ -8,6 +8,7 @@ import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard
 import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { getMyGigOrders } from "../../api/gigs";
+import { resolveAccessToken } from "../../utils/authSession";
 import {
   IoEyeOutline,
   IoChatbubbleOutline,
@@ -314,24 +315,25 @@ const BuyerDashboardContent = ({ orders, loading }) => {
 const GigHubDashboard = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user, openChatInbox } = useContext(authContext);
+  const { user, authToken, openChatInbox } = useContext(authContext);
+  const accessToken = resolveAccessToken(authToken, cookies.access_token);
   const { address: inAppAddress } = useInAppWallet();
 
   const [allOrders, setAllOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
     fetchOrders();
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
     try {
-      const res = await getMyGigOrders(cookies.access_token);
+      const res = await getMyGigOrders(accessToken);
       const data = res.data;
       setAllOrders(Array.isArray(data) ? data : data.results || []);
     } catch {

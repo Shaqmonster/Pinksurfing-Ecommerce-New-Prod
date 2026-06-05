@@ -11,12 +11,14 @@ import Header from "./Header";
 import CancelDialog from "./CancelDialog";
 import RatingForm from '../components/RatingForm'
 import { formatMoney } from "../utils/formatMoney";
+import { resolveAccessToken } from "../utils/authSession";
 export default function Orders() {
-  const { currency, setIsRatingFormOpen, isRatingFormOpen } = useContext(authContext);
+  const { currency, setIsRatingFormOpen, isRatingFormOpen, authToken } = useContext(authContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [cookies, removeCookie] = useCookies([]);
+  const [cookies] = useCookies(["access_token"]);
+  const accessToken = resolveAccessToken(authToken, cookies.access_token);
   const [isOpen, setIsOpen] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState("");
 
@@ -33,7 +35,7 @@ export default function Orders() {
     console.log(singleOrderProduct)
   }, [setSingleOrderProduct])
   const GetOrders = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
@@ -44,7 +46,7 @@ export default function Orders() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -61,9 +63,12 @@ export default function Orders() {
   };
 
   useEffect(() => {
-    if (!cookies.access_token) return;
+    if (!accessToken) {
+      navigate("/signin");
+      return;
+    }
     GetOrders();
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const groupOrdersByOrderId = (orders) => {
     return orders.reduce((acc, order) => {

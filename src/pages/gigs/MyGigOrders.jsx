@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { getMyGigOrders, submitOrderRequirements, gigUrl } from "../../api/gigs";
+import { resolveAccessToken } from "../../utils/authSession";
 import {
   IoTimeOutline,
   IoCheckmarkCircle,
@@ -136,7 +137,8 @@ const RequirementsModal = ({ order, onClose, onSubmit }) => {
 const MyGigOrders = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user } = useContext(authContext);
+  const { user, authToken } = useContext(authContext);
+  const accessToken = resolveAccessToken(authToken, cookies.access_token);
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -145,17 +147,17 @@ const MyGigOrders = () => {
   const [submittingReq, setSubmittingReq] = useState(false);
 
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
     fetchOrders();
-  }, []);
+  }, [accessToken]);
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await getMyGigOrders(cookies.access_token);
+      const res = await getMyGigOrders(accessToken);
       setOrders(Array.isArray(res.data) ? res.data : res.data.results || []);
     } catch (err) {
       toast.error("Failed to load gig orders.");
@@ -167,7 +169,7 @@ const MyGigOrders = () => {
   const handleSubmitRequirements = async (orderId, answers) => {
     try {
       setSubmittingReq(true);
-      await submitOrderRequirements(cookies.access_token, orderId, answers);
+      await submitOrderRequirements(accessToken, orderId, answers);
       toast.success("Requirements submitted! Your order is now in progress.");
       setRequirementsOrder(null);
       fetchOrders();

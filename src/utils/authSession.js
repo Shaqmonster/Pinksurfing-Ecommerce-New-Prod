@@ -99,6 +99,11 @@ export function getAccessToken() {
   return null;
 }
 
+/** Prefer auth context, then react-cookie, then localStorage SSO session. */
+export function resolveAccessToken(authToken, cookieToken) {
+  return authToken || cookieToken || getAccessToken() || "";
+}
+
 export function getRefreshToken() {
   if (typeof window === "undefined") return null;
   return (

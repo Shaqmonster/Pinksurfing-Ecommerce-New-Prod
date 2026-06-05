@@ -12,6 +12,7 @@ import {
   deleteGig,
   gigUrl,
 } from "../../api/gigs";
+import { resolveAccessToken } from "../../utils/authSession";
 import {
   IoStarSharp,
   IoTimeOutline,
@@ -60,7 +61,8 @@ const STATUS_CONFIG = {
 const GigHubSellerDashboard = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const { user, openChatInbox } = useContext(authContext);
+  const { user, authToken, openChatInbox } = useContext(authContext);
+  const accessToken = resolveAccessToken(authToken, cookies.access_token);
 
   const [workerProfile, setWorkerProfile] = useState(null);
   const [allOrders, setAllOrders] = useState([]);
@@ -71,18 +73,18 @@ const GigHubSellerDashboard = () => {
   const [onboardingLoading, setOnboardingLoading] = useState(false);
 
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
     fetchOrders();
     fetchWorkerAndGigs();
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
     try {
-      const res = await getMyGigOrders(cookies.access_token);
+      const res = await getMyGigOrders(accessToken);
       const data = res.data;
       setAllOrders(Array.isArray(data) ? data : data.results || []);
     } catch {
@@ -96,8 +98,8 @@ const GigHubSellerDashboard = () => {
   const fetchWorkerAndGigs = async () => {
     setLoadingGigs(true);
     const [workerResult, gigsResult] = await Promise.allSettled([
-      getMyGigWorkerProfile(cookies.access_token),
-      getMyGigs(cookies.access_token),
+      getMyGigWorkerProfile(accessToken),
+      getMyGigs(accessToken),
     ]);
 
     if (workerResult.status === "fulfilled") {
@@ -134,7 +136,7 @@ const GigHubSellerDashboard = () => {
         {},
         {
           headers: {
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -162,7 +164,7 @@ const GigHubSellerDashboard = () => {
     if (!window.confirm("Are you sure you want to delete this gig?")) return;
     try {
       setDeletingId(gigId);
-      await deleteGig(cookies.access_token, gigId);
+      await deleteGig(accessToken, gigId);
       toast.success("Gig deleted.");
       fetchWorkerAndGigs();
     } catch {

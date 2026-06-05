@@ -15,25 +15,23 @@ import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import CancelDialog from "../CancelDialog";
 import { formatMoney } from "../../utils/formatMoney";
+import { resolveAccessToken } from "../../utils/authSession";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AllOrders() {
-    const { currency } = useContext(authContext);
+    const { currency, authToken, setIsSingleOrderFormOpen, setSingleOrderProduct, setIsProfileOpen } =
+        useContext(authContext);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const [cookies, removeCookie] = useCookies([]);
+    const [cookies] = useCookies(["access_token"]);
+    const accessToken = resolveAccessToken(authToken, cookies.access_token);
+
     const [isOpen, setIsOpen] = useState(false);
     const [deleteOrderId, setDeleteOrderId] = useState("");
 
-    const {
-        setIsSingleOrderFormOpen,
-        setSingleOrderProduct,
-        setIsProfileOpen,
-    } = useContext(authContext);
-
     const GetOrders = async () => {
-        if (!cookies.access_token) {
+        if (!accessToken) {
             navigate("/signin");
             return;
         }
@@ -44,7 +42,7 @@ export default function AllOrders() {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${cookies.access_token}`,
+                        Authorization: `Bearer ${accessToken}`,
                     },
                 }
             );
@@ -61,7 +59,7 @@ export default function AllOrders() {
 
     useEffect(() => {
         GetOrders();
-    }, [cookies, navigate, removeCookie]);
+    }, [accessToken]);
 
     const groupOrdersByOrderId = (orders) => {
         return orders.reduce((acc, order) => {
@@ -91,7 +89,7 @@ export default function AllOrders() {
     };
 
     const handleReturnOrder = async (orderItemId) => {
-        if (!cookies.access_token) {
+        if (!accessToken) {
             navigate("/signin");
             return;
         }
@@ -102,7 +100,7 @@ export default function AllOrders() {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${cookies.access_token}`,
+                        Authorization: `Bearer ${accessToken}`,
                     },
                 }
             );
