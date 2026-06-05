@@ -6,16 +6,18 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
+import { resolveAccessToken } from "../utils/authSession";
 import { IoStarOutline, IoCart, IoMailOutline } from "react-icons/io5";
 import Stars from "./Stars";
 import { formatMoney } from "../utils/formatMoney";
 import { formatDistanceToNow } from 'date-fns';
 const ProductCard = ({ product, isCard }) => {
-  const [cookies] = useCookies([]);
+  const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
   const [averageRating, setAverageRating] = useState(0);
   const [allRatings, setAllRatings] = useState([]);
-  const { user, currency, setIsProfileOpen } = useContext(authContext);
+  const { user, authToken, currency, setIsProfileOpen } = useContext(authContext);
+  const accessToken = resolveAccessToken(authToken, cookies.access_token);
   const {
     setCartProducts,
     setWishlistProducts,
@@ -24,14 +26,14 @@ const ProductCard = ({ product, isCard }) => {
   } = useContext(dataContext);
 
   const GetCartProducts = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -43,6 +45,11 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   const AddtoCart = () => {
+    if (!accessToken) {
+      toast.error("Please sign in to add to cart", { position: "top-right" });
+      setIsProfileOpen(true);
+      return;
+    }
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${product.id
@@ -51,7 +58,7 @@ const ProductCard = ({ product, isCard }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -63,9 +70,13 @@ const ProductCard = ({ product, isCard }) => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.message || "An error occurred", {
-          position: "top-right",
-        });
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.Status ||
+            error.response?.data?.detail ||
+            "Could not add to cart",
+          { position: "top-right" }
+        );
       });
   };
 
@@ -78,7 +89,7 @@ const ProductCard = ({ product, isCard }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -97,14 +108,14 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   const GetWishlist = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -127,7 +138,7 @@ const ProductCard = ({ product, isCard }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );

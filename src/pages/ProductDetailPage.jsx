@@ -21,6 +21,7 @@ import parse from "html-react-parser";
 import { data } from "autoprefixer";
 import Stars from '../components/Stars'
 import { formatMoney } from "../utils/formatMoney";
+import { resolveAccessToken } from "../utils/authSession";
 import { formatDistanceToNow } from "date-fns";
 import {
   FaBed,
@@ -89,7 +90,7 @@ function firstProductImageUrl(product) {
 const ProductDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [cookies, removeCookie] = useCookies([]);
+  const [cookies, removeCookie] = useCookies(["access_token"]);
   const [orderConfirm, setorderConfirm] = useState(false);
   const [product, setProduct] = useState({});
   const [allProducts, setAllProducts] = useState([]);
@@ -139,10 +140,13 @@ const ProductDetailPage = () => {
     isProfileOpen,
     currency,
     user,
+    authToken,
     openChatWithConversation,
     setIsSingleOrderFormOpen,
     setSingleOrderProduct,
   } = useContext(authContext);
+
+  const accessToken = resolveAccessToken(authToken, cookies.access_token);
 
   const isOwner =
     !!user?.email &&
@@ -159,14 +163,14 @@ const ProductDetailPage = () => {
   const isSpecialized = isRealEstate || isBusiness;
 
   useEffect(() => {
-    if (!isSpecialized || !product?.id || !cookies.access_token) {
+    if (!isSpecialized || !product?.id || !accessToken) {
       setActiveVisit(null);
       return;
     }
     let cancel = false;
     (async () => {
       try {
-        const data = await getVisitForProduct(cookies.access_token, product.id);
+        const data = await getVisitForProduct(accessToken, product.id);
         if (!cancel) setActiveVisit(data.visit || null);
       } catch {
         if (!cancel) setActiveVisit(null);
@@ -175,7 +179,7 @@ const ProductDetailPage = () => {
     return () => {
       cancel = true;
     };
-  }, [isSpecialized, product?.id, cookies.access_token, product?.category?.slug]);
+  }, [isSpecialized, product?.id, accessToken, product?.category?.slug]);
 
   // ── ATTRIBUTE MAPPING ──
   const getAttr = (...aliases) => {
@@ -263,7 +267,7 @@ const ProductDetailPage = () => {
   const handleContactAgent = async () => {
     if (isDealClosed) return;
 
-    if (!cookies.access_token || !user) {
+    if (!accessToken || !user) {
       toast.info("Please sign in to message the agent.", { position: "top-right" });
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       navigate("/signin");
@@ -282,7 +286,7 @@ const ProductDetailPage = () => {
 
     try {
       setContactingAgent(true);
-      const res = await createConversation(cookies.access_token, agentEmail);
+      const res = await createConversation(accessToken, agentEmail);
       const conversation = res?.data;
       if (conversation?.id && typeof openChatWithConversation === "function") {
         openChatWithConversation(conversation);
@@ -299,7 +303,7 @@ const ProductDetailPage = () => {
 
   const openScheduleVisitModal = () => {
     if (isDealClosed) return;
-    if (!cookies.access_token) {
+    if (!accessToken) {
       toast.info("Please sign in to continue.");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       navigate("/signin");
@@ -316,9 +320,9 @@ const ProductDetailPage = () => {
   };
 
   const continueVisitPayment = async () => {
-    if (!activeVisit?.id || !cookies.access_token) return;
+    if (!activeVisit?.id || !accessToken) return;
     try {
-      const pay = await createVisitPaymentLink(cookies.access_token, activeVisit.id);
+      const pay = await createVisitPaymentLink(accessToken, activeVisit.id);
       const url = pay.payment_link || pay.payment_link_url;
       if (url) window.location.href = url;
       else toast.error("Could not resume checkout.");
@@ -329,11 +333,11 @@ const ProductDetailPage = () => {
   };
 
   const respondToVendorReschedule = async (accept) => {
-    if (!activeVisit?.id || !cookies.access_token) return;
+    if (!activeVisit?.id || !accessToken) return;
     try {
-      await buyerRespondVendorReschedule(cookies.access_token, activeVisit.id, accept);
+      await buyerRespondVendorReschedule(accessToken, activeVisit.id, accept);
       toast.success(accept ? "You accepted the new time." : "You declined — a refund will be processed.");
-      const data = await getVisitForProduct(cookies.access_token, product.id);
+      const data = await getVisitForProduct(accessToken, product.id);
       setActiveVisit(data.visit || null);
     } catch (e) {
       const d = e?.response?.data?.detail;
@@ -342,18 +346,18 @@ const ProductDetailPage = () => {
   };
 
   const submitDispute = async () => {
-    if (!activeVisit?.id || !cookies.access_token) return;
+    if (!activeVisit?.id || !accessToken) return;
     if (disputeReason.trim().length < 10) {
       toast.error("Please enter at least 10 characters.");
       return;
     }
     setDisputeBusy(true);
     try {
-      await submitVisitDispute(cookies.access_token, activeVisit.id, disputeReason.trim());
+      await submitVisitDispute(accessToken, activeVisit.id, disputeReason.trim());
       toast.success("Dispute submitted. Our team will review it.");
       setDisputeModalOpen(false);
       setDisputeReason("");
-      const data = await getVisitForProduct(cookies.access_token, product.id);
+      const data = await getVisitForProduct(accessToken, product.id);
       setActiveVisit(data.visit || null);
     } catch (e) {
       const d = e?.response?.data?.detail;
@@ -394,12 +398,12 @@ const ProductDetailPage = () => {
 
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (cookies.access_token) {
+    if (accessToken) {
       axios
         .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         })
         .then((response) => {
@@ -413,12 +417,12 @@ const ProductDetailPage = () => {
     }
   };
   const GetWishlist = async () => {
-    if (cookies.access_token) {
+    if (accessToken) {
       axios
         .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         })
         .then((response) => {
@@ -432,18 +436,29 @@ const ProductDetailPage = () => {
   };
 
   const AddtoCart = () => {
+    const cartProductId = product?.id || productId;
+    if (!accessToken) {
+      toast.error("You are not Signed In", { position: "top-right" });
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      setIsProfileOpen(true);
+      return;
+    }
+    if (!cartProductId) {
+      toast.error("Product is still loading", { position: "top-right" });
+      return;
+    }
     // Send the raw variant selections — the backend validates the price from DB.
     const selected_variants = Object.entries(selectedAttributes).map(
       ([name, attr]) => ({ name, value: attr.value })
     );
     axios
       .post(
-        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${productId}/`,
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${cartProductId}/`,
         { selected_variants },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -473,7 +488,7 @@ const ProductDetailPage = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -503,7 +518,7 @@ const ProductDetailPage = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -574,7 +589,7 @@ const ProductDetailPage = () => {
         setVariantAttributeMap(variantAttrs);
         setSpecAttributeMap(specAttrs);
 
-        if (cookies.access_token && normalizedProduct?.id && user?.addresses?.[0]?.id) {
+        if (accessToken && normalizedProduct?.id && user?.addresses?.[0]?.id) {
           try {
             const shipId = encodeURIComponent(String(normalizedProduct.id));
             const addressId = encodeURIComponent(String(user.addresses[0].id));
@@ -583,7 +598,7 @@ const ProductDetailPage = () => {
               {
                 headers: {
                   "Content-Type": "application/json",
-                  Authorization: `Bearer ${cookies.access_token}`,
+                  Authorization: `Bearer ${accessToken}`,
                 },
               }
             );
@@ -617,7 +632,7 @@ const ProductDetailPage = () => {
     if (productInCart) {
       setProductQty(productInCart.quantity);
     }
-  }, [productId, location.search, cookies.access_token, user?.addresses]);
+  }, [productId, location.search, accessToken, user?.addresses]);
 
   useEffect(() => {
     const getProductRatings = async (productId) => {
@@ -824,14 +839,14 @@ const ProductDetailPage = () => {
         <VisitScheduleModal
           open={visitModalOpen}
           onClose={() => { setVisitModalOpen(false); setRescheduleVisitId(null); }}
-          accessToken={cookies.access_token}
+          accessToken={accessToken}
           productId={product.id}
           visitKind={visitKindApi}
           rescheduleVisitId={rescheduleVisitId}
           onSuccess={async () => {
-            if (!cookies.access_token || !product?.id) return;
+            if (!accessToken || !product?.id) return;
             try {
-              const data = await getVisitForProduct(cookies.access_token, product.id);
+              const data = await getVisitForProduct(accessToken, product.id);
               setActiveVisit(data.visit || null);
             } catch { setActiveVisit(null); }
           }}
@@ -1870,14 +1885,14 @@ const ProductDetailPage = () => {
           setVisitModalOpen(false);
           setRescheduleVisitId(null);
         }}
-        accessToken={cookies.access_token}
+        accessToken={accessToken}
         productId={product.id}
         visitKind={visitKindApi}
         rescheduleVisitId={rescheduleVisitId}
         onSuccess={async () => {
-          if (!cookies.access_token || !product?.id) return;
+          if (!accessToken || !product?.id) return;
           try {
-            const data = await getVisitForProduct(cookies.access_token, product.id);
+            const data = await getVisitForProduct(accessToken, product.id);
             setActiveVisit(data.visit || null);
           } catch {
             setActiveVisit(null);
