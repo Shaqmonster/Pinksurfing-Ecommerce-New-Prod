@@ -207,7 +207,11 @@ export default function Cart() {
                             role="list"
                             className="-my-6 divide-y  divide-gray-200"
                           >
-                            {cartProducts.map((product, index) => (
+                            {cartProducts.map((product, index) => {
+                              const stockQty = Number(product.product?.quantity) || 0;
+                              const isAtMaxStock =
+                                stockQty > 0 && product.quantity >= stockQty;
+                              return (
                               <li
                                 key={product.product.id + index}
                                 className="flex items-center py-6 dark:border-white"
@@ -305,17 +309,26 @@ export default function Cart() {
                                             {product.quantity}
                                           </span>
                                           <button
-                                            disabled={
-                                              product.quantity ===
-                                              product.product.quantity
-                                            }
                                             onClick={() => {
+                                              if (isAtMaxStock) {
+                                                toast.info(
+                                                  stockQty === 1
+                                                    ? "Only 1 available in stock"
+                                                    : `Maximum ${stockQty} available in stock`,
+                                                  { position: "top-center", autoClose: 2500 }
+                                                );
+                                                return;
+                                              }
                                               IncrementQty(product.product.id);
                                             }}
                                             type="button"
                                             id="increment-button"
                                             data-input-counter-increment="counter-input"
-                                            className="flex-shrink-0 disabled:hidden  bg-gray-200 dark:bg-black  inline-flex items-center justify-center border border-gray-300 rounded-md h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                                            className={`flex-shrink-0 bg-gray-200 dark:bg-black inline-flex items-center justify-center border border-gray-300 rounded-md h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none ${
+                                              isAtMaxStock
+                                                ? "opacity-30 cursor-not-allowed"
+                                                : ""
+                                            }`}
                                           >
                                             <svg
                                               className="w-2.5 h-2.5 text-gray-900 dark:text-[#f5f5f5]"
@@ -351,7 +364,8 @@ export default function Cart() {
                                   </div>
                                 </div>
                               </li>
-                            ))}
+                            );
+                            })}
                           </ul>
                         </div>
                       </div>

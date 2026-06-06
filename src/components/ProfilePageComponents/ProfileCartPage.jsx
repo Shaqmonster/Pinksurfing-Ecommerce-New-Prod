@@ -170,7 +170,11 @@ export default function ProfileCartPage() {
                             <div className="mt-4">
                                 <div className="flow-root">
                                     <ul role="list" className="divide-y divide-white/5">
-                                        {cartProducts.map((product, index) => (
+                                        {cartProducts.map((product, index) => {
+                                            const stockQty = Number(product.product?.quantity) || 0;
+                                            const isAtMaxStock =
+                                                stockQty > 0 && product.quantity >= stockQty;
+                                            return (
                                             <li key={product.product.id + index} className="flex py-10 group first:pt-0">
                                                 <div className="h-28 w-28 sm:h-40 sm:w-40 flex-shrink-0 overflow-hidden rounded-[2rem] border border-white/10 group-hover:border-purple-500/30 transition-all duration-500 shadow-2xl relative">
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -221,10 +225,24 @@ export default function ProfileCartPage() {
                                                                     {product.quantity}
                                                                 </span>
                                                                 <button
-                                                                    disabled={product.quantity === product.product.quantity}
-                                                                    onClick={() => IncrementQty(product.product.id)}
+                                                                    onClick={() => {
+                                                                        if (isAtMaxStock) {
+                                                                            toast.info(
+                                                                                stockQty === 1
+                                                                                    ? "Only 1 available in stock"
+                                                                                    : `Maximum ${stockQty} available in stock`,
+                                                                                { position: "top-center", autoClose: 2500 }
+                                                                            );
+                                                                            return;
+                                                                        }
+                                                                        IncrementQty(product.product.id);
+                                                                    }}
                                                                     type="button"
-                                                                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all active:scale-90 disabled:opacity-30"
+                                                                    className={`w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 text-white transition-all active:scale-90 ${
+                                                                        isAtMaxStock
+                                                                            ? "opacity-30 cursor-not-allowed"
+                                                                            : "hover:bg-white/10"
+                                                                    }`}
                                                                 >
                                                                     +
                                                                 </button>
@@ -240,7 +258,8 @@ export default function ProfileCartPage() {
                                                     </div>
                                                 </div>
                                             </li>
-                                        ))}
+                                            );
+                                        })}
                                     </ul>
                                 </div>
                             </div>
