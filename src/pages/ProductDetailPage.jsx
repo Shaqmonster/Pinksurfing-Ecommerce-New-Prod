@@ -21,6 +21,7 @@ import parse from "html-react-parser";
 import { data } from "autoprefixer";
 import Stars from '../components/Stars'
 import { formatMoney } from "../utils/formatMoney";
+import { isOutOfStock } from "../utils/cartStock";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -451,6 +452,10 @@ const ProductDetailPage = () => {
       setIsProfileOpen(true);
       return;
     }
+    if (isOutOfStock(product)) {
+      toast.error("This product is out of stock", { position: "top-right" });
+      return;
+    }
     if (!cartProductId) {
       toast.error("Product is still loading", { position: "top-right" });
       return;
@@ -501,6 +506,10 @@ const ProductDetailPage = () => {
       toast.error("You are not Signed In", { position: "top-right" });
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
+      return;
+    }
+    if (isOutOfStock(product)) {
+      toast.error("This product is out of stock", { position: "top-right" });
       return;
     }
     if (isInCart) {
@@ -1696,12 +1705,14 @@ const ProductDetailPage = () => {
                             <button
                               type="button"
                               onClick={handleAddToBagClick}
-                              disabled={product.quantity === 0 || isDealClosed}
-                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : isInCart ? 'bg-emerald-600 text-white cursor-default' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
+                              disabled={isOutOfStock(product) || isDealClosed}
+                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : isOutOfStock(product) ? 'bg-gray-400 text-white cursor-not-allowed' : isInCart ? 'bg-emerald-600 text-white cursor-default' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
                             >
                               <span className="relative z-10 flex items-center justify-center gap-3">
                                 {isDealClosed ? (
                                   <>Deal Closed</>
+                                ) : isOutOfStock(product) ? (
+                                  <>Out of stock</>
                                 ) : isInCart ? (
                                   <>Already in bag</>
                                 ) : (

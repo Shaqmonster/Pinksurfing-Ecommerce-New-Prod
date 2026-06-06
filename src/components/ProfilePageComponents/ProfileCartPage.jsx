@@ -1,4 +1,4 @@
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
@@ -12,9 +12,12 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 import { IoRemoveCircle } from "react-icons/io5";
 import { formatMoney } from "../../utils/formatMoney";
 import {
+    cartBlocksCheckout,
     cartStockLimitMessage,
     getCartItemStockQty,
+    getCartStockIssueMessage,
     isCartItemAtMaxStock,
+    isCartItemOutOfStock,
 } from "../../utils/cartStock";
 
 export default function ProfileCartPage() {
@@ -23,6 +26,10 @@ export default function ProfileCartPage() {
     const { setCartProducts, cartProducts } = useContext(dataContext);
     const navigate = useNavigate();
     const accessToken = useAccessToken();
+    const checkoutBlocked = useMemo(
+        () => cartBlocksCheckout(cartProducts),
+        [cartProducts]
+    );
     // fetch cart products --------------------------------------------------------
     const GetCartProducts = async () => {
         if (!accessToken) {
@@ -223,6 +230,11 @@ export default function ProfileCartPage() {
                                                         <p className="mt-3 text-sm text-white/40 leading-relaxed max-w-xl">
                                                             {htmlToText(product.product.short_description)}
                                                         </p>
+                                                        {isCartItemOutOfStock(product) && (
+                                                            <p className="mt-2 text-xs font-bold text-red-400 uppercase tracking-widest">
+                                                                Out of stock — remove to checkout
+                                                            </p>
+                                                        )}
                                                     </div>
                                                     
                                                     <div className="flex flex-1 items-end justify-between text-sm mt-8">
@@ -324,6 +336,11 @@ export default function ProfileCartPage() {
                                         <p className="text-xs text-white/20 font-medium">
                                             Shipping and taxes calculated at secure checkout.
                                         </p>
+                                        {checkoutBlocked && (
+                                            <p className="text-xs text-red-400 font-medium">
+                                                {getCartStockIssueMessage(cartProducts)}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="flex flex-col sm:flex-row items-center gap-6">
                                         <button
@@ -332,14 +349,25 @@ export default function ProfileCartPage() {
                                         >
                                             Continue Shopping
                                         </button>
-                                        <Link to="/checkout" className="w-full sm:w-auto">
+                                        {checkoutBlocked ? (
                                             <button
-                                                onClick={() => setIsCartOpen(false)}
-                                                className="w-full sm:px-16 py-6 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-2xl shadow-2xl shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-[0.2em] text-xs"
+                                                type="button"
+                                                disabled
+                                                className="w-full sm:px-16 py-6 bg-gray-600 text-white/70 font-black rounded-2xl uppercase tracking-[0.2em] text-xs cursor-not-allowed"
                                             >
                                                 Secure Checkout
                                             </button>
-                                        </Link>
+                                        ) : (
+                                            <Link to="/checkout" className="w-full sm:w-auto">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsCartOpen(false)}
+                                                    className="w-full sm:px-16 py-6 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-2xl shadow-2xl shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-[0.2em] text-xs"
+                                                >
+                                                    Secure Checkout
+                                                </button>
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             </div>

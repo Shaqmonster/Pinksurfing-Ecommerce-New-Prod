@@ -82,15 +82,24 @@ const PaymentOptionsModal = ({
       let errorMessage = "Payment setup incomplete for this vendor.";
       const errorCode = error.response?.data?.square_error_code;
       const errorDetails = error.response?.data?.details;
+      const errorHint = error.response?.data?.hint;
       
-      if (error.response?.status === 403 && errorCode === "INSUFFICIENT_SCOPES") {
+      if (
+        errorCode === "UNAUTHORIZED" ||
+        errorCode === "ACCESS_TOKEN_EXPIRED" ||
+        errorCode === "ACCESS_TOKEN_REVOKED"
+      ) {
+        errorMessage =
+          errorHint ||
+          "This vendor's Square connection has expired. They need to reconnect Square in their vendor dashboard, then try checkout again.";
+      } else if (error.response?.status === 403 && errorCode === "INSUFFICIENT_SCOPES") {
         errorMessage = "This vendor needs to reconnect their Square account with the correct permissions. Please notify the vendor.";
       } else if (errorCode === "INSUFFICIENT_SCOPES") {
         errorMessage = `Permission error: ${errorDetails || "Vendor account needs reauthorization."}`;
       } else if (error.response?.status === 400) {
-        errorMessage = error.response?.data?.details || errorMessage;
+        errorMessage = errorHint || errorDetails || error.response?.data?.error || errorMessage;
       } else {
-        errorMessage = error.response?.data?.error || errorMessage;
+        errorMessage = errorHint || error.response?.data?.error || errorDetails || errorMessage;
       }
       
       toast.error(errorMessage, {

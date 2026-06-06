@@ -11,6 +11,10 @@ import OrderConfirm from "../components/OrderConfirm";
 import PaymentOptionsModal from "./PaymentOptionsModal";
 import { formatMoney } from "../utils/formatMoney";
 import { useAccessToken } from "../hooks/useAccessToken";
+import {
+  cartBlocksCheckout,
+  getCartStockIssueMessage,
+} from "../utils/cartStock";
 
 
 const Checkout = () => {
@@ -28,10 +32,15 @@ const Checkout = () => {
   const [order_id, setOrderId] = useState();
   const [loading, setLoading] = useState(false);
   const [shippingSpeed, setShippingSpeed] = useState("standard");
+  const checkoutBlocked = cartBlocksCheckout(cartProducts);
 
   const PlaceOrder = async () => {
     if (!accessToken) {
       navigate("/signin");
+    }
+    if (checkoutBlocked) {
+      toast.error(getCartStockIssueMessage(cartProducts));
+      return;
     }
     if (!addresses[0]) {
       console.log("No address found, opening address form...");
@@ -463,9 +472,20 @@ const Checkout = () => {
           </div>
 
           <div>
+            {checkoutBlocked && (
+              <p className="mt-4 text-sm text-red-500">
+                {getCartStockIssueMessage(cartProducts)}
+              </p>
+            )}
             <button
-              className="mt-4 mb-8 w-full rounded-md bg-[#9747FF] px-6 py-3 font-medium text-white"
+              type="button"
+              className={`mt-4 mb-8 w-full rounded-md px-6 py-3 font-medium text-white ${
+                checkoutBlocked
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-[#9747FF]"
+              }`}
               onClick={PlaceOrder}
+              disabled={checkoutBlocked || loading}
             >
               Place Order
             </button>

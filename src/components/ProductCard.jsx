@@ -9,6 +9,7 @@ import { useAccessToken } from "../hooks/useAccessToken";
 import { IoStarOutline, IoCart, IoMailOutline } from "react-icons/io5";
 import Stars from "./Stars";
 import { formatMoney } from "../utils/formatMoney";
+import { isOutOfStock } from "../utils/cartStock";
 import { formatDistanceToNow } from 'date-fns';
 const ProductCard = ({ product, isCard }) => {
   const navigate = useNavigate();
@@ -49,6 +50,10 @@ const ProductCard = ({ product, isCard }) => {
     if (!accessToken) {
       toast.error("Please sign in to add to cart", { position: "top-right" });
       setIsProfileOpen(true);
+      return;
+    }
+    if (productOutOfStock) {
+      toast.error("This product is out of stock", { position: "top-right" });
       return;
     }
     if (isInCart) {
@@ -256,6 +261,7 @@ const ProductCard = ({ product, isCard }) => {
   const isCommercial = categorySlug === "commercial-realestate";
   const isBusiness = categorySlug === "business-for-sale" || categorySlug === "business4sale";
   const isListing = isResidential || isCommercial || isBusiness;
+  const productOutOfStock = !isListing && isOutOfStock(product);
 
   const getAttr = (name) => {
     const attr = (product.attributes || product.product_attributes || [])?.find(
@@ -298,9 +304,16 @@ const ProductCard = ({ product, isCard }) => {
       )}
 
       {/* Discount Badge (Generic products only) */}
-      {!isListing && product.mrp && product.unit_price && product.mrp !== product.unit_price && Math.round(((product.mrp - product.unit_price) / product.mrp) * 100) > 0 && (
+      {!isListing && !productOutOfStock && product.mrp && product.unit_price && product.mrp !== product.unit_price && Math.round(((product.mrp - product.unit_price) / product.mrp) * 100) > 0 && (
         <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold shadow-lg">
           {Math.round(((product.mrp - product.unit_price) / product.mrp) * 100)}% OFF
+        </div>
+      )}
+
+      {/* Out of Stock Badge */}
+      {productOutOfStock && (
+        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-bold shadow-lg">
+          Out of Stock
         </div>
       )}
 
@@ -446,18 +459,31 @@ const ProductCard = ({ product, isCard }) => {
                   setIsProfileOpen(true);
                   return;
                 }
+                if (productOutOfStock) {
+                  toast.error("This product is out of stock", { position: "top-right" });
+                  return;
+                }
                 if (isInCart) {
                   toast.info("Already in your cart", { position: "top-right" });
                   return;
                 }
                 AddtoCart();
               }}
+              disabled={productOutOfStock || isInCart}
               className={`p-3 rounded-xl text-white shadow-lg transition-all duration-300 ${
-                isInCart
+                productOutOfStock
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : isInCart
                   ? "bg-emerald-600 cursor-default"
                   : "bg-gradient-to-r from-purple-600 to-pink-500 shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-110 active:scale-95"
               }`}
-              title={isInCart ? "Already in cart" : "Add to Cart"}
+              title={
+                productOutOfStock
+                  ? "Out of stock"
+                  : isInCart
+                  ? "Already in cart"
+                  : "Add to Cart"
+              }
             >
               <IoCart className="text-xl" />
             </button>

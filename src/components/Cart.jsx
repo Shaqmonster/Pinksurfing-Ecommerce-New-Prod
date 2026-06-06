@@ -1,4 +1,4 @@
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
@@ -11,9 +11,13 @@ import { useAccessToken } from "../hooks/useAccessToken";
 import { IoRemoveCircle } from "react-icons/io5";
 import { formatMoney } from "../utils/formatMoney";
 import {
+  cartBlocksCheckout,
   cartStockLimitMessage,
   getCartItemStockQty,
+  getCartStockIssueMessage,
   isCartItemAtMaxStock,
+  isCartItemOutOfStock,
+  isOutOfStock,
 } from "../utils/cartStock";
 
 export default function Cart() {
@@ -22,6 +26,10 @@ export default function Cart() {
   const { setCartProducts, cartProducts } = useContext(dataContext);
   const navigate = useNavigate();
   const accessToken = useAccessToken();
+  const checkoutBlocked = useMemo(
+    () => cartBlocksCheckout(cartProducts),
+    [cartProducts]
+  );
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
     if (!accessToken) return;
@@ -274,6 +282,11 @@ export default function Cart() {
                                       {/* Additional Price: {currency}
                                     {product.additional_price > 0 ? product.additional_price : product.product.unit_price} */}
                                     </p>
+                                    {isCartItemOutOfStock(product) && (
+                                      <p className="mt-1 text-xs font-medium text-red-500">
+                                        Out of stock — remove to checkout
+                                      </p>
+                                    )}
 
                                     {/* )} */}
                                   </div>
@@ -420,16 +433,31 @@ export default function Cart() {
                       <p className="mt-0.5 text-sm text-gray-500">
                         Shipping and taxes calculated at checkout.
                       </p>
+                      {checkoutBlocked && cartProducts.length > 0 && (
+                        <p className="mt-2 text-sm text-red-500">
+                          {getCartStockIssueMessage(cartProducts)}
+                        </p>
+                      )}
                       <div className=" mt-2 sm:mt-6">
-                        <Link to="/checkout">
+                        {checkoutBlocked ? (
                           <button
-                            onClick={() => setIsCartOpen(false)}
-                            disabled={cartProducts.length === 0}
-                            className="flex items-center justify-center rounded-md border border-transparent bg-[#6A1BBE]  disabled:bg-gray-500 w-full px-6 py-3 textsm sm:text-base font-medium text-white shadow-sm hover:bg-[#5e2d92]"
+                            type="button"
+                            disabled
+                            className="flex items-center justify-center rounded-md border border-transparent bg-gray-500 w-full px-6 py-3 textsm sm:text-base font-medium text-white cursor-not-allowed"
                           >
                             Checkout
                           </button>
-                        </Link>
+                        ) : (
+                          <Link to="/checkout">
+                            <button
+                              type="button"
+                              onClick={() => setIsCartOpen(false)}
+                              className="flex items-center justify-center rounded-md border border-transparent bg-[#6A1BBE] w-full px-6 py-3 textsm sm:text-base font-medium text-white shadow-sm hover:bg-[#5e2d92]"
+                            >
+                              Checkout
+                            </button>
+                          </Link>
+                        )}
                       </div>
                       <div className=" mt-2 sm:mt-6 flex justify-center text-center text-sm text-gray-500">
                         <p>

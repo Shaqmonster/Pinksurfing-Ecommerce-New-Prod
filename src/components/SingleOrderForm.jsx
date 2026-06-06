@@ -35,6 +35,7 @@ export default function SingleOrderForm() {
   const [orderConfirm, setorderConfirm] = useState(false);
   const [addressesId, setAddressesId] = useState("");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [showQuickOrderDialog, setShowQuickOrderDialog] = useState(true);
   const [order_id, setOrderId] = useState();
   const [loading, setLoading] = useState(false);
   const [shippingSpeed, setShippingSpeed] = useState("standard");
@@ -42,6 +43,14 @@ export default function SingleOrderForm() {
 
   function closeModal() {
     setIsSingleOrderFormOpen(false);
+    setShowQuickOrderDialog(true);
+    setIsPaymentModalOpen(false);
+    setOrderId(undefined);
+  }
+
+  function closePaymentModal() {
+    setIsPaymentModalOpen(false);
+    closeModal();
   }
 
   const GetAddresses = async () => {
@@ -97,8 +106,8 @@ export default function SingleOrderForm() {
       )
       .then((response) => {
         setOrderId(response.data.order_id);
+        setShowQuickOrderDialog(false);
         setIsPaymentModalOpen(true);
-        closeModal();
       })
       .catch((error) => {
         console.error(error);
@@ -113,6 +122,12 @@ export default function SingleOrderForm() {
         setLoading(false);
       });
   };
+
+  useEffect(() => {
+    if (isSingleOrderFormOpen) {
+      setShowQuickOrderDialog(true);
+    }
+  }, [isSingleOrderFormOpen]);
 
   useEffect(() => {
     if (!isSingleOrderFormOpen || !accessToken) return;
@@ -131,7 +146,7 @@ export default function SingleOrderForm() {
       {isAddressFormOpen ? (
         <AddressForm />
       ) : (
-        <Transition appear show={isSingleOrderFormOpen} as={Fragment}>
+        <Transition appear show={showQuickOrderDialog && isSingleOrderFormOpen} as={Fragment}>
           <Dialog
             as="div"
             className={`${isDarkMode && "dark"} relative z-50`}
@@ -387,10 +402,10 @@ export default function SingleOrderForm() {
           </Dialog>
         </Transition>
       )}
-      {isPaymentModalOpen && (
+      {isPaymentModalOpen && order_id && (
         <PaymentOptionsModal
           isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
+          onClose={closePaymentModal}
           order_id={order_id}
           singleOrderProduct={singleOrderProduct}
         />
