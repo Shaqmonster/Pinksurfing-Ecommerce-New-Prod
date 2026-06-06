@@ -10,6 +10,11 @@ import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { IoRemoveCircle } from "react-icons/io5";
 import { formatMoney } from "../utils/formatMoney";
+import {
+  cartStockLimitMessage,
+  getCartItemStockQty,
+  isCartItemAtMaxStock,
+} from "../utils/cartStock";
 
 export default function Cart() {
   const { isCartOpen, setIsCartOpen, currency, isDarkMode } =
@@ -80,6 +85,19 @@ export default function Cart() {
       toast.error("Please sign in to update your cart", { position: "top-center" });
       return;
     }
+    const cartItem = cartProducts?.find(
+      (item) => String(item.product?.id) === String(productId)
+    );
+    if (cartItem && isCartItemAtMaxStock(cartItem)) {
+      const stockQty = getCartItemStockQty(cartItem);
+      toast.info(
+        stockQty != null
+          ? cartStockLimitMessage(stockQty)
+          : "Unable to increase quantity for this item",
+        { position: "top-center", autoClose: 2500 }
+      );
+      return;
+    }
     axios
       .post(
         `${
@@ -99,6 +117,7 @@ export default function Cart() {
       })
       .catch((error) => {
         console.error(error);
+        GetCartProducts();
         toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
@@ -208,9 +227,8 @@ export default function Cart() {
                             className="-my-6 divide-y  divide-gray-200"
                           >
                             {cartProducts.map((product, index) => {
-                              const stockQty = Number(product.product?.quantity) || 0;
-                              const isAtMaxStock =
-                                stockQty > 0 && product.quantity >= stockQty;
+                              const stockQty = getCartItemStockQty(product);
+                              const isAtMaxStock = isCartItemAtMaxStock(product);
                               return (
                               <li
                                 key={product.product.id + index}
@@ -312,9 +330,9 @@ export default function Cart() {
                                             onClick={() => {
                                               if (isAtMaxStock) {
                                                 toast.info(
-                                                  stockQty === 1
-                                                    ? "Only 1 available in stock"
-                                                    : `Maximum ${stockQty} available in stock`,
+                                                  stockQty != null
+                                                    ? cartStockLimitMessage(stockQty)
+                                                    : "Unable to increase quantity for this item",
                                                   { position: "top-center", autoClose: 2500 }
                                                 );
                                                 return;

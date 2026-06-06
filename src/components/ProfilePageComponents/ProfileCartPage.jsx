@@ -11,6 +11,11 @@ import { dataContext } from "../../context/dataContext";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { IoRemoveCircle } from "react-icons/io5";
 import { formatMoney } from "../../utils/formatMoney";
+import {
+    cartStockLimitMessage,
+    getCartItemStockQty,
+    isCartItemAtMaxStock,
+} from "../../utils/cartStock";
 
 export default function ProfileCartPage() {
     const { isCartOpen, setIsCartOpen, currency, isDarkMode } =
@@ -81,6 +86,19 @@ export default function ProfileCartPage() {
             toast.error("Please sign in to update your cart", { position: "top-center" });
             return;
         }
+        const cartItem = cartProducts?.find(
+            (item) => String(item.product?.id) === String(productId)
+        );
+        if (cartItem && isCartItemAtMaxStock(cartItem)) {
+            const stockQty = getCartItemStockQty(cartItem);
+            toast.info(
+                stockQty != null
+                    ? cartStockLimitMessage(stockQty)
+                    : "Unable to increase quantity for this item",
+                { position: "top-center", autoClose: 2500 }
+            );
+            return;
+        }
         axios
             .post(
                 `${import.meta.env.VITE_SERVER_URL
@@ -99,6 +117,7 @@ export default function ProfileCartPage() {
             })
             .catch((error) => {
                 console.error(error);
+                GetCartProducts();
                 toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
                     position: "top-center",
                     autoClose: 3000,
@@ -171,9 +190,8 @@ export default function ProfileCartPage() {
                                 <div className="flow-root">
                                     <ul role="list" className="divide-y divide-white/5">
                                         {cartProducts.map((product, index) => {
-                                            const stockQty = Number(product.product?.quantity) || 0;
-                                            const isAtMaxStock =
-                                                stockQty > 0 && product.quantity >= stockQty;
+                                            const stockQty = getCartItemStockQty(product);
+                                            const isAtMaxStock = isCartItemAtMaxStock(product);
                                             return (
                                             <li key={product.product.id + index} className="flex py-10 group first:pt-0">
                                                 <div className="h-28 w-28 sm:h-40 sm:w-40 flex-shrink-0 overflow-hidden rounded-[2rem] border border-white/10 group-hover:border-purple-500/30 transition-all duration-500 shadow-2xl relative">
@@ -228,9 +246,9 @@ export default function ProfileCartPage() {
                                                                     onClick={() => {
                                                                         if (isAtMaxStock) {
                                                                             toast.info(
-                                                                                stockQty === 1
-                                                                                    ? "Only 1 available in stock"
-                                                                                    : `Maximum ${stockQty} available in stock`,
+                                                                                stockQty != null
+                                                                                    ? cartStockLimitMessage(stockQty)
+                                                                                    : "Unable to increase quantity for this item",
                                                                                 { position: "top-center", autoClose: 2500 }
                                                                             );
                                                                             return;
