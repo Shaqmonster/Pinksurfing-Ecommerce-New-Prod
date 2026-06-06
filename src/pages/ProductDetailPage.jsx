@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
@@ -86,6 +86,11 @@ function firstProductImageUrl(product) {
   return "";
 }
 
+function cartContainsProduct(cartItems, productUuid) {
+  if (!productUuid || !Array.isArray(cartItems)) return false;
+  const id = String(productUuid);
+  return cartItems.some((item) => String(item.product?.id) === id);
+}
 
 const ProductDetailPage = () => {
   const navigate = useNavigate();
@@ -147,6 +152,10 @@ const ProductDetailPage = () => {
   } = useContext(authContext);
 
   const accessToken = resolveAccessToken(authToken, cookies.access_token);
+  const isInCart = useMemo(
+    () => cartContainsProduct(cartProducts, product?.id),
+    [cartProducts, product?.id]
+  );
 
   const isOwner =
     !!user?.email &&
@@ -447,6 +456,10 @@ const ProductDetailPage = () => {
       toast.error("Product is still loading", { position: "top-right" });
       return;
     }
+    if (cartContainsProduct(cartProducts, cartProductId)) {
+      toast.info("Already in your cart", { position: "top-right" });
+      return;
+    }
     // Send the raw variant selections — the backend validates the price from DB.
     const selected_variants = Object.entries(selectedAttributes).map(
       ([name, attr]) => ({ name, value: attr.value })
@@ -463,17 +476,39 @@ const ProductDetailPage = () => {
         }
       )
       .then((response) => {
-        toast.success("Added to Cart", {
-          position: "top-right",
-        });
+        if (response.data?.already_in_cart) {
+          toast.info(response.data.message || "Already in your cart", {
+            position: "top-right",
+          });
+        } else {
+          toast.success("Added to Cart", {
+            position: "top-right",
+          });
+        }
         GetCartProducts();
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
-          position: "top-right",
-        });
+        const data = error.response?.data;
+        toast.error(
+          data?.message || data?.Status || data?.detail || "Could not add to cart",
+          { position: "top-right" }
+        );
       });
+  };
+
+  const handleAddToBagClick = () => {
+    if (!accessToken) {
+      toast.error("You are not Signed In", { position: "top-right" });
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      setIsProfileOpen(true);
+      return;
+    }
+    if (isInCart) {
+      toast.info("Already in your cart", { position: "top-right" });
+      return;
+    }
+    AddtoCart();
   };
   //   remove product--------------------------------------------------------
   const RemoveWishlistProduct = async (productId) => {
@@ -1660,22 +1695,16 @@ const ProductDetailPage = () => {
                         {!isOwner ? (
                           <>
                             <button
-                              onClick={() => {
-                                if (!user) {
-                                  toast.error("You are not Signed In", { position: "top-right" });
-                                  sessionStorage.setItem("redirectAfterLogin", window.location.href);
-                                  setIsProfileOpen(true);
-                                  setTimeout(() => setIsProfileOpen(false), 10000);
-                                  return;
-                                }
-                                AddtoCart();
-                              }}
+                              type="button"
+                              onClick={handleAddToBagClick}
                               disabled={product.quantity === 0 || isDealClosed}
-                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
+                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : isInCart ? 'bg-emerald-600 text-white cursor-default' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
                             >
                               <span className="relative z-10 flex items-center justify-center gap-3">
                                 {isDealClosed ? (
                                   <>Deal Closed</>
+                                ) : isInCart ? (
+                                  <>Already in bag</>
                                 ) : (
                                   <>
                                     <IoCart size={16} />
@@ -1683,7 +1712,9 @@ const ProductDetailPage = () => {
                                   </>
                                 )}
                               </span>
-                              {!isDealClosed && <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>}
+                              {!isDealClosed && !isInCart && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                              )}
                             </button>
 
                             {!isDealClosed && product.quantity > 0 && (

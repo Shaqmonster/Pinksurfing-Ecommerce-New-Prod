@@ -17,13 +17,16 @@ const ProductCard = ({ product, isCard }) => {
   const [averageRating, setAverageRating] = useState(0);
   const [allRatings, setAllRatings] = useState([]);
   const { user, authToken, currency, setIsProfileOpen } = useContext(authContext);
-  const accessToken = resolveAccessToken(authToken, cookies.access_token);
   const {
     setCartProducts,
     setWishlistProducts,
     cartProducts,
     wishlistProducts,
   } = useContext(dataContext);
+  const accessToken = resolveAccessToken(authToken, cookies.access_token);
+  const isInCart = cartProducts.some(
+    (item) => String(item.product?.id) === String(product.id)
+  );
 
   const GetCartProducts = async () => {
     if (!accessToken) {
@@ -50,6 +53,10 @@ const ProductCard = ({ product, isCard }) => {
       setIsProfileOpen(true);
       return;
     }
+    if (isInCart) {
+      toast.info("Already in your cart", { position: "top-right" });
+      return;
+    }
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${product.id
@@ -63,9 +70,15 @@ const ProductCard = ({ product, isCard }) => {
         }
       )
       .then((response) => {
-        toast.success("Added to Cart", {
-          position: "top-right",
-        });
+        if (response.data?.already_in_cart) {
+          toast.info(response.data.message || "Already in your cart", {
+            position: "top-right",
+          });
+        } else {
+          toast.success("Added to Cart", {
+            position: "top-right",
+          });
+        }
         GetCartProducts();
       })
       .catch((error) => {
@@ -427,16 +440,26 @@ const ProductCard = ({ product, isCard }) => {
             </button>
           ) : (
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
-                if (!user) {
-                  toast.error("Please sign in to add to cart");
+                if (!accessToken) {
+                  toast.error("Please sign in to add to cart", { position: "top-right" });
+                  setIsProfileOpen(true);
+                  return;
+                }
+                if (isInCart) {
+                  toast.info("Already in your cart", { position: "top-right" });
                   return;
                 }
                 AddtoCart();
               }}
-              className="p-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-110 active:scale-95 transition-all duration-300"
-              title="Add to Cart"
+              className={`p-3 rounded-xl text-white shadow-lg transition-all duration-300 ${
+                isInCart
+                  ? "bg-emerald-600 cursor-default"
+                  : "bg-gradient-to-r from-purple-600 to-pink-500 shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-110 active:scale-95"
+              }`}
+              title={isInCart ? "Already in cart" : "Add to Cart"}
             >
               <IoCart className="text-xl" />
             </button>
