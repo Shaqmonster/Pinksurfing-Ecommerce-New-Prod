@@ -33,25 +33,29 @@ export default function Cart() {
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
     if (!accessToken) return;
-    axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((response) => {
-        console.log(response.data);
-        setCartProducts(response.data);
-        // console.log(subTotal);
-      })
-      .catch((error) => {
-        console.error(error);
-        toast.error("Unable to load cart", {
-          position: "top-center",
-          autoClose: 3000,
-        });
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const payload = response.data;
+      setCartProducts(Array.isArray(payload) ? payload : payload?.items || []);
+    } catch (error) {
+      console.error(error);
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        setCartProducts([]);
+        return;
+      }
+      toast.error("Unable to load cart", {
+        position: "top-center",
+        autoClose: 3000,
       });
+    }
   };
   useEffect(() => {
     if (!isCartOpen || !accessToken) return;

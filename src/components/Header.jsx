@@ -156,9 +156,14 @@ const Header = () => {
           },
         }
       );
-      setCartProducts(response.data);
+      const payload = response.data;
+      setCartProducts(Array.isArray(payload) ? payload : payload?.items || []);
     } catch (error) {
       console.error("Failed to fetch cart products:", error);
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        setCartProducts([]);
+        return;
+      }
     }
   };
 
