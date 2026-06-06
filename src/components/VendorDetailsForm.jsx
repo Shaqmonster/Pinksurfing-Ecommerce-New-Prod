@@ -9,8 +9,10 @@ import { IoClose } from "react-icons/io5";
 import { CountriesISO } from "../utils/CountriesISO";
 import { Country, State, City } from "country-state-city";
 import { getAccessToken } from "../utils/authSession";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function VendorDetailsForm() {
+  const accessToken = useAccessToken();
   const { isVendorFormOpen, isDarkMode, user, setUser, setIsVendorFormOpen } =
     useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
@@ -148,7 +150,7 @@ export default function VendorDetailsForm() {
 
   const UpdateProfile = async (e) => {
     e.preventDefault();
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
 
@@ -178,7 +180,7 @@ export default function VendorDetailsForm() {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )

@@ -11,15 +11,15 @@ import Header from "./Header";
 import CancelDialog from "./CancelDialog";
 import RatingForm from '../components/RatingForm'
 import { formatMoney } from "../utils/formatMoney";
-import { resolveAccessToken } from "../utils/authSession";
+import { useAccessToken } from "../hooks/useAccessToken";
 export default function Orders() {
+  const accessToken = useAccessToken();
   const { currency, setIsRatingFormOpen, isRatingFormOpen, authToken } = useContext(authContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const accessToken = resolveAccessToken(authToken, cookies.access_token);
-  const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState("");
 
 

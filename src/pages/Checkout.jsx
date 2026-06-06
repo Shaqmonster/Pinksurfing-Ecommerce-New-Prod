@@ -10,9 +10,11 @@ import { toast } from "react-toastify";
 import OrderConfirm from "../components/OrderConfirm";
 import PaymentOptionsModal from "./PaymentOptionsModal";
 import { formatMoney } from "../utils/formatMoney";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 
 const Checkout = () => {
+  const accessToken = useAccessToken();
   const { setIsAddressFormOpen, currency, isAddressFormOpen } =
     useContext(authContext);
   const { cartProducts, setCartProducts } = useContext(dataContext);
@@ -28,7 +30,7 @@ const Checkout = () => {
   const [shippingSpeed, setShippingSpeed] = useState("standard");
 
   const PlaceOrder = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
     if (!addresses[0]) {
@@ -52,7 +54,7 @@ const Checkout = () => {
           headers: {
             "Content-Type": "application/json",
 
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -74,7 +76,7 @@ const Checkout = () => {
   };
 
   const GetAddresses = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
     setLoading(true);
@@ -82,7 +84,7 @@ const Checkout = () => {
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/address/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -128,14 +130,14 @@ const Checkout = () => {
   // }
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -155,10 +157,10 @@ const Checkout = () => {
   };
 
   useEffect(() => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     GetAddresses();
     GetCartProducts();
-  }, [cookies.access_token, isAddressFormOpen]);
+  }, [accessToken, isAddressFormOpen]);
 
   useEffect(() => {
     if (addresses.length > 0) {

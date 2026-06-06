@@ -30,10 +30,12 @@ import ChatFloatingPanel from "./ChatFloatingPanel";
 import { useBuyerHasNdas } from "../hooks/useBuyerHasNdas";
 import { getConversations } from "../api/gigs";
 import { sumUnreadCount, resolveChatAccessToken } from "../utils/chatHelpers";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 
 const Header = () => {
+  const accessToken = useAccessToken();
   const hasBuyerNdas = useBuyerHasNdas();
   const [cookies] = useCookies(["token", "refresh", "access_token"]);
   const [chatUnread, setChatUnread] = useState(0);
@@ -67,7 +69,7 @@ const Header = () => {
     pendingChatParticipantEmail,
     setPendingChatParticipantEmail,
   } = useContext(authContext);
-  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
+    const chatAccessToken = resolveChatAccessToken(authToken, accessToken);
   const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
     useContext(dataContext);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -86,7 +88,7 @@ const Header = () => {
   const lastPart = pathParts[pathParts.length - 1];
 
   const updateWalletBalance = useCallback(async () => {
-    if (!enableAuthWallet || !cookies.access_token) return;
+    if (!enableAuthWallet || !accessToken) return;
     try {
       const addresses = await fetchWalletAddresses();
       if (addresses.length > 0) {
@@ -100,14 +102,14 @@ const Header = () => {
         console.error("Failed to update wallet balance:", error);
       }
     }
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const fetchWalletAddresses = async () => {
     const response = await axios.get(
       "https://auth.pinksurfing.com/api/crypto/wallet/",
       {
         headers: {
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     );
@@ -124,13 +126,13 @@ const Header = () => {
   };
 
   useEffect(() => {
-    if (!user || !accessToken) {
+    if (!accessToken) {
       setChatUnread(0);
       return;
     }
     const load = async () => {
       try {
-        const res = await getConversations(accessToken);
+        const res = await getConversations(chatAccessToken);
         const data = Array.isArray(res.data) ? res.data : res.data?.results || [];
         setChatUnread(sumUnreadCount(data));
       } catch {
@@ -140,17 +142,17 @@ const Header = () => {
     load();
     const id = setInterval(load, 25000);
     return () => clearInterval(id);
-  }, [user, accessToken, isChatOpen]);
+  }, [accessToken, chatAccessToken, isChatOpen]);
 
   const getCartProducts = async () => {
-    if (!authToken || !user || !cookies.access_token) return;
+    if (!accessToken) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -161,14 +163,14 @@ const Header = () => {
   };
 
   const getWishlist = async () => {
-    if (!authToken || !user || !cookies.access_token) return;
+    if (!accessToken) return;
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -184,7 +186,7 @@ const Header = () => {
   }, [updateWalletBalance]);
 
   useEffect(() => {
-    if (!authToken || !user || !cookies.access_token) return;
+    if (!accessToken) return;
 
     const fetchData = async () => {
       await getAllProducts();
@@ -193,7 +195,7 @@ const Header = () => {
     };
 
     fetchData();
-  }, [authToken, user, cookies.access_token]);
+  }, [accessToken]);
 
   const handleWalletClick = () => {
     setShowQRCode(true);

@@ -16,8 +16,10 @@ import {
 import AddressForm from "./AddressForm";
 import PaymentOptionsModal from "../pages/PaymentOptionsModal";
 import { formatMoney } from "../utils/formatMoney";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function SingleOrderForm() {
+  const accessToken = useAccessToken();
   const {
     isSingleOrderFormOpen,
     currency,
@@ -43,12 +45,12 @@ export default function SingleOrderForm() {
   }
 
   const GetAddresses = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/address/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -65,7 +67,7 @@ export default function SingleOrderForm() {
   };
 
   const PlaceSingleOrder = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
     if (!addressesId) {
@@ -89,7 +91,7 @@ export default function SingleOrderForm() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -113,9 +115,9 @@ export default function SingleOrderForm() {
   };
 
   useEffect(() => {
-    if (!isSingleOrderFormOpen || !cookies.access_token) return;
+    if (!isSingleOrderFormOpen || !accessToken) return;
     GetAddresses();
-  }, [isSingleOrderFormOpen, cookies.access_token, isAddressFormOpen]);
+  }, [isSingleOrderFormOpen, accessToken, isAddressFormOpen]);
 
   useEffect(() => {
     if (addresses.length > 0) {

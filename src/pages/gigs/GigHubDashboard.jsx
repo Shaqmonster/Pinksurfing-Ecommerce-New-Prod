@@ -8,13 +8,13 @@ import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard
 import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { getMyGigOrders } from "../../api/gigs";
-import { resolveAccessToken } from "../../utils/authSession";
 import {
   IoEyeOutline,
   IoChatbubbleOutline,
   IoStorefrontOutline,
 } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const STATUS_CONFIG = {
   pending_requirements: {
@@ -313,11 +313,11 @@ const BuyerDashboardContent = ({ orders, loading }) => {
 };
 
 const GigHubDashboard = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user, authToken, openChatInbox } = useContext(authContext);
-  const accessToken = resolveAccessToken(authToken, cookies.access_token);
-  const { address: inAppAddress } = useInAppWallet();
+    const { address: inAppAddress } = useInAppWallet();
 
   const [allOrders, setAllOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);

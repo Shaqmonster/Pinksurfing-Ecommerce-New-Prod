@@ -4,6 +4,7 @@ import axios from "axios";
 import { Fragment } from "react";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function CancelDialog({
   isOpen,
@@ -12,6 +13,7 @@ export default function CancelDialog({
   GetOrders,
   onOptimisticCancel,
 }) {
+  const accessToken = useAccessToken();
   const [cookies] = useCookies([]);
   function closeModal() {
     setIsOpen(false);
@@ -29,7 +31,7 @@ export default function CancelDialog({
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )

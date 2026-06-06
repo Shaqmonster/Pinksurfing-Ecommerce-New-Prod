@@ -17,6 +17,7 @@ import { FaGavel } from "react-icons/fa";
 import { authContext } from "../context/authContext";
 import { getMyRequests, acceptBid, deleteRequest, addToCart } from "../api/buyerRequests";
 import BidsNavBar from "../components/BidsNavBar";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const STATUS_COLORS = {
   OPEN: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -253,6 +254,7 @@ const BidRow = ({ bid, requestStatus, requestId, onAcceptBid, accepting }) => {
 };
 
 const MyBidsPage = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
@@ -263,10 +265,10 @@ const MyBidsPage = () => {
   const [filter, setFilter] = useState("all");
 
   const fetchRequests = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     try {
       setLoading(true);
-      const res = await getMyRequests(cookies.access_token);
+      const res = await getMyRequests(accessToken);
       const data = res.data?.results ?? res.data ?? [];
       setRequests(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -278,20 +280,20 @@ const MyBidsPage = () => {
   };
 
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
     fetchRequests();
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const handleAcceptBid = async (requestId, bidId) => {
     try {
       setAccepting(bidId);
-      const res = await acceptBid(cookies.access_token, requestId, bidId);
+      const res = await acceptBid(accessToken, requestId, bidId);
       const productId = res.data.product_id;
 
-      await addToCart(cookies.access_token, productId);
+      await addToCart(accessToken, productId);
 
       toast.success("Bid accepted and added to your cart!");
       fetchRequests();
@@ -307,7 +309,7 @@ const MyBidsPage = () => {
   const handleDelete = async (requestId) => {
     if (!window.confirm("Delete this bid request? This cannot be undone.")) return;
     try {
-      await deleteRequest(cookies.access_token, requestId);
+      await deleteRequest(accessToken, requestId);
       toast.success("Request deleted.");
       setRequests((prev) => prev.filter((r) => r.id !== requestId));
     } catch {

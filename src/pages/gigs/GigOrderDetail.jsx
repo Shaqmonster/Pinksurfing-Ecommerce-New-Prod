@@ -51,6 +51,7 @@ import {
   IoWalletOutline,
 } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const STATUS_STEPS = [
   { key: "pending_payment", label: "Payment", icon: <IoWalletOutline className="text-base" /> },
@@ -342,6 +343,7 @@ const DisputeModal = ({ onClose, onSubmit, submitting }) => {
 
 // Main component
 const GigOrderDetail = () => {
+  const accessToken = useAccessToken();
   const { id } = useParams();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
@@ -373,17 +375,17 @@ const GigOrderDetail = () => {
   const [escrowDetails, setEscrowDetails] = useState(null);
 
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
     fetchOrder();
-  }, [id, cookies.access_token]);
+  }, [id, accessToken]);
 
   const fetchOrder = async () => {
     setLoading(true);
     try {
-      const res = await getGigOrderDetail(cookies.access_token, id);
+      const res = await getGigOrderDetail(accessToken, id);
       setOrder(res.data);
       setEscrowId(res.data.escrow_id || "");
     } catch {
@@ -637,7 +639,7 @@ const GigOrderDetail = () => {
       });
       setEscrowId(createdEscrowId);
       setEscrowIdForOrder(order.id, createdEscrowId);
-      await setGigOrderEscrowId(cookies.access_token, order.id, createdEscrowId);
+      await setGigOrderEscrowId(accessToken, order.id, createdEscrowId);
       toast.success("Escrow created and linked to this order.");
       await refreshEscrow();
     } catch (e) {
@@ -650,7 +652,7 @@ const GigOrderDetail = () => {
   const handleSubmitRequirements = async (answers) => {
     try {
       setSubmittingReq(true);
-      await submitOrderRequirements(cookies.access_token, id, answers);
+      await submitOrderRequirements(accessToken, id, answers);
       toast.success("Requirements submitted! Your order is now in progress.");
       setShowRequirementsModal(false);
       fetchOrder();
@@ -664,7 +666,7 @@ const GigOrderDetail = () => {
   const handleDeliver = async ({ message, files }) => {
     try {
       setSubmittingDelivery(true);
-      await deliverOrder(cookies.access_token, id, { message, files });
+      await deliverOrder(accessToken, id, { message, files });
       toast.success("Delivery submitted successfully!");
       setShowDeliveryModal(false);
       fetchOrder();
@@ -679,7 +681,7 @@ const GigOrderDetail = () => {
     if (!window.confirm("Accept this delivery and mark the order as complete?")) return;
     try {
       setActionLoading(true);
-      await completeOrder(cookies.access_token, id);
+      await completeOrder(accessToken, id);
       toast.success("Order completed! Payment released to seller.");
       fetchOrder();
     } catch (err) {
@@ -693,7 +695,7 @@ const GigOrderDetail = () => {
     if (!window.confirm("Are you sure you want to cancel this order?")) return;
     try {
       setActionLoading(true);
-      await cancelOrder(cookies.access_token, id);
+      await cancelOrder(accessToken, id);
       toast.success("Order cancelled.");
       fetchOrder();
     } catch (err) {
@@ -706,7 +708,7 @@ const GigOrderDetail = () => {
   const handleDispute = async (reason) => {
     try {
       setSubmittingDispute(true);
-      await disputeOrder(cookies.access_token, id, reason);
+      await disputeOrder(accessToken, id, reason);
       toast.success("Dispute raised successfully. Admin will review your case.");
       setShowDisputeModal(false);
       fetchOrder();
@@ -923,7 +925,7 @@ const GigOrderDetail = () => {
                       setEscrowId("");
                       if (order?.id) {
                         setEscrowIdForOrder(order.id, "");
-                        setGigOrderEscrowId(cookies.access_token, order.id, "").catch(() => {});
+                        setGigOrderEscrowId(accessToken, order.id, "").catch(() => {});
                       }
                       toast.info("Cleared stale escrow link for this order.");
                     }}
@@ -1322,7 +1324,7 @@ const GigOrderDetail = () => {
                     onClick={() => {
                       if (order?.id && escrowId) {
                         setEscrowIdForOrder(order.id, escrowId);
-                        setGigOrderEscrowId(cookies.access_token, order.id, escrowId).catch(() => {});
+                        setGigOrderEscrowId(accessToken, order.id, escrowId).catch(() => {});
                         toast.success("Escrow id linked to order.");
                       }
                     }}

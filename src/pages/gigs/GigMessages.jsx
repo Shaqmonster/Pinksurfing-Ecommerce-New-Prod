@@ -21,9 +21,9 @@ import {
   buildChatWebSocketUrl,
   fileNameFromUrl,
   getEmailFromToken,
-  resolveChatAccessToken,
   timeAgo,
 } from "../../utils/chatHelpers";
+import { useAccessToken } from "../../hooks/useAccessToken";
 import {
   IoSendSharp,
   IoAttachOutline,
@@ -157,11 +157,10 @@ const ConversationItem = ({ conv, isActive, myEmail, onClick }) => {
 /* ─── Main Page Component ─────────────────────────────────────── */
 
 const GigMessages = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [cookies] = useCookies(["access_token"]);
-  const { user, authToken } = useContext(authContext);
-  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
+  const { user } = useContext(authContext);
 
   const myEmail = user?.email || getEmailFromToken(accessToken) || "";
 

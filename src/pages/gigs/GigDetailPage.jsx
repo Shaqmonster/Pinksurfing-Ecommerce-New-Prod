@@ -30,6 +30,7 @@ import {
   IoPricetagOutline,
 } from "react-icons/io5";
 import { FaBriefcase, FaCheck } from "react-icons/fa";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const TIER_STYLES = {
   basic: {
@@ -258,9 +259,8 @@ const CheckoutFlowModal = ({
 const GigDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [cookies] = useCookies(["access_token"]);
-  const { user, authToken, openChatWithParticipantEmail } = useContext(authContext);
-  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
+  const { user, openChatWithParticipantEmail } = useContext(authContext);
+  const accessToken = useAccessToken();
   const { wallet: inAppWallet } = useInAppWallet();
 
   const [gig, setGig] = useState(null);
@@ -358,7 +358,7 @@ const GigDetailPage = () => {
   };
 
   const handleBuy = () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       toast.error("Please sign in to purchase.");
       navigate("/signin");
       return;
@@ -371,7 +371,7 @@ const GigDetailPage = () => {
   };
 
   const handleCheckoutConfirm = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       toast.error("Please sign in to purchase.");
       navigate("/signin");
       return;
@@ -390,7 +390,7 @@ const GigDetailPage = () => {
     try {
       setPurchasing(true);
       setCheckoutOpen(false);
-      const orderRes = await createGigOrder(cookies.access_token, {
+      const orderRes = await createGigOrder(accessToken, {
         gig_id: gig.id,
         package_id: selectedPkg.id,
         addons: selectedAddons.map((a) => a.id),
@@ -410,7 +410,7 @@ const GigDetailPage = () => {
               milestoneCount: checkoutOptions.milestoneCount,
               escrowEth: checkoutOptions.escrowEth,
             });
-            await setGigOrderEscrowId(cookies.access_token, order.id, chainRes.escrowId);
+            await setGigOrderEscrowId(accessToken, order.id, chainRes.escrowId);
             toast.success(`Escrow created (${checkoutOptions.milestoneCount} milestones): ${chainRes.escrowId.slice(0, 10)}...`);
           } else {
             throw new Error("Buyer wallet or seller wallet address is missing for escrow.");
@@ -424,7 +424,7 @@ const GigDetailPage = () => {
       }
 
       if (checkoutOptions.paymentMode === "escrow_plus_stripe") {
-        const sessionRes = await createSquareGigCheckoutSession(cookies.access_token, order.id);
+        const sessionRes = await createSquareGigCheckoutSession(accessToken, order.id);
         const { url } = sessionRes.data;
         if (url) {
           window.location.href = url;
@@ -433,7 +433,7 @@ const GigDetailPage = () => {
         }
       } else if (checkoutOptions.paymentMode === "square") {
         // If you still want to support the old Square path:
-        const sessionRes = await createSquareGigCheckoutSession(cookies.access_token, order.id);
+        const sessionRes = await createSquareGigCheckoutSession(accessToken, order.id);
         const { url } = sessionRes.data;
         if (url) {
           window.location.href = url;

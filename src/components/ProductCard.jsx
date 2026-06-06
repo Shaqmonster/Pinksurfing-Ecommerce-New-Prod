@@ -2,28 +2,26 @@ import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { FaHeart, FaStar, FaBed, FaBath, FaRulerCombined, FaChartLine, FaMoneyBillWave, FaClock } from "react-icons/fa";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { resolveAccessToken } from "../utils/authSession";
+import { useAccessToken } from "../hooks/useAccessToken";
 import { IoStarOutline, IoCart, IoMailOutline } from "react-icons/io5";
 import Stars from "./Stars";
 import { formatMoney } from "../utils/formatMoney";
 import { formatDistanceToNow } from 'date-fns';
 const ProductCard = ({ product, isCard }) => {
-  const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
   const [averageRating, setAverageRating] = useState(0);
   const [allRatings, setAllRatings] = useState([]);
-  const { user, authToken, currency, setIsProfileOpen } = useContext(authContext);
+  const { currency, setIsProfileOpen } = useContext(authContext);
   const {
     setCartProducts,
     setWishlistProducts,
     cartProducts,
     wishlistProducts,
   } = useContext(dataContext);
-  const accessToken = resolveAccessToken(authToken, cookies.access_token);
+  const accessToken = useAccessToken();
   const isInCart = cartProducts.some(
     (item) => String(item.product?.id) === String(product.id)
   );
@@ -172,7 +170,7 @@ const ProductCard = ({ product, isCard }) => {
     }
   };
   const handleWishlistClick = async () => {
-    if (!user) {
+    if (!accessToken) {
       toast.error("You are not Signed In", {
         position: "top-right",
       });

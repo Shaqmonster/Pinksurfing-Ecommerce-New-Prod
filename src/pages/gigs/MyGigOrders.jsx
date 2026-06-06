@@ -5,7 +5,6 @@ import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { getMyGigOrders, submitOrderRequirements, gigUrl } from "../../api/gigs";
-import { resolveAccessToken } from "../../utils/authSession";
 import {
   IoTimeOutline,
   IoCheckmarkCircle,
@@ -15,6 +14,7 @@ import {
   IoRefreshOutline,
 } from "react-icons/io5";
 import { FaBriefcase, FaSpinner } from "react-icons/fa";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const STATUS_CONFIG = {
   pending_requirements: {
@@ -135,11 +135,11 @@ const RequirementsModal = ({ order, onClose, onSubmit }) => {
 };
 
 const MyGigOrders = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user, authToken } = useContext(authContext);
-  const accessToken = resolveAccessToken(authToken, cookies.access_token);
-
+  
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");

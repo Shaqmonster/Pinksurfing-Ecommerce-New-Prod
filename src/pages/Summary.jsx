@@ -12,8 +12,10 @@ import RatingForm from "../components/RatingForm";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import TrackingTimeline from "../components/TrackingTimeline";
 import { formatMoney } from "../utils/formatMoney";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const Summary = () => {
+  const accessToken = useAccessToken();
   const { user, isRatingFormOpen, currency, setIsRatingFormOpen } =
     React.useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
@@ -30,7 +32,7 @@ const Summary = () => {
   const { orderId } = useParams();
 
   const GetOrder = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
@@ -40,7 +42,7 @@ const Summary = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -53,12 +55,12 @@ const Summary = () => {
   };
 
   const GetAddresses = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/address/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -72,7 +74,7 @@ const Summary = () => {
   useEffect(() => {
     GetOrder();
     GetAddresses();
-  }, [cookies.access_token, orderId]);
+  }, [accessToken, orderId]);
 
   useEffect(() => {
     if (!order?.product?.id) return;
@@ -91,7 +93,7 @@ const Summary = () => {
   };
 
   const handleReturnOrder = async (orderItemId) => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
@@ -102,7 +104,7 @@ const Summary = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );

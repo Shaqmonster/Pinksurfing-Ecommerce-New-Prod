@@ -8,6 +8,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { dataContext } from "../../context/dataContext";
+import { useAccessToken } from "../../hooks/useAccessToken";
 import { IoRemoveCircle } from "react-icons/io5";
 import { formatMoney } from "../../utils/formatMoney";
 
@@ -16,17 +17,17 @@ export default function ProfileCartPage() {
         useContext(authContext);
     const { setCartProducts, cartProducts } = useContext(dataContext);
     const navigate = useNavigate();
-    const [cookies, removeCookie] = useCookies([]);
+    const accessToken = useAccessToken();
     // fetch cart products --------------------------------------------------------
     const GetCartProducts = async () => {
-        if (!cookies.access_token) {
+        if (!accessToken) {
             return navigate("/signin");
         }
         axios
             .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${cookies.access_token}`,
+                    Authorization: `Bearer ${accessToken}`,
                 },
             })
             .then((response) => {
@@ -44,7 +45,7 @@ export default function ProfileCartPage() {
     };
     useEffect(() => {
         GetCartProducts();
-    }, [cookies, navigate, removeCookie]);
+    }, [accessToken]);
 
     //   remove product--------------------------------------------------------
     const RemoveCartProduct = (productId) => {
@@ -58,7 +59,7 @@ export default function ProfileCartPage() {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${cookies.access_token}`,
+                        Authorization: `Bearer ${accessToken}`,
                     },
                 }
             )
@@ -68,7 +69,7 @@ export default function ProfileCartPage() {
             })
             .catch((error) => {
                 // console.error(error);
-                toast.error(error.response.data.detail || "An error occurred while removing product from cart", {
+                toast.error(error.response?.data?.detail || "An error occurred while removing product from cart", {
                     position: "top-center",
                     autoClose: 3000,
                 });
@@ -76,6 +77,10 @@ export default function ProfileCartPage() {
     };
     //   increment product--------------------------------------------------------
     const IncrementQty = (productId) => {
+        if (!accessToken) {
+            toast.error("Please sign in to update your cart", { position: "top-center" });
+            return;
+        }
         axios
             .post(
                 `${import.meta.env.VITE_SERVER_URL
@@ -84,7 +89,7 @@ export default function ProfileCartPage() {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${cookies.access_token}`,
+                        Authorization: `Bearer ${accessToken}`,
                     },
                 }
             )
@@ -94,7 +99,7 @@ export default function ProfileCartPage() {
             })
             .catch((error) => {
                 console.error(error);
-                toast.error(error.response.data.message || error.response.data.Status || "An error occurred", {
+                toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
                     position: "top-center",
                     autoClose: 3000,
                 });
@@ -102,6 +107,10 @@ export default function ProfileCartPage() {
     };
     //   decrement product--------------------------------------------------------
     const DecrementQty = (productId) => {
+        if (!accessToken) {
+            toast.error("Please sign in to update your cart", { position: "top-center" });
+            return;
+        }
         axios
             .post(
                 `${import.meta.env.VITE_SERVER_URL
@@ -110,7 +119,7 @@ export default function ProfileCartPage() {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${cookies.access_token}`,
+                        Authorization: `Bearer ${accessToken}`,
                     },
                 }
             )
@@ -120,7 +129,7 @@ export default function ProfileCartPage() {
             })
             .catch((error) => {
                 console.error(error);
-                toast.error(error.response.data.message || error.response.data.Status || "An error occurred", {
+                toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
                     position: "top-center",
                     autoClose: 3000,
                 });

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { DiditSdk } from "@didit-protocol/sdk-web";
 import { createIdentitySession, getIdentityStatus } from "../api/identity";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const POLL_MS = 4000;
 
@@ -17,7 +17,7 @@ const DiditVerificationGate = ({
   title = "Verify your identity",
   description = "Complete a quick identity check to continue. You only need to do this once for selling on PinkSurfing.",
 }) => {
-  const [cookies] = useCookies(["access_token"]);
+  const accessToken = useAccessToken();
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [status, setStatus] = useState("not_started");
@@ -32,12 +32,12 @@ const DiditVerificationGate = ({
       : callbackPath;
 
   const checkStatus = useCallback(async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       setLoading(false);
       return false;
     }
     try {
-      const res = await getIdentityStatus(cookies.access_token, context);
+      const res = await getIdentityStatus(accessToken, context);
       const data = res.data || {};
       setStatus(data.status || "not_started");
       if (data.verified) {
@@ -52,7 +52,7 @@ const DiditVerificationGate = ({
     } finally {
       setLoading(false);
     }
-  }, [cookies.access_token, context, onVerified]);
+  }, [accessToken, context, onVerified]);
 
   const stopPolling = () => {
     if (pollRef.current) {
@@ -75,13 +75,13 @@ const DiditVerificationGate = ({
   }, [checkStatus]);
 
   const startVerification = async () => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       toast.info("Please sign in first.");
       return;
     }
     setStarting(true);
     try {
-      const res = await createIdentitySession(cookies.access_token, {
+      const res = await createIdentitySession(accessToken, {
         context,
         callbackUrl,
       });

@@ -3,11 +3,11 @@ import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
+import { useAccessToken } from "../hooks/useAccessToken";
 import { IoRemoveCircle } from "react-icons/io5";
 import { formatMoney } from "../utils/formatMoney";
 
@@ -16,15 +16,15 @@ export default function Cart() {
     useContext(authContext);
   const { setCartProducts, cartProducts } = useContext(dataContext);
   const navigate = useNavigate();
-  const [cookies, removeCookie] = useCookies([]);
+  const accessToken = useAccessToken();
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -41,9 +41,9 @@ export default function Cart() {
       });
   };
   useEffect(() => {
-    if (!isCartOpen || !cookies.access_token) return;
+    if (!isCartOpen || !accessToken) return;
     GetCartProducts();
-  }, [isCartOpen, cookies.access_token]);
+  }, [isCartOpen, accessToken]);
 
   //   remove product--------------------------------------------------------
   const RemoveCartProduct = (productId) => {
@@ -58,7 +58,7 @@ export default function Cart() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -68,7 +68,7 @@ export default function Cart() {
       })
       .catch((error) => {
         // console.error(error);
-        toast.error(error.response.data.detail || "An error occurred while removing product from cart", {
+        toast.error(error.response?.data?.detail || "An error occurred while removing product from cart", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -76,6 +76,10 @@ export default function Cart() {
   };
   //   increment product--------------------------------------------------------
   const IncrementQty = (productId) => {
+    if (!accessToken) {
+      toast.error("Please sign in to update your cart", { position: "top-center" });
+      return;
+    }
     axios
       .post(
         `${
@@ -85,7 +89,7 @@ export default function Cart() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -95,7 +99,7 @@ export default function Cart() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.message || error.response.data.Status || "An error occurred", {
+        toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -103,6 +107,10 @@ export default function Cart() {
   };
   //   decrement product--------------------------------------------------------
   const DecrementQty = (productId) => {
+    if (!accessToken) {
+      toast.error("Please sign in to update your cart", { position: "top-center" });
+      return;
+    }
     axios
       .post(
         `${
@@ -112,7 +120,7 @@ export default function Cart() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -122,7 +130,7 @@ export default function Cart() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.message || error.response.data.Status || "An error occurred", {
+        toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
           position: "top-center",
           autoClose: 3000,
         });

@@ -21,6 +21,7 @@ import {
 } from "react-icons/fa";
 import { getOpenRequests } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -133,22 +134,23 @@ const PreviewCard = ({ req }) => {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function BidsLandingPage() {
+  const accessToken = useAccessToken();
   const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
 
   useEffect(() => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     setLoadingRequests(true);
-    getOpenRequests(cookies.access_token)
+    getOpenRequests(accessToken)
       .then((res) => {
         const data = res.data?.results ?? res.data ?? [];
         setRequests(Array.isArray(data) ? data.slice(0, 6) : []);
       })
       .catch(() => {})
       .finally(() => setLoadingRequests(false));
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -286,7 +288,7 @@ export default function BidsLandingPage() {
                 />
               ))}
             </div>
-          ) : !cookies.access_token ? (
+          ) : !accessToken ? (
             <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
               <FaGavel className="text-5xl text-white/15 mx-auto mb-4" />
               <p className="text-white/50 mb-2 text-base font-medium">Sign in to view open job requests</p>

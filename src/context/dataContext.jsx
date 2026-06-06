@@ -5,6 +5,7 @@ import { useContext } from "react";
 import axios from "axios";
 import { authContext } from "./authContext";
 import { toast } from "react-toastify";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 export const dataContext = createContext();
 
@@ -12,6 +13,7 @@ export const DataProvider = ({ children }) => {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const { search, setUser } = useContext(authContext);
+  const accessToken = useAccessToken();
 
   // UseStates -------------------------------------------------------------------
   let [searchedProducts, setSearchedProducts] = useState([]);
@@ -63,7 +65,7 @@ export const DataProvider = ({ children }) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -86,7 +88,7 @@ const getVendorProducts = async (shaqshop) => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     );

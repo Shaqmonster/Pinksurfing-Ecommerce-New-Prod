@@ -12,6 +12,7 @@ import {
   IoCheckmarkCircle,
 } from "react-icons/io5";
 import { FaBriefcase, FaStar, FaUsers, FaMoneyBillWave } from "react-icons/fa";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const PERKS = [
   { icon: <FaMoneyBillWave className="text-green-400" />, title: "Earn on Your Terms", desc: "Set your own prices and work schedule." },
@@ -20,6 +21,7 @@ const PERKS = [
 ];
 
 const GigWorkerSetup = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
@@ -43,7 +45,7 @@ const GigWorkerSetup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!cookies.access_token) {
+    if (!accessToken) {
       toast.error("Please sign in first.");
       navigate("/signin");
       return;
@@ -54,7 +56,7 @@ const GigWorkerSetup = () => {
     }
     try {
       setSubmitting(true);
-      await createGigWorkerProfile(cookies.access_token, {
+      await createGigWorkerProfile(accessToken, {
         bio: bio.trim(),
         profile_picture: profilePic,
       });

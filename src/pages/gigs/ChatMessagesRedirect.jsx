@@ -1,18 +1,16 @@
 import { useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import { authContext } from "../../context/authContext";
 import { getConversations } from "../../api/gigs";
-import { resolveChatAccessToken } from "../../utils/chatHelpers";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 /** Legacy /gighub/messages URLs → floating chat only (no full-page inbox). */
 const ChatMessagesRedirect = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [cookies] = useCookies(["access_token"]);
-  const { authToken, openChatWithConversation, openChatWithParticipantEmail, openChatInbox } =
+  const { openChatWithConversation, openChatWithParticipantEmail, openChatInbox } =
     useContext(authContext);
-  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
 
   useEffect(() => {
     if (!accessToken) {

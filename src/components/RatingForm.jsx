@@ -7,8 +7,10 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { IoCloseOutline, IoStar, IoStarOutline } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function RatingForm({ order }) {
+  const accessToken = useAccessToken();
   const { isRatingFormOpen, setIsRatingFormOpen } = useContext(authContext);
   const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ export default function RatingForm({ order }) {
 
   const handleReview = async (e) => {
     e.preventDefault();
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
@@ -41,7 +43,7 @@ export default function RatingForm({ order }) {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -56,7 +58,7 @@ export default function RatingForm({ order }) {
             {
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${cookies.access_token}`,
+                Authorization: `Bearer ${accessToken}`,
               },
             }
           );

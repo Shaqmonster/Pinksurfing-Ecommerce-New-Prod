@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useCookies } from "react-cookie";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IoLocationSharp,
@@ -9,6 +8,7 @@ import {
   IoOpenOutline,
   IoAirplaneSharp,
 } from "react-icons/io5";
+import { useAccessToken } from "../hooks/useAccessToken";
 import {
   FaTruckMoving,
   FaBoxOpen,
@@ -79,14 +79,14 @@ const formatDeliveryDate = (isoString) => {
  *  - "View on Carrier Website" fallback button
  */
 const TrackingTimeline = ({ orderItemId }) => {
-  const [cookies] = useCookies(["access_token"]);
+  const accessToken = useAccessToken();
   const [tracking, setTracking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchTracking = async () => {
-      if (!orderItemId || !cookies.access_token) {
+      if (!orderItemId || !accessToken) {
         setLoading(false);
         return;
       }
@@ -99,7 +99,7 @@ const TrackingTimeline = ({ orderItemId }) => {
           {
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${cookies.access_token}`,
+              Authorization: `Bearer ${accessToken}`,
             },
           }
         );
@@ -118,7 +118,7 @@ const TrackingTimeline = ({ orderItemId }) => {
     };
 
     fetchTracking();
-  }, [orderItemId, cookies.access_token]);
+  }, [orderItemId, accessToken]);
 
   if (loading) {
     return (

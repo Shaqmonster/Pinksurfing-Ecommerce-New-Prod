@@ -40,6 +40,7 @@ import {
 } from "../../api/buyerRequests";
 import { toast } from "react-toastify";
 import BidsNavBar from "../../components/BidsNavBar";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -1078,10 +1079,11 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function BidRequestDetail() {
+  const accessToken = useAccessToken();
   const { id: requestId } = useParams();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
-  const token = cookies.access_token;
+  const token = accessToken;
 
   // Data
   const [request, setRequest] = useState(null);

@@ -9,6 +9,7 @@ import { dataContext } from "../context/dataContext";
 import { Fragment } from "react";
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useAccessToken } from "../hooks/useAccessToken";
 import {
   ChevronDownIcon,
   FunnelIcon,
@@ -75,6 +76,7 @@ function classNames(...classes) {
 
 // const ShoppingMall = () => {
 export default function Filter() {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [cookies, removeCookie] = useCookies([]);
@@ -93,7 +95,7 @@ export default function Filter() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )

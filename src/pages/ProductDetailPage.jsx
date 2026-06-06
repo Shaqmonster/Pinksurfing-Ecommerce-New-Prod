@@ -21,7 +21,7 @@ import parse from "html-react-parser";
 import { data } from "autoprefixer";
 import Stars from '../components/Stars'
 import { formatMoney } from "../utils/formatMoney";
-import { resolveAccessToken } from "../utils/authSession";
+import { useAccessToken } from "../hooks/useAccessToken";
 import { formatDistanceToNow } from "date-fns";
 import {
   FaBed,
@@ -145,13 +145,12 @@ const ProductDetailPage = () => {
     isProfileOpen,
     currency,
     user,
-    authToken,
     openChatWithConversation,
     setIsSingleOrderFormOpen,
     setSingleOrderProduct,
   } = useContext(authContext);
 
-  const accessToken = resolveAccessToken(authToken, cookies.access_token);
+  const accessToken = useAccessToken();
   const isInCart = useMemo(
     () => cartContainsProduct(cartProducts, product?.id),
     [cartProducts, product?.id]
@@ -756,7 +755,7 @@ const ProductDetailPage = () => {
     return doc.body.textContent || "";
   }
   const handleWishlistClick = async () => {
-    if (!user) {
+    if (!accessToken) {
       toast.error("You are not Signed In", {
         position: "top-right",
       });
@@ -1720,7 +1719,7 @@ const ProductDetailPage = () => {
                             {!isDealClosed && product.quantity > 0 && (
                               <button
                                 onClick={() => {
-                                  if (!user) {
+                                  if (!accessToken) {
                                     toast.error("You are not Signed In", { position: "top-right" });
                                     sessionStorage.setItem("redirectAfterLogin", window.location.href);
                                     setIsProfileOpen(true);

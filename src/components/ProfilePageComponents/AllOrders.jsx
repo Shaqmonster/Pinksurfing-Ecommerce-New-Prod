@@ -15,18 +15,18 @@ import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import CancelDialog from "../CancelDialog";
 import { formatMoney } from "../../utils/formatMoney";
-import { resolveAccessToken } from "../../utils/authSession";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 export default function AllOrders() {
+  const accessToken = useAccessToken();
     const { currency, authToken, setIsSingleOrderFormOpen, setSingleOrderProduct, setIsProfileOpen } =
         useContext(authContext);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [cookies] = useCookies(["access_token"]);
-    const accessToken = resolveAccessToken(authToken, cookies.access_token);
-
+    
     const [isOpen, setIsOpen] = useState(false);
     const [deleteOrderId, setDeleteOrderId] = useState("");
 

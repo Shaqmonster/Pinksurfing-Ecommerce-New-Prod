@@ -12,6 +12,7 @@ import {
   isSsoLoggedOutGlobally,
   persistAuthSession,
   refreshAccessToken,
+  setRuntimeAuthToken,
   signOut,
   syncReactAuthCookies,
 } from "../utils/authSession";
@@ -66,6 +67,7 @@ export const AuthProvider = ({ children }) => {
 
   const clearSession = useCallback(() => {
     clearClientAuthStorage(setCookie);
+    setRuntimeAuthToken("");
     setAuthToken("");
     setUser(null);
     lastProfileTokenRef.current = "";
@@ -124,6 +126,7 @@ export const AuthProvider = ({ children }) => {
       profileLoadRef.current = (async () => {
         persistAuthSession(access, refresh);
         syncReactAuthCookies(access, refresh, setCookie);
+        setRuntimeAuthToken(access);
         setAuthToken(access);
         await hydrateUser(access);
         profileLoadRef.current = null;
@@ -193,7 +196,7 @@ export const AuthProvider = ({ children }) => {
   }, [isDarkMode]);
 
   useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
+    const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
@@ -206,7 +209,9 @@ export const AuthProvider = ({ children }) => {
         try {
           const newAccess = await refreshAccessToken();
           syncReactAuthCookies(newAccess, getRefreshToken(), setCookie);
+          setRuntimeAuthToken(newAccess);
           setAuthToken(newAccess);
+          originalRequest.headers = originalRequest.headers ?? {};
           originalRequest.headers.Authorization = `Bearer ${newAccess}`;
           return axios(originalRequest);
         } catch {
@@ -215,7 +220,10 @@ export const AuthProvider = ({ children }) => {
         }
       }
     );
-    return () => axios.interceptors.response.eject(interceptor);
+
+    return () => {
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, [clearSession, setCookie]);
 
   useEffect(() => {

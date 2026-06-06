@@ -19,8 +19,10 @@ import { useInAppWallet } from "../../context/inAppWalletContext";
 // Components
 import InAppWalletBalanceCard from "../gigs/InAppWalletBalanceCard";
 import WalletTxHistoryCard from "../gigs/WalletTxHistoryCard";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const ProfileUserWallet = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { address } = useInAppWallet();
@@ -44,10 +46,10 @@ const ProfileUserWallet = () => {
 
   // Fetch Manual Deposit Addresses
   const getDepositAddress = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     try {
       const res = await axios.get("https://auth.pinksurfing.com/api/crypto/wallet/", {
-        headers: { Authorization: `Bearer ${cookies.access_token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data = res.data.data;
       if (asset === "eth") setWalletAddress(data.eth_deposit);
@@ -61,7 +63,7 @@ const ProfileUserWallet = () => {
 
   useEffect(() => {
     getDepositAddress();
-  }, [cookies.access_token, asset]);
+  }, [accessToken, asset]);
 
   return (
     <div className="min-h-screen bg-[#0E0F13] text-gray-100 py-8 px-4 font-sen">

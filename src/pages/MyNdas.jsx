@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const BASE = import.meta.env.VITE_SERVER_URL;
 
@@ -63,9 +64,10 @@ function fmt(iso) {
 }
 
 export default function MyNdas() {
+  const accessToken = useAccessToken();
   const [cookies] = useCookies(["access_token"]);
   const navigate   = useNavigate();
-  const token      = cookies.access_token;
+  const token      = accessToken;
 
   const [ndas, setNdas]             = useState([]);
   const [loading, setLoading]       = useState(true);

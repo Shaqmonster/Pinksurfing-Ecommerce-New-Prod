@@ -31,6 +31,7 @@ import {
 } from "react-icons/fa";
 import { getOpenRequests } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 // ─── Filter Data (from bidding/src/components/marketplace/filterData.ts) ───────
 
@@ -656,6 +657,7 @@ const MobileFilterDrawer = ({ isOpen, onClose, children }) => (
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function BidsMarketplace() {
+  const accessToken = useAccessToken();
   const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
 
@@ -673,23 +675,23 @@ export default function BidsMarketplace() {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
     }
-  }, [cookies.access_token, navigate]);
+  }, [accessToken, navigate]);
 
   useEffect(() => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     setLoading(true);
     setError(false);
-    getOpenRequests(cookies.access_token)
+    getOpenRequests(accessToken)
       .then((res) => {
         const data = res.data?.results ?? res.data ?? [];
         setRequests(Array.isArray(data) ? data : []);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const handleFilterChange = useCallback((group, values) => {
     setFilters((prev) => ({ ...prev, [group]: values }));

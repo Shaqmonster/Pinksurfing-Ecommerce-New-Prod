@@ -8,8 +8,10 @@ import { toast } from "react-toastify";
 import { XMarkIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { Country, State, City } from "country-state-city";
 import { dataContext } from "../context/dataContext";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function AddressForm() {
+  const accessToken = useAccessToken();
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
@@ -69,7 +71,7 @@ export default function AddressForm() {
 
   const AddAddress = async (e) => {
     e.preventDefault();
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
@@ -88,7 +90,7 @@ export default function AddressForm() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )

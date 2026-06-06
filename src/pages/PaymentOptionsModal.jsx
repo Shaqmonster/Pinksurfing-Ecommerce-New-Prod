@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { XMarkIcon, ShieldCheckIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import { formatMoney } from "../utils/formatMoney";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -15,7 +15,7 @@ const PaymentOptionsModal = ({
   cartProducts,
   singleOrderProduct,
 }) => {
-  const [cookies] = useCookies(["access_token"]);
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [loadingVendorId, setLoadingVendorId] = useState(null);
 
@@ -59,7 +59,7 @@ const PaymentOptionsModal = ({
   }, [cartProducts, singleOrderProduct]);
 
   const handleVendorPayment = async (vendorId) => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
@@ -71,7 +71,7 @@ const PaymentOptionsModal = ({
         {},
         {
           headers: {
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );

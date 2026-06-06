@@ -8,9 +8,11 @@ import Header from "./Header";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
+import { useAccessToken } from "../hooks/useAccessToken";
 // import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 
 const UserOnSiteWallet = () => {
+  const accessToken = useAccessToken();
   const { isUserWalletOpen, isDarkMode, setIsUserWalletOpen } =
     useContext(authContext);
 
@@ -46,15 +48,15 @@ const UserOnSiteWallet = () => {
   }
 
   const GetWalletAddress = async () => {
-    console.log(cookies.access_token);
-    if (!cookies.access_token) {
+    console.log(accessToken);
+    if (!accessToken) {
       navigate("/signin");
     }
     axios
       .get("https://auth.pinksurfing.com/api/crypto/wallet/", {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {

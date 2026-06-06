@@ -7,7 +7,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "./Loader";
+import { useAccessToken } from "../hooks/useAccessToken";
 export default function ProfilePopup() {
+  const accessToken = useAccessToken();
   const {
     isProfilePopupOpen,
     isDarkMode,
@@ -87,12 +89,12 @@ export default function ProfilePopup() {
   };
 
   const GetProfile = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -104,13 +106,13 @@ export default function ProfilePopup() {
   };
 
   useEffect(() => {
-    if (!isProfilePopupOpen || !cookies.access_token) return;
+    if (!isProfilePopupOpen || !accessToken) return;
     GetProfile();
-  }, [isProfilePopupOpen, cookies.access_token]);
+  }, [isProfilePopupOpen, accessToken]);
 
   const UpdateProfile = async (e) => {
     e.preventDefault();
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
@@ -130,7 +132,7 @@ export default function ProfilePopup() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );

@@ -22,6 +22,7 @@ import {
 } from "react-icons/io5";
 import { FaBriefcase, FaPlus } from "react-icons/fa";
 import DiditVerificationGate from "../../components/DiditVerificationGate";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const TIERS = ["basic", "standard", "premium"];
 const TIER_LABELS = { basic: "Basic", standard: "Standard", premium: "Premium" };
@@ -39,6 +40,7 @@ const emptyPkg = (tier) => ({
 const STEPS = ["Details", "Packages", "Media & Publish"];
 
 const CreateGigPage = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
@@ -204,24 +206,24 @@ const CreateGigPage = () => {
 
       if (editId) {
         // Update existing gig using JSON (handles nested packages correctly)
-        await updateGigJson(cookies.access_token, editId, {
+        await updateGigJson(accessToken, editId, {
           ...gigDetails,
           packages: activePkgs,
         });
       } else {
         // Create basic gig
-        const res = await createGig(cookies.access_token, gigDetails);
+        const res = await createGig(accessToken, gigDetails);
         finalGigId = res.data.id;
 
         // Add Packages sequentially for creation
         for (const p of activePkgs) {
-          await addGigPackage(cookies.access_token, finalGigId, p);
+          await addGigPackage(accessToken, finalGigId, p);
         }
       }
 
       // Add NEW Media files sequentially
       for (let i = 0; i < mediaFiles.length; i++) {
-        await addGigMedia(cookies.access_token, finalGigId, mediaFiles[i], i === 0 && !editId);
+        await addGigMedia(accessToken, finalGigId, mediaFiles[i], i === 0 && !editId);
       }
 
       toast.success(editId ? "Gig updated successfully!" : "Gig published successfully!");

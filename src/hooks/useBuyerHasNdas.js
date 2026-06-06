@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useCookies } from "react-cookie";
+import { useAccessToken } from "./useAccessToken";
 
 const BASE = import.meta.env.VITE_SERVER_URL || "";
 
@@ -9,11 +10,12 @@ const BASE = import.meta.env.VITE_SERVER_URL || "";
  * (same visibility rules as My NDAs page — excludes pending_payment).
  */
 export function useBuyerHasNdas() {
+  const accessToken = useAccessToken();
   const [cookies] = useCookies(["access_token"]);
   const [hasNdas, setHasNdas] = useState(false);
 
   useEffect(() => {
-    const raw = cookies.access_token;
+    const raw = accessToken;
     const token = typeof raw === "string" ? raw.replace(/"/g, "") : "";
     if (!token || !BASE) {
       setHasNdas(false);
@@ -36,7 +38,7 @@ export function useBuyerHasNdas() {
     return () => {
       cancelled = true;
     };
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   return hasNdas;
 }

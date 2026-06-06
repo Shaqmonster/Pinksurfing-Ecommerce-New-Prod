@@ -29,6 +29,7 @@ import parse from "html-react-parser";
 import { formatMoney } from "../../utils/formatMoney";
 import YouMightAlsoLike from "./YouMightAlsoLike";
 import ProductDetailReviewSection from "./ProductDetail-ReviewSection";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const CSS = `
   .biz-root{--pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.12);--pink-mid:rgba(240,49,138,.10);--pink-border:rgba(240,49,138,.28);--bg:#0d0d10;--surface:#141418;--surface-2:#1c1c22;--surface-3:#232329;--border:#2a2a33;--border-2:#36363f;--text:#f0f0f4;--text-2:#b0b0c0;--text-3:#66667a;--green:#34d399;--green-bg:rgba(52,211,153,.10);--green-border:rgba(52,211,153,.22);--amber:#fbbf24;--amber-bg:rgba(251,191,36,.10);--amber-border:rgba(251,191,36,.22);--blue:#60a5fa;--blue-bg:rgba(96,165,250,.10);--blue-border:rgba(96,165,250,.22);--red:#f87171;--red-bg:rgba(248,113,113,.10);--red-border:rgba(248,113,113,.22);--indigo:#a78bfa;--indigo-bg:rgba(167,139,250,.10);--indigo-border:rgba(167,139,250,.22);}
@@ -510,6 +511,7 @@ const BusinessListingDetail = ({
   ]);
 
   const openNdaModal = () => {
+  const accessToken = useAccessToken();
     if (isListingOwner || cannotStartNewNda) return;
     setNdaError("");
     setNdaModalOpen(true);
@@ -667,7 +669,7 @@ const BusinessListingDetail = ({
   const isSaved = !!wishlistProducts?.find((i) => i.id === product.id);
 
   const handleWishlistClick = useCallback(async () => {
-    if (!user) {
+    if (!accessToken) {
       toast.error("Please sign in to save listings", { position: "top-right" });
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       navigate("/signin");
@@ -689,7 +691,7 @@ const BusinessListingDetail = ({
         ? `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/remove/${product.id}`
         : `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/add/${product.id}`;
       await axios.post(url, {}, {
-        headers: { Authorization: `Bearer ${cookies.access_token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       toast.success(wasInWishlist ? "Removed from wishlist" : "Saved to wishlist", { position: "top-right" });
     } catch (err) {

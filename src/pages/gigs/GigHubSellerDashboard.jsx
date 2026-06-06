@@ -12,7 +12,6 @@ import {
   deleteGig,
   gigUrl,
 } from "../../api/gigs";
-import { resolveAccessToken } from "../../utils/authSession";
 import {
   IoStarSharp,
   IoTimeOutline,
@@ -28,6 +27,7 @@ import {
 } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
 import { FiCreditCard } from "react-icons/fi";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const STATUS_CONFIG = {
   pending_requirements: {
@@ -59,11 +59,11 @@ const STATUS_CONFIG = {
 
 /** Seller studio — payouts, gigs, and orders to fulfill (separate from buyer dashboard). */
 const GigHubSellerDashboard = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { user, authToken, openChatInbox } = useContext(authContext);
-  const accessToken = resolveAccessToken(authToken, cookies.access_token);
-
+  
   const [workerProfile, setWorkerProfile] = useState(null);
   const [allOrders, setAllOrders] = useState([]);
   const [myGigs, setMyGigs] = useState([]);

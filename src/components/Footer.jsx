@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import { authContext } from "../context/authContext";
 import { useCookies } from "react-cookie";
 import { FaAppStore , FaGooglePlay } from "react-icons/fa";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const Footer = () => {
+  const accessToken = useAccessToken();
   const [cookies] = useCookies([]);
   const FooterLinks = [
     {
@@ -15,8 +17,8 @@ const Footer = () => {
       list: [
         {
           id: "1.1",
-          name: cookies.access_token ? "My Account" : "Login",
-          link: cookies.access_token ? "/" : "/signin",
+          name: accessToken ? "My Account" : "Login",
+          link: accessToken ? "/" : "/signin",
         },
         {
           id: "1.2",
@@ -187,7 +189,7 @@ const Footer = () => {
                     .filter((e) => !(user?.is_vendor && e.id === "2.4"))
                     .map((e, idx) => {
                       let link = e.link;
-                      if (e.id === "2.2" && cookies.access_token) {
+                      if (e.id === "2.2" && accessToken) {
                         link = "#";
                       }
                       return (
@@ -196,7 +198,7 @@ const Footer = () => {
                           key={idx}
                           onClick={(event) => {
                             if (e.id == "2.2") {
-                              if (!cookies.access_token) {
+                              if (!accessToken) {
                                 navigate("/signup");
                               } else {
                                 event.preventDefault();
@@ -209,7 +211,7 @@ const Footer = () => {
                             }
                             if (e.id === "1.1") {
                               event.preventDefault();
-                              if (cookies.access_token) {
+                              if (accessToken) {
                                 setIsProfilePopupOpen(true);
                               }
                             }

@@ -16,13 +16,13 @@ import {
   sendMessage,
 } from "../api/gigs";
 import { authContext } from "../context/authContext";
+import { useAccessToken } from "../hooks/useAccessToken";
 import {
   CHAT_FILE_ACCEPT,
   buildChatWebSocketUrl,
   fileNameFromUrl,
   getEmailFromToken,
   presenceLabel,
-  resolveChatAccessToken,
   sumUnreadCount,
 } from "../utils/chatHelpers";
 
@@ -34,9 +34,8 @@ const ChatFloatingPanel = ({
   pendingParticipantEmail,
   clearPendingParticipantEmail,
 }) => {
-  const [cookies] = useCookies(["access_token"]);
-  const { user, authToken } = useContext(authContext);
-  const accessToken = resolveChatAccessToken(authToken, cookies.access_token);
+  const { user } = useContext(authContext);
+  const accessToken = useAccessToken();
   const [conversations, setConversations] = useState([]);
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);

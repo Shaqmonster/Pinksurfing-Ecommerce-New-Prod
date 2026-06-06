@@ -10,8 +10,10 @@ import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { formatMoney } from "../utils/formatMoney";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function Wishlist() {
+  const accessToken = useAccessToken();
   const { isWishlistOpen, isDarkMode, setIsWishlistOpen } =
     useContext(authContext);
   const { setCartProducts } = useContext(dataContext);
@@ -21,12 +23,12 @@ export default function Wishlist() {
   const [cookies, removeCookie] = useCookies([]);
   const [subTotal, setSubTotal] = useState(0);
   const GetWishlist = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -42,12 +44,12 @@ export default function Wishlist() {
   // const additionalPrice = 2;
   // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((response) => {
@@ -59,11 +61,11 @@ export default function Wishlist() {
       });
   };
   useEffect(() => {
-    if (!isWishlistOpen || !cookies.access_token) return;
+    if (!isWishlistOpen || !accessToken) return;
     GetWishlist();
-  }, [isWishlistOpen, cookies.access_token]);
+  }, [isWishlistOpen, accessToken]);
   const AddtoCart = (productId) => {
-    // console.log(cookies.access_token);
+    // console.log(accessToken);
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL
@@ -72,7 +74,7 @@ export default function Wishlist() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
@@ -94,7 +96,7 @@ export default function Wishlist() {
   //   remove product--------------------------------------------------------
   const RemoveWishlistProduct = (productId) => {
     // console.log(productId);
-    // console.log(cookies.access_token);
+    // console.log(accessToken);
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL
@@ -103,7 +105,7 @@ export default function Wishlist() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )

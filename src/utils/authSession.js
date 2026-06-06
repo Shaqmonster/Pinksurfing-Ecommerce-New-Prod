@@ -8,6 +8,21 @@ const AUTH_LOGOUT_URL = "https://auth.pinksurfing.com/api/logout/";
 const ACCESS_SKEW_SECONDS = 60;
 
 let ensureSessionInflight = null;
+/** In-memory token from React auth context (synced on login/logout/refresh). */
+let runtimeAuthToken = "";
+
+export function setRuntimeAuthToken(token) {
+  runtimeAuthToken = token ? String(token).replaceAll('"', "") : "";
+}
+
+/** Single resolver for API calls: runtime context → cookie → localStorage. */
+export function getResolvedAccessToken() {
+  return (
+    resolveAccessToken(runtimeAuthToken, getCookie("access_token")) ||
+    getAccessToken() ||
+    ""
+  );
+}
 
 export function decodeJwt(token) {
   if (!token) return null;
@@ -101,7 +116,9 @@ export function getAccessToken() {
 
 /** Prefer auth context, then react-cookie, then localStorage SSO session. */
 export function resolveAccessToken(authToken, cookieToken) {
-  return authToken || cookieToken || getAccessToken() || "";
+  const token =
+    authToken || cookieToken || getCachedAccessToken() || getCookie("access_token") || "";
+  return token ? String(token).replaceAll('"', "") : "";
 }
 
 export function getRefreshToken() {
@@ -123,6 +140,7 @@ export function persistAuthSession(access, refresh) {
   clearSsoLoggedOutFlag();
   localStorage.setItem("access_token", access);
   localStorage.removeItem("access");
+  setRuntimeAuthToken(access);
 
   if (refresh) {
     localStorage.setItem("refresh_token", refresh);
@@ -193,6 +211,7 @@ export function invalidateLocalSession(setCookie) {
 
 export function clearAuthStorage() {
   if (typeof window === "undefined") return;
+  setRuntimeAuthToken("");
   ["access_token", "refresh_token", "user_id", "access", "refresh"].forEach((k) =>
     localStorage.removeItem(k)
   );
@@ -337,10 +356,20 @@ export async function signOut(accessToken, setCookie) {
 }
 
 const API_BASE = import.meta.env.VITE_SERVER_URL;
+const AUTH_API_HOST = "auth.pinksurfing.com";
 
 export function isEcommerceApiUrl(url) {
   if (!url || !API_BASE) return false;
   return url.startsWith(API_BASE) || url.includes("ecommerceapi.pinksurfing.com");
+}
+
+/** Attach Bearer token on our API hosts (ecommerce + SSO auth). */
+export function shouldAttachAuthHeader(url) {
+  if (!url || typeof url !== "string") return false;
+  if (API_BASE && url.startsWith(API_BASE)) return true;
+  if (url.includes("ecommerceapi.pinksurfing.com")) return true;
+  if (url.includes(AUTH_API_HOST)) return true;
+  return false;
 }
 
 export async function fetchCustomerProfile(accessToken) {

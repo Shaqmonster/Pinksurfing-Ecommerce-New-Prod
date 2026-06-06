@@ -11,8 +11,10 @@ import Loader from "../Loader";
 import { FaEdit, FaCopy, FaCheck } from 'react-icons/fa';
 import { getAccessToken } from "../../utils/authSession";
 import { storeUrl, STOREFRONT_BASE } from "../../utils/envUrls";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 export default function ProfileDetails() {
+  const accessToken = useAccessToken();
     const [isEditing, setIsEditing] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -128,7 +130,7 @@ export default function ProfileDetails() {
 
     const UpdateProfile = async (e) => {
         e.preventDefault();
-        if (!cookies.access_token) {
+        if (!accessToken) {
             navigate("/signin");
             return;
         }
@@ -148,7 +150,7 @@ export default function ProfileDetails() {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${cookies.access_token}`,
+                        Authorization: `Bearer ${accessToken}`,
                     },
                 }
             );

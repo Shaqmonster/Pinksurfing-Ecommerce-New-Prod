@@ -15,6 +15,7 @@ import {
 import { FaGavel, FaDollarSign } from "react-icons/fa";
 import { getMySubmittedBids, withdrawBidOffer } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
+import { useAccessToken } from "../../hooks/useAccessToken";
 
 const BID_STATUS_STYLES = {
   PENDING: {
@@ -180,6 +181,7 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
 };
 
 export default function MyOffersPage() {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const [bids, setBids] = useState([]);
@@ -188,10 +190,10 @@ export default function MyOffersPage() {
   const [filter, setFilter] = useState("all");
 
   const fetchBids = async () => {
-    if (!cookies.access_token) return;
+    if (!accessToken) return;
     try {
       setLoading(true);
-      const res = await getMySubmittedBids(cookies.access_token);
+      const res = await getMySubmittedBids(accessToken);
       const data = res.data?.results ?? res.data ?? [];
       setBids(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -203,18 +205,18 @@ export default function MyOffersPage() {
   };
 
   useEffect(() => {
-    if (!cookies.access_token) {
+    if (!accessToken) {
       navigate("/signin");
       return;
     }
     fetchBids();
-  }, [cookies.access_token]);
+  }, [accessToken]);
 
   const handleWithdraw = async (bidId) => {
     if (!window.confirm("Withdraw this offer? This cannot be undone.")) return;
     try {
       setWithdrawing(bidId);
-      await withdrawBidOffer(cookies.access_token, bidId);
+      await withdrawBidOffer(accessToken, bidId);
       toast.success("Offer withdrawn.");
       setBids((prev) => prev.filter((b) => b.id !== bidId));
     } catch {

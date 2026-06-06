@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { IoClose } from "react-icons/io5";
 import { useCookies } from "react-cookie";
 import { formatMoney } from "../utils/formatMoney";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 const CryptoPaymentModal = ({
   order_id,
@@ -15,6 +16,7 @@ const CryptoPaymentModal = ({
   singleOrderProduct,
   closePaymentModal,
 }) => {
+  const accessToken = useAccessToken();
   const [walletAddresses, setWalletAddresses] = useState({
     eth: "",
     btc: "",
@@ -179,7 +181,7 @@ const CryptoPaymentModal = ({
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );

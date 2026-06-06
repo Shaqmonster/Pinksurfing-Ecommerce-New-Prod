@@ -22,6 +22,7 @@ import ProductCard from "../components/ProductCard";
 import StoreCard from "../components/StoreCard";
 import PageSEO from "../components/PageSEO";
 import { HOME_FAQ, HOME_META, homeJsonLd } from "../constants/homeSeo";
+import { useAccessToken } from "../hooks/useAccessToken";
 
 
 const responsive = {
@@ -32,6 +33,7 @@ const responsive = {
 
 
 const Home = () => {
+  const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies([]);
   const { setCategory, isDarkMode, user, currency } = useContext(authContext);
@@ -105,7 +107,7 @@ const Home = () => {
   // Handle My Store click
   const handleMyStoreClick = () => {
     // Check if user is logged in
-    if (!user || !cookies.access_token) {
+    if (!accessToken) {
       toast.info("Please sign in to access your store");
       navigate("/signin");
       return;
@@ -188,7 +190,7 @@ const Home = () => {
   const handleVendorRegistration = async (e) => {
     e.preventDefault();
 
-    if (!cookies.access_token) {
+    if (!accessToken) {
       toast.error("Please sign in first");
       navigate("/signin");
       return;
@@ -219,7 +221,7 @@ const Home = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -311,7 +313,7 @@ const Home = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${cookies.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       )
