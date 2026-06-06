@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useContext } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
@@ -30,6 +30,7 @@ import { formatMoney } from "../../utils/formatMoney";
 import YouMightAlsoLike from "./YouMightAlsoLike";
 import ProductDetailReviewSection from "./ProductDetail-ReviewSection";
 import { useAccessToken } from "../../hooks/useAccessToken";
+import { authContext } from "../../context/authContext";
 
 const CSS = `
   .biz-root{--pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.12);--pink-mid:rgba(240,49,138,.10);--pink-border:rgba(240,49,138,.28);--bg:#0d0d10;--surface:#141418;--surface-2:#1c1c22;--surface-3:#232329;--border:#2a2a33;--border-2:#36363f;--text:#f0f0f4;--text-2:#b0b0c0;--text-3:#66667a;--green:#34d399;--green-bg:rgba(52,211,153,.10);--green-border:rgba(52,211,153,.22);--amber:#fbbf24;--amber-bg:rgba(251,191,36,.10);--amber-border:rgba(251,191,36,.22);--blue:#60a5fa;--blue-bg:rgba(96,165,250,.10);--blue-border:rgba(96,165,250,.22);--red:#f87171;--red-bg:rgba(248,113,113,.10);--red-border:rgba(248,113,113,.22);--indigo:#a78bfa;--indigo-bg:rgba(167,139,250,.10);--indigo-border:rgba(167,139,250,.22);}
@@ -349,6 +350,8 @@ const BusinessListingDetail = ({
   setDisputeModalOpen,
 }) => {
   const navigate = useNavigate();
+  const accessToken = useAccessToken();
+  const { setIsProfileOpen } = useContext(authContext);
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [activeImage, setActiveImage] = useState(
@@ -412,8 +415,7 @@ const BusinessListingDetail = ({
   const fetchListingDocuments = useCallback(async () => {
     const pid = product?.id ?? productId;
     if (!pid || isListingOwner) return;
-    const raw = cookies?.access_token;
-    const token = typeof raw === "string" ? raw.replace(/"/g, "") : "";
+    const token = accessToken;
     if (!token) return;
     try {
       const res = await axios.get(
@@ -424,13 +426,12 @@ const BusinessListingDetail = ({
     } catch {
       setListingDocuments([]);
     }
-  }, [product?.id, productId, cookies?.access_token, isListingOwner]);
+  }, [product?.id, productId, accessToken, isListingOwner]);
 
   const refreshNdaState = useCallback(async () => {
     const pid = product?.id ?? productId;
     if (!pid || isListingOwner) return;
-    const raw = cookies?.access_token;
-    const token = typeof raw === "string" ? raw.replace(/"/g, "") : "";
+    const token = accessToken;
     if (!token || !user?.id) return;
 
     try {
@@ -458,7 +459,7 @@ const BusinessListingDetail = ({
     } catch {
       /* ignore */
     }
-  }, [product?.id, productId, user?.id, cookies?.access_token, isListingOwner, fetchListingDocuments]);
+  }, [product?.id, productId, user?.id, accessToken, isListingOwner, fetchListingDocuments]);
 
   useEffect(() => {
     refreshNdaState();
@@ -511,8 +512,13 @@ const BusinessListingDetail = ({
   ]);
 
   const openNdaModal = () => {
-  const accessToken = useAccessToken();
     if (isListingOwner || cannotStartNewNda) return;
+    if (!user?.id || !accessToken) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      setIsProfileOpen(true);
+      toast.info("Please sign in to sign the NDA.", { position: "top-right" });
+      return;
+    }
     setNdaError("");
     setNdaModalOpen(true);
   };

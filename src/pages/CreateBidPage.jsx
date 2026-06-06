@@ -615,7 +615,6 @@ const ScopeAIStep = ({ data, onUpdate }) => {
   const [tone, setTone] = useState("concise");
 
   const handleGenerate = () => {
-  const accessToken = useAccessToken();
     setGenerating(true);
     setTimeout(() => {
       const mock = `${data.subcategory || data.category || "General"} project scope:\n\n\u2022 Full assessment and preparation of work area\n\u2022 Removal of existing materials as needed\n\u2022 Supply and installation of new materials per specifications\n\u2022 Clean-up and final inspection\n\u2022 1-year workmanship warranty included\n\nEstimated complexity: Medium\nLikely hidden costs: Permit fees, material upgrades, structural surprises behind walls.`;
