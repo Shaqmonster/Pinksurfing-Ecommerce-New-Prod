@@ -6,6 +6,8 @@ import Cookies from "js-cookie";
 import { dataContext } from "../context/dataContext.jsx";
 import OtpInput from "react-otp-input";
 import axios from "axios";
+import { IoEyeSharp } from "react-icons/io5";
+import { IoIosEyeOff } from "react-icons/io";
 import PasswordRequirementsFeedback from "../components/PasswordRequirementsFeedback";
 import { isPasswordValid } from "../utils/djangoPasswordValidation";
 
@@ -140,16 +142,35 @@ const ForgotPassword = () => {
                     onChange={setOtp}
                     numInputs={6}
                     containerStyle={{
-                      color: "black",
                       display: "flex",
-                      justifyContent: "space-evenly",
+                      justifyContent: "space-between",
+                      gap: "10px",
                     }}
                     inputStyle={{
                       width: "40px",
+                      height: "40px",
+                      borderRadius: "4px",
+                      backgroundColor: "#24194b",
+                      border: "none",
+                      outline: "none",
+                      color: "#ffffff",
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      textAlign: "center",
                     }}
                     shouldAutoFocus={true}
-                    renderSeparator={<span className="  "> </span>}
-                    renderInput={(props) => <input {...props} />}
+                    renderSeparator={<span className="text-white/40">-</span>}
+                    renderInput={(props) => (
+                      <input
+                        {...props}
+                        style={{
+                          ...props.style,
+                          color: "#ffffff",
+                          WebkitTextFillColor: "#ffffff",
+                          caretColor: "#ffffff",
+                        }}
+                      />
+                    )}
                   />
                   <div className="flex flex-col mt-2">
                     <label
@@ -158,17 +179,33 @@ const ForgotPassword = () => {
                     >
                       New Password
                     </label>
-                    <input
-                      type="password"
-                      placeholder="Enter New Password"
-                      name="password"
-                      id="password"
-                      value={password}
-                      onChange={handleOnChange}
-                      onFocus={() => setPasswordFocused(true)}
-                      onBlur={() => setPasswordFocused(false)}
-                      className="border-none text-black outline-none py-2 px-3 rounded-md"
-                    />
+                    <div className="relative">
+                      <input
+                        type={passwordHidden ? "password" : "text"}
+                        placeholder="Enter New Password"
+                        name="password"
+                        id="password"
+                        value={password}
+                        onChange={handleOnChange}
+                        onFocus={() => setPasswordFocused(true)}
+                        onBlur={() => setPasswordFocused(false)}
+                        className="border-none text-black outline-none w-full py-2 px-3 pr-10 rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setPasswordHidden(!passwordHidden)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-700"
+                        aria-label={
+                          passwordHidden ? "Show password" : "Hide password"
+                        }
+                      >
+                        {passwordHidden ? (
+                          <IoEyeSharp size={20} />
+                        ) : (
+                          <IoIosEyeOff size={20} />
+                        )}
+                      </button>
+                    </div>
                     <PasswordRequirementsFeedback
                       password={password}
                       userContext={{
