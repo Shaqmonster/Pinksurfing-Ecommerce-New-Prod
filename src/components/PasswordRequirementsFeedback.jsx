@@ -52,10 +52,10 @@ const PasswordRequirementsFeedback = ({
 
   return (
     <div
-      className="mt-2 rounded-md border border-white/10 bg-[#1a0f3a]/80 px-3 py-2.5"
+      className="mt-2 rounded-md border border-white/15 bg-[#24194b] px-3 py-2.5"
       aria-live="polite"
     >
-      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-white/60">
+      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-white/70">
         Password requirements
       </p>
       <ul className="space-y-1">
@@ -63,7 +63,7 @@ const PasswordRequirementsFeedback = ({
           <li
             key={rule.id}
             className={`flex items-start gap-2 text-xs leading-snug ${
-              rule.passed ? "text-emerald-300" : "text-white/70"
+              rule.passed ? "text-emerald-300" : "text-pink-200"
             }`}
           >
             <RuleIcon passed={rule.passed} pending={false} />

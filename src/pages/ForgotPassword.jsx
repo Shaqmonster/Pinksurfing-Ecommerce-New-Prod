@@ -24,6 +24,8 @@ const ForgotPassword = () => {
   const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { email, password } = inputValue;
+  const authInputClass =
+    "border-none outline-none w-full text-white py-2 px-3 rounded-md placeholder-white/60 bg-[#24194b]";
   const handleOnChange = (e) => {
     const { name, value } = e.target;
     setInputValue({
@@ -129,7 +131,7 @@ const ForgotPassword = () => {
                   value={email}
                   onChange={handleOnChange}
                   disabled={!otpHidden}
-                  className="border-none text-black outline-none py-2 px-3 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className={`${authInputClass} disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
               </div>
               {!otpHidden && (
@@ -165,6 +167,7 @@ const ForgotPassword = () => {
                         {...props}
                         style={{
                           ...props.style,
+                          backgroundColor: "#24194b",
                           color: "#ffffff",
                           WebkitTextFillColor: "#ffffff",
                           caretColor: "#ffffff",
@@ -189,12 +192,12 @@ const ForgotPassword = () => {
                         onChange={handleOnChange}
                         onFocus={() => setPasswordFocused(true)}
                         onBlur={() => setPasswordFocused(false)}
-                        className="border-none text-black outline-none w-full py-2 px-3 pr-10 rounded-md"
+                        className={`${authInputClass} pr-10`}
                       />
                       <button
                         type="button"
                         onClick={() => setPasswordHidden(!passwordHidden)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-700"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-white"
                         aria-label={
                           passwordHidden ? "Show password" : "Hide password"
                         }
