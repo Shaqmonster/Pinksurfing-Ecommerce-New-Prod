@@ -11,12 +11,14 @@ import axios from "axios";
 import PinInput from "react-pin-input";
 import Cookies from "js-cookie";
 import { Country } from "country-state-city";
+import PasswordRequirementsFeedback from "../components/PasswordRequirementsFeedback";
+import { isPasswordValid } from "../utils/djangoPasswordValidation";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [passwordHidden, setPasswordHidden] = useState(true);
   const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [countries, setCountries] = useState([]);
   const [countrySearch, setCountrySearch] = useState("");
@@ -39,8 +41,6 @@ const Signup = () => {
   const pinInputRef = useRef(null);
   const [timer, setTimer] = useState(0);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const passwordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   useEffect(() => {
     const token = Cookies.get("token");
@@ -230,16 +230,6 @@ const Signup = () => {
       setEmailError(emailRegex.test(value) ? "" : "Invalid email address");
     }
 
-    if (name === "password") {
-      const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      setPasswordError(
-        passwordRegex.test(value)
-          ? ""
-          : "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-      );
-    }
-
     console.log(inputValue);
   };
 
@@ -249,6 +239,19 @@ const Signup = () => {
 
     if (!inputValue.entered_otp || inputValue.entered_otp.length !== 6) {
       toast.error("Please enter a valid 6-digit OTP.");
+      setLoading(false);
+      return;
+    }
+
+    if (
+      !isPasswordValid(inputValue.password, {
+        email: inputValue.email,
+        username: inputValue.email,
+        first_name: inputValue.first_name,
+        last_name: inputValue.last_name,
+      })
+    ) {
+      toast.error("Please meet all password requirements before signing up.");
       setLoading(false);
       return;
     }
@@ -552,6 +555,8 @@ const Signup = () => {
                   value={password}
                   className="border-none outline-none w-full text-white py-2 px-3 rounded-md placeholder-white bg-[#24194b]"
                   onChange={handleOnChange}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                   required
                 />
                 <button
@@ -566,9 +571,16 @@ const Signup = () => {
                   )}
                 </button>
               </div>
-              {passwordError && (
-                <p className="text-red-500 text-sm mt-1">{passwordError}</p>
-              )}
+              <PasswordRequirementsFeedback
+                password={password}
+                userContext={{
+                  email,
+                  username: email,
+                  first_name,
+                  last_name,
+                }}
+                visible={passwordFocused || password.length > 0}
+              />
             </div>
 
             <div className="flex flex-col col-span-1">

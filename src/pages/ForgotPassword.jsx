@@ -6,6 +6,8 @@ import Cookies from "js-cookie";
 import { dataContext } from "../context/dataContext.jsx";
 import OtpInput from "react-otp-input";
 import axios from "axios";
+import PasswordRequirementsFeedback from "../components/PasswordRequirementsFeedback";
+import { isPasswordValid } from "../utils/djangoPasswordValidation";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ const ForgotPassword = () => {
     password: "",
   });
   const [otp, setOtp] = useState("");
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { email, password } = inputValue;
   const handleOnChange = (e) => {
@@ -53,6 +56,16 @@ const ForgotPassword = () => {
   };
 
   const verifyOtp = async () => {
+    if (
+      !isPasswordValid(password, {
+        email,
+        username: email,
+      })
+    ) {
+      handleError("Please meet all password requirements before continuing.");
+      return;
+    }
+
     try {
       const response = await axios.post("https://auth.pinksurfing.com/api/password_reset/",
         { email, entered_otp: otp, new_password: password },
@@ -152,13 +165,32 @@ const ForgotPassword = () => {
                       id="password"
                       value={password}
                       onChange={handleOnChange}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
                       className="border-none text-black outline-none py-2 px-3 rounded-md"
+                    />
+                    <PasswordRequirementsFeedback
+                      password={password}
+                      userContext={{
+                        email,
+                        username: email,
+                      }}
+                      visible={passwordFocused || password.length > 0}
                     />
                   </div>
                 </>
               )}
               <button
-                disabled={!email || (!otpHidden && (!otp || !password))}
+                disabled={
+                  !email ||
+                  (!otpHidden &&
+                    (!otp ||
+                      !password ||
+                      !isPasswordValid(password, {
+                        email,
+                        username: email,
+                      })))
+                }
                 type="submit"
                 className="border-none disabled:bg-white/50 disabled:text-gray-900 outline-none bg-white text-black font-semibold mt-3 py-3 px-3 rounded-md"
               >
