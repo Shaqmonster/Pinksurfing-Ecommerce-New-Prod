@@ -14,7 +14,10 @@ import {
   refreshAccessToken,
   setRuntimeAuthToken,
   signOut,
+  startTokenRefreshScheduler,
   syncReactAuthCookies,
+  isAccessTokenValid,
+  getResolvedAccessToken,
 } from "../utils/authSession";
 import { toast } from "react-toastify";
 
@@ -249,17 +252,42 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (!authReady) return undefined;
 
+    const applyRefreshedAccess = (access) => {
+      if (!access) return;
+      syncReactAuthCookies(access, getRefreshToken(), setCookie);
+      setRuntimeAuthToken(access);
+      setAuthToken(access);
+    };
+
+    return startTokenRefreshScheduler(applyRefreshedAccess);
+  }, [authReady, setCookie]);
+
+  useEffect(() => {
+    if (!authReady) return undefined;
+
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
       if (isSsoLoggedOutGlobally()) {
         if (authToken) clearSession();
         return;
       }
-      if (authToken) return;
-      const token = getAccessToken();
-      if (token) {
-        void establishSession(token, getRefreshToken() || undefined);
+
+      const token = getResolvedAccessToken();
+      if (token && isAccessTokenValid(token)) {
+        if (!authToken) {
+          void establishSession(token, getRefreshToken() || undefined);
+        }
+        return;
       }
+
+      void (async () => {
+        try {
+          const newAccess = await refreshAccessToken();
+          await establishSession(newAccess, getRefreshToken() || undefined);
+        } catch {
+          if (authToken) clearSession();
+        }
+      })();
     };
 
     document.addEventListener("visibilitychange", onVisible);

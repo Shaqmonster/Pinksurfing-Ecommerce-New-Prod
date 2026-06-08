@@ -6,8 +6,10 @@ const SSO_EPOCH_COOKIE = "ps_sso_epoch";
 const AUTH_REFRESH_URL = "https://auth.pinksurfing.com/api/token/refresh/";
 const AUTH_LOGOUT_URL = "https://auth.pinksurfing.com/api/logout/";
 const ACCESS_SKEW_SECONDS = 60;
+export const TOKEN_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 
 let ensureSessionInflight = null;
+let refreshInflight = null;
 /** In-memory token from React auth context (synced on login/logout/refresh). */
 let runtimeAuthToken = "";
 
@@ -223,11 +225,37 @@ export function clearAuthStorage() {
   });
 }
 
-async function refreshFromSsoCookies() {
-  const response = await axios.post(AUTH_REFRESH_URL, {}, { withCredentials: true });
-  const access = response.data?.access;
+/** Cookie-based refresh first, then Bearer body `{ refresh }` fallback. */
+async function requestTokenRefresh() {
+  try {
+    const cookieResponse = await axios.post(
+      AUTH_REFRESH_URL,
+      {},
+      { withCredentials: true }
+    );
+    const access = cookieResponse.data?.access;
+    if (access) {
+      return { access, refresh: cookieResponse.data?.refresh };
+    }
+  } catch {
+    /* try body refresh */
+  }
+
+  const refresh = getRefreshToken();
+  if (!refresh) return null;
+
+  const bodyResponse = await axios.post(
+    AUTH_REFRESH_URL,
+    { refresh },
+    { withCredentials: true }
+  );
+  const access = bodyResponse.data?.access;
   if (!access) return null;
-  return { access, refresh: response.data?.refresh };
+  return { access, refresh: bodyResponse.data?.refresh ?? refresh };
+}
+
+export function hasRefreshCapability() {
+  return Boolean(getRefreshToken() || getCookie("refresh_token"));
 }
 
 /**
@@ -248,8 +276,13 @@ export async function ensureSession() {
       return { access: cached, refresh: getRefreshToken() || undefined };
     }
 
+    if (!hasRefreshCapability()) {
+      clearAuthStorage();
+      return null;
+    }
+
     try {
-      const refreshed = await refreshFromSsoCookies();
+      const refreshed = await requestTokenRefresh();
       if (!refreshed?.access) {
         clearAuthStorage();
         return null;
@@ -328,10 +361,72 @@ export function attachSharedSsoSync(onSync) {
 }
 
 export async function refreshAccessToken() {
-  const refreshed = await refreshFromSsoCookies();
-  if (!refreshed?.access) throw new Error("No access token in refresh response");
-  persistAuthSession(refreshed.access, refreshed.refresh);
-  return refreshed.access;
+  if (refreshInflight) return refreshInflight;
+
+  refreshInflight = (async () => {
+    const refreshed = await requestTokenRefresh();
+    if (!refreshed?.access) {
+      throw new Error("No access token in refresh response");
+    }
+    persistAuthSession(refreshed.access, refreshed.refresh);
+    return refreshed.access;
+  })().finally(() => {
+    refreshInflight = null;
+  });
+
+  return refreshInflight;
+}
+
+/** Returns a valid access token, refreshing proactively when near expiry. */
+export async function getOrRefreshAccessToken() {
+  if (isSsoLoggedOutGlobally()) return null;
+
+  const current = getResolvedAccessToken();
+  if (current && isAccessTokenValid(current)) return current;
+
+  if (!hasRefreshCapability()) return current || null;
+
+  try {
+    return await refreshAccessToken();
+  } catch (error) {
+    console.error("Token refresh failed:", error?.response?.status || error);
+    return null;
+  }
+}
+
+/** Proactive refresh while browsing (interval + tab focus). */
+export function startTokenRefreshScheduler(onRefreshed) {
+  if (typeof window === "undefined") return () => {};
+
+  const tick = async () => {
+    if (isSsoLoggedOutGlobally()) return;
+    const current = getResolvedAccessToken();
+    if (current && isAccessTokenValid(current)) return;
+    if (!hasRefreshCapability()) return;
+
+    try {
+      const access = await refreshAccessToken();
+      onRefreshed?.(access);
+    } catch {
+      /* next 401 or interval will retry */
+    }
+  };
+
+  const intervalId = setInterval(() => {
+    void tick();
+  }, TOKEN_REFRESH_INTERVAL_MS);
+
+  const onVisible = () => {
+    if (document.visibilityState === "visible") void tick();
+  };
+
+  document.addEventListener("visibilitychange", onVisible);
+  void tick();
+
+  return () => {
+    clearInterval(intervalId);
+    document.removeEventListener("visibilitychange", onVisible);
+  };
 }
 
 export async function signOut(accessToken, setCookie) {

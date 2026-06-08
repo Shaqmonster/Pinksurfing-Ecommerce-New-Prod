@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getResolvedAccessToken, shouldAttachAuthHeader } from "./authSession";
+import { getOrRefreshAccessToken, shouldAttachAuthHeader } from "./authSession";
 
 let installed = false;
 
@@ -16,11 +16,11 @@ export function setupAxiosAuth() {
   if (installed || typeof window === "undefined") return;
   installed = true;
 
-  axios.interceptors.request.use((config) => {
+  axios.interceptors.request.use(async (config) => {
     const url = resolveRequestUrl(config);
     if (!shouldAttachAuthHeader(url)) return config;
 
-    const token = getResolvedAccessToken();
+    const token = await getOrRefreshAccessToken();
     if (!token) return config;
 
     config.headers = config.headers ?? {};
