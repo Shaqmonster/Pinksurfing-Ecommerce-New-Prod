@@ -16,8 +16,9 @@ import {
   signOut,
   startTokenRefreshScheduler,
   syncReactAuthCookies,
-  isAccessTokenValid,
   getResolvedAccessToken,
+  hasRefreshCapability,
+  shouldRefreshAccessToken,
 } from "../utils/authSession";
 import { toast } from "react-toastify";
 
@@ -273,12 +274,14 @@ export const AuthProvider = ({ children }) => {
       }
 
       const token = getResolvedAccessToken();
-      if (token && isAccessTokenValid(token)) {
+      if (token && !shouldRefreshAccessToken(token)) {
         if (!authToken) {
           void establishSession(token, getRefreshToken() || undefined);
         }
         return;
       }
+
+      if (!token && !hasRefreshCapability()) return;
 
       void (async () => {
         try {

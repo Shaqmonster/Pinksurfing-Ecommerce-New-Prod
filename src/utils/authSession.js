@@ -5,8 +5,14 @@ const SSO_LOGOUT_COOKIE = "ps_sso_logged_out";
 const SSO_EPOCH_COOKIE = "ps_sso_epoch";
 const AUTH_REFRESH_URL = "https://auth.pinksurfing.com/api/token/refresh/";
 const AUTH_LOGOUT_URL = "https://auth.pinksurfing.com/api/logout/";
+/** Clock skew buffer — token treated as expired this many seconds early. */
 const ACCESS_SKEW_SECONDS = 60;
-export const TOKEN_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+/** SSO default: JWT_ACCESS_LIFETIME_MINUTES=15 (sso/settings.py). */
+export const SSO_ACCESS_LIFETIME_MINUTES = 15;
+/** Refresh this many seconds before JWT exp (proactive, not after expiry). */
+export const REFRESH_BEFORE_EXPIRY_SECONDS = 120;
+/** Safety poll — half of default access lifetime. */
+export const TOKEN_REFRESH_FALLBACK_MS = 5 * 60 * 1000;
 
 let ensureSessionInflight = null;
 let refreshInflight = null;
@@ -41,6 +47,39 @@ export function isAccessTokenValid(token, skewSeconds = ACCESS_SKEW_SECONDS) {
   const payload = decodeJwt(token);
   if (!payload?.exp) return false;
   return payload.exp * 1000 > Date.now() + skewSeconds * 1000;
+}
+
+/** Unix ms when access JWT expires (from `exp` claim). */
+export function getAccessTokenExpiresAtMs(token) {
+  const payload = decodeJwt(token);
+  if (typeof payload?.exp !== "number") return null;
+  return payload.exp * 1000;
+}
+
+/**
+ * True when access should be refreshed proactively (SSO: 15 min lifetime).
+ * Refreshes REFRESH_BEFORE_EXPIRY_SECONDS before exp, not after expiry.
+ */
+export function shouldRefreshAccessToken(
+  token,
+  bufferSeconds = REFRESH_BEFORE_EXPIRY_SECONDS
+) {
+  if (!token) return true;
+  const expiresAtMs = getAccessTokenExpiresAtMs(token);
+  if (!expiresAtMs) return true;
+  const refreshAtMs = expiresAtMs - bufferSeconds * 1000;
+  return Date.now() >= refreshAtMs;
+}
+
+/** Ms until proactive refresh; 0 means refresh now. */
+export function getMsUntilProactiveRefresh(
+  token,
+  bufferSeconds = REFRESH_BEFORE_EXPIRY_SECONDS
+) {
+  const expiresAtMs = getAccessTokenExpiresAtMs(token);
+  if (!expiresAtMs) return 0;
+  const refreshAtMs = expiresAtMs - bufferSeconds * 1000;
+  return Math.max(0, refreshAtMs - Date.now());
 }
 
 export function getJwtUserId(token) {
@@ -377,12 +416,12 @@ export async function refreshAccessToken() {
   return refreshInflight;
 }
 
-/** Returns a valid access token, refreshing proactively when near expiry. */
+/** Returns a valid access token, refreshing before JWT exp per SSO settings. */
 export async function getOrRefreshAccessToken() {
   if (isSsoLoggedOutGlobally()) return null;
 
   const current = getResolvedAccessToken();
-  if (current && isAccessTokenValid(current)) return current;
+  if (current && !shouldRefreshAccessToken(current)) return current;
 
   if (!hasRefreshCapability()) return current || null;
 
@@ -390,31 +429,56 @@ export async function getOrRefreshAccessToken() {
     return await refreshAccessToken();
   } catch (error) {
     console.error("Token refresh failed:", error?.response?.status || error);
-    return null;
+    return isAccessTokenValid(current) ? current : null;
   }
 }
 
-/** Proactive refresh while browsing (interval + tab focus). */
+/**
+ * Schedules refresh from JWT `exp` (2 min before expiry) + 5 min safety poll.
+ * Matches SSO JWT_ACCESS_LIFETIME_MINUTES=15 (sso/settings.py).
+ */
 export function startTokenRefreshScheduler(onRefreshed) {
   if (typeof window === "undefined") return () => {};
 
+  let timeoutId = null;
+
+  const scheduleNext = () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    const current = getResolvedAccessToken();
+    const msUntil = current
+      ? getMsUntilProactiveRefresh(current)
+      : TOKEN_REFRESH_FALLBACK_MS;
+    const delay = Math.min(
+      Math.max(msUntil, 1_000),
+      TOKEN_REFRESH_FALLBACK_MS
+    );
+    timeoutId = setTimeout(() => {
+      void tick();
+    }, delay);
+  };
+
   const tick = async () => {
     if (isSsoLoggedOutGlobally()) return;
+
     const current = getResolvedAccessToken();
-    if (current && isAccessTokenValid(current)) return;
+    if (!shouldRefreshAccessToken(current)) {
+      scheduleNext();
+      return;
+    }
     if (!hasRefreshCapability()) return;
 
     try {
       const access = await refreshAccessToken();
       onRefreshed?.(access);
     } catch {
-      /* next 401 or interval will retry */
+      /* fallback poll or 401 handler will retry */
     }
+    scheduleNext();
   };
 
   const intervalId = setInterval(() => {
     void tick();
-  }, TOKEN_REFRESH_INTERVAL_MS);
+  }, TOKEN_REFRESH_FALLBACK_MS);
 
   const onVisible = () => {
     if (document.visibilityState === "visible") void tick();
@@ -424,6 +488,7 @@ export function startTokenRefreshScheduler(onRefreshed) {
   void tick();
 
   return () => {
+    if (timeoutId) clearTimeout(timeoutId);
     clearInterval(intervalId);
     document.removeEventListener("visibilitychange", onVisible);
   };
