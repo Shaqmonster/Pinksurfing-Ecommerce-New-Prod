@@ -23,7 +23,7 @@ export const categories = [
 
 /**
  * Order: (1) Business for sale → (2–3) Real estate → (4) Cars & trucks →
- * (5) Perfumes → (6) Trading cards → (7) Electronics (Computer Parts is a subcategory).
+ * (5) Perfumes → (6) Electronics (Computer Parts is a subcategory).
  * Remaining categories are coming soon.
  * Computer Parts is a subcategory under Electronics (see filter.json), not a top-level tile.
  * Removed: Toys.
@@ -69,14 +69,6 @@ export const subCategories = [
     image2: "/new/beauty.jpg",
     extraclass: "object-cover",
     image: "/new/perfume.jpg",
-    link: "/home",
-  },
-  {
-    id: "1",
-    name: "Trading Cards",
-    image: "/new/trading_cards1.jpg",
-    category: "trading-cards",
-    extraclass: "object-cover",
     link: "/home",
   },
   {

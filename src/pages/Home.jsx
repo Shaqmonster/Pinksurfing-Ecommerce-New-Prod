@@ -546,7 +546,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Browse by Category — responsive grid tuned for 6 primary categories */}
+        {/* Browse by Category */}
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-10 sm:py-12 bg-white/5 border-y border-white/10 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none" aria-hidden />
           <div className="relative max-w-6xl mx-auto">
@@ -556,7 +556,7 @@ const Home = () => {
               </span>
             </h2>
             <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-              Explore businesses for sale, real estate, vehicles, perfumes, trading cards, electronics, and more on the PinkSurfing marketplace.
+              Explore businesses for sale, real estate, vehicles, perfumes, electronics, and more on the PinkSurfing marketplace.
             </p>
 
             <div

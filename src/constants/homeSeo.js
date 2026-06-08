@@ -18,7 +18,7 @@ export const HOME_FAQ = [
   {
     question: "What can I buy on PinkSurfing?",
     answer:
-      "Active categories include businesses for sale, residential and commercial real estate, cars and trucks, perfumes, trading cards, and products from independent vendor stores in the shopping mall.",
+      "Active categories include businesses for sale, residential and commercial real estate, cars and trucks, perfumes, electronics, and products from independent vendor stores in the shopping mall.",
   },
   {
     question: "How do I sell on PinkSurfing?",

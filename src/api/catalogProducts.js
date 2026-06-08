@@ -6,7 +6,6 @@ const baseUrl = () => (import.meta.env.VITE_SERVER_URL || "").replace(/\/$/, "")
 export const HOME_FEATURED_CATEGORY_SLUGS = [
   "electronics",
   "perfumes",
-  "trading-cards",
 ];
 
 export async function fetchCategoryProducts(categorySlug) {
