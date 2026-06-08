@@ -155,6 +155,22 @@ export function getAccessToken() {
   return null;
 }
 
+/** Raw access JWT from storage (may be expired — used for proactive refresh timing). */
+export function getSessionAccessToken() {
+  if (typeof window === "undefined") return "";
+  const candidates = [
+    runtimeAuthToken,
+    getCookie("access_token"),
+    localStorage.getItem("access_token"),
+    localStorage.getItem("access"),
+  ].filter(Boolean);
+  for (const raw of candidates) {
+    const token = String(raw).replaceAll('"', "");
+    if (token) return token;
+  }
+  return "";
+}
+
 /** Prefer auth context, then react-cookie, then localStorage SSO session. */
 export function resolveAccessToken(authToken, cookieToken) {
   const token =
@@ -264,13 +280,27 @@ export function clearAuthStorage() {
   });
 }
 
+const AUTH_API_HOST = "auth.pinksurfing.com";
+
+/** Login, refresh, and logout must not run through the auth request interceptor. */
+export function isSsoTokenMaintenanceUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  const path = url.split("?")[0];
+  return (
+    path.includes("/api/token/refresh") ||
+    path.includes("/api/logout") ||
+    /\/api\/token\/?$/.test(path)
+  );
+}
+
 /** Cookie-based refresh first, then Bearer body `{ refresh }` fallback. */
 async function requestTokenRefresh() {
+  const refreshConfig = { withCredentials: true, skipAuthRefresh: true };
   try {
     const cookieResponse = await axios.post(
       AUTH_REFRESH_URL,
       {},
-      { withCredentials: true }
+      refreshConfig
     );
     const access = cookieResponse.data?.access;
     if (access) {
@@ -286,7 +316,7 @@ async function requestTokenRefresh() {
   const bodyResponse = await axios.post(
     AUTH_REFRESH_URL,
     { refresh },
-    { withCredentials: true }
+    refreshConfig
   );
   const access = bodyResponse.data?.access;
   if (!access) return null;
@@ -294,7 +324,10 @@ async function requestTokenRefresh() {
 }
 
 export function hasRefreshCapability() {
-  return Boolean(getRefreshToken() || getCookie("refresh_token"));
+  if (isSsoLoggedOutGlobally()) return false;
+  if (getRefreshToken()) return true;
+  // SSO refresh_token is HttpOnly — not readable here, but sent with credentials:include
+  return Boolean(getSessionAccessToken());
 }
 
 /**
@@ -420,16 +453,20 @@ export async function refreshAccessToken() {
 export async function getOrRefreshAccessToken() {
   if (isSsoLoggedOutGlobally()) return null;
 
-  const current = getResolvedAccessToken();
-  if (current && !shouldRefreshAccessToken(current)) return current;
+  const sessionToken = getSessionAccessToken();
+  if (sessionToken && !shouldRefreshAccessToken(sessionToken)) {
+    return isAccessTokenValid(sessionToken) ? sessionToken : null;
+  }
 
-  if (!hasRefreshCapability()) return current || null;
+  if (!hasRefreshCapability()) {
+    return sessionToken && isAccessTokenValid(sessionToken) ? sessionToken : null;
+  }
 
   try {
     return await refreshAccessToken();
   } catch (error) {
     console.error("Token refresh failed:", error?.response?.status || error);
-    return isAccessTokenValid(current) ? current : null;
+    return sessionToken && isAccessTokenValid(sessionToken) ? sessionToken : null;
   }
 }
 
@@ -444,14 +481,11 @@ export function startTokenRefreshScheduler(onRefreshed) {
 
   const scheduleNext = () => {
     if (timeoutId) clearTimeout(timeoutId);
-    const current = getResolvedAccessToken();
+    const current = getSessionAccessToken();
     const msUntil = current
       ? getMsUntilProactiveRefresh(current)
       : TOKEN_REFRESH_FALLBACK_MS;
-    const delay = Math.min(
-      Math.max(msUntil, 1_000),
-      TOKEN_REFRESH_FALLBACK_MS
-    );
+    const delay = Math.min(Math.max(msUntil, 1_000), TOKEN_REFRESH_FALLBACK_MS);
     timeoutId = setTimeout(() => {
       void tick();
     }, delay);
@@ -460,12 +494,11 @@ export function startTokenRefreshScheduler(onRefreshed) {
   const tick = async () => {
     if (isSsoLoggedOutGlobally()) return;
 
-    const current = getResolvedAccessToken();
+    const current = getSessionAccessToken();
     if (!shouldRefreshAccessToken(current)) {
       scheduleNext();
       return;
     }
-    if (!hasRefreshCapability()) return;
 
     try {
       const access = await refreshAccessToken();
@@ -503,6 +536,7 @@ export async function signOut(accessToken, setCookie) {
       refresh ? { refresh } : {},
       {
         withCredentials: true,
+        skipAuthRefresh: true,
         headers: accessToken
           ? { Authorization: `Bearer ${String(accessToken).replaceAll('"', "")}` }
           : {},
@@ -516,7 +550,6 @@ export async function signOut(accessToken, setCookie) {
 }
 
 const API_BASE = import.meta.env.VITE_SERVER_URL;
-const AUTH_API_HOST = "auth.pinksurfing.com";
 
 export function isEcommerceApiUrl(url) {
   if (!url || !API_BASE) return false;
@@ -526,6 +559,7 @@ export function isEcommerceApiUrl(url) {
 /** Attach Bearer token on our API hosts (ecommerce + SSO auth). */
 export function shouldAttachAuthHeader(url) {
   if (!url || typeof url !== "string") return false;
+  if (isSsoTokenMaintenanceUrl(url)) return false;
   if (API_BASE && url.startsWith(API_BASE)) return true;
   if (url.includes("ecommerceapi.pinksurfing.com")) return true;
   if (url.includes(AUTH_API_HOST)) return true;

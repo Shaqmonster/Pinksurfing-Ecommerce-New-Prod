@@ -22,6 +22,7 @@ import { data } from "autoprefixer";
 import Stars from '../components/Stars'
 import { formatMoney } from "../utils/formatMoney";
 import { isOutOfStock, usesInventoryStock } from "../utils/cartStock";
+import { fetchRelatedProducts } from "../api/catalogProducts";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -99,7 +100,7 @@ const ProductDetailPage = () => {
   const [cookies, removeCookie] = useCookies(["access_token"]);
   const [orderConfirm, setorderConfirm] = useState(false);
   const [product, setProduct] = useState({});
-  const [allProducts, setAllProducts] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [activeImage, setActiveImage] = useState("");
   const [updatedPrice, setUpdatedPrice] = useState(null);
@@ -712,23 +713,26 @@ const ProductDetailPage = () => {
   }, [product.id])
 
   useEffect(() => {
-    const getProducts = async () => {
-      axios
-        .get(`${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-        .then((response) => {
-          console.log(response.data.Products);
-          setAllProducts(response.data.Products);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    if (!product?.id || !product?.category?.slug) {
+      setRelatedProducts([]);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const items = await fetchRelatedProducts(product, 6);
+        if (!cancelled) setRelatedProducts(items);
+      } catch (error) {
+        console.error(error);
+        if (!cancelled) setRelatedProducts([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    getProducts();
-  }, []);
+  }, [product?.id, product?.category?.slug]);
 
   const handleAttributeSelection = (name, attribute) => {
     setSelectedAttributes((prevState) => {
@@ -872,7 +876,7 @@ const ProductDetailPage = () => {
           setWishlistProducts={setWishlistProducts}
           user={user}
           cookies={cookies}
-          allProducts={allProducts}
+          relatedProducts={relatedProducts}
           productId={productId}
           reviews={reviews}
           activeVisit={activeVisit}
@@ -1912,9 +1916,8 @@ const ProductDetailPage = () => {
             <div className="mt-16 space-y-12">
               <ProductDetailReviewSection reviews={reviews} product={product} />
               <YouMightAlsoLike
-                allProducts={allProducts}
+                relatedProducts={relatedProducts}
                 productId={productId}
-                product={product}
                 currency={currency}
               />
             </div>

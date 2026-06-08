@@ -23,6 +23,10 @@ import StoreCard from "../components/StoreCard";
 import PageSEO from "../components/PageSEO";
 import { HOME_FAQ, HOME_META, homeJsonLd } from "../constants/homeSeo";
 import { useAccessToken } from "../hooks/useAccessToken";
+import {
+  fetchDiscountedProducts,
+  fetchHomeFeaturedProducts,
+} from "../api/catalogProducts";
 
 
 const responsive = {
@@ -37,7 +41,8 @@ const Home = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies([]);
   const { setCategory, isDarkMode, user, currency } = useContext(authContext);
-  const [products, setProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [discountedProducts, setDiscountedProducts] = useState([]);
   const [stores, setStores] = useState([]);
   const [storeLoading, setStoreLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(1); // Default to 'Buyer's Choice'
@@ -64,8 +69,8 @@ const Home = () => {
   const [storeImagePreview, setStoreImagePreview] = useState(null);
 
   const getFilteredCards = () => {
-    if (selectedCategory === 3) return products; // Buyer's Choice shows all products
-    return (products || []).slice(0, 4); // Other categories display limited items
+    if (selectedCategory === 3) return featuredProducts;
+    return (featuredProducts || []).slice(0, 4);
   };
 
   const handleNext = () => {
@@ -287,14 +292,12 @@ const Home = () => {
 
     const fetchProducts = async () => {
       try {
-        const productsResponse = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`,
-          {
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-        console.log(productsResponse.data.Products);
-        setProducts(productsResponse.data.Products || []);
+        const [featured, discounted] = await Promise.all([
+          fetchHomeFeaturedProducts(12),
+          fetchDiscountedProducts(5),
+        ]);
+        setFeaturedProducts(featured);
+        setDiscountedProducts(discounted);
       } catch (error) {
         console.error(error);
       }
@@ -319,27 +322,14 @@ const Home = () => {
       )
       .then((response) => {
         navigate(address);
-        setProducts(response.data);
+        setFeaturedProducts(response.data);
       })
       .catch((error) => {
         console.error(error);
       });
   };
 
-  const calculateDiscount = (mrp, unitPrice) => {
-    const numericMrp = Number(mrp);
-    const numericUnitPrice = Number(unitPrice);
-    if (isNaN(numericMrp) || isNaN(numericUnitPrice) || numericMrp === 0) {
-      return 0;
-    }
-    return ((numericMrp - numericUnitPrice) / numericMrp) * 100;
-  };
-
-  const getDiscountedProducts = () => {
-    return products.filter(
-      (product) => calculateDiscount(product.mrp, product.unit_price) > 5
-    );
-  };
+  const getDiscountedProducts = () => discountedProducts;
 
   const responsive = {
     superLargeDesktop: {
@@ -696,7 +686,7 @@ const Home = () => {
               {/* Buyer's Choice */}
               {selectedCategory === 3 && (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {(products || []).slice(0, 8).map((product, productIndex) => (
+                  {(featuredProducts || []).slice(0, 8).map((product, productIndex) => (
                     <ProductCard key={productIndex} product={product} isCard={true} />
                   ))}
                 </div>
@@ -705,7 +695,7 @@ const Home = () => {
               {/* Pinksurfing Finds */}
               {selectedCategory === 4 && (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {(products || []).slice(0, 4).map((product, productIndex) => (
+                  {(featuredProducts || []).slice(0, 4).map((product, productIndex) => (
                     <ProductCard key={productIndex} product={product} isCard={true} />
                   ))}
                 </div>

@@ -21,6 +21,7 @@ import MultiRangeSlider from "multi-range-slider-react";
 import { AiOutlineBars } from "react-icons/ai";
 import { HiMiniSquares2X2 } from "react-icons/hi2";
 import SearchForm from "../components/Search";
+import { fetchCategoryProducts } from "../api/catalogProducts";
 
 export default function ShoppingMallNew() {
   const { category } = useParams();
@@ -120,32 +121,21 @@ export default function ShoppingMallNew() {
         setLoading(true);
   
         try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-  
-          const products = response.data.Products;
-  
+          const products = await fetchCategoryProducts("electronics");
+
           setShoppingProducts(products);
           setLoading(false);
-          console.log(products);
-  
-          // Setting unique categories and attributes
+
           setCategoryOnlyData(getUniqueData(products, "category"));
           const allAttributes = products.flatMap(
             (product) => product.attributes || []
           );
           setUniqueAttributes(Array.from(new Set(allAttributes)));
-  
-          // Getting maximum and minimum values
-          const prices = products.map((product) => product.unit_price);
-  
-          // Ensure there are products with unit_price before setting the values
+
+          const prices = products
+            .map((product) => Number(product.unit_price))
+            .filter(Number.isFinite);
+
           if (prices.length > 0) {
             setMinValue(Math.min(...prices));
             setMaximumValue(Math.max(...prices));

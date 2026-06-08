@@ -99,21 +99,6 @@ const getVendorProducts = async (shaqshop) => {
   }
 };
 
-  // fetch All products --------------------------------------------------------
-  const getAllProducts = async () => {
-    axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then((response) => {
-        setProducts(response.data.Products);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
   return (
     <dataContext.Provider
       value={{
@@ -129,7 +114,6 @@ const getVendorProducts = async (shaqshop) => {
         setCartProducts,
         additionalAttribute,
         setAdditionalAttribute,
-        getAllProducts,
         searchedProducts,
         setSearchedProducts,
         searchProducts,

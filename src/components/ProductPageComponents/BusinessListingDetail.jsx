@@ -342,7 +342,7 @@ const BusinessListingDetail = ({
   setWishlistProducts,
   user,
   cookies,
-  allProducts,
+  relatedProducts,
   productId,
   reviews,
   activeVisit,
@@ -1489,14 +1489,14 @@ const BusinessListingDetail = ({
               </div>
 
               {/* SIMILAR LISTINGS */}
-              {allProducts && allProducts.length > 0 && (
+              {relatedProducts && relatedProducts.length > 0 && (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text)" }}>Similar Listings</h3>
                   </div>
                   <div className="b-sim-grid">
-                    {allProducts
-                      .filter((p) => p.id !== product.id && (p.category?.slug === "business4sale" || p.category?.slug === "business-for-sale"))
+                    {relatedProducts
+                      .filter((p) => p.id !== product.id)
                       .slice(0, 3)
                       .map((p) => (
                         <div key={p.id} className="b-sim-card" onClick={() => window.location.href = `/product/productDetail/${p.slug}?productId=${p.id}`}>

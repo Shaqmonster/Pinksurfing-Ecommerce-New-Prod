@@ -17,6 +17,8 @@ export function setupAxiosAuth() {
   installed = true;
 
   axios.interceptors.request.use(async (config) => {
+    if (config.skipAuthRefresh) return config;
+
     const url = resolveRequestUrl(config);
     if (!shouldAttachAuthHeader(url)) return config;
 

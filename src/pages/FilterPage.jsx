@@ -81,11 +81,7 @@ export default function Filter() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [cookies, removeCookie] = useCookies([]);
 
-  const { products, getAllProducts } = useContext(dataContext);
-
-  useEffect(() => {
-    getAllProducts();
-  }, [cookies, navigate, removeCookie]);
+  const { products } = useContext(dataContext);
 
   const AddtoWishlist = (productId) => {
     axios

@@ -70,7 +70,7 @@ const Header = () => {
     setPendingChatParticipantEmail,
   } = useContext(authContext);
     const chatAccessToken = resolveChatAccessToken(authToken, accessToken);
-  const { cartProducts, setCartProducts, setWishlistProducts, getAllProducts } =
+  const { cartProducts, setCartProducts, setWishlistProducts } =
     useContext(dataContext);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
@@ -194,7 +194,6 @@ const Header = () => {
     if (!accessToken) return;
 
     const fetchData = async () => {
-      await getAllProducts();
       await getCartProducts();
       await getWishlist();
     };

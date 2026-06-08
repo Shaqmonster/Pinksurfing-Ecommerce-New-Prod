@@ -2,14 +2,14 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { formatMoney } from "../../utils/formatMoney";
 
-const YouMightAlsoLike = ({ allProducts, productId, currency }) => {
-  if (!allProducts || allProducts.length <= 1) {
+const YouMightAlsoLike = ({ relatedProducts, productId, currency }) => {
+  const curatedProducts = (relatedProducts || []).filter(
+    (product) => product.id !== productId
+  );
+
+  if (curatedProducts.length === 0) {
     return null;
   }
-
-  const curatedProducts = allProducts
-    ?.filter((product) => product.id !== productId)
-    .slice(0, 6);
 
   const calculateDiscount = (mrp, unitPrice) => {
     const numericMrp = Number(mrp);

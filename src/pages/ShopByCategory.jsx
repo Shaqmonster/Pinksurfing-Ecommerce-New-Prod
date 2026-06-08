@@ -18,6 +18,7 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 import SearchForm from "../components/Search";
+import { fetchCategoryProducts } from "../api/catalogProducts";
 
 export default function ShopByCategory() {
   const { shopHeading } = useContext(authContext);
@@ -229,35 +230,23 @@ export default function ShopByCategory() {
     const getFilterProducts = async () => {
       if (filterBy === "") {
         setLoading(true);
-        axios
-          .get(`${import.meta.env.VITE_SERVER_URL}/api/product/all-products/`, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
-          .then((response) => {
-            setShopByCategoryProducts(response.data.Products);
+        fetchCategoryProducts("perfumes")
+          .then((items) => {
+            setShopByCategoryProducts(items);
             setLoading(false);
-            // console.log(response.data.Products);
-            // setCategoryOnlyData(
-            // getUniqueData(response.data.Products, "category")
-            // );
-            // console.log(CategoryOnlyData);
-            const allAttributes = response.data.Products?.flatMap(
+            const allAttributes = items?.flatMap(
               (product) => product.attributes || []
             );
             setUniqueAttributes(Array.from(new Set(allAttributes)));
 
-            // getting maximum and minimun values -----
-            setMaxValue(() => {
-              ShopByCategoryProducts?.reduce((max, obj) => {
-                return Math.max(max, obj["unit_price"]);
-              }, -Infinity);
-            });
-            // console.log(maxValue);
+            const prices = items.map((product) => Number(product.unit_price)).filter(Number.isFinite);
+            if (prices.length > 0) {
+              setMaxValue(Math.max(...prices));
+            }
           })
           .catch((error) => {
             console.error(error);
+            setLoading(false);
           });
       } else {
         setLoading(true);
