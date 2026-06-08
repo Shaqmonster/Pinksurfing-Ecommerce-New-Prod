@@ -13,6 +13,17 @@ import Cookies from "js-cookie";
 import { Country } from "country-state-city";
 import PasswordRequirementsFeedback from "../components/PasswordRequirementsFeedback";
 import { isPasswordValid } from "../utils/djangoPasswordValidation";
+import AuthLayout from "../components/auth/AuthLayout";
+import {
+  authBtnPrimary,
+  authBtnSecondary,
+  authInputClass,
+  authLabelClass,
+  authLinkClass,
+  authRequiredMark,
+  otpContainerStyle,
+  pinInputStyle,
+} from "../components/auth/authTheme";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -404,109 +415,86 @@ const Signup = () => {
 
   return (
     <>
-      <div className="w-full h-screen flex items-center justify-center overflow-hidden">
-        <div className="hidden lg:block w-full h-screen relative">
-          <img src="/signin.jpg" className="w-full h-full" />
-          <div className="absolute top-0 left-0 w-full h-screen bg-[#2d1e5f]/60"></div>
-        </div>
-        <div className="z-40 w-full lg:w-fit lg:min-w-[500px] h-full flex items-center justify-center bg-[#2d1e5f] py-2 sm:py-4 px-10 flex-col overflow-y-auto">
-          <p
-            className="text-white sm:relative sm:top-0 font-bold text-[23px] sm:text-[24px] lg:text-[27px] mb-2 mt-4 sm:mt-0 text-center cursor-pointer"
-            onClick={() => navigate("/")}
-          >
-            PinkSurfing
-          </p>
-          <form
-            onSubmit={handleSubmit}
-            className="w-[90%] lg:w-full flex flex-col gap-2 pb-4"
-          >
-            <p className="text-white font-bold text-[22px] sm:text-[24px] mb-3">
-              Sign Up
-            </p>
-            <div className="flex w-full flex-col col-span-1">
-              <label
-                htmlFor="name"
-                className="text-[13px] sm:text-[14.9px] text-white mb-1 flex items-center gap-1"
-              >
-                First Name
-                <span className="text-red-500 font-bold text-lg">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Your First Name"
-                name="first_name"
-                id="first_name"
-                value={first_name}
-                className="border-none outline-none text-white py-2 px-3 rounded-md placeholder-white bg-[#24194b]"
-                onChange={handleOnChange}
-                required
-              />
+      <AuthLayout
+        wide
+        title="Create your account"
+        subtitle="Join PinkSurfing to shop, sell, and grow"
+        footer={
+          <>
+            Already have an account?{" "}
+            <Link to="/signin" className={authLinkClass}>
+              Sign in
+            </Link>
+          </>
+        }
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="first_name" className={authLabelClass}>
+                  First name<span className={authRequiredMark}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Your first name"
+                  name="first_name"
+                  id="first_name"
+                  value={first_name}
+                  className={authInputClass}
+                  onChange={handleOnChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="last_name" className={authLabelClass}>
+                  Last name<span className={authRequiredMark}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Your last name"
+                  name="last_name"
+                  id="last_name"
+                  value={last_name}
+                  className={authInputClass}
+                  onChange={handleOnChange}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="flex w-full flex-col col-span-1">
-              <label
-                htmlFor="name"
-                className="text-[13px] sm:text-[14.9px] text-white mb-1"
-              >
-                Last Name
-                <span className="text-red-500 font-bold text-lg">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Your Last Name"
-                name="last_name"
-                id="last_name"
-                value={last_name}
-                className="border-none outline-none text-white py-2 px-3 rounded-md placeholder-white bg-[#24194b]"
-                onChange={handleOnChange}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label
-                htmlFor="email"
-                className="text-[13px] sm:text-[14.9px] text-white mb-1"
-              >
-                Email
-                <span className="text-red-500 font-bold text-lg">*</span>
+            <div>
+              <label htmlFor="email" className={authLabelClass}>
+                Email<span className={authRequiredMark}>*</span>
               </label>
               <div className="flex items-center gap-2">
                 <input
                   type="email"
-                  placeholder="Your Email"
+                  placeholder="you@example.com"
                   name="email"
                   id="email"
                   value={email}
-                  className="flex-1 border-none outline-none text-white py-2 px-3 rounded-md placeholder-white bg-[#24194b]"
+                  className={`${authInputClass} flex-1`}
                   onChange={handleOnChange}
                   required
                 />
                 <button
                   type="button"
                   onClick={sendOtp}
-                  className={`text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 ${
-                    timer > 0 || email.length === 0 || emailError
-                      ? "bg-gray-600 cursor-not-allowed"
-                      : "bg-black hover:bg-gray-800"
-                  }`}
+                  className={authBtnSecondary}
                   disabled={timer > 0 || email.length === 0 || emailError}
                 >
-                  {timer > 0 ? `Wait for ${timer} sec` : "Verify"}
+                  {timer > 0 ? `${timer}s` : "Verify"}
                 </button>
               </div>
               {emailError && (
-                <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                <p className="text-red-500 text-sm mt-2">{emailError}</p>
               )}
             </div>
 
-            <div className="flex flex-col">
-              <label
-                htmlFor="entered_otp"
-                className="text-[13px] sm:text-[14.9px] text-white mb-1"
-              >
-                Enter OTP
-                <span className="text-red-500 font-bold text-lg">*</span>
+            <div>
+              <label htmlFor="entered_otp" className={authLabelClass}>
+                Enter OTP<span className={authRequiredMark}>*</span>
               </label>
               <div onPaste={handlePaste}>
                 <PinInput
@@ -517,43 +505,27 @@ const Signup = () => {
                   onChange={(value) =>
                     setInputValue((prev) => ({ ...prev, entered_otp: value }))
                   }
-                  containerStyle={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "10px",
-                  }}
-                  inputStyle={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "4px",
-                    backgroundColor: "#24194b",
-                    border: "none",
-                    outline: "none",
-                    color: "white",
-                  }}
+                  containerStyle={otpContainerStyle}
+                  inputStyle={pinInputStyle}
                 />
               </div>
-              <p className="text-gray-400 text-xs mt-1">
-                Please check your spam folder if you don't see the email
+              <p className="text-slate-400 text-xs mt-2">
+                Check your spam folder if you don&apos;t see the email
               </p>
             </div>
 
-            <div className="flex flex-col col-span-1">
-              <label
-                htmlFor="password"
-                className="text-[13px] sm:text-[14.9px] text-white mb-1"
-              >
-                Password
-                <span className="text-red-500 font-bold text-lg">*</span>
+            <div>
+              <label htmlFor="password" className={authLabelClass}>
+                Password<span className={authRequiredMark}>*</span>
               </label>
               <div className="relative">
                 <input
                   type={passwordHidden ? "password" : "text"}
-                  placeholder="Your Password"
+                  placeholder="Create a password"
                   name="password"
                   id="password"
                   value={password}
-                  className="border-none outline-none w-full text-white py-2 px-3 rounded-md placeholder-white bg-[#24194b]"
+                  className={`${authInputClass} pr-11`}
                   onChange={handleOnChange}
                   onFocus={() => setPasswordFocused(true)}
                   onBlur={() => setPasswordFocused(false)}
@@ -562,7 +534,8 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setPasswordHidden(!passwordHidden)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={passwordHidden ? "Show password" : "Hide password"}
                 >
                   {passwordHidden ? (
                     <IoEyeSharp size={20} />
@@ -583,21 +556,16 @@ const Signup = () => {
               />
             </div>
 
-            <div className="flex flex-col col-span-1">
-              <label
-                htmlFor="phone_number"
-                className="text-[13px] sm:text-[14.9px] text-white mb-1"
-              >
-                Phone Number
-                <span className="text-red-500 font-bold text-lg">*</span>
+            <div>
+              <label htmlFor="phone_number" className={authLabelClass}>
+                Phone number<span className={authRequiredMark}>*</span>
               </label>
               <div className="flex items-center gap-2">
-                {/* Searchable Country Code Dropdown */}
                 <div className="relative w-[35%] sm:w-[30%]" ref={countryDropdownRef}>
                   <button
                     type="button"
                     onClick={toggleDropdown}
-                    className="w-full border-none outline-none text-white py-2 px-2 sm:px-3 rounded-md bg-[#24194b] flex items-center justify-between text-sm"
+                    className={`${authInputClass} flex items-center justify-between text-sm py-3`}
                   >
                     <span className="truncate">
                       {selectedCountry ? `${selectedCountry.phonecode}` : "Code"}
@@ -606,30 +574,27 @@ const Signup = () => {
                   </button>
 
                   {isCountryDropdownOpen && (
-                    <div 
-                      className={`absolute z-50 w-[280px] sm:w-[320px] bg-[#24194b] rounded-md shadow-lg max-h-[300px] flex flex-col ${
-                        dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
+                    <div
+                      className={`absolute z-50 w-[280px] sm:w-[320px] bg-white border border-slate-200 rounded-xl shadow-xl max-h-[300px] flex flex-col ${
+                        dropdownPosition === "top"
+                          ? "bottom-full mb-1"
+                          : "top-full mt-1"
                       }`}
-                      style={{
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)'
-                      }}
                     >
-                      {/* Search Input */}
-                      <div className="p-2 border-b border-gray-600">
+                      <div className="p-2 border-b border-slate-100">
                         <div className="relative">
-                          <IoSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                          <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
                             type="text"
                             placeholder="Search country..."
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
-                            className="w-full pl-8 pr-3 py-2 bg-[#1a0f3a] text-white rounded-md outline-none text-sm placeholder-gray-400"
+                            className="w-full pl-8 pr-3 py-2 bg-slate-50 text-slate-900 rounded-lg outline-none text-sm placeholder-slate-400 border border-slate-200"
                             onClick={(e) => e.stopPropagation()}
                           />
                         </div>
                       </div>
 
-                      {/* Countries List */}
                       <div className="overflow-y-auto max-h-[240px]">
                         {filteredCountries.length > 0 ? (
                           filteredCountries.map((country) => (
@@ -637,14 +602,18 @@ const Signup = () => {
                               key={country.cca2}
                               type="button"
                               onClick={() => handleCountrySelect(country)}
-                              className="w-full text-left px-3 py-2 hover:bg-[#1a0f3a] text-white text-sm transition-colors"
+                              className="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700 text-sm transition-colors"
                             >
-                              <span className="font-semibold">{country.phonecode}</span>
-                              <span className="text-gray-300 ml-2">({country.name})</span>
+                              <span className="font-semibold">
+                                {country.phonecode}
+                              </span>
+                              <span className="text-slate-500 ml-2">
+                                ({country.name})
+                              </span>
                             </button>
                           ))
                         ) : (
-                          <div className="px-3 py-2 text-gray-400 text-sm">
+                          <div className="px-3 py-2 text-slate-400 text-sm">
                             No countries found
                           </div>
                         )}
@@ -655,11 +624,11 @@ const Signup = () => {
 
                 <input
                   type="text"
-                  placeholder="Your Phone Number"
+                  placeholder="Your phone number"
                   name="phone_number"
                   id="phone_number"
                   value={inputValue.phone_number}
-                  className="flex-1 border-none outline-none text-white py-2 px-3 rounded-md placeholder-white bg-[#24194b]"
+                  className={`${authInputClass} flex-1`}
                   onChange={handleOnChange}
                   required
                 />
@@ -668,22 +637,13 @@ const Signup = () => {
 
             <button
               type="submit"
-              className="text-white bg-black py-2 px-4 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+              disabled={loading}
+              className={authBtnPrimary}
             >
-              {loading ? "Signing Up..." : "Sign Up"}
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
-          <p className="text-[13px] sm:text-[15px] mt-2 mb-4 text-gray-200">
-            Already have an account?{" "}
-            <Link
-              to="/signin"
-              className="underline text-gray-300 hover:text-white"
-            >
-              Sign In
-            </Link>
-          </p>
-        </div>
-      </div>
+      </AuthLayout>
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <img src="/loading.svg" alt="Loading..." className="w-16 h-16" />

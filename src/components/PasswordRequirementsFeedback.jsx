@@ -1,17 +1,11 @@
 import React from "react";
 import { evaluatePasswordRules } from "../utils/djangoPasswordValidation";
 
-const RuleIcon = ({ passed, pending }) => {
-  if (pending) {
-    return (
-      <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-white/25" />
-    );
-  }
-
+const RuleIcon = ({ passed }) => {
   if (passed) {
     return (
       <svg
-        className="h-4 w-4 shrink-0 text-emerald-400"
+        className="h-4 w-4 shrink-0 text-emerald-500"
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -27,7 +21,7 @@ const RuleIcon = ({ passed, pending }) => {
 
   return (
     <svg
-      className="h-4 w-4 shrink-0 text-red-400"
+      className="h-4 w-4 shrink-0 text-slate-400"
       viewBox="0 0 20 20"
       fill="currentColor"
       aria-hidden="true"
@@ -52,21 +46,21 @@ const PasswordRequirementsFeedback = ({
 
   return (
     <div
-      className="mt-2 rounded-md border border-white/15 bg-[#24194b] px-3 py-2.5"
+      className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
       aria-live="polite"
     >
-      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-white/70">
+      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
         Password requirements
       </p>
-      <ul className="space-y-1">
+      <ul className="space-y-1.5">
         {rules.map((rule) => (
           <li
             key={rule.id}
             className={`flex items-start gap-2 text-xs leading-snug ${
-              rule.passed ? "text-emerald-300" : "text-pink-200"
+              rule.passed ? "text-emerald-700" : "text-slate-600"
             }`}
           >
-            <RuleIcon passed={rule.passed} pending={false} />
+            <RuleIcon passed={rule.passed} />
             <span>{rule.label}</span>
           </li>
         ))}
