@@ -10,6 +10,7 @@ import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { formatMoney } from "../utils/formatMoney";
+import { isOutOfStock } from "../utils/cartStock";
 import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function Wishlist() {
@@ -257,7 +258,7 @@ export default function Wishlist() {
                                           </h1>
                                           <div className=" w-full flex sm:gap-1 items-center sm:mt-2 ">
                                             <button
-                                              disabled={product.quantity === 0}
+                                              disabled={isOutOfStock(product)}
                                               onClick={() => {
                                                 AddtoCart(product.id);
                                               }}

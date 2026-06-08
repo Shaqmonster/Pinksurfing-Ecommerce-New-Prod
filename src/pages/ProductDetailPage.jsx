@@ -21,7 +21,7 @@ import parse from "html-react-parser";
 import { data } from "autoprefixer";
 import Stars from '../components/Stars'
 import { formatMoney } from "../utils/formatMoney";
-import { isOutOfStock } from "../utils/cartStock";
+import { isOutOfStock, usesInventoryStock } from "../utils/cartStock";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -1438,15 +1438,17 @@ const ProductDetailPage = () => {
                         />
                       </div>
                       
-                      {/* Stock Badge */}
-                      {product.quantity > 0 ? (
-                        <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg animate-bounce">
-                          In Stock
-                        </div>
-                      ) : (
-                        <div className="absolute top-4 left-4 px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
-                          Out of Stock
-                        </div>
+                      {/* Stock Badge — goods/products only */}
+                      {usesInventoryStock(product) && (
+                        product.quantity > 0 ? (
+                          <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg animate-bounce">
+                            In Stock
+                          </div>
+                        ) : (
+                          <div className="absolute top-4 left-4 px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                            Out of Stock
+                          </div>
+                        )
                       )}
 
                       {/* Discount Badge */}
@@ -1727,7 +1729,7 @@ const ProductDetailPage = () => {
                               )}
                             </button>
 
-                            {!isDealClosed && product.quantity > 0 && (
+                            {!isDealClosed && (!usesInventoryStock(product) || product.quantity > 0) && (
                               <button
                                 onClick={() => {
                                   if (!accessToken) {

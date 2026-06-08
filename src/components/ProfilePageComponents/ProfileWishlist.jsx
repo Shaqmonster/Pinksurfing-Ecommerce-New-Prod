@@ -10,6 +10,7 @@ import { authContext } from "../../context/authContext";
 import { dataContext } from "../../context/dataContext";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { formatMoney } from "../../utils/formatMoney";
+import { isOutOfStock } from "../../utils/cartStock";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
 export default function ProfileWishlist() {
@@ -196,7 +197,7 @@ export default function ProfileWishlist() {
                                                     {currency}{formatMoney(product.unit_price)}
                                                 </p>
                                                 <button
-                                                    disabled={product.quantity === 0}
+                                                    disabled={isOutOfStock(product)}
                                                     onClick={() => AddtoCart(product.id)}
                                                     className="px-6 py-2.5 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-purple-50 transition-all active:scale-95 disabled:opacity-20"
                                                 >

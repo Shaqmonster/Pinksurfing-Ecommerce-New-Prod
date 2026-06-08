@@ -1,3 +1,21 @@
+/** Categories where quantity is not sellable inventory (listings, single cars, etc.). */
+export const NON_INVENTORY_CATEGORY_SLUGS = new Set([
+  "business-for-sale",
+  "business4sale",
+  "residential-realestate",
+  "commercial-realestate",
+  "cars",
+]);
+
+/** True only for standard goods/products that track purchasable stock. */
+export function usesInventoryStock(product) {
+  const slug =
+    product?.category?.slug ??
+    product?.product?.category?.slug ??
+    "";
+  return slug ? !NON_INVENTORY_CATEGORY_SLUGS.has(slug) : true;
+}
+
 /** Read vendor stock from a catalog product. */
 export function getProductStockQty(product) {
   const raw = product?.quantity ?? product?.available_stock;
@@ -7,8 +25,9 @@ export function getProductStockQty(product) {
   return stockQty;
 }
 
-/** True when a product cannot be purchased (stock is 0). */
+/** True when a goods/product cannot be purchased (stock is 0). */
 export function isOutOfStock(product) {
+  if (!usesInventoryStock(product)) return false;
   const stockQty = getProductStockQty(product);
   return stockQty !== null && stockQty <= 0;
 }
@@ -26,12 +45,14 @@ export function getCartItemStockQty(cartItem) {
 
 /** Cart line references a product with zero stock. */
 export function isCartItemOutOfStock(cartItem) {
+  if (!usesInventoryStock(cartItem?.product)) return false;
   const stockQty = getCartItemStockQty(cartItem);
   return stockQty !== null && stockQty <= 0;
 }
 
 /** Cart quantity exceeds current stock. */
 export function isCartItemOverStock(cartItem) {
+  if (!usesInventoryStock(cartItem?.product)) return false;
   const stockQty = getCartItemStockQty(cartItem);
   const cartQty = Number(cartItem?.quantity) || 0;
   return stockQty !== null && stockQty > 0 && cartQty > stockQty;
@@ -39,6 +60,7 @@ export function isCartItemOverStock(cartItem) {
 
 /** True when the cart line cannot be increased further. */
 export function isCartItemAtMaxStock(cartItem) {
+  if (!usesInventoryStock(cartItem?.product)) return false;
   const stockQty = getCartItemStockQty(cartItem);
   const cartQty = Number(cartItem?.quantity) || 0;
   if (stockQty === null) return true;

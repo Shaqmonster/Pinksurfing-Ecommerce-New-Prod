@@ -255,13 +255,14 @@ const ProductCard = ({ product, isCard }) => {
     getProductRatings(product.id);
   }, [product.id]);
 
-  const { slug: categorySlug } = useParams();
+  const { slug: routeCategorySlug } = useParams();
+  const categorySlug = product?.category?.slug || routeCategorySlug || "";
 
   const isResidential = categorySlug === "residential-realestate";
   const isCommercial = categorySlug === "commercial-realestate";
   const isBusiness = categorySlug === "business-for-sale" || categorySlug === "business4sale";
   const isListing = isResidential || isCommercial || isBusiness;
-  const productOutOfStock = !isListing && isOutOfStock(product);
+  const productOutOfStock = isOutOfStock(product);
 
   const getAttr = (name) => {
     const attr = (product.attributes || product.product_attributes || [])?.find(
