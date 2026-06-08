@@ -65,7 +65,6 @@ export const AuthProvider = ({ children }) => {
   const [pendingChatConversation, setPendingChatConversation] = useState(null);
   const [pendingChatParticipantEmail, setPendingChatParticipantEmail] = useState(null);
 
-  const bootstrappedRef = useRef(false);
   const profileLoadRef = useRef(null);
   const lastProfileTokenRef = useRef("");
 
@@ -231,23 +230,31 @@ export const AuthProvider = ({ children }) => {
   }, [clearSession, setCookie]);
 
   useEffect(() => {
-    if (bootstrappedRef.current) return;
-    bootstrappedRef.current = true;
+    let cancelled = false;
 
     void (async () => {
       try {
         if (isSsoLoggedOutGlobally()) {
-          clearSession();
+          if (!cancelled) clearSession();
           return;
         }
         const session = await ensureSession();
+        if (cancelled) return;
         if (session?.access) {
-          await establishSession(session.access, session.refresh);
+          // Profile hydration can be slow — do not block the initial render gate.
+          void establishSession(session.access, session.refresh);
         }
+      } catch (error) {
+        console.error("Auth bootstrap failed:", error);
+        if (!cancelled) clearSession();
       } finally {
-        setAuthReady(true);
+        if (!cancelled) setAuthReady(true);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [clearSession, establishSession]);
 
   useEffect(() => {
