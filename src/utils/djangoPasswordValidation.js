@@ -64,6 +64,16 @@ export const DJANGO_PASSWORD_RULES = [
     check: (password) => password.length >= 8,
   },
   {
+    id: "has_uppercase",
+    label: "At least one capital letter",
+    check: (password) => /[A-Z]/.test(password),
+  },
+  {
+    id: "has_symbol",
+    label: "At least one special character",
+    check: (password) => /[^A-Za-z0-9]/.test(password),
+  },
+  {
     id: "not_numeric",
     label: "Cannot be entirely numeric",
     check: (password) => !/^\d+$/.test(password),
