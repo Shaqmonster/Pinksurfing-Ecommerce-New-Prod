@@ -83,14 +83,15 @@ export function normalizeChatEmail(email) {
  * Merge a server message list with local state without dropping just-sent rows
  * when a refetch returns a stale snapshot.
  */
-export function mergeChatMessages(previous, serverMessages) {
+export function mergeChatMessages(previous, serverMessages, fallbackEmail = "") {
   const server = Array.isArray(serverMessages) ? serverMessages : [];
   const prev = Array.isArray(previous) ? previous : [];
   if (!server.length) return prev;
 
   const byId = new Map();
   for (const m of server) {
-    if (m?.id != null) byId.set(m.id, m);
+    const normalized = normalizeSavedMessage(m, fallbackEmail);
+    if (normalized?.id != null) byId.set(normalized.id, normalized);
   }
 
   for (const m of prev) {
@@ -115,18 +116,39 @@ export function mergeChatMessages(previous, serverMessages) {
   );
 }
 
+/** Normalize API / WebSocket payloads so sender.email is always present. */
+export function normalizeSavedMessage(saved, fallbackEmail = "") {
+  if (!saved) return null;
+  const sender =
+    saved.sender && typeof saved.sender === "object" ? { ...saved.sender } : {};
+  const email =
+    sender.email ||
+    saved.sender_email ||
+    (typeof saved.sender === "string" ? saved.sender : "") ||
+    fallbackEmail;
+  return {
+    ...saved,
+    sender: {
+      ...sender,
+      email: email || fallbackEmail,
+      username: sender.username || saved.sender_username || "",
+    },
+  };
+}
+
 /** Replace matching optimistic row with the saved API message. */
-export function appendServerChatMessage(previous, saved) {
-  if (!saved?.id) return previous || [];
+export function appendServerChatMessage(previous, saved, fallbackEmail = "") {
+  const normalized = normalizeSavedMessage(saved, fallbackEmail);
+  if (!normalized?.id) return previous || [];
   const prev = Array.isArray(previous) ? previous : [];
   const withoutLocal = prev.filter(
     (m) =>
       !String(m.id).startsWith("local-") ||
-      m.content !== saved.content ||
-      normalizeChatEmail(m.sender?.email) !== normalizeChatEmail(saved.sender?.email)
+      m.content !== normalized.content ||
+      normalizeChatEmail(m.sender?.email) !== normalizeChatEmail(normalized.sender?.email)
   );
-  if (withoutLocal.some((m) => m.id === saved.id)) return withoutLocal;
-  return [...withoutLocal, saved].sort(
+  if (withoutLocal.some((m) => m.id === normalized.id)) return withoutLocal;
+  return [...withoutLocal, normalized].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 }

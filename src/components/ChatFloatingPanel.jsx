@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCookies } from "react-cookie";
+import { toast } from "react-toastify";
 import {
   IoChatbubbleOutline,
   IoCloseOutline,
@@ -28,6 +28,7 @@ import {
   mergeChatMessages,
   appendServerChatMessage,
   normalizeChatEmail,
+  normalizeSavedMessage,
 } from "../utils/chatHelpers";
 
 const ChatFloatingPanel = ({
@@ -62,6 +63,7 @@ const ChatFloatingPanel = ({
   const activeConvRef = useRef(null);
   const messagesRef = useRef([]);
   const prevAccessTokenRef = useRef(accessToken);
+  const wsTokenRef = useRef(null);
   const myEmail = (user?.email || getEmailFromToken(accessToken) || "").toLowerCase();
 
   messagesRef.current = messages;
@@ -129,21 +131,35 @@ const ChatFloatingPanel = ({
   );
 
   const fetchMessages = useCallback(
-    async (convId, { silent = false } = {}) => {
+    async (convId, { silent = false, replace = false } = {}) => {
       const token = await resolveChatToken();
       if (!token || !convId) return;
       if (!silent) setLoadingThread(true);
       try {
         const res = await getConversationMessages(token, convId);
         const data = Array.isArray(res.data) ? res.data : res.data.results || [];
-        setMessages((prev) => mergeChatMessages(prev, data));
+        setMessages((prev) => {
+          if (activeConvRef.current?.id !== convId) return prev;
+          if (replace) {
+            return data
+              .map((m) => normalizeSavedMessage(m, myEmail))
+              .filter(Boolean)
+              .sort(
+                (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+              );
+          }
+          return mergeChatMessages(prev, data, myEmail);
+        });
       } catch (err) {
         console.error("Failed to fetch messages", err);
+        if (!silent && activeConvRef.current?.id === convId) {
+          toast.error("Could not load messages. Try again.");
+        }
       } finally {
         if (!silent) setLoadingThread(false);
       }
     },
-    [resolveChatToken]
+    [resolveChatToken, myEmail]
   );
 
   const sendWsIdentity = useCallback(() => {
@@ -152,9 +168,11 @@ const ChatFloatingPanel = ({
   }, [myEmail]);
 
   const connectWs = useCallback(
-    (convId) => {
-      const wsUrl = buildChatWebSocketUrl(convId, accessToken);
+    async (convId) => {
+      const token = await resolveChatToken();
+      const wsUrl = buildChatWebSocketUrl(convId, token);
       if (!wsUrl) return;
+      wsTokenRef.current = token;
 
       clearTimeout(wsReconnectRef.current);
       if (wsRef.current) {
@@ -189,17 +207,18 @@ const ChatFloatingPanel = ({
           }
 
           if (data.type === "message" || data.message) {
-            const newMsg = {
-              id: data.message_id || `ws-${Date.now()}`,
-              content: data.message,
-              sender: {
-                email: data.sender_email,
-                username: data.sender_username || "",
+            const newMsg = normalizeSavedMessage(
+              {
+                id: data.message_id || `ws-${Date.now()}`,
+                content: data.message,
+                sender_email: data.sender_email,
+                sender_username: data.sender_username || "",
+                created_at: data.created_at || new Date().toISOString(),
+                attachments: data.attachments || [],
               },
-              created_at: data.created_at || new Date().toISOString(),
-              attachments: data.attachments || [],
-            };
-            setMessages((prev) => appendServerChatMessage(prev, newMsg));
+              myEmail
+            );
+            setMessages((prev) => appendServerChatMessage(prev, newMsg, myEmail));
             if (activeConvRef.current?.id) {
               bumpConversationPreview(activeConvRef.current.id, newMsg);
             }
@@ -228,7 +247,7 @@ const ChatFloatingPanel = ({
 
       wsRef.current = ws;
     },
-    [accessToken, sendWsIdentity, applyPresenceForEmail, fetchConversations, bumpConversationPreview]
+    [resolveChatToken, sendWsIdentity, applyPresenceForEmail, fetchConversations, bumpConversationPreview, myEmail]
   );
 
   connectWsRef.current = connectWs;
@@ -255,16 +274,17 @@ const ChatFloatingPanel = ({
     async (conv, { silentMessages = false } = {}) => {
       if (!conv?.id) return;
       setActiveConv(conv);
+      setMessages([]);
       applyOtherPresence(otherUser(conv));
       connectWs(conv.id);
-      await fetchMessages(conv.id, { silent: silentMessages });
+      await fetchMessages(conv.id, { silent: silentMessages, replace: true });
     },
     [applyOtherPresence, otherUser, connectWs, fetchMessages]
   );
 
   const openConversationByEmail = useCallback(
     async (email) => {
-      if (!email || !accessToken) return;
+      if (!email) return;
       setOpeningThread(true);
       try {
         const normalized = String(email).trim().toLowerCase();
@@ -297,8 +317,8 @@ const ChatFloatingPanel = ({
   );
 
   useEffect(() => {
-    if (isOpen && accessToken) fetchConversations(true);
-  }, [isOpen, accessToken, fetchConversations]);
+    if (isOpen) fetchConversations(true);
+  }, [isOpen, fetchConversations]);
 
   /** Reconnect live socket when JWT refreshes (expired token breaks WS + empty thread). */
   useEffect(() => {
@@ -337,16 +357,20 @@ const ChatFloatingPanel = ({
       wsConnectedRef.current = false;
       return;
     }
-    const tick = () => {
+    const tick = async () => {
       fetchConversations(true);
-      if (activeConvRef.current?.id) {
-        fetchMessages(activeConvRef.current.id, { silent: true });
+      const convId = activeConvRef.current?.id;
+      if (!convId) return;
+      const token = await resolveChatToken();
+      if (token && wsTokenRef.current && token !== wsTokenRef.current) {
+        connectWs(convId);
       }
+      fetchMessages(convId, { silent: true });
     };
     tick();
     pollRef.current = setInterval(tick, 5000);
     return () => clearInterval(pollRef.current);
-  }, [isOpen, fetchConversations, fetchMessages]);
+  }, [isOpen, fetchConversations, fetchMessages, resolveChatToken, connectWs]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -392,22 +416,21 @@ const ChatFloatingPanel = ({
       if (!token) throw new Error("Session expired");
       const res = await sendMessage(token, activeConv.id, text, files);
       if (res?.data) {
-        setMessages((prev) => appendServerChatMessage(prev, res.data));
-        bumpConversationPreview(activeConv.id, res.data);
+        const saved = normalizeSavedMessage(res.data, myEmail);
+        setMessages((prev) => appendServerChatMessage(prev, saved, myEmail));
+        bumpConversationPreview(activeConv.id, saved);
       }
       fetchConversations(true);
     } catch (err) {
       console.error("Failed to send message", err);
+      const detail = err?.response?.data?.detail;
+      toast.error(
+        typeof detail === "string"
+          ? detail
+          : "Could not send message. Try refreshing the page."
+      );
       setMessageInput(text);
       setAttachments(files);
-      setMessages((prev) =>
-        prev.filter(
-          (m) =>
-            !String(m.id).startsWith("local-") ||
-            m.content !== text ||
-            normalizeChatEmail(m.sender?.email) !== myEmail
-        )
-      );
     } finally {
       setSending(false);
     }
