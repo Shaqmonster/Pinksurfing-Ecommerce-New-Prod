@@ -5,16 +5,16 @@ import MobileFilterDrawer from "./categoryProducts/MobileFilterDrawer";
 import CategoryHeader from "./categoryProducts/CategoryHeader";
 import CategorySidebar from "./categoryProducts/CategorySidebar";
 import ProductsSection from "./categoryProducts/ProductsSection";
+import ElectronicsSubcategoryLanding from "./categoryProducts/ElectronicsSubcategoryLanding";
 
-export default function CategoryProducts() {
-  const { slug } = useParams();
-
-  // ── Business for Sale gets its own premium marketplace UI ──
-  if (slug === "business4sale" || slug === "business-for-sale") {
-    return <BusinessForSale />;
-  }
-
+function CategoryProductsView() {
+  const { slug, subSlug } = useParams();
   const hook = useCategoryProducts();
+
+  const parentBreadcrumb =
+    slug === "electronics" && subSlug
+      ? { label: "Electronics", to: "/category/electronics" }
+      : null;
 
   return (
     <div className={`min-h-screen ${hook.isDarkMode ? "dark bg-[#0A0B0E]" : "bg-gradient-to-br from-slate-50 via-white to-purple-50"}`}>
@@ -62,9 +62,9 @@ export default function CategoryProducts() {
 
       {/* Main Content */}
       <main className="relative z-10 max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-        {/* Header with breadcrumb, title, controls */}
         <CategoryHeader
           title={hook.title}
+          parentBreadcrumb={parentBreadcrumb}
           filteredProducts={hook.filteredProducts}
           isCard={hook.isCard}
           setIsCard={hook.setIsCard}
@@ -80,7 +80,6 @@ export default function CategoryProducts() {
           setMobileFiltersOpen={hook.setMobileFiltersOpen}
         />
 
-        {/* Main Grid: Sidebar + Products */}
         <div className="grid grid-cols-1 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
           <CategorySidebar
             categorySlug={slug}
@@ -135,7 +134,6 @@ export default function CategoryProducts() {
         </div>
       </main>
 
-      {/* Styles */}
       <style jsx>{`
         .glass-card {
           background: rgba(255, 255, 255, 0.7);
@@ -160,4 +158,18 @@ export default function CategoryProducts() {
       `}</style>
     </div>
   );
+}
+
+export default function CategoryProducts() {
+  const { slug, subSlug } = useParams();
+
+  if (slug === "business4sale" || slug === "business-for-sale") {
+    return <BusinessForSale />;
+  }
+
+  if (slug === "electronics" && !subSlug) {
+    return <ElectronicsSubcategoryLanding />;
+  }
+
+  return <CategoryProductsView />;
 }

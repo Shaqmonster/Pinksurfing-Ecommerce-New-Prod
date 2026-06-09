@@ -11,6 +11,7 @@ import { SORT_METHODS, hasActiveFilters, getActiveFilterCount } from "./constant
 
 export default function CategoryHeader({
     title,
+    parentBreadcrumb,
     filteredProducts,
     isCard,
     setIsCard,
@@ -30,10 +31,26 @@ export default function CategoryHeader({
     return (
         <div className="mb-5">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4 flex-wrap">
                 <Link to="/" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Home</Link>
-                <ChevronRightIcon className="w-4 h-4" />
-                <span className="text-purple-600 dark:text-purple-400 font-medium capitalize">{title}</span>
+                {parentBreadcrumb ? (
+                    <>
+                        <ChevronRightIcon className="w-4 h-4" />
+                        <Link
+                            to={parentBreadcrumb.to}
+                            className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                        >
+                            {parentBreadcrumb.label}
+                        </Link>
+                        <ChevronRightIcon className="w-4 h-4" />
+                        <span className="text-purple-600 dark:text-purple-400 font-medium">{title}</span>
+                    </>
+                ) : (
+                    <>
+                        <ChevronRightIcon className="w-4 h-4" />
+                        <span className="text-purple-600 dark:text-purple-400 font-medium capitalize">{title}</span>
+                    </>
+                )}
             </nav>
 
             {/* Category Header Card */}

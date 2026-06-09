@@ -20,7 +20,7 @@ import {
  * for the CategoryProducts page.
  */
 export default function useCategoryProducts() {
-    const { slug } = useParams();
+    const { slug, subSlug } = useParams();
     const [cookies] = useCookies([]);
     const { products } = useContext(dataContext);
     const { currency, isDarkMode } = useContext(authContext);
@@ -77,6 +77,11 @@ export default function useCategoryProducts() {
             attributeFilters,
             sortMethod,
         });
+
+        if (categorySlug === "electronics" && subSlug) {
+            list = list.filter((product) => product?.subcategory?.slug === subSlug);
+        }
+
         if (isLocationCategory && locationFilterActive && anchorCoords) {
             list = list.filter((p) =>
                 productMatchesRadius(p, anchorCoords, radiusMiles, productResolvedCoords, {
@@ -94,6 +99,7 @@ export default function useCategoryProducts() {
         categoryFilter,
         sortMethod,
         attributeFilters,
+        subSlug,
         isLocationCategory,
         locationFilterActive,
         anchorCoords,
@@ -155,10 +161,14 @@ export default function useCategoryProducts() {
         setAttributeFilters({});
     }, [categoryFilter, shoppingProduct]);
 
-    // Set title from slug
+    // Set title from slug (or subcategory when drilling into electronics)
     useEffect(() => {
-        setTitle(slugToTitle(categorySlug));
-    }, [categorySlug]);
+        if (categorySlug === "electronics" && subSlug) {
+            setTitle(slugToTitle(subSlug));
+        } else {
+            setTitle(slugToTitle(categorySlug));
+        }
+    }, [categorySlug, subSlug]);
 
     // Fetch products
     useEffect(() => {
@@ -197,6 +207,16 @@ export default function useCategoryProducts() {
                     setMaximumValue(Math.max(...prices));
                     setMaxValue(Math.max(...prices));
                 }
+
+                if (categorySlug === "electronics" && subSlug) {
+                    const match = subcategoriesData.find((sub) => sub.slug === subSlug);
+                    if (match) {
+                        setCategoryFilter(match.name);
+                        setTitle(match.name);
+                    }
+                } else {
+                    setCategoryFilter("all");
+                }
             } catch (error) {
                 console.error(error);
             } finally {
@@ -204,9 +224,8 @@ export default function useCategoryProducts() {
             }
         };
 
-        setCategoryFilter("all");
         getFilterProducts();
-    }, [categorySlug]);
+    }, [categorySlug, subSlug]);
 
     // Recalculate max price when products change
     useEffect(() => {
