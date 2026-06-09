@@ -1079,7 +1079,7 @@ const BusinessListingDetail = ({
                           {saleType && <div className="b-ops-row"><span className="b-ops-key">Sale Type</span><span className="b-ops-val">{saleType}</span></div>}
                           {yearsOp && <div className="b-ops-row"><span className="b-ops-key">Years Operating</span><span className="b-ops-val">{yearsOp} years</span></div>}
                           {ownerInvolvement && <div className="b-ops-row"><span className="b-ops-key">Owner Involvement</span><span className="b-ops-val">{ownerInvolvement}</span></div>}
-                          {employees && <div className="b-ops-row"><span className="b-ops-key">Team Size</span><span className="b-ops-val">{employees} employees</span></div>}
+                          {employees && <div className="b-ops-row"><span className="b-ops-key">Team Size</span><span className="b-ops-val">{employees === "Fully autonomous" ? employees : `${employees} employees`}</span></div>}
                           {transitionType && <div className="b-ops-row"><span className="b-ops-key">Transition Support</span><span className="b-ops-val">{transitionType}</span></div>}
                           {leaseRemaining && <div className="b-ops-row"><span className="b-ops-key">Lease Remaining</span><span className="b-ops-val">{leaseRemaining}</span></div>}
                           {licenses && <div className="b-ops-row"><span className="b-ops-key">Licenses Required</span><span className="b-ops-val">{licenses}</span></div>}
