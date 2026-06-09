@@ -75,6 +75,62 @@ export function sumUnreadCount(conversations) {
   return (conversations || []).reduce((n, c) => n + (c.unread_count || 0), 0);
 }
 
+export function normalizeChatEmail(email) {
+  return (email || "").trim().toLowerCase();
+}
+
+/**
+ * Merge a server message list with local state without dropping just-sent rows
+ * when a refetch returns a stale snapshot.
+ */
+export function mergeChatMessages(previous, serverMessages) {
+  const server = Array.isArray(serverMessages) ? serverMessages : [];
+  const prev = Array.isArray(previous) ? previous : [];
+  if (!server.length) return prev;
+
+  const byId = new Map();
+  for (const m of server) {
+    if (m?.id != null) byId.set(m.id, m);
+  }
+
+  for (const m of prev) {
+    const id = m?.id;
+    if (id == null || String(id).startsWith("local-")) continue;
+    if (!byId.has(id)) byId.set(id, m);
+  }
+
+  for (const m of prev) {
+    const id = String(m?.id || "");
+    if (!id.startsWith("local-")) continue;
+    const duplicated = [...byId.values()].some(
+      (s) =>
+        s.content === m.content &&
+        normalizeChatEmail(s.sender?.email) === normalizeChatEmail(m.sender?.email)
+    );
+    if (!duplicated) byId.set(m.id, m);
+  }
+
+  return [...byId.values()].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+}
+
+/** Replace matching optimistic row with the saved API message. */
+export function appendServerChatMessage(previous, saved) {
+  if (!saved?.id) return previous || [];
+  const prev = Array.isArray(previous) ? previous : [];
+  const withoutLocal = prev.filter(
+    (m) =>
+      !String(m.id).startsWith("local-") ||
+      m.content !== saved.content ||
+      normalizeChatEmail(m.sender?.email) !== normalizeChatEmail(saved.sender?.email)
+  );
+  if (withoutLocal.some((m) => m.id === saved.id)) return withoutLocal;
+  return [...withoutLocal, saved].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+}
+
 /** Human-readable presence for chat header */
 export function formatLastSeen(iso) {
   if (!iso) return null;

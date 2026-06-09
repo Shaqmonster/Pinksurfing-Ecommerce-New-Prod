@@ -22,6 +22,8 @@ import {
   fileNameFromUrl,
   getEmailFromToken,
   timeAgo,
+  mergeChatMessages,
+  appendServerChatMessage,
 } from "../../utils/chatHelpers";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import {
@@ -261,14 +263,7 @@ const GigMessages = () => {
     try {
       const res = await getConversationMessages(accessToken, convId);
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
-      setMessages((prev) => {
-        if (silent && prev.length === data.length) {
-          const lastPrev = prev[prev.length - 1]?.id;
-          const lastNew = data[data.length - 1]?.id;
-          if (lastPrev === lastNew) return prev;
-        }
-        return data;
-      });
+      setMessages((prev) => mergeChatMessages(prev, data));
     } catch {
       if (!silent) toast.error("Failed to load messages.");
     } finally {
@@ -307,7 +302,7 @@ const GigMessages = () => {
           created_at: data.created_at || new Date().toISOString(),
           attachments: [],
         };
-        setMessages((prev) => prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+        setMessages((prev) => appendServerChatMessage(prev, newMsg));
         setConversations((prev) => prev.map((c) => c.id === convId ? { ...c, last_message: newMsg, updated_at: newMsg.created_at } : c));
       } catch { /* ignore */ }
     };
@@ -354,14 +349,16 @@ const GigMessages = () => {
     setSending(true);
     try {
       if (attachments.length > 0) {
-        await sendMessage(accessToken, activeConv.id, text, attachments);
+        const res = await sendMessage(accessToken, activeConv.id, text, attachments);
         setAttachments([]);
-        fetchMessages(activeConv.id);
+        if (res?.data) setMessages((prev) => appendServerChatMessage(prev, res.data));
+        else fetchMessages(activeConv.id);
       } else if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({ message: text, sender_email: myEmail }));
       } else {
-        await sendMessage(accessToken, activeConv.id, text);
-        fetchMessages(activeConv.id);
+        const res = await sendMessage(accessToken, activeConv.id, text);
+        if (res?.data) setMessages((prev) => appendServerChatMessage(prev, res.data));
+        else fetchMessages(activeConv.id);
       }
       setMessageInput("");
       if (textareaRef.current) textareaRef.current.style.height = "44px";

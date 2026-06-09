@@ -24,6 +24,9 @@ import {
   getEmailFromToken,
   presenceLabel,
   sumUnreadCount,
+  mergeChatMessages,
+  appendServerChatMessage,
+  normalizeChatEmail,
 } from "../utils/chatHelpers";
 
 const ChatFloatingPanel = ({
@@ -108,14 +111,7 @@ const ChatFloatingPanel = ({
       try {
         const res = await getConversationMessages(accessToken, convId);
         const data = Array.isArray(res.data) ? res.data : res.data.results || [];
-        setMessages((prev) => {
-          if (silent && prev.length > 0 && data.length >= prev.length) {
-            const lastPrev = prev[prev.length - 1]?.id;
-            const lastNew = data[data.length - 1]?.id;
-            if (lastPrev === lastNew && data.length === prev.length) return prev;
-          }
-          return data;
-        });
+        setMessages((prev) => mergeChatMessages(prev, data));
       } catch (err) {
         console.error("Failed to fetch messages", err);
       } finally {
@@ -178,16 +174,7 @@ const ChatFloatingPanel = ({
               created_at: data.created_at || new Date().toISOString(),
               attachments: data.attachments || [],
             };
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev;
-              const withoutOptimistic = prev.filter(
-                (m) =>
-                  !String(m.id).startsWith("local-") ||
-                  m.content !== newMsg.content ||
-                  (m.sender?.email || "").toLowerCase() !== (newMsg.sender?.email || "").toLowerCase()
-              );
-              return [...withoutOptimistic, newMsg];
-            });
+            setMessages((prev) => appendServerChatMessage(prev, newMsg));
             fetchConversations(true);
           }
         } catch {
@@ -361,13 +348,23 @@ const ChatFloatingPanel = ({
 
     try {
       appendOptimisticMessage(text, files);
-      await sendMessage(accessToken, activeConv.id, text, files);
-      await fetchMessages(activeConv.id, { silent: true });
+      const res = await sendMessage(accessToken, activeConv.id, text, files);
+      if (res?.data) {
+        setMessages((prev) => appendServerChatMessage(prev, res.data));
+      }
       fetchConversations(true);
     } catch (err) {
       console.error("Failed to send message", err);
       setMessageInput(text);
       setAttachments(files);
+      setMessages((prev) =>
+        prev.filter(
+          (m) =>
+            !String(m.id).startsWith("local-") ||
+            m.content !== text ||
+            normalizeChatEmail(m.sender?.email) !== myEmail
+        )
+      );
     } finally {
       setSending(false);
     }
@@ -528,7 +525,7 @@ const ChatFloatingPanel = ({
               <div className="flex-1 flex flex-col overflow-hidden min-h-0">
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
                   {messages.map((msg, i) => {
-                    const isMe = (msg.sender?.email || "").toLowerCase() === myEmail;
+                    const isMe = normalizeChatEmail(msg.sender?.email) === myEmail;
                     return (
                       <div
                         key={msg.id || i}
