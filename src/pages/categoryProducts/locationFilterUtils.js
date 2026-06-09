@@ -6,6 +6,7 @@
 const ZIP_ATTR_NAMES = new Set([
     "zip code",
     "zip",
+    "zip_code",
     "postal code",
     "postcode",
     "pin code",
@@ -127,6 +128,56 @@ export function getProductZipCacheKey(product) {
 }
 
 /**
+ * Read device GPS from the browser (requires user permission).
+ * @returns {Promise<{ lat: number, lng: number }>}
+ */
+export function getBrowserGeolocation() {
+    return new Promise((resolve, reject) => {
+        if (typeof navigator === "undefined" || !navigator.geolocation) {
+            reject(Object.assign(new Error("Geolocation is not supported in this browser."), { code: 0 }));
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) =>
+                resolve({
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                }),
+            (err) => reject(err),
+            {
+                enableHighAccuracy: true,
+                timeout: 20000,
+                maximumAge: 120000,
+            }
+        );
+    });
+}
+
+/** Human-readable message for GeolocationPositionError / permission failures. */
+export function geolocationErrorMessage(error) {
+    const code = error?.code;
+    if (code === 1) return "Location permission denied. Allow location in your browser, or enter a ZIP.";
+    if (code === 2) return "Location unavailable. Try again or enter a ZIP/postal code.";
+    if (code === 3) return "Location request timed out. Try again or enter a ZIP.";
+    return error?.message || "Could not read your current location.";
+}
+
+/**
+ * If the user already granted geolocation, returns true without prompting.
+ */
+export async function isBrowserGeolocationGranted() {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) {
+        return false;
+    }
+    try {
+        const status = await navigator.permissions.query({ name: "geolocation" });
+        return status.state === "granted";
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Haversine distance in miles.
  */
 export function haversineMiles(lat1, lon1, lat2, lon2) {
@@ -237,6 +288,11 @@ export function extractCityStateCountryFromAttributes(attrs) {
         if (name === "country") country = val;
     }
     return { city, state, country };
+}
+
+/** True when listing has city/state/country or ZIP stored as product attributes. */
+export function hasListingLocationData(product) {
+    return hasZipOrCityListing(product);
 }
 
 function hasZipOrCityListing(product) {

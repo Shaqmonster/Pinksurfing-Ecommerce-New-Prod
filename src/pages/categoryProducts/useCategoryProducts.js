@@ -6,7 +6,7 @@ import axios from "axios";
 import { dataContext } from "../../context/dataContext";
 import { authContext } from "../../context/authContext";
 import { filterProducts, slugToTitle } from "./utils";
-import { LOCATION_FILTER_CATEGORY_SLUGS } from "./constants";
+import { LOCATION_FILTER_CATEGORY_SLUGS, getLocationRadiusConfig } from "./constants";
 import {
     geocodeZipWithFallback,
     inferCountryFromZipShape,
@@ -14,6 +14,10 @@ import {
     normalizeZipForCountry,
     productMatchesRadius,
     resolveCoordinatesForProducts,
+    hasListingLocationData,
+    getBrowserGeolocation,
+    geolocationErrorMessage,
+    isBrowserGeolocationGranted,
 } from "./locationFilterUtils";
 
 /**
@@ -57,7 +61,11 @@ export default function useCategoryProducts() {
     const [attributeFilters, setAttributeFilters] = useState({});
 
     // Location radius filter (cars, real estate, business for sale only)
-    const [radiusMiles, setRadiusMiles] = useState(50);
+    const locationRadiusConfig = useMemo(
+        () => getLocationRadiusConfig(categorySlug || ""),
+        [categorySlug]
+    );
+    const [radiusMiles, setRadiusMiles] = useState(locationRadiusConfig.defaultMiles);
     const [manualZip, setManualZip] = useState("");
     /** Always exclude listings with no ZIP in attributes (no UI toggle). */
     const includeWithoutZip = false;
@@ -93,7 +101,7 @@ export default function useCategoryProducts() {
                 productMatchesRadius(p, anchorCoords, radiusMiles, productResolvedCoords, {
                     appliedPostalKey,
                     includeWithoutZip,
-                    includeIfUnresolved: true,
+                    includeIfUnresolved: false,
                 })
             );
         }
@@ -114,6 +122,11 @@ export default function useCategoryProducts() {
         productResolvedCoords,
         appliedPostalKey,
     ]);
+
+    const listingsMissingLocationCount = useMemo(() => {
+        if (!isLocationCategory || !shoppingProduct?.length) return 0;
+        return shoppingProduct.filter((p) => !hasListingLocationData(p)).length;
+    }, [isLocationCategory, shoppingProduct]);
 
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -171,6 +184,17 @@ export default function useCategoryProducts() {
     useEffect(() => {
         setSelectedSubcategorySlugs([]);
         setCategoryFilter("all");
+        const { defaultMiles } = getLocationRadiusConfig(categorySlug || "");
+        setRadiusMiles(defaultMiles);
+        setLocationFilterActive(false);
+        setAnchorCoords(null);
+        setProductResolvedCoords({});
+        setAppliedPostalKey(null);
+        setBrowserCoords(null);
+        setManualZip("");
+        setLocationError(null);
+        setLocationGeoProgress({ done: 0, total: 0 });
+        setDisplayLocationLabel("");
     }, [categorySlug]);
 
     // Legacy /category/electronics/:subSlug URLs → single page with filter pre-selected
@@ -361,6 +385,28 @@ export default function useCategoryProducts() {
         setDisplayLocationLabel("");
     }, []);
 
+    const activateLocationFilter = useCallback(
+        async (anchor, label, postalKeyForMatch = null) => {
+            setLocationApplying(true);
+            setLocationGeoProgress({ done: 0, total: 0 });
+            try {
+                const resolved = await resolveCoordinatesForProducts(shoppingProduct, (done, total) => {
+                    setLocationGeoProgress({ done, total });
+                });
+                setAnchorCoords(anchor);
+                setProductResolvedCoords(resolved);
+                setAppliedPostalKey(postalKeyForMatch);
+                setLocationFilterActive(true);
+                setDisplayLocationLabel(label);
+            } catch (e) {
+                setLocationError(e?.message || "Could not match listing locations.");
+            } finally {
+                setLocationApplying(false);
+            }
+        },
+        [shoppingProduct]
+    );
+
     const applyLocationFilter = useCallback(async () => {
         if (!isLocationCategory) return;
         setLocationError(null);
@@ -375,86 +421,69 @@ export default function useCategoryProducts() {
             anchor = await geocodeZipWithFallback(iso, zn);
             if (!anchor) {
                 setLocationError(
-                    "Could not locate that postal code. Try another code or use Fetch current location."
+                    "Could not locate that postal code. Try another code or use your browser location."
                 );
                 return;
             }
-            label = zn;
+            label = `ZIP ${zn}`;
             postalKeyForMatch = `${iso}|${zn}`;
             setBrowserCoords(null);
         } else if (browserCoords) {
             anchor = browserCoords;
-            label = displayLocationLabel || "Current location";
+            label = displayLocationLabel || "Your location (browser)";
             postalKeyForMatch = null;
         } else {
-            setLocationError("Enter a ZIP/postal code or use Fetch current location.");
-            return;
+            try {
+                anchor = await getBrowserGeolocation();
+                setManualZip("");
+                setBrowserCoords(anchor);
+                label = "Your location (browser)";
+            } catch (e) {
+                setLocationError(geolocationErrorMessage(e));
+                return;
+            }
         }
-        setLocationApplying(true);
-        setLocationGeoProgress({ done: 0, total: 0 });
-        try {
-            const resolved = await resolveCoordinatesForProducts(shoppingProduct, (done, total) => {
-                setLocationGeoProgress({ done, total });
-            });
-            setAnchorCoords(anchor);
-            setProductResolvedCoords(resolved);
-            setAppliedPostalKey(postalKeyForMatch);
-            setLocationFilterActive(true);
-            setDisplayLocationLabel(label);
-        } catch (e) {
-            setLocationError(e?.message || "Could not match listing locations.");
-        } finally {
-            setLocationApplying(false);
-        }
-    }, [isLocationCategory, browserCoords, manualZip, shoppingProduct, displayLocationLabel]);
 
-    /** GPS + resolve in one step (no Apply); avoids stale browserCoords from batched setState. */
+        await activateLocationFilter(anchor, label, postalKeyForMatch);
+    }, [isLocationCategory, browserCoords, manualZip, displayLocationLabel, activateLocationFilter]);
+
+    /** Browser GPS + apply filter in one step. */
     const fetchCurrentLocationAndApply = useCallback(async () => {
         if (!isLocationCategory) return;
         setLocationError(null);
-        if (!navigator.geolocation) {
-            setLocationError("Geolocation is not supported in this browser.");
-            return;
-        }
-        setLocationApplying(true);
-        setLocationGeoProgress({ done: 0, total: 0 });
         try {
-            const pos = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 20000,
-                    maximumAge: 60000,
-                });
-            });
-            const anchor = {
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude,
-            };
+            const anchor = await getBrowserGeolocation();
             setManualZip("");
             setBrowserCoords(anchor);
-            const resolved = await resolveCoordinatesForProducts(shoppingProduct, (done, total) => {
-                setLocationGeoProgress({ done, total });
-            });
-            setAnchorCoords(anchor);
-            setProductResolvedCoords(resolved);
-            setAppliedPostalKey(null);
-            setLocationFilterActive(true);
-            setDisplayLocationLabel("Current location");
+            await activateLocationFilter(anchor, "Your location (browser)", null);
         } catch (e) {
-            const code = e?.code;
-            const msg =
-                code === 1
-                    ? "Location permission denied."
-                    : code === 2
-                      ? "Location unavailable."
-                      : code === 3
-                        ? "Location request timed out."
-                        : e?.message || "Could not read your current location.";
-            setLocationError(msg);
-        } finally {
-            setLocationApplying(false);
+            setLocationError(geolocationErrorMessage(e));
         }
-    }, [isLocationCategory, shoppingProduct]);
+    }, [isLocationCategory, activateLocationFilter]);
+
+    /** Auto-apply browser location when permission was already granted (no extra prompt). */
+    useEffect(() => {
+        if (!isLocationCategory || loading || locationFilterActive) return;
+        if (!shoppingProduct?.length) return;
+
+        let cancelled = false;
+        (async () => {
+            const granted = await isBrowserGeolocationGranted();
+            if (!granted || cancelled) return;
+            try {
+                const anchor = await getBrowserGeolocation();
+                if (cancelled) return;
+                setBrowserCoords(anchor);
+                await activateLocationFilter(anchor, "Your location (browser)", null);
+            } catch {
+                /* user may revoke permission; ignore */
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isLocationCategory, loading, shoppingProduct, locationFilterActive, activateLocationFilter]);
 
     const toggleSubcategorySlug = useCallback((slug) => {
         setSelectedSubcategorySlugs((prev) =>
@@ -523,11 +552,13 @@ export default function useCategoryProducts() {
         // Location filter (subset of categories)
         radiusMiles,
         setRadiusMiles,
+        locationRadiusOptions: locationRadiusConfig.options,
         manualZip,
         setManualZip,
         browserCoords,
         setBrowserCoords,
         locationFilterActive,
+        listingsMissingLocationCount,
         locationApplying,
         locationError,
         locationGeoProgress,

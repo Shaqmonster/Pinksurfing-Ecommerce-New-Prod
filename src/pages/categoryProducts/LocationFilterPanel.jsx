@@ -1,5 +1,5 @@
 import { MapPinIcon, ViewfinderCircleIcon } from "@heroicons/react/24/outline";
-import { LOCATION_RADIUS_MILES_OPTIONS } from "./constants";
+import { CARS_RADIUS_OPTIONS } from "./constants";
 
 /**
  * @param {'desktop' | 'mobile'} variant
@@ -8,6 +8,7 @@ export default function LocationFilterPanel({
     variant = "desktop",
     radiusMiles,
     setRadiusMiles,
+    radiusOptions = CARS_RADIUS_OPTIONS,
     manualZip,
     setManualZip,
     browserCoords,
@@ -16,6 +17,7 @@ export default function LocationFilterPanel({
     locationApplying,
     locationError,
     locationGeoProgress,
+    displayLocationLabel,
     setDisplayLocationLabel,
     onApply,
     onClear,
@@ -33,7 +35,22 @@ export default function LocationFilterPanel({
 
     return (
         <div className={cardClass}>
-            {/* 1. Fetch current location — runs filter immediately */}
+            {!locationFilterActive && (
+                <p className={`text-[10px] mb-2 leading-snug ${labelCls}`}>
+                    Use your browser location or enter a ZIP, then Apply. Distance filtering starts only after that.
+                </p>
+            )}
+            {locationFilterActive && displayLocationLabel && (
+                <p className={`text-[10px] mb-2 leading-snug ${isMobile ? "text-emerald-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                    Near: <span className="font-semibold">{displayLocationLabel}</span> · {radiusMiles} mi
+                </p>
+            )}
+            {locationFilterActive && !displayLocationLabel && (
+                <p className={`text-[10px] mb-2 leading-snug ${isMobile ? "text-emerald-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                    Location filter active ({radiusMiles} mi)
+                </p>
+            )}
+
             <button
                 type="button"
                 onClick={onFetchCurrentLocation}
@@ -47,10 +64,13 @@ export default function LocationFilterPanel({
                 <ViewfinderCircleIcon
                     className={`w-4 h-4 shrink-0 ${isMobile ? "text-cyan-400" : "text-blue-600 dark:text-cyan-400"}`}
                 />
-                <span className="text-[11px] font-semibold text-left leading-tight">Fetch current location</span>
+                <span className="text-[11px] font-semibold text-left leading-tight">
+                    {locationApplying ? "Getting your location…" : "Use my location (browser)"}
+                </span>
             </button>
 
-            {/* 2. ZIP / postal */}
+            <p className={`text-[10px] mb-2 ${labelCls}`}>or enter ZIP / postal code</p>
+
             <div className="flex items-start gap-2 mb-2">
                 <MapPinIcon
                     className={`w-4 h-4 shrink-0 mt-1.5 ${isMobile ? "text-blue-400" : "text-blue-600 dark:text-blue-400"}`}
@@ -73,7 +93,12 @@ export default function LocationFilterPanel({
                 </div>
             </div>
 
-            {/* 3. Distance */}
+            {browserCoords && !locationFilterActive && (
+                <p className={`text-[10px] mb-2 ${isMobile ? "text-cyan-300" : "text-blue-600 dark:text-cyan-400"}`}>
+                    Browser location ready — click Apply or change distance.
+                </p>
+            )}
+
             <div className="flex items-center justify-between gap-2 mb-3">
                 <span className={`text-[11px] font-medium whitespace-nowrap ${labelCls}`}>Distance</span>
                 <select
@@ -81,7 +106,7 @@ export default function LocationFilterPanel({
                     onChange={(e) => setRadiusMiles(Number(e.target.value))}
                     className={`flex-1 max-w-[140px] rounded-lg px-2 py-1 text-xs font-medium border ${inputCls}`}
                 >
-                    {LOCATION_RADIUS_MILES_OPTIONS.map((m) => (
+                    {radiusOptions.map((m) => (
                         <option key={m} value={m}>
                             {m} mi
                         </option>
@@ -95,11 +120,10 @@ export default function LocationFilterPanel({
 
             {locationApplying && locationGeoProgress.total > 0 && (
                 <p className="text-[10px] text-blue-600 dark:text-blue-400 mb-1.5">
-                    Geocoding… {locationGeoProgress.done}/{locationGeoProgress.total}
+                    Matching listing locations… {locationGeoProgress.done}/{locationGeoProgress.total}
                 </p>
             )}
 
-            {/* 4. Apply + Clear */}
             <div className="flex gap-2">
                 <button
                     type="button"
@@ -109,7 +133,7 @@ export default function LocationFilterPanel({
                 >
                     {locationApplying ? "…" : "Apply"}
                 </button>
-                {(locationFilterActive || browserCoords) && (
+                {(locationFilterActive || browserCoords || manualZip) && (
                     <button
                         type="button"
                         onClick={onClear}

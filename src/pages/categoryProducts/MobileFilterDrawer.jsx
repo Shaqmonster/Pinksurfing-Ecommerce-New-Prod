@@ -34,6 +34,7 @@ export default function MobileFilterDrawer({
     isLocationCategory,
     radiusMiles,
     setRadiusMiles,
+    radiusOptions,
     manualZip,
     setManualZip,
     browserCoords,
@@ -42,10 +43,12 @@ export default function MobileFilterDrawer({
     locationApplying,
     locationError,
     locationGeoProgress,
+    displayLocationLabel,
     setDisplayLocationLabel,
     applyLocationFilter,
     fetchCurrentLocationAndApply,
     clearLocationFilter,
+    listingsMissingLocationCount,
 }) {
     return (
         <Transition.Root show={open} as={Fragment}>
@@ -93,6 +96,7 @@ export default function MobileFilterDrawer({
                                         variant="mobile"
                                         radiusMiles={radiusMiles}
                                         setRadiusMiles={setRadiusMiles}
+                                        radiusOptions={radiusOptions}
                                         manualZip={manualZip}
                                         setManualZip={setManualZip}
                                         browserCoords={browserCoords}
@@ -101,11 +105,18 @@ export default function MobileFilterDrawer({
                                         locationApplying={locationApplying}
                                         locationError={locationError}
                                         locationGeoProgress={locationGeoProgress}
+                                        displayLocationLabel={displayLocationLabel}
                                         setDisplayLocationLabel={setDisplayLocationLabel}
                                         onApply={applyLocationFilter}
                                         onClear={clearLocationFilter}
                                         onFetchCurrentLocation={fetchCurrentLocationAndApply}
                                     />
+                                )}
+                                {isLocationCategory && listingsMissingLocationCount > 0 && (
+                                    <p className="text-[10px] text-amber-400 px-1 leading-snug">
+                                        {listingsMissingLocationCount} listing{listingsMissingLocationCount === 1 ? "" : "s"}
+                                        {locationFilterActive ? " hidden" : " lack"} city/ZIP on file.
+                                    </p>
                                 )}
 
                                 {/* Subcategories */}

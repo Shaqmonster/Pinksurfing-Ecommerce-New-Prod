@@ -7,8 +7,34 @@ export const LOCATION_FILTER_CATEGORY_SLUGS = [
     "business4sale",
 ];
 
-/** Radius options (miles), aligned with common marketplace patterns. */
-export const LOCATION_RADIUS_MILES_OPTIONS = [10, 25, 50, 75, 100, 150, 200, 300, 500];
+const REAL_ESTATE_SLUGS = ["residential-realestate", "commercial-realestate"];
+const BUSINESS_SLUGS = ["business-for-sale", "business4sale"];
+
+/** Cars — buyers travel farther; wider range is normal. */
+export const CARS_RADIUS_OPTIONS = [10, 25, 50, 75, 100, 150, 200, 300];
+
+/** Real estate — neighborhood / metro focus; 50 mi default was too broad. */
+export const REAL_ESTATE_RADIUS_OPTIONS = [5, 10, 15, 25, 50, 75, 100];
+
+/** Business for sale — regional, between RE tight and cars wide. */
+export const BUSINESS_RADIUS_OPTIONS = [10, 25, 50, 75, 100, 150, 200];
+
+/** @deprecated use getLocationRadiusConfig */
+export const LOCATION_RADIUS_MILES_OPTIONS = CARS_RADIUS_OPTIONS;
+
+/**
+ * Default radius + dropdown options per location-enabled category.
+ */
+export function getLocationRadiusConfig(categorySlug) {
+    if (REAL_ESTATE_SLUGS.includes(categorySlug)) {
+        return { defaultMiles: 10, options: REAL_ESTATE_RADIUS_OPTIONS };
+    }
+    if (BUSINESS_SLUGS.includes(categorySlug)) {
+        return { defaultMiles: 25, options: BUSINESS_RADIUS_OPTIONS };
+    }
+    // cars and fallback
+    return { defaultMiles: 50, options: CARS_RADIUS_OPTIONS };
+}
 
 // Sort method options
 export const SORT_METHODS = [
