@@ -38,7 +38,6 @@ export default function CategorySidebar({
     applyLocationFilter,
     fetchCurrentLocationAndApply,
     clearLocationFilter,
-    listingsMissingLocationCount,
 }) {
     const formatPrice = (val) => {
         if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
@@ -72,12 +71,6 @@ export default function CategorySidebar({
                     onClear={clearLocationFilter}
                     onFetchCurrentLocation={fetchCurrentLocationAndApply}
                 />
-            )}
-            {isLocationCategory && listingsMissingLocationCount > 0 && (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 px-1 leading-snug">
-                    {listingsMissingLocationCount} listing{listingsMissingLocationCount === 1 ? "" : "s"} on this page
-                    {locationFilterActive ? " hidden" : " lack"} city/ZIP — usually added before location filtering existed.
-                </p>
             )}
 
             {/* Subcategories */}

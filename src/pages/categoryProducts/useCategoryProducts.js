@@ -14,7 +14,6 @@ import {
     normalizeZipForCountry,
     productMatchesRadius,
     resolveCoordinatesForProducts,
-    hasListingLocationData,
     getBrowserGeolocation,
     geolocationErrorMessage,
     isBrowserGeolocationGranted,
@@ -122,11 +121,6 @@ export default function useCategoryProducts() {
         productResolvedCoords,
         appliedPostalKey,
     ]);
-
-    const listingsMissingLocationCount = useMemo(() => {
-        if (!isLocationCategory || !shoppingProduct?.length) return 0;
-        return shoppingProduct.filter((p) => !hasListingLocationData(p)).length;
-    }, [isLocationCategory, shoppingProduct]);
 
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -425,7 +419,7 @@ export default function useCategoryProducts() {
                 );
                 return;
             }
-            label = `ZIP ${zn}`;
+            label = iso === "in" ? `PIN ${zn}` : `ZIP ${zn}`;
             postalKeyForMatch = `${iso}|${zn}`;
             setBrowserCoords(null);
         } else if (browserCoords) {
@@ -558,7 +552,6 @@ export default function useCategoryProducts() {
         browserCoords,
         setBrowserCoords,
         locationFilterActive,
-        listingsMissingLocationCount,
         locationApplying,
         locationError,
         locationGeoProgress,

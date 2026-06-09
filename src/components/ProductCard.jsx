@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { FaHeart, FaStar, FaBed, FaBath, FaRulerCombined, FaChartLine, FaMoneyBillWave, FaClock } from "react-icons/fa";
+import { FaHeart, FaStar, FaBed, FaBath, FaRulerCombined, FaChartLine, FaMoneyBillWave, FaClock, FaMapMarkerAlt } from "react-icons/fa";
+import { formatListingLocation } from "../pages/categoryProducts/locationFilterUtils";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
@@ -275,6 +276,7 @@ const ProductCard = ({ product, isCard }) => {
     ? formatDistanceToNow(new Date(product.created_at))
     : null;
 
+  const listingLocation = isListing ? formatListingLocation(product) : null;
 
   return (
     <div
@@ -299,7 +301,7 @@ const ProductCard = ({ product, isCard }) => {
       {isListing && (
         <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-lg bg-white/90 dark:bg-black/80 backdrop-blur-md shadow-sm border border-gray-100 dark:border-white/10">
           <span className="text-[10px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400">
-            {getAttr("status") || "For Sale"}
+            {getAttr("listing_type") || getAttr("Listing Type") || getAttr("status") || "For Sale"}
           </span>
         </div>
       )}
@@ -360,10 +362,17 @@ const ProductCard = ({ product, isCard }) => {
         </div>
 
         <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
             {product.name}
           </h2>
         </Link>
+
+        {listingLocation && (
+          <p className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+            <FaMapMarkerAlt className="text-purple-500 shrink-0" />
+            <span className="line-clamp-1">{listingLocation}</span>
+          </p>
+        )}
 
         {/* Specs Row (for Listings) */}
         {isListing && (

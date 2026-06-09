@@ -1,6 +1,6 @@
 /**
  * Zip / postal-based radius filtering for category listings.
- * Uses zippopotam.us when available, Open-Meteo for city fallback (many IN/EU postals missing from zippopotam).
+ * Uses zippopotam.us when available, Open-Meteo + Photon as fallbacks (many India PINs missing from zippopotam).
  */
 
 const ZIP_ATTR_NAMES = new Set([
@@ -263,12 +263,56 @@ export async function geocodeZipOpenMeteo(iso2, zipNormalized) {
     }
 }
 
+const ISO2_TO_COUNTRY_LABEL = {
+    us: "United States",
+    in: "India",
+    gb: "United Kingdom",
+    ca: "Canada",
+    au: "Australia",
+};
+
+/**
+ * Photon (OpenStreetMap) geocoding — reliable for India PINs and other postals zippopotam misses.
+ */
+export async function geocodeZipPhoton(iso2, zipNormalized) {
+    if (!zipNormalized) return null;
+    const countryLabel = ISO2_TO_COUNTRY_LABEL[(iso2 || "").toLowerCase()] || "";
+    const q = countryLabel ? `${zipNormalized} ${countryLabel}` : zipNormalized;
+    try {
+        const params = new URLSearchParams({ q, limit: "5" });
+        const res = await fetch(`https://photon.komoot.io/api/?${params}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const features = data.features || [];
+        const iso = (iso2 || "").toLowerCase();
+
+        for (const feature of features) {
+            const props = feature.properties || {};
+            const cc = (props.countrycode || "").toLowerCase();
+            if (iso && cc && cc !== iso) continue;
+            const coords = feature.geometry?.coordinates;
+            if (!coords || coords.length < 2) continue;
+            return { lat: coords[1], lng: coords[0] };
+        }
+
+        const fallback = features[0]?.geometry?.coordinates;
+        if (fallback?.length >= 2) {
+            return { lat: fallback[1], lng: fallback[0] };
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
 export async function geocodeZipWithFallback(iso2, zipNormalized) {
     let coords = await geocodeZipZippopotam(iso2, zipNormalized);
     if (coords) return coords;
     await new Promise((r) => setTimeout(r, 250));
     coords = await geocodeZipOpenMeteo(iso2, zipNormalized);
-    return coords;
+    if (coords) return coords;
+    await new Promise((r) => setTimeout(r, 250));
+    return geocodeZipPhoton(iso2, zipNormalized);
 }
 
 /**
@@ -290,9 +334,25 @@ export function extractCityStateCountryFromAttributes(attrs) {
     return { city, state, country };
 }
 
-/** True when listing has city/state/country or ZIP stored as product attributes. */
-export function hasListingLocationData(product) {
-    return hasZipOrCityListing(product);
+/** Format city / state / ZIP for display on listing cards. */
+export function formatListingLocation(product) {
+    const list = normalizeAttrsArray(product?.attributes || product?.product_attributes);
+    let city = null;
+    let state = null;
+    let zip = null;
+    for (const a of list) {
+        const name = (a.name || "").trim().toLowerCase();
+        const val = a.value != null ? String(a.value).trim() : "";
+        if (!val) continue;
+        if (name === "city") city = val;
+        if (name === "state" || name === "region" || name === "province") state = val;
+        if (ZIP_ATTR_NAMES.has(name) || name.includes("zip") || name.includes("postal")) zip = val;
+    }
+    if (city && state) return zip ? `${city}, ${state} ${zip}` : `${city}, ${state}`;
+    if (city) return city;
+    if (state) return state;
+    if (zip) return zip;
+    return null;
 }
 
 function hasZipOrCityListing(product) {
