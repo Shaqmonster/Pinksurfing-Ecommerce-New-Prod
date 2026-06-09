@@ -17,6 +17,7 @@ import {
 } from "../api/gigs";
 import { authContext } from "../context/authContext";
 import { useAccessToken } from "../hooks/useAccessToken";
+import { getOrRefreshAccessToken } from "../utils/authSession";
 import {
   CHAT_FILE_ACCEPT,
   buildChatWebSocketUrl,
@@ -60,10 +61,32 @@ const ChatFloatingPanel = ({
   const pollRef = useRef(null);
   const activeConvRef = useRef(null);
   const messagesRef = useRef([]);
+  const prevAccessTokenRef = useRef(accessToken);
   const myEmail = (user?.email || getEmailFromToken(accessToken) || "").toLowerCase();
 
   messagesRef.current = messages;
   activeConvRef.current = activeConv;
+
+  const resolveChatToken = useCallback(async () => {
+    const fresh = await getOrRefreshAccessToken();
+    return fresh || accessToken || "";
+  }, [accessToken]);
+
+  const bumpConversationPreview = useCallback((convId, savedMessage) => {
+    if (!convId || !savedMessage) return;
+    setConversations((prev) => {
+      const updated = prev.map((c) =>
+        c.id === convId
+          ? { ...c, last_message: savedMessage, updated_at: savedMessage.created_at }
+          : c
+      );
+      return updated.sort(
+        (a, b) =>
+          new Date(b.updated_at || b.last_message?.created_at || 0).getTime() -
+          new Date(a.updated_at || a.last_message?.created_at || 0).getTime()
+      );
+    });
+  }, []);
 
   const otherUser = useCallback(
     (conv) => conv?.participants?.find((p) => (p.email || "").toLowerCase() !== myEmail),
@@ -90,10 +113,11 @@ const ChatFloatingPanel = ({
 
   const fetchConversations = useCallback(
     async (silent = false) => {
-      if (!accessToken) return;
+      const token = await resolveChatToken();
+      if (!token) return;
       if (!silent) setLoadingList(true);
       try {
-        const res = await getConversations(accessToken);
+        const res = await getConversations(token);
         setConversations(Array.isArray(res.data) ? res.data : res.data.results || []);
       } catch (err) {
         console.error("Failed to fetch conversations", err);
@@ -101,15 +125,16 @@ const ChatFloatingPanel = ({
         if (!silent) setLoadingList(false);
       }
     },
-    [accessToken]
+    [resolveChatToken]
   );
 
   const fetchMessages = useCallback(
     async (convId, { silent = false } = {}) => {
-      if (!accessToken || !convId) return;
+      const token = await resolveChatToken();
+      if (!token || !convId) return;
       if (!silent) setLoadingThread(true);
       try {
-        const res = await getConversationMessages(accessToken, convId);
+        const res = await getConversationMessages(token, convId);
         const data = Array.isArray(res.data) ? res.data : res.data.results || [];
         setMessages((prev) => mergeChatMessages(prev, data));
       } catch (err) {
@@ -118,7 +143,7 @@ const ChatFloatingPanel = ({
         if (!silent) setLoadingThread(false);
       }
     },
-    [accessToken]
+    [resolveChatToken]
   );
 
   const sendWsIdentity = useCallback(() => {
@@ -175,6 +200,9 @@ const ChatFloatingPanel = ({
               attachments: data.attachments || [],
             };
             setMessages((prev) => appendServerChatMessage(prev, newMsg));
+            if (activeConvRef.current?.id) {
+              bumpConversationPreview(activeConvRef.current.id, newMsg);
+            }
             fetchConversations(true);
           }
         } catch {
@@ -200,7 +228,7 @@ const ChatFloatingPanel = ({
 
       wsRef.current = ws;
     },
-    [accessToken, sendWsIdentity, applyPresenceForEmail, fetchConversations]
+    [accessToken, sendWsIdentity, applyPresenceForEmail, fetchConversations, bumpConversationPreview]
   );
 
   connectWsRef.current = connectWs;
@@ -247,7 +275,9 @@ const ChatFloatingPanel = ({
           await openConversation(existing);
           return;
         }
-        const res = await createConversation(accessToken, normalized);
+        const token = await resolveChatToken();
+        if (!token) return;
+        const res = await createConversation(token, normalized);
         const conv = res.data;
         setConversations((prev) => (prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]));
         await openConversation(conv);
@@ -259,7 +289,7 @@ const ChatFloatingPanel = ({
       }
     },
     [
-      accessToken,
+      resolveChatToken,
       conversations,
       openConversation,
       clearPendingParticipantEmail,
@@ -269,6 +299,16 @@ const ChatFloatingPanel = ({
   useEffect(() => {
     if (isOpen && accessToken) fetchConversations(true);
   }, [isOpen, accessToken, fetchConversations]);
+
+  /** Reconnect live socket when JWT refreshes (expired token breaks WS + empty thread). */
+  useEffect(() => {
+    if (!isOpen || !activeConv?.id || !accessToken) return;
+    const prev = prevAccessTokenRef.current;
+    prevAccessTokenRef.current = accessToken;
+    if (prev && prev !== accessToken) {
+      connectWs(activeConv.id);
+    }
+  }, [accessToken, isOpen, activeConv?.id, connectWs]);
 
   useEffect(() => {
     if (!isOpen || !pendingConversation) return;
@@ -348,9 +388,12 @@ const ChatFloatingPanel = ({
 
     try {
       appendOptimisticMessage(text, files);
-      const res = await sendMessage(accessToken, activeConv.id, text, files);
+      const token = await resolveChatToken();
+      if (!token) throw new Error("Session expired");
+      const res = await sendMessage(token, activeConv.id, text, files);
       if (res?.data) {
         setMessages((prev) => appendServerChatMessage(prev, res.data));
+        bumpConversationPreview(activeConv.id, res.data);
       }
       fetchConversations(true);
     } catch (err) {
