@@ -79,10 +79,65 @@ export function normalizeChatEmail(email) {
   return (email || "").trim().toLowerCase();
 }
 
-/**
- * Merge a server message list with local state without dropping just-sent rows
- * when a refetch returns a stale snapshot.
- */
+/** Normalize API / WebSocket payloads so sender.email is always present. */
+export function normalizeSavedMessage(saved, fallbackEmail = "") {
+  if (!saved) return null;
+  const sender =
+    saved.sender && typeof saved.sender === "object" ? { ...saved.sender } : {};
+  const email =
+    sender.email ||
+    saved.sender_email ||
+    (typeof saved.sender === "string" ? saved.sender : "") ||
+    fallbackEmail;
+  return {
+    ...saved,
+    sender: {
+      ...sender,
+      email: email || fallbackEmail,
+      username: sender.username || saved.sender_username || "",
+    },
+  };
+}
+
+const CHAT_MSG_CACHE_KEY = "ps_chat_messages_cache";
+
+export function readPersistedChatMessages(convId) {
+  if (typeof window === "undefined" || !convId) return [];
+  try {
+    const raw = sessionStorage.getItem(CHAT_MSG_CACHE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    return Array.isArray(map[String(convId)]) ? map[String(convId)] : [];
+  } catch {
+    return [];
+  }
+}
+
+export function persistChatMessages(convId, messages) {
+  if (typeof window === "undefined" || !convId) return;
+  try {
+    const raw = sessionStorage.getItem(CHAT_MSG_CACHE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    map[String(convId)] = messages;
+    sessionStorage.setItem(CHAT_MSG_CACHE_KEY, JSON.stringify(map));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+/** Ensure the inbox preview message is present when opening a thread. */
+export function seedMessagesFromConversation(conv, cached = [], fallbackEmail = "") {
+  const base = Array.isArray(cached) ? [...cached] : [];
+  const last = conv?.last_message;
+  if (!last?.id) return base;
+  if (base.some((m) => m.id === last.id)) return base;
+  const normalized = normalizeSavedMessage(last, fallbackEmail);
+  return normalized
+    ? [...base, normalized].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )
+    : base;
+}
+
 export function mergeChatMessages(previous, serverMessages, fallbackEmail = "") {
   const server = Array.isArray(serverMessages) ? serverMessages : [];
   const prev = Array.isArray(previous) ? previous : [];
@@ -114,26 +169,6 @@ export function mergeChatMessages(previous, serverMessages, fallbackEmail = "") 
   return [...byId.values()].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
-}
-
-/** Normalize API / WebSocket payloads so sender.email is always present. */
-export function normalizeSavedMessage(saved, fallbackEmail = "") {
-  if (!saved) return null;
-  const sender =
-    saved.sender && typeof saved.sender === "object" ? { ...saved.sender } : {};
-  const email =
-    sender.email ||
-    saved.sender_email ||
-    (typeof saved.sender === "string" ? saved.sender : "") ||
-    fallbackEmail;
-  return {
-    ...saved,
-    sender: {
-      ...sender,
-      email: email || fallbackEmail,
-      username: sender.username || saved.sender_username || "",
-    },
-  };
 }
 
 /** Replace matching optimistic row with the saved API message. */

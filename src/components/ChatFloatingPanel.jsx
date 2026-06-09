@@ -29,6 +29,9 @@ import {
   appendServerChatMessage,
   normalizeChatEmail,
   normalizeSavedMessage,
+  readPersistedChatMessages,
+  persistChatMessages,
+  seedMessagesFromConversation,
 } from "../utils/chatHelpers";
 
 const ChatFloatingPanel = ({
@@ -134,6 +137,7 @@ const ChatFloatingPanel = ({
   const applyMessagesForConv = useCallback((convId, nextMessages) => {
     if (!convId) return;
     messagesCacheRef.current.set(convId, nextMessages);
+    persistChatMessages(convId, nextMessages);
     if (activeConvRef.current?.id === convId) {
       setMessages(nextMessages);
     }
@@ -293,12 +297,18 @@ const ChatFloatingPanel = ({
       if (!conv?.id) return;
       activeConvRef.current = conv;
       setActiveConv(conv);
-      setMessages(messagesCacheRef.current.get(conv.id) || []);
+      const seeded = seedMessagesFromConversation(
+        conv,
+        messagesCacheRef.current.get(conv.id) || readPersistedChatMessages(conv.id),
+        myEmail
+      );
+      messagesCacheRef.current.set(conv.id, seeded);
+      setMessages(seeded);
       applyOtherPresence(otherUser(conv));
       connectWs(conv.id);
       await fetchMessages(conv.id, { silent: silentMessages });
     },
-    [applyOtherPresence, otherUser, connectWs, fetchMessages]
+    [applyOtherPresence, otherUser, connectWs, fetchMessages, myEmail]
   );
 
   const openConversationByEmail = useCallback(
@@ -474,6 +484,7 @@ const ChatFloatingPanel = ({
     const convId = activeConvRef.current?.id;
     if (convId && messagesRef.current.length) {
       messagesCacheRef.current.set(convId, messagesRef.current);
+      persistChatMessages(convId, messagesRef.current);
     }
     activeConvRef.current = null;
     setActiveConv(null);

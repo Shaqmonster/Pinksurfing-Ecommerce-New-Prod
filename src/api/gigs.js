@@ -220,10 +220,23 @@ export const createConversation = (token, participantEmail) =>
     { headers: { ...authHeader(token), "Content-Type": "application/json" } }
   );
 
-export const getConversationMessages = (token, conversationId) =>
-  axios.get(`${BASE_URL}/api/chat/conversations/${conversationId}/messages/`, {
-    headers: authHeader(token),
-  });
+export const getConversationMessages = async (token, conversationId) => {
+  let url = `${BASE_URL}/api/chat/conversations/${conversationId}/messages/`;
+  const headers = authHeader(token);
+  const all = [];
+
+  while (url) {
+    const res = await axios.get(url, { headers });
+    const payload = res.data;
+    if (Array.isArray(payload)) {
+      return { ...res, data: payload };
+    }
+    all.push(...(payload.results || []));
+    url = payload.next || null;
+  }
+
+  return { data: all };
+};
 
 export const sendMessage = (token, conversationId, content, attachments = []) => {
   const form = new FormData();
