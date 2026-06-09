@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState, useMemo, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { sortElectronicsSubcategories } from "../../constants/electronicsSubcategories";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import { dataContext } from "../../context/dataContext";
@@ -25,7 +26,9 @@ export default function useCategoryProducts() {
     const { products } = useContext(dataContext);
     const { currency, isDarkMode } = useContext(authContext);
 
+    const navigate = useNavigate();
     const categorySlug = slug;
+    const isElectronics = categorySlug === "electronics";
     const isLocationCategory = LOCATION_FILTER_CATEGORY_SLUGS.includes(categorySlug || "");
 
     // Core state
@@ -42,6 +45,7 @@ export default function useCategoryProducts() {
     const [maximumValue, setMaximumValue] = useState(20000);
     const [isCard, setIsCard] = useState(true);
     const [subcategories, setSubcategories] = useState([]);
+    const [selectedSubcategorySlugs, setSelectedSubcategorySlugs] = useState([]);
     const [title, setTitle] = useState('');
 
     // Pagination
@@ -78,8 +82,10 @@ export default function useCategoryProducts() {
             sortMethod,
         });
 
-        if (categorySlug === "electronics" && subSlug) {
-            list = list.filter((product) => product?.subcategory?.slug === subSlug);
+        if (isElectronics && selectedSubcategorySlugs.length > 0) {
+            list = list.filter((product) =>
+                selectedSubcategorySlugs.includes(product?.subcategory?.slug)
+            );
         }
 
         if (isLocationCategory && locationFilterActive && anchorCoords) {
@@ -99,7 +105,8 @@ export default function useCategoryProducts() {
         categoryFilter,
         sortMethod,
         attributeFilters,
-        subSlug,
+        isElectronics,
+        selectedSubcategorySlugs,
         isLocationCategory,
         locationFilterActive,
         anchorCoords,
@@ -117,7 +124,7 @@ export default function useCategoryProducts() {
     // Reset to page 1 when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy, attributeFilters, locationFilterActive, radiusMiles, anchorCoords]);
+    }, [categoryFilter, minValue, maximumValue, sortMethod, filterBy, attributeFilters, selectedSubcategorySlugs, locationFilterActive, radiusMiles, anchorCoords]);
 
     // Reset location filter when switching category
     useEffect(() => {
@@ -161,37 +168,68 @@ export default function useCategoryProducts() {
         setAttributeFilters({});
     }, [categoryFilter, shoppingProduct]);
 
-    // Set title from slug (or subcategory when drilling into electronics)
     useEffect(() => {
-        if (categorySlug === "electronics" && subSlug) {
-            setTitle(slugToTitle(subSlug));
-        } else {
-            setTitle(slugToTitle(categorySlug));
+        setSelectedSubcategorySlugs([]);
+        setCategoryFilter("all");
+    }, [categorySlug]);
+
+    // Legacy /category/electronics/:subSlug URLs → single page with filter pre-selected
+    useEffect(() => {
+        if (isElectronics && subSlug) {
+            setSelectedSubcategorySlugs([subSlug]);
+            navigate("/category/electronics", { replace: true });
         }
-    }, [categorySlug, subSlug]);
+    }, [isElectronics, subSlug, navigate]);
+
+    useEffect(() => {
+        setTitle(slugToTitle(categorySlug));
+    }, [categorySlug]);
 
     // Fetch products
     useEffect(() => {
         const getFilterProducts = async () => {
             setLoading(true);
-            try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_SERVER_URL}/api/product/subcategories/${categorySlug}/`,
-                    { headers: { "Content-Type": "application/json" } }
-                );
+            const base = import.meta.env.VITE_SERVER_URL;
 
-                let subcategoriesData = response.data;
-                subcategoriesData = subcategoriesData.sort((a, b) => a.name.localeCompare(b.name));
+            try {
+                let subcategoriesData = [];
+
+                if (isElectronics) {
+                    const [schemaRes, dbRes] = await Promise.all([
+                        axios.get(`${base}/api/product/schema/subcategories/electronics/`),
+                        axios.get(`${base}/api/product/subcategories/electronics/`).catch(() => ({ data: [] })),
+                    ]);
+                    const schemaSubs = schemaRes.data?.subcategories || schemaRes.data || [];
+                    const dbSubs = Array.isArray(dbRes.data) ? dbRes.data : [];
+                    const dbBySlug = Object.fromEntries(dbSubs.map((s) => [s.slug, s]));
+
+                    subcategoriesData = sortElectronicsSubcategories(
+                        schemaSubs.map((sub) => {
+                            const slug = sub.id || sub.slug;
+                            const db = dbBySlug[slug];
+                            return { slug, name: sub.name || db?.name || slug, id: db?.id };
+                        })
+                    );
+                } else {
+                    const response = await axios.get(
+                        `${base}/api/product/subcategories/${categorySlug}/`,
+                        { headers: { "Content-Type": "application/json" } }
+                    );
+                    subcategoriesData = (response.data || []).sort((a, b) =>
+                        a.name.localeCompare(b.name)
+                    );
+                }
+
                 setSubcategories(subcategoriesData);
 
-                if (categorySlug === 'business4sale' && subcategoriesData.length === 0) {
+                if (categorySlug === "business4sale" && subcategoriesData.length === 0) {
                     setCategoryOnlyData(["all", "Business For Sale"]);
                 } else {
-                    setCategoryOnlyData(["all", ...subcategoriesData.map(subcat => subcat.name)]);
+                    setCategoryOnlyData(["all", ...subcategoriesData.map((subcat) => subcat.name)]);
                 }
 
                 const res = await axios.get(
-                    `${import.meta.env.VITE_SERVER_URL}/api/product/category-products/${categorySlug}/`,
+                    `${base}/api/product/category-products/${categorySlug}/`,
                     { headers: { "Content-Type": "application/json" } }
                 );
 
@@ -208,15 +246,6 @@ export default function useCategoryProducts() {
                     setMaxValue(Math.max(...prices));
                 }
 
-                if (categorySlug === "electronics" && subSlug) {
-                    const match = subcategoriesData.find((sub) => sub.slug === subSlug);
-                    if (match) {
-                        setCategoryFilter(match.name);
-                        setTitle(match.name);
-                    }
-                } else {
-                    setCategoryFilter("all");
-                }
             } catch (error) {
                 console.error(error);
             } finally {
@@ -225,7 +254,7 @@ export default function useCategoryProducts() {
         };
 
         getFilterProducts();
-    }, [categorySlug, subSlug]);
+    }, [categorySlug, isElectronics]);
 
     // Recalculate max price when products change
     useEffect(() => {
@@ -427,12 +456,23 @@ export default function useCategoryProducts() {
         }
     }, [isLocationCategory, shoppingProduct]);
 
+    const toggleSubcategorySlug = useCallback((slug) => {
+        setSelectedSubcategorySlugs((prev) =>
+            prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
+        );
+    }, []);
+
+    const clearSubcategorySlugs = useCallback(() => {
+        setSelectedSubcategorySlugs([]);
+    }, []);
+
     const clearAllFilters = useCallback(() => {
         setCategoryFilter("all");
         setFilterBy("");
         setMinValue(0);
         setMaximumValue(maxValue);
         setAttributeFilters({});
+        setSelectedSubcategorySlugs([]);
         clearLocationFilter();
     }, [maxValue, clearLocationFilter]);
 
@@ -454,6 +494,11 @@ export default function useCategoryProducts() {
         minValue, maximumValue, maxValue,
         filterBy, setFilterBy,
         CategoryOnlyData,
+        subcategories,
+        selectedSubcategorySlugs,
+        isElectronics,
+        toggleSubcategorySlug,
+        clearSubcategorySlugs,
         allowedAttributes,
         attributeFilters,
         itemsPerPage, setItemsPerPage,

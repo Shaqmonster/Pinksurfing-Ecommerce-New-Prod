@@ -5,29 +5,31 @@ import MobileFilterDrawer from "./categoryProducts/MobileFilterDrawer";
 import CategoryHeader from "./categoryProducts/CategoryHeader";
 import CategorySidebar from "./categoryProducts/CategorySidebar";
 import ProductsSection from "./categoryProducts/ProductsSection";
-import ElectronicsSubcategoryLanding from "./categoryProducts/ElectronicsSubcategoryLanding";
 
-function CategoryProductsView() {
-  const { slug, subSlug } = useParams();
+export default function CategoryProducts() {
+  const { slug } = useParams();
+
+  if (slug === "business4sale" || slug === "business-for-sale") {
+    return <BusinessForSale />;
+  }
+
   const hook = useCategoryProducts();
-
-  const parentBreadcrumb =
-    slug === "electronics" && subSlug
-      ? { label: "Electronics", to: "/category/electronics" }
-      : null;
 
   return (
     <div className={`min-h-screen ${hook.isDarkMode ? "dark bg-[#0A0B0E]" : "bg-gradient-to-br from-slate-50 via-white to-purple-50"}`}>
-      {/* Background Gradients */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px]"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-[100px]"></div>
       </div>
 
-      {/* Mobile Filter Drawer */}
       <MobileFilterDrawer
         open={hook.mobileFiltersOpen}
         onClose={() => hook.setMobileFiltersOpen(false)}
+        isElectronics={hook.isElectronics}
+        subcategories={hook.subcategories}
+        selectedSubcategorySlugs={hook.selectedSubcategorySlugs}
+        toggleSubcategorySlug={hook.toggleSubcategorySlug}
+        clearSubcategorySlugs={hook.clearSubcategorySlugs}
         CategoryOnlyData={hook.CategoryOnlyData}
         categoryFilter={hook.categoryFilter}
         setCategoryFilter={hook.setCategoryFilter}
@@ -60,11 +62,9 @@ function CategoryProductsView() {
         clearLocationFilter={hook.clearLocationFilter}
       />
 
-      {/* Main Content */}
       <main className="relative z-10 max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
         <CategoryHeader
           title={hook.title}
-          parentBreadcrumb={parentBreadcrumb}
           filteredProducts={hook.filteredProducts}
           isCard={hook.isCard}
           setIsCard={hook.setIsCard}
@@ -83,6 +83,11 @@ function CategoryProductsView() {
         <div className="grid grid-cols-1 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
           <CategorySidebar
             categorySlug={slug}
+            isElectronics={hook.isElectronics}
+            subcategories={hook.subcategories}
+            selectedSubcategorySlugs={hook.selectedSubcategorySlugs}
+            toggleSubcategorySlug={hook.toggleSubcategorySlug}
+            clearSubcategorySlugs={hook.clearSubcategorySlugs}
             CategoryOnlyData={hook.CategoryOnlyData}
             categoryFilter={hook.categoryFilter}
             setCategoryFilter={hook.setCategoryFilter}
@@ -158,18 +163,4 @@ function CategoryProductsView() {
       `}</style>
     </div>
   );
-}
-
-export default function CategoryProducts() {
-  const { slug, subSlug } = useParams();
-
-  if (slug === "business4sale" || slug === "business-for-sale") {
-    return <BusinessForSale />;
-  }
-
-  if (slug === "electronics" && !subSlug) {
-    return <ElectronicsSubcategoryLanding />;
-  }
-
-  return <CategoryProductsView />;
 }

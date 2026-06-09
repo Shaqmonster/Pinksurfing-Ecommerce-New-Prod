@@ -6,10 +6,16 @@ import MultiRangeSlider from "multi-range-slider-react";
 import AttributeFilterPanel from "./AttributeFilterPanel";
 import LocationFilterPanel from "./LocationFilterPanel";
 import { SORT_METHODS, hasActiveFilters } from "./constants";
+import ElectronicsSubcategoryFilter from "./ElectronicsSubcategoryFilter";
 
 export default function MobileFilterDrawer({
     open,
     onClose,
+    isElectronics,
+    subcategories,
+    selectedSubcategorySlugs,
+    toggleSubcategorySlug,
+    clearSubcategorySlugs,
     CategoryOnlyData,
     categoryFilter,
     setCategoryFilter,
@@ -103,29 +109,39 @@ export default function MobileFilterDrawer({
                                 )}
 
                                 {/* Subcategories */}
-                                <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
-                                    <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                                        <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                                        Subcategories
-                                    </h3>
-                                    <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
-                                        {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => {
-                                                    setCategoryFilter(subcategory === "all" ? "all" : subcategory);
-                                                    onClose();
-                                                }}
-                                                className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${subcategory === categoryFilter
-                                                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                                                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                                                    }`}
-                                            >
-                                                {subcategory}
-                                            </button>
-                                        ))}
+                                {isElectronics ? (
+                                    <ElectronicsSubcategoryFilter
+                                        subcategories={subcategories}
+                                        selectedSlugs={selectedSubcategorySlugs}
+                                        onToggle={toggleSubcategorySlug}
+                                        onClear={clearSubcategorySlugs}
+                                        variant="mobile"
+                                    />
+                                ) : (
+                                    <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+                                        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                                            <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                            Subcategories
+                                        </h3>
+                                        <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                                            {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setCategoryFilter(subcategory === "all" ? "all" : subcategory);
+                                                        onClose();
+                                                    }}
+                                                    className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${subcategory === categoryFilter
+                                                            ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                                                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                                                        }`}
+                                                >
+                                                    {subcategory}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Sort */}
                                 <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
