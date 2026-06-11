@@ -9,7 +9,8 @@ import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "../Loader";
 import { FaEdit, FaCopy, FaCheck } from 'react-icons/fa';
-import { getAccessToken } from "../../utils/authSession";
+import { getAccessToken, enrichCustomerProfile, fetchSsoUserProfile } from "../../utils/authSession";
+import { getJoinedYear } from "../../utils/userDisplay";
 import { storeUrl, STOREFRONT_BASE } from "../../utils/envUrls";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
@@ -104,7 +105,12 @@ export default function ProfileDetails() {
     };
 
     useEffect(() => {
-        if (authUser?.id) {
+        const hasCompleteProfile =
+            authUser?.id &&
+            authUser?.first_name &&
+            authUser?.date_registered;
+
+        if (hasCompleteProfile) {
             setProfile(authUser);
             setInitialData(authUser);
             return;
@@ -119,14 +125,16 @@ export default function ProfileDetails() {
                     Authorization: `Bearer ${token}`,
                 },
             })
-            .then((response) => {
-                setProfile(response.data);
-                setInitialData(response.data);
+            .then(async (response) => {
+                const ssoUser = await fetchSsoUserProfile(token);
+                const enriched = enrichCustomerProfile(response.data, ssoUser, token);
+                setProfile(enriched);
+                setInitialData(enriched);
             })
             .catch((error) => {
                 console.error(error);
             });
-    }, [authUser?.id, authToken]);
+    }, [authUser?.id, authUser?.first_name, authUser?.date_registered, authToken]);
 
     const UpdateProfile = async (e) => {
         e.preventDefault();
@@ -225,7 +233,9 @@ export default function ProfileDetails() {
                         </div>
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
                             <div className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/40">
-                                Joined {new Date(profile.date_registered).getFullYear()}
+                                {getJoinedYear(profile.date_registered)
+                                    ? `Joined ${getJoinedYear(profile.date_registered)}`
+                                    : "Member"}
                             </div>
                             <div className="px-6 py-2.5 rounded-2xl bg-purple-600/20 border border-purple-500/20 text-[10px] font-black uppercase tracking-widest text-purple-300">
                                 {is_vendor ? 'Official Vendor' : 'Verified Profile'}

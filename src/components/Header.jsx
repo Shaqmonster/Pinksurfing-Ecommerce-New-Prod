@@ -22,7 +22,7 @@ import { MdOutlineWbSunny } from "react-icons/md";
 import { IoIosMoon } from "react-icons/io";
 import { IoCart, IoMenuOutline, IoPersonCircleOutline, IoSearchSharp, IoClose, IoChatbubbleOutline } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa";
-import Cookies from "js-cookie";
+import { getCustomerDisplayName } from "../utils/userDisplay";
 import { toast } from "react-toastify";
 import { currencyOptions } from "../utils/CurrencyList";
 import ProfilePopup from "./ProfilePopup";
@@ -371,9 +371,12 @@ const Header = () => {
                           alt="avatar"
                           className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
                         />
-                        <div className="hidden sm:flex flex-col">
-                          <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1">
-                            {user?.first_name || "Account"}
+                        <div className="hidden sm:flex flex-col min-w-0 max-w-[140px]">
+                          <span
+                            className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1 truncate"
+                            title={getCustomerDisplayName(user)}
+                          >
+                            {getCustomerDisplayName(user)}
                           </span>
                           <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
                             Account
@@ -489,7 +492,9 @@ const Header = () => {
                         className="w-12 h-12 rounded-2xl object-cover ring-1 ring-white/10"
                       />
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{user?.first_name || "Account"}</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white truncate">
+                          {getCustomerDisplayName(user)}
+                        </p>
                         <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-500">View Profile</p>
                       </div>
                     </Link>

@@ -6,7 +6,9 @@ import {
   clearClientAuthStorage,
   decodeJwt,
   ensureSession,
+  enrichCustomerProfile,
   fetchCustomerProfile,
+  fetchSsoUserProfile,
   getAccessToken,
   getRefreshToken,
   isSsoLoggedOutGlobally,
@@ -76,15 +78,20 @@ export const AuthProvider = ({ children }) => {
     lastProfileTokenRef.current = "";
   }, [setCookie]);
 
-  const applyJwtFallbackUser = useCallback((token) => {
+  const applyJwtFallbackUser = useCallback(async (token) => {
     const payload = decodeJwt(token);
     if (!payload?.email) return null;
-    return {
-      email: payload.email,
-      first_name: payload.first_name || payload.email.split("@")[0],
-      last_name: payload.last_name || "",
-      is_vendor: false,
-    };
+    const ssoUser = await fetchSsoUserProfile(token);
+    return enrichCustomerProfile(
+      {
+        email: payload.email,
+        first_name: payload.first_name || "",
+        last_name: payload.last_name || "",
+        is_vendor: false,
+      },
+      ssoUser,
+      token
+    );
   }, []);
 
   const loadProfile = useCallback(
@@ -102,15 +109,17 @@ export const AuthProvider = ({ children }) => {
 
   const hydrateUser = useCallback(
     async (access) => {
-      if (lastProfileTokenRef.current === access) return null;
-      lastProfileTokenRef.current = access;
-
       const profile = await loadProfile(access);
       if (profile) {
+        lastProfileTokenRef.current = access;
         setUser(profile);
         return profile;
       }
-      const fallback = applyJwtFallbackUser(access);
+
+      if (lastProfileTokenRef.current === access) return null;
+      lastProfileTokenRef.current = access;
+
+      const fallback = await applyJwtFallbackUser(access);
       if (fallback) setUser(fallback);
       return fallback;
     },

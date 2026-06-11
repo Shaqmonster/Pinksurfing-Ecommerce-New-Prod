@@ -5,6 +5,7 @@ const SSO_LOGOUT_COOKIE = "ps_sso_logged_out";
 const SSO_EPOCH_COOKIE = "ps_sso_epoch";
 const AUTH_REFRESH_URL = "https://auth.pinksurfing.com/api/token/refresh/";
 const AUTH_LOGOUT_URL = "https://auth.pinksurfing.com/api/logout/";
+const AUTH_USER_URL = "https://auth.pinksurfing.com/api/user/";
 /** Clock skew buffer — token treated as expired this many seconds early. */
 const ACCESS_SKEW_SECONDS = 60;
 /** SSO default: JWT_ACCESS_LIFETIME_MINUTES=15 (sso/settings.py). */
@@ -575,15 +576,56 @@ export function shouldAttachAuthHeader(url) {
   return false;
 }
 
+export async function fetchSsoUserProfile(accessToken) {
+  try {
+    const response = await axios.get(AUTH_USER_URL, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.warn("SSO user profile fetch failed:", error?.response?.status || error);
+    return null;
+  }
+}
+
+/** Merge marketplace customer with SSO account names when customer fields are empty. */
+export function enrichCustomerProfile(profile, ssoUser, accessToken) {
+  if (!profile) return profile;
+  const payload = decodeJwt(accessToken) || {};
+  const sso = ssoUser || {};
+  const email = profile.email || sso.email || payload.email || "";
+  const firstName =
+    profile.first_name?.trim() ||
+    sso.first_name?.trim() ||
+    payload.first_name?.trim() ||
+    (email.includes("@") ? email.split("@")[0] : "");
+  const lastName =
+    profile.last_name?.trim() ||
+    sso.last_name?.trim() ||
+    payload.last_name?.trim() ||
+    "";
+  return {
+    ...profile,
+    email,
+    first_name: firstName,
+    last_name: lastName,
+  };
+}
+
 export async function fetchCustomerProfile(accessToken) {
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${accessToken}`,
   };
 
+  const loadEnrichedProfile = async (data) => {
+    const ssoUser = await fetchSsoUserProfile(accessToken);
+    return enrichCustomerProfile(data, ssoUser, accessToken);
+  };
+
   try {
     const response = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
-    return response.data;
+    return loadEnrichedProfile(response.data);
   } catch (error) {
     const status = error?.response?.status;
     if (status === 401) throw error;
@@ -595,7 +637,7 @@ export async function fetchCustomerProfile(accessToken) {
           { headers }
         );
         const retry = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
-        return retry.data;
+        return loadEnrichedProfile(retry.data);
       } catch (syncError) {
         console.error("create-customer-from-sso failed:", syncError?.response?.data || syncError);
       }
