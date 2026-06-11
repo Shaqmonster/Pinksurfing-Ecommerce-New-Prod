@@ -13,6 +13,8 @@ import {
   authLabelClass,
   authLinkClass,
 } from "../components/auth/authTheme";
+import GoogleSignInButton from "../components/auth/GoogleSignInButton";
+import AuthDivider from "../components/auth/AuthDivider";
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -111,6 +113,9 @@ const Signin = () => {
         }
       >
         <form onSubmit={handleSubmit} className="space-y-5">
+          <GoogleSignInButton disabled={loading} />
+          <AuthDivider label="or sign in with email" />
+
           <div>
             <label htmlFor="email" className={authLabelClass}>
               Email

@@ -12,6 +12,9 @@ export const authBtnPrimary =
 export const authBtnSecondary =
   "shrink-0 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed";
 
+export const authBtnGoogle =
+  "w-full flex items-center justify-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed";
+
 export const authLinkClass =
   "font-medium text-pink-600 hover:text-pink-700 transition-colors";
 

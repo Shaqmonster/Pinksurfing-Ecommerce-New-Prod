@@ -14,6 +14,8 @@ import { Country } from "country-state-city";
 import PasswordRequirementsFeedback from "../components/PasswordRequirementsFeedback";
 import { isPasswordValid } from "../utils/djangoPasswordValidation";
 import AuthLayout from "../components/auth/AuthLayout";
+import GoogleSignInButton from "../components/auth/GoogleSignInButton";
+import AuthDivider from "../components/auth/AuthDivider";
 import {
   authBtnPrimary,
   authBtnSecondary,
@@ -429,6 +431,12 @@ const Signup = () => {
         }
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+            <GoogleSignInButton
+              disabled={loading}
+              label="Sign up with Google"
+            />
+            <AuthDivider label="or sign up with email" />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="first_name" className={authLabelClass}>

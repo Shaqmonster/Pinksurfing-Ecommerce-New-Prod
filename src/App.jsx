@@ -3,6 +3,7 @@ import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
+import GoogleAuthComplete from "./pages/GoogleAuthComplete";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import "react-toastify/dist/ReactToastify.css";
 import Cart from "./components/Cart";
@@ -73,7 +74,10 @@ function App() {
 
   const location = useLocation();
   const hideHeaderFooter =
-    location.pathname === "/signup" || location.pathname === "/signin" || location.pathname === "/forgotPassword";
+    location.pathname === "/signup" ||
+    location.pathname === "/signin" ||
+    location.pathname === "/forgotPassword" ||
+    location.pathname === "/auth/google/complete";
 
   // Footer only on the home page
   const showFooter = location.pathname === "/";
@@ -86,6 +90,7 @@ function App() {
         {/* Auth routes — redirect to home if already logged in */}
         <Route path="/signup" element={authToken ? <Navigate to="/" replace /> : <Signup />} />
         <Route path="/signin" element={authToken ? <Navigate to="/" replace /> : <Signin />} />
+        <Route path="/auth/google/complete" element={<GoogleAuthComplete />} />
         <Route path="/forgotPassword" element={authToken ? <Navigate to="/" replace /> : <ForgotPassword />} />
 
         <Route path="/profile" element={<ProfilePage />} />
