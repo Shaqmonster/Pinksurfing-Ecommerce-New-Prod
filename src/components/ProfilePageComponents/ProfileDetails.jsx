@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "../Loader";
 import { FaEdit, FaCopy, FaCheck } from 'react-icons/fa';
-import { getAccessToken, enrichCustomerProfile, fetchSsoUserProfile } from "../../utils/authSession";
+import { fetchCustomerProfile, getAccessToken } from "../../utils/authSession";
 import { getJoinedYear } from "../../utils/userDisplay";
 import { storeUrl, STOREFRONT_BASE } from "../../utils/envUrls";
 import { useAccessToken } from "../../hooks/useAccessToken";
@@ -19,7 +19,7 @@ export default function ProfileDetails() {
     const [isEditing, setIsEditing] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    const { user: authUser, authToken } = useContext(authContext);
+    const { user: authUser, authToken, setUser } = useContext(authContext);
     const [cookies] = useCookies([]);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -105,36 +105,33 @@ export default function ProfileDetails() {
     };
 
     useEffect(() => {
-        const hasCompleteProfile =
-            authUser?.id &&
-            authUser?.first_name &&
-            authUser?.date_registered;
-
-        if (hasCompleteProfile) {
-            setProfile(authUser);
-            setInitialData(authUser);
-            return;
-        }
         const token = authToken || getAccessToken();
         if (!token) return;
 
-        axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            })
-            .then(async (response) => {
-                const ssoUser = await fetchSsoUserProfile(token);
-                const enriched = enrichCustomerProfile(response.data, ssoUser, token);
+        let cancelled = false;
+
+        void (async () => {
+            try {
+                const enriched = await fetchCustomerProfile(token);
+                if (!enriched || cancelled) return;
                 setProfile(enriched);
                 setInitialData(enriched);
-            })
-            .catch((error) => {
+                setUser(enriched);
+            } catch (error) {
+                if (cancelled) return;
+                if (authUser?.email) {
+                    setProfile(authUser);
+                    setInitialData(authUser);
+                    return;
+                }
                 console.error(error);
-            });
-    }, [authUser?.id, authUser?.first_name, authUser?.date_registered, authToken]);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [authToken, authUser?.email, setUser]);
 
     const UpdateProfile = async (e) => {
         e.preventDefault();

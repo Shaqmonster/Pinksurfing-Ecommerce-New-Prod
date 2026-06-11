@@ -371,9 +371,9 @@ const Header = () => {
                           alt="avatar"
                           className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
                         />
-                        <div className="hidden sm:flex flex-col min-w-0 max-w-[140px]">
+                        <div className="hidden sm:flex flex-col min-w-0 max-w-[200px]">
                           <span
-                            className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1 truncate"
+                            className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1 line-clamp-2"
                             title={getCustomerDisplayName(user)}
                           >
                             {getCustomerDisplayName(user)}

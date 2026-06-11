@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getCookie, getSharedAuthCookieDomain } from "./cookie";
+import { pickBestNamePart } from "./userDisplay";
 
 const SSO_LOGOUT_COOKIE = "ps_sso_logged_out";
 const SSO_EPOCH_COOKIE = "ps_sso_epoch";
@@ -594,22 +595,58 @@ export function enrichCustomerProfile(profile, ssoUser, accessToken) {
   const payload = decodeJwt(accessToken) || {};
   const sso = ssoUser || {};
   const email = profile.email || sso.email || payload.email || "";
-  const firstName =
-    profile.first_name?.trim() ||
-    sso.first_name?.trim() ||
-    payload.first_name?.trim() ||
-    (email.includes("@") ? email.split("@")[0] : "");
-  const lastName =
-    profile.last_name?.trim() ||
-    sso.last_name?.trim() ||
-    payload.last_name?.trim() ||
-    "";
+  const firstName = pickBestNamePart(
+    profile.first_name,
+    sso.first_name,
+    payload.first_name,
+    email.includes("@") ? email.split("@")[0] : ""
+  );
+  const lastName = pickBestNamePart(
+    profile.last_name,
+    sso.last_name,
+    payload.last_name
+  );
+  const phone = (
+    profile.customer_phone?.trim() ||
+    sso.phone_number?.trim() ||
+    payload.phone_number?.trim() ||
+    ""
+  );
   return {
     ...profile,
     email,
     first_name: firstName,
     last_name: lastName,
+    customer_phone: phone || profile.customer_phone || "",
   };
+}
+
+/**
+ * Ensure marketplace Customer row matches SSO on every sign-in (not only first signup).
+ * Creates the row if missing; backfills empty name/phone/vendor if it already exists.
+ */
+export async function syncCustomerFromSso(accessToken) {
+  if (!accessToken || !API_BASE) return false;
+  try {
+    await axios.post(
+      `${API_BASE}/api/customer/create-customer-from-sso/`,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return true;
+  } catch (error) {
+    console.warn(
+      "syncCustomerFromSso failed:",
+      error?.response?.status,
+      error?.response?.data || error
+    );
+    return false;
+  }
 }
 
 export async function fetchCustomerProfile(accessToken) {
@@ -623,6 +660,9 @@ export async function fetchCustomerProfile(accessToken) {
     return enrichCustomerProfile(data, ssoUser, accessToken);
   };
 
+  // Sign-in + Google sign-in: sync existing customers, not only create on 404.
+  await syncCustomerFromSso(accessToken);
+
   try {
     const response = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
     return loadEnrichedProfile(response.data);
@@ -630,16 +670,12 @@ export async function fetchCustomerProfile(accessToken) {
     const status = error?.response?.status;
     if (status === 401) throw error;
     if (status === 400 || status === 404 || status === 403) {
+      await syncCustomerFromSso(accessToken);
       try {
-        await axios.post(
-          `${API_BASE}/api/customer/create-customer-from-sso/`,
-          {},
-          { headers }
-        );
         const retry = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
         return loadEnrichedProfile(retry.data);
       } catch (syncError) {
-        console.error("create-customer-from-sso failed:", syncError?.response?.data || syncError);
+        console.error("customer profile retry failed:", syncError?.response?.data || syncError);
       }
     }
     throw error;
