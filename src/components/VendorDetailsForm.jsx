@@ -189,6 +189,12 @@ export default function VendorDetailsForm() {
         toast.success("You're now a vendor on Pinksurfing", {
           position: "top-center",
         });
+        if (response.data?.address_warning) {
+          toast.warn(response.data.address_warning, {
+            position: "top-center",
+            autoClose: 6000,
+          });
+        }
         if (response.data?.kyc_required) {
           const returnUrl = encodeURIComponent("https://vendors.pinksurfing.com/");
           window.location.href = `${window.location.origin}/identity/verify?context=vendor&returnUrl=${returnUrl}`;

@@ -141,9 +141,8 @@ const Home = () => {
         city: "",
       }));
 
-      const countryCode = countries.find((c) => c.name === value)?.isoCode;
-      if (countryCode) {
-        setStates(State.getStatesOfCountry(countryCode));
+      if (value) {
+        setStates(State.getStatesOfCountry(value));
         setCities([]);
       } else {
         setStates([]);
@@ -156,10 +155,9 @@ const Home = () => {
         city: "",
       }));
 
-      const stateCode = states.find((s) => s.name === value)?.isoCode;
-      const countryCode = countries.find((c) => c.name === vendorFormData.country)?.isoCode;
-      if (stateCode && countryCode) {
-        setCities(City.getCitiesOfState(countryCode, stateCode));
+      const countryCode = vendorFormData.country;
+      if (value && countryCode) {
+        setCities(City.getCitiesOfState(countryCode, value));
       } else {
         setCities([]);
       }
@@ -240,6 +238,13 @@ const Home = () => {
         position: "top-center",
         autoClose: 3000,
       });
+
+      if (response.data?.address_warning) {
+        toast.warn(response.data.address_warning, {
+          position: "top-center",
+          autoClose: 6000,
+        });
+      }
 
       // Close dialog
       setIsVendorDialogOpen(false);
@@ -972,7 +977,7 @@ const Home = () => {
                             >
                               <option value="" className="bg-[#1a1a24]">Select Country</option>
                               {countries.map((country) => (
-                                <option key={country.isoCode} value={country.name} className="bg-[#1a1a24]">
+                                <option key={country.isoCode} value={country.isoCode} className="bg-[#1a1a24]">
                                   {country.name}
                                 </option>
                               ))}
@@ -994,7 +999,7 @@ const Home = () => {
                             >
                               <option value="" className="bg-[#1a1a24]">Select State</option>
                               {states.map((state) => (
-                                <option key={state.isoCode} value={state.name} className="bg-[#1a1a24]">
+                                <option key={state.isoCode} value={state.isoCode} className="bg-[#1a1a24]">
                                   {state.name}
                                 </option>
                               ))}
