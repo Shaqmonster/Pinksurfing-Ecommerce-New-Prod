@@ -133,6 +133,20 @@ export default function ProfileDetails() {
         };
     }, [authToken, authUser?.email, setUser]);
 
+    const reloadProfile = async () => {
+        const token = authToken || getAccessToken();
+        if (!token) return;
+        try {
+            const enriched = await fetchCustomerProfile(token);
+            if (!enriched) return;
+            setProfile(enriched);
+            setInitialData(enriched);
+            setUser(enriched);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const UpdateProfile = async (e) => {
         e.preventDefault();
         if (!accessToken) {
@@ -140,8 +154,7 @@ export default function ProfileDetails() {
             return;
         }
         try {
-            setIsLoading(true); // Start loader
-            console.log(profile);
+            setIsLoading(true);
 
             const response = await axios.post(
                 `${import.meta.env.VITE_SERVER_URL}/api/customer/update-profile/`,
@@ -150,7 +163,6 @@ export default function ProfileDetails() {
                     customer_profile_picture,
                     first_name,
                     last_name,
-                    // addresses,
                 },
                 {
                     headers: {
@@ -164,18 +176,19 @@ export default function ProfileDetails() {
                 toast.success("Profile updated successfully", {
                     position: "top-center",
                 });
-                GetProfile();
+                await reloadProfile();
             }
         } catch (error) {
             console.error(error);
-            toast.error(
-                "Failed to update profile. Please fill the details correctly.",
-                {
-                    position: "top-center",
-                }
-            );
+            const message =
+                error?.response?.data?.error ||
+                error?.response?.data?.message ||
+                "Failed to update profile. Please fill the details correctly.";
+            toast.error(message, {
+                position: "top-center",
+            });
         } finally {
-            setIsLoading(false); // Stop loader
+            setIsLoading(false);
         }
     };
 

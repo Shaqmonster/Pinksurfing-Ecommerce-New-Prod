@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "./Loader";
 import { useAccessToken } from "../hooks/useAccessToken";
+import { fetchCustomerProfile } from "../utils/authSession";
 export default function ProfilePopup() {
   const accessToken = useAccessToken();
   const {
@@ -90,19 +91,12 @@ export default function ProfilePopup() {
 
   const GetProfile = async () => {
     if (!accessToken) return;
-    axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/profile/`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((response) => {
-        setProfile(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    try {
+      const enriched = await fetchCustomerProfile(accessToken);
+      if (enriched) setProfile(enriched);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -141,16 +135,17 @@ export default function ProfilePopup() {
         toast.success("Profile updated successfully", {
           position: "top-center",
         });
-        GetProfile();
+        await GetProfile();
       }
     } catch (error) {
       console.error(error);
-      toast.error(
-        "Failed to update profile. Please fill the details correctly.",
-        {
-          position: "top-center",
-        }
-      );
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Failed to update profile. Please fill the details correctly.";
+      toast.error(message, {
+        position: "top-center",
+      });
     } finally {
       setIsLoading(false); // Stop loader
     }

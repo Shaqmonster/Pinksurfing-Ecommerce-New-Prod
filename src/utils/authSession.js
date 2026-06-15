@@ -589,19 +589,26 @@ export async function fetchSsoUserProfile(accessToken) {
   }
 }
 
+/** Use marketplace value when set; otherwise fall back to SSO/JWT with sensible name picking. */
+function pickProfileField(profileValue, ...fallbacks) {
+  const trimmed = (profileValue && String(profileValue).trim()) || "";
+  if (trimmed) return trimmed;
+  return pickBestNamePart(...fallbacks);
+}
+
 /** Merge marketplace customer with SSO account names when customer fields are empty. */
 export function enrichCustomerProfile(profile, ssoUser, accessToken) {
   if (!profile) return profile;
   const payload = decodeJwt(accessToken) || {};
   const sso = ssoUser || {};
   const email = profile.email || sso.email || payload.email || "";
-  const firstName = pickBestNamePart(
+  const firstName = pickProfileField(
     profile.first_name,
     sso.first_name,
     payload.first_name,
     email.includes("@") ? email.split("@")[0] : ""
   );
-  const lastName = pickBestNamePart(
+  const lastName = pickProfileField(
     profile.last_name,
     sso.last_name,
     payload.last_name
