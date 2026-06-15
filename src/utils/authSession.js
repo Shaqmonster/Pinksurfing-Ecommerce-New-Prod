@@ -667,24 +667,7 @@ export async function fetchCustomerProfile(accessToken) {
     return enrichCustomerProfile(data, ssoUser, accessToken);
   };
 
-  // Sign-in + Google sign-in: sync existing customers, not only create on 404.
   await syncCustomerFromSso(accessToken);
-
-  try {
-    const response = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
-    return loadEnrichedProfile(response.data);
-  } catch (error) {
-    const status = error?.response?.status;
-    if (status === 401) throw error;
-    if (status === 400 || status === 404 || status === 403) {
-      await syncCustomerFromSso(accessToken);
-      try {
-        const retry = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
-        return loadEnrichedProfile(retry.data);
-      } catch (syncError) {
-        console.error("customer profile retry failed:", syncError?.response?.data || syncError);
-      }
-    }
-    throw error;
-  }
+  const response = await axios.get(`${API_BASE}/api/customer/profile/`, { headers });
+  return loadEnrichedProfile(response.data);
 }

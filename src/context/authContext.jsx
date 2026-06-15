@@ -4,11 +4,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   clearClientAuthStorage,
-  decodeJwt,
   ensureSession,
-  enrichCustomerProfile,
   fetchCustomerProfile,
-  fetchSsoUserProfile,
   getAccessToken,
   getRefreshToken,
   isSsoLoggedOutGlobally,
@@ -68,63 +65,27 @@ export const AuthProvider = ({ children }) => {
   const [pendingChatParticipantEmail, setPendingChatParticipantEmail] = useState(null);
 
   const profileLoadRef = useRef(null);
-  const lastProfileTokenRef = useRef("");
 
   const clearSession = useCallback(() => {
     clearClientAuthStorage(setCookie);
     setRuntimeAuthToken("");
     setAuthToken("");
     setUser(null);
-    lastProfileTokenRef.current = "";
   }, [setCookie]);
 
-  const applyJwtFallbackUser = useCallback(async (token) => {
-    const payload = decodeJwt(token);
-    if (!payload?.email) return null;
-    const ssoUser = await fetchSsoUserProfile(token);
-    return enrichCustomerProfile(
-      {
-        email: payload.email,
-        first_name: payload.first_name || "",
-        last_name: payload.last_name || "",
-        is_vendor: false,
-      },
-      ssoUser,
-      token
-    );
-  }, []);
-
-  const loadProfile = useCallback(
-    async (token) => {
-      if (!token) return null;
-      try {
-        return await fetchCustomerProfile(token);
-      } catch (error) {
-        console.error("Profile load failed:", error?.response?.status || error);
-        return null;
-      }
-    },
-    []
-  );
-
-  const hydrateUser = useCallback(
-    async (access) => {
-      const profile = await loadProfile(access);
-      if (profile) {
-        lastProfileTokenRef.current = access;
+  /** Same for email/password and Google: sync SSO → marketplace Customer, then load profile. */
+  const hydrateUser = useCallback(async (access) => {
+    try {
+      const profile = await fetchCustomerProfile(access);
+      if (profile?.id) {
         setUser(profile);
         return profile;
       }
-
-      if (lastProfileTokenRef.current === access) return null;
-      lastProfileTokenRef.current = access;
-
-      const fallback = await applyJwtFallbackUser(access);
-      if (fallback) setUser(fallback);
-      return fallback;
-    },
-    [applyJwtFallbackUser, loadProfile]
-  );
+    } catch (error) {
+      console.error("Profile load failed:", error?.response?.status || error);
+    }
+    return null;
+  }, []);
 
   const establishSession = useCallback(
     async (access, refresh) => {
@@ -250,8 +211,7 @@ export const AuthProvider = ({ children }) => {
         const session = await ensureSession();
         if (cancelled) return;
         if (session?.access) {
-          // Profile hydration can be slow — do not block the initial render gate.
-          void establishSession(session.access, session.refresh);
+          await establishSession(session.access, session.refresh);
         }
       } catch (error) {
         console.error("Auth bootstrap failed:", error);

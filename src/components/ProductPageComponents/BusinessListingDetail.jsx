@@ -513,7 +513,7 @@ const BusinessListingDetail = ({
 
   const openNdaModal = () => {
     if (isListingOwner || cannotStartNewNda) return;
-    if (!user?.id || !accessToken) {
+    if (!accessToken || !user?.id) {
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       toast.info("Please sign in to sign the NDA.", { position: "top-right" });
@@ -545,6 +545,7 @@ const BusinessListingDetail = ({
       setNdaError("Your digital signature must match your Full Legal Name exactly.");
       return;
     }
+
     if (!user?.id) {
       setNdaError("You must be signed in to submit an NDA. Please log in and try again.");
       return;
