@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { HiHome, HiPhone } from "react-icons/hi2";
 import { MdEmail } from "react-icons/md";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -164,19 +163,6 @@ const Contact = () => {
                 </div>
 
                 <div className="space-y-8">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400">
-                      <HiHome className="text-2xl" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-lg">Office Address</h4>
-                      <p className="text-slate-500 dark:text-slate-400">
-                        136 s linhaven circle<br />
-                        anaheim ca 92804
-                      </p>
-                    </div>
-                  </div>
-
                   <div className="flex items-start gap-4">
                     <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400">
                       <MdEmail className="text-2xl" />
