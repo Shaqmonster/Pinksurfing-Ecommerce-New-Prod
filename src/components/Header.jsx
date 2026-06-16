@@ -391,7 +391,7 @@ const Header = () => {
                           className="hidden md:flex items-center gap-2 px-4 py-3 rounded-2xl border border-purple-500/25 bg-purple-500/10 hover:bg-purple-500/15 transition-colors text-[10px] font-black uppercase tracking-[0.18em] text-purple-200"
                         >
                           <FaFileContract className="text-sm opacity-90" />
-                          My NDAs
+                          My Business Financials
                         </Link>
                       )}
 
@@ -506,7 +506,7 @@ const Header = () => {
                         className="flex items-center gap-3 p-4 rounded-3xl bg-purple-500/15 border border-purple-500/30 text-purple-200 text-xs font-black uppercase tracking-widest"
                       >
                         <FaFileContract className="text-lg shrink-0" />
-                        <span>My NDAs — business listings</span>
+                        <span>My Business Financials — unlocked listings</span>
                       </Link>
                     )}
 

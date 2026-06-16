@@ -117,7 +117,7 @@ const NdaPaymentReturn = () => {
               letterSpacing: "-0.02em",
             }}
           >
-            {phase === "accepted" && "NDA Complete — Documents Unlocked"}
+            {phase === "accepted" && "Financials Unlocked"}
             {phase === "verifying" && "Verifying Payment…"}
             {phase === "failed" && "Payment Not Yet Confirmed"}
             {phase === "not_found" && "NDA Not Found"}
@@ -126,7 +126,7 @@ const NdaPaymentReturn = () => {
           {/* Body */}
           <p style={{ fontSize: 13, color: "#b0b0c0", lineHeight: 1.65, marginBottom: 28 }}>
             {phase === "accepted" &&
-              "Your $1 NDA fee has been received and your signature is on record. Financial documents for this listing are unlocked now — view them on the listing or in My NDA Dashboard."}
+              "Your NDA is signed and your $1 fee is confirmed. Financial documents for this listing are unlocked — view them on the listing or in My Business Financials."}
             {phase === "verifying" &&
               "We're confirming your payment with Square. This usually takes a few seconds. Please don't close this page."}
             {phase === "failed" &&
@@ -182,7 +182,7 @@ const NdaPaymentReturn = () => {
                   textAlign: "center",
                 }}
               >
-                My NDA Dashboard
+                My Business Financials
               </Link>
             </div>
           )}

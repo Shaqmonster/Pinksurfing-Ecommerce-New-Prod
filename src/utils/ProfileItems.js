@@ -48,7 +48,7 @@ export const navigationItems = [
 /** Appended in sidebar/header only when buyer has NDAs (route nav — does not shift profile tab indices). */
 export const myNdasNavigationItem = {
   icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cpath d='M10 12h4'/%3E%3Cpath d='M12 10v4'/%3E%3Cpath d='M9 16h6'/%3E%3C/svg%3E",
-  label: "My NDAs",
-  altText: "My NDAs and confidentiality agreements",
+  label: "Business Financials Requests",
+  altText: "Business financials you unlocked by signing an NDA",
   route: "/my-ndas",
 };

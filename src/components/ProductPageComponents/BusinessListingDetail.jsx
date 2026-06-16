@@ -532,7 +532,7 @@ const BusinessListingDetail = ({
       return;
     }
     if (cannotStartNewNda) {
-      setNdaError("You already have an NDA request in progress for this listing.");
+      setNdaError("You already have a business financials request in progress for this listing.");
       return;
     }
 
@@ -569,7 +569,7 @@ const BusinessListingDetail = ({
       if (detail === "Payment pending.") {
         setNdaStatus("pending_payment");
         setNdaModalOpen(false);
-        toast.info("Complete payment in the checkout tab to finish your NDA request.", { position: "top-right" });
+        toast.info("Complete payment in the checkout tab to unlock business financials.", { position: "top-right" });
         return;
       }
 
@@ -595,7 +595,7 @@ const BusinessListingDetail = ({
           toast.success("✅ NDA complete — financial documents are unlocked.", { position: "top-right" });
         } else {
           setNdaStatus(st);
-          toast.info("Your NDA is being processed. Check My NDA Dashboard for status.", { position: "top-right" });
+          toast.info("Your request is being processed. Check My Business Financials for status.", { position: "top-right" });
         }
         return;
       }
@@ -1048,7 +1048,7 @@ const BusinessListingDetail = ({
                       <div style={{ marginTop: 16, padding: 14, background: "var(--green-bg)", border: "1.5px solid var(--green-border)", borderRadius: 6, fontSize: 12, color: "var(--green)", lineHeight: 1.6 }}>
                         ✅ <strong>NDA Complete</strong> — Financial documents are unlocked.
                         {listingDocuments.length > 0 ? " Open the Documents tab or " : " "}
-                        <a href="/my-ndas" style={{ color: "var(--green)", fontWeight: 700 }}>My NDA Dashboard →</a>
+                        <a href="/my-ndas" style={{ color: "var(--green)", fontWeight: 700 }}>My Business Financials →</a>
                       </div>
                     ) : ndaStatus === "pending_vendor" ? (
                       <div style={{ marginTop: 16, padding: 14, background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)", borderRadius: 6, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>
@@ -1056,7 +1056,7 @@ const BusinessListingDetail = ({
                       </div>
                     ) : ndaStatus === "disputed" ? (
                       <div style={{ marginTop: 16, padding: 14, background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)", borderRadius: 6, fontSize: 12, color: "#f87171", lineHeight: 1.6 }}>
-                        ⚠️ <strong>Dispute recorded</strong> — Follow progress in <a href="/my-ndas" style={{ color: "#f87171", fontWeight: 700 }}>My NDAs</a>.
+                        ⚠️ <strong>Dispute recorded</strong> — Follow progress in <a href="/my-ndas" style={{ color: "#f87171", fontWeight: 700 }}>My Business Financials</a>.
                       </div>
                     ) : ndaStatus === "pending_payment" ? (
                       <div style={{ marginTop: 16, padding: 14, background: "rgba(59,130,246,.08)", border: "1.5px solid rgba(59,130,246,.35)", borderRadius: 6, fontSize: 12, color: "#60a5fa", lineHeight: 1.6 }}>
@@ -1646,8 +1646,8 @@ const BusinessListingDetail = ({
               {!isListingOwner && (lockEbitda || lockFinancials) && (
                 ndaSigned ? (
                   <div className="b-nda-side-card" style={{ background: "var(--green-bg)", border: "1.5px solid var(--green-border)" }}>
-                    <h4 style={{ color: "var(--green)" }}>✅ NDA Accepted</h4>
-                    <p style={{ color: "var(--green)" }}>Documents are ready. View them in your NDA Dashboard.</p>
+                    <h4 style={{ color: "var(--green)" }}>✅ Financials Unlocked</h4>
+                    <p style={{ color: "var(--green)" }}>Documents are ready. View them in My Business Financials.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                       View Documents →
                     </a>
@@ -1655,17 +1655,17 @@ const BusinessListingDetail = ({
                 ) : ndaStatus === "pending_vendor" ? (
                   <div className="b-nda-side-card" style={{ background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)" }}>
                     <h4 style={{ color: "#fbbf24" }}>⏳ Awaiting Seller Review</h4>
-                    <p style={{ color: "#fbbf24" }}>Your NDA payment is confirmed. The seller will accept and upload documents shortly.</p>
+                    <p style={{ color: "#fbbf24" }}>Your payment is confirmed. Unlocked financials will appear shortly.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#b45309", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                      Track NDA Status →
+                      Track in My Business Financials →
                     </a>
                   </div>
                 ) : ndaStatus === "disputed" ? (
                   <div className="b-nda-side-card" style={{ background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)" }}>
                     <h4 style={{ color: "#f87171" }}>⚠️ Dispute in progress</h4>
-                    <p style={{ color: "#f87171" }}>This NDA is under dispute. Track updates in My NDAs.</p>
+                    <p style={{ color: "#f87171" }}>This NDA is under dispute. Track updates in My Business Financials.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#b91c1c", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                      Open My NDAs →
+                      Open My Business Financials →
                     </a>
                   </div>
                 ) : ndaStatus === "pending_payment" ? (
@@ -1673,7 +1673,7 @@ const BusinessListingDetail = ({
                     <h4 style={{ color: "#60a5fa" }}>💳 Complete payment</h4>
                     <p style={{ color: "#60a5fa" }}>Finish the $1 checkout (check your other browser tab) to submit your NDA.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                      My NDAs — retry link →
+                      My Business Financials — retry link →
                     </a>
                   </div>
                 ) : (

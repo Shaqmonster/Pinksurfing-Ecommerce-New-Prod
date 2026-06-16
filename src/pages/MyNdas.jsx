@@ -10,9 +10,13 @@ function authHeader(token) {
   return { Authorization: `Bearer ${token}` };
 }
 
+const BUYER_FINANCIALS_PAGE_TITLE = "My Business Financials Requests";
+const BUYER_FINANCIALS_PAGE_SUB =
+  "Request more information on businesses for sale. Sign the NDA, pay the $1 fee, and view the unlocked financial documents tied to each listing.";
+
 const STATUS_LABEL = {
   pending_vendor:   "Awaiting Seller Review",
-  accepted:         "NDA Complete — Documents Unlocked",
+  accepted:         "Unlocked — Financials Available",
   rejected:         "Rejected & Refunded",
   disputed:         "Disputed",
   dispute_refunded: "Closed (Refunded)",
@@ -85,7 +89,7 @@ export default function MyNdas() {
       const data = await fetchMyNdas(token);
       setNdas(data);
     } catch {
-      setError("Could not load your NDA requests. Please try again.");
+      setError("Could not load your business financials requests. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -212,8 +216,8 @@ export default function MyNdas() {
     return (
       <div style={styles.page}>
         <div style={styles.container}>
-          <h1 style={styles.heading}>My NDA Requests</h1>
-          <p style={styles.sub}>Please sign in to view your NDA requests.</p>
+          <h1 style={styles.heading}>{BUYER_FINANCIALS_PAGE_TITLE}</h1>
+          <p style={styles.sub}>Please sign in to view your unlocked business financials.</p>
           <button
             style={styles.actionBtn("primary")}
             onClick={() => navigate("/signin")}
@@ -228,11 +232,8 @@ export default function MyNdas() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <h1 style={styles.heading}>My NDA Requests</h1>
-        <p style={styles.sub}>
-          Track your NDA requests. After you pay the $1 NDA fee, financial
-          documents unlock instantly — no seller approval required.
-        </p>
+        <h1 style={styles.heading}>{BUYER_FINANCIALS_PAGE_TITLE}</h1>
+        <p style={styles.sub}>{BUYER_FINANCIALS_PAGE_SUB}</p>
 
         {error && (
           <div style={{ color: "#f87171", marginBottom: 20, fontSize: 14 }}>
@@ -254,10 +255,10 @@ export default function MyNdas() {
           >
             <p style={{ fontSize: 32 }}>📄</p>
             <p style={{ color: "#ccc", fontWeight: 600, marginTop: 8 }}>
-              No NDA requests yet
+              No business financials requests yet
             </p>
             <p style={{ color: "#8888a0", fontSize: 13, marginTop: 4 }}>
-              When you sign an NDA for a business listing, it will appear here.
+              When you sign an NDA and unlock financials for a business listing, it will appear here with your signed agreement and documents.
             </p>
           </div>
         ) : (
@@ -280,7 +281,7 @@ export default function MyNdas() {
                 {/* Listing name + link */}
                 <div style={styles.listingName}>{nda.product_name}</div>
 
-                <div style={styles.meta}>Signed: {fmt(nda.signed_at)}</div>
+                <div style={styles.meta}>NDA signed: {fmt(nda.signed_at)}</div>
                 {nda.vendor_accepted_at && (
                   <div style={styles.meta}>Accepted by seller: {fmt(nda.vendor_accepted_at)}</div>
                 )}
@@ -315,7 +316,7 @@ export default function MyNdas() {
                   <>
                     <div style={styles.divider} />
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#ccc", marginBottom: 10 }}>
-                      Financial Documents
+                      Unlocked Financial Documents
                     </p>
                     {allDocs.map((doc) => (
                       <div key={doc.id} style={styles.docRow}>
@@ -343,7 +344,7 @@ export default function MyNdas() {
                   <>
                     <div style={styles.divider} />
                     <p style={{ fontSize: 13, color: "#8888a0" }}>
-                      Your NDA is active but the seller has not uploaded financial
+                      Your NDA is on file but the seller has not uploaded financial
                       files for this listing yet. You can raise a dispute for a refund
                       if documents are not provided.
                     </p>
