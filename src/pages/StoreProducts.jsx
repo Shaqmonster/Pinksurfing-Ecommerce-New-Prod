@@ -121,7 +121,7 @@ export default function StoreProducts() {
       try {
         if (filterBy === "") {
           const response = await axios.get(
-            `${import.meta.env.VITE_SERVER_URL}/api/product/vendor-products/${slug}/`,
+            `${import.meta.env.VITE_SERVER_URL}/api/product/store-products/${slug}/`,
             { headers: { "Content-Type": "application/json" } }
           );
           setShoppingProducts(response.data.Products);

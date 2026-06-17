@@ -84,7 +84,7 @@ export const DataProvider = ({ children }) => {
 const getVendorProducts = async (shaqshop) => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_SERVER_URL}/api/product/vendor-products/${shaqshop}/`,
+      `${import.meta.env.VITE_SERVER_URL}/api/product/store-products/${shaqshop}/`,
       {
         headers: {
           "Content-Type": "application/json",
