@@ -303,6 +303,12 @@ const Header = () => {
                 Bids
               </Link>
               <Link
+                to="/deals"
+                className="px-6 py-3 bg-pink-600/10 hover:bg-pink-600/20 border border-pink-500/20 hover:border-pink-500/40 rounded-2xl text-pink-300 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
+              >
+                Deals
+              </Link>
+              <Link
                 to="/contact"
                 className="px-6 py-3 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 rounded-2xl text-purple-300 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
               >
@@ -459,6 +465,13 @@ const Header = () => {
                 className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
               >
                 Bids
+              </Link>
+              <Link 
+                to="/deals" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="text-4xl font-black uppercase tracking-tighter text-pink-400 hover:text-pink-300 transition-colors"
+              >
+                Off-Market Deals
               </Link>
               <Link 
                 to="/contact" 

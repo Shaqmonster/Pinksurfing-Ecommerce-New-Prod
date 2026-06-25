@@ -59,6 +59,9 @@ import GigOrderDetail from "./pages/gigs/GigOrderDetail";
 import VisitPaymentReturn from "./pages/VisitPaymentReturn";
 import NdaPaymentReturn from "./pages/NdaPaymentReturn";
 import MyNdas from "./pages/MyNdas";
+import DealsHomePage from "./pages/DealsHomePage";
+import OffMarketDealDetail from "./pages/OffMarketDealDetail";
+import DealUnlockReturn from "./pages/DealUnlockReturn";
 
 function App() {
   const {
@@ -113,6 +116,9 @@ function App() {
         />
         <Route path="/visit-payment-return" element={<VisitPaymentReturn />} />
         <Route path="/nda-payment-return" element={<NdaPaymentReturn />} />
+        <Route path="/deal-unlock-return" element={<DealUnlockReturn />} />
+        <Route path="/deals" element={<DealsHomePage />} />
+        <Route path="/deals/:slug" element={<OffMarketDealDetail />} />
         <Route path="/my-ndas" element={<MyNdas />} />
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />
