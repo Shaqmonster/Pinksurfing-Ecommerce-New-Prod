@@ -252,7 +252,7 @@ const Home = () => {
       if (response.data?.kyc_required) {
         const returnUrl = encodeURIComponent("https://vendors.pinksurfing.com/");
         setTimeout(() => {
-          window.location.href = `${window.location.origin}/identity/verify?context=vendor&returnUrl=${returnUrl}`;
+          window.location.href = `${window.location.origin}/identity/verify?returnUrl=${returnUrl}`;
         }, 800);
       } else {
         setTimeout(() => {

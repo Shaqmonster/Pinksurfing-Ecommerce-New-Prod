@@ -233,7 +233,7 @@ const CreateGigPage = () => {
       const code = errData?.code || errData?.errors?.[0]?.code;
       if (code === "kyc_required" || err?.response?.status === 403) {
         toast.error("Identity verification is required before publishing a gig.");
-        navigate("/identity/verify?context=gig_seller&returnUrl=/gigs/create");
+        navigate("/identity/verify?returnUrl=/gigs/create");
         return;
       }
       const msg =
@@ -254,8 +254,6 @@ const CreateGigPage = () => {
 
   return (
     <DiditVerificationGate
-      context="gig_seller"
-      callbackPath="/identity/verify"
       title="Verify before publishing"
       description="Complete identity verification once to post gigs on GigHub. If you already verified as a vendor, you will not be asked again."
     >

@@ -6,14 +6,10 @@ const IdentityVerify = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/";
-  const contextParam = searchParams.get("context");
-  const context = contextParam === "gig_seller" ? "gig_seller" : "vendor";
 
   return (
     <div className="min-h-[60vh] bg-[#0a0a0f]">
       <DiditVerificationGate
-        context={context}
-        callbackPath={`/identity/verify?context=${context}`}
         onVerified={() => navigate(returnUrl, { replace: true })}
         title="Identity verification"
         description="Finish verification to continue. This is required once for selling as a vendor or gig worker."

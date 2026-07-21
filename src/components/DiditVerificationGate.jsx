@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { DiditSdk } from "@didit-protocol/sdk-web";
-import { createIdentitySession, getIdentityStatus } from "../api/identity";
+import { getKycStatus, launchKyc } from "../api/kyc";
 import { useAccessToken } from "../hooks/useAccessToken";
 
 const POLL_MS = 4000;
 
 /**
- * Blocks children until Didit KYC is approved for the logged-in user (email-scoped).
+ * Blocks children until SSO Didit KYC is approved for the logged-in user.
+ * Verification runs on auth.pinksurfing.com — this gate only checks status and redirects.
  */
 const DiditVerificationGate = ({
-  context = "vendor",
-  callbackPath = "/identity/verify",
   onVerified,
   children,
   title = "Verify your identity",
@@ -23,13 +21,8 @@ const DiditVerificationGate = ({
   const [status, setStatus] = useState("not_started");
   const [starting, setStarting] = useState(false);
   const pollRef = useRef(null);
-
-  const callbackUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}${callbackPath}?returnUrl=${encodeURIComponent(
-          window.location.pathname + window.location.search
-        )}`
-      : callbackPath;
+  const onVerifiedRef = useRef(onVerified);
+  onVerifiedRef.current = onVerified;
 
   const checkStatus = useCallback(async () => {
     if (!accessToken) {
@@ -37,22 +30,22 @@ const DiditVerificationGate = ({
       return false;
     }
     try {
-      const res = await getIdentityStatus(accessToken, context);
+      const res = await getKycStatus(accessToken);
       const data = res.data || {};
-      setStatus(data.status || "not_started");
-      if (data.verified) {
+      setStatus(data.kyc_status || data.status || "not_started");
+      if (data.kyc_verified || data.verified) {
         setVerified(true);
-        onVerified?.();
+        onVerifiedRef.current?.();
         return true;
       }
       return false;
     } catch (err) {
-      console.error("Identity status check failed", err);
+      console.error("KYC status check failed", err);
       return false;
     } finally {
       setLoading(false);
     }
-  }, [accessToken, context, onVerified]);
+  }, [accessToken]);
 
   const stopPolling = () => {
     if (pollRef.current) {
@@ -74,6 +67,14 @@ const DiditVerificationGate = ({
     return () => stopPolling();
   }, [checkStatus]);
 
+  // After SSO redirect back to /identity/verify, keep polling until approved.
+  useEffect(() => {
+    if (!accessToken || verified || loading) return;
+    if (status === "not_started") return;
+    startPolling();
+    return () => stopPolling();
+  }, [accessToken, verified, loading, status, startPolling]);
+
   const startVerification = async () => {
     if (!accessToken) {
       toast.info("Please sign in first.");
@@ -81,32 +82,37 @@ const DiditVerificationGate = ({
     }
     setStarting(true);
     try {
-      const res = await createIdentitySession(accessToken, {
-        context,
-        callbackUrl,
-      });
-      const data = res.data || {};
-      if (data.verified) {
+      const isVerifyPage = window.location.pathname.includes("/identity/verify");
+      const returnUrl = isVerifyPage
+        ? window.location.href.split("#")[0]
+        : `${window.location.origin}/identity/verify?returnUrl=${encodeURIComponent(
+            window.location.pathname + window.location.search
+          )}`;
+
+      const { data } = await launchKyc(accessToken, returnUrl);
+
+      if (data?.kyc_verified || data?.verified) {
         setVerified(true);
-        onVerified?.();
+        onVerifiedRef.current?.();
         return;
       }
-      const url = data.verification_url || data.url;
-      if (!url) {
+
+      const kycUrl = data?.kyc_url;
+      if (!kycUrl) {
         toast.error(
-          data.detail ||
+          data?.detail ||
             "Could not start verification. Please try again later."
         );
         return;
       }
-      startPolling();
-      DiditSdk.shared.startVerification({ url });
+
+      window.location.href = kycUrl;
     } catch (err) {
-      console.error("Failed to create identity session", err);
+      console.error("Failed to launch KYC", err);
       const d = err.response?.data;
       toast.error(
         d?.detail ||
-          d?.didit_error ||
+          d?.return_url?.[0] ||
           err.message ||
           "Could not start identity verification."
       );

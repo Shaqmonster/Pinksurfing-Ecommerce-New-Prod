@@ -197,7 +197,7 @@ export default function VendorDetailsForm() {
         }
         if (response.data?.kyc_required) {
           const returnUrl = encodeURIComponent("https://vendors.pinksurfing.com/");
-          window.location.href = `${window.location.origin}/identity/verify?context=vendor&returnUrl=${returnUrl}`;
+          window.location.href = `${window.location.origin}/identity/verify?returnUrl=${returnUrl}`;
         } else {
           window.location.href = "https://vendors.pinksurfing.com/";
         }
