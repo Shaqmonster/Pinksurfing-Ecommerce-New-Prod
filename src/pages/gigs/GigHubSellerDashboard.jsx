@@ -145,20 +145,24 @@ const GigHubSellerDashboard = () => {
     }
     setOnboardingLoading(true);
     try {
-      const mint = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/api/integrations/square/connect-session/`,
-        { product: "gighub" },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      const url = mint.data?.url;
-      if (!url) throw new Error("No connect URL");
+      // KYC-style: open hosted page only (no connect-session API from the browser)
+      const origin = String(import.meta.env.VITE_SERVER_URL || "").replace(/\/$/, "");
+      const qs = new URLSearchParams({
+        product: "gighub",
+        access_token: accessToken,
+      });
+      const url = `${origin}/integrations/square/connect/?${qs.toString()}`;
       const popup = window.open(url, "ps-square-connect", "width=560,height=720");
+      if (!popup) {
+        toast.error("Popup blocked — allow popups to connect Square");
+        return;
+      }
       const started = Date.now();
       let connected = false;
       while (Date.now() - started < 5 * 60 * 1000) {
         await new Promise((r) => setTimeout(r, 2000));
         const statusRes = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/api/integrations/square/status/`,
+          `${origin}/api/integrations/square/status/`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         if (statusRes.data?.connected) {
@@ -167,7 +171,7 @@ const GigHubSellerDashboard = () => {
         }
       }
       try {
-        popup?.close();
+        popup.close();
       } catch {
         /* ignore */
       }
