@@ -71,6 +71,7 @@ const GigHubSellerDashboard = () => {
   const [loadingGigs, setLoadingGigs] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
+  const [squareConnected, setSquareConnected] = useState(false);
 
   useEffect(() => {
     if (!accessToken) {
@@ -97,13 +98,19 @@ const GigHubSellerDashboard = () => {
 
   const fetchWorkerAndGigs = async () => {
     setLoadingGigs(true);
-    const [workerResult, gigsResult] = await Promise.allSettled([
+    const [workerResult, gigsResult, hubResult] = await Promise.allSettled([
       getMyGigWorkerProfile(accessToken),
       getMyGigs(accessToken),
+      axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/integrations/square/status/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      ),
     ]);
 
+    let profile = null;
     if (workerResult.status === "fulfilled") {
-      setWorkerProfile(workerResult.value.data);
+      profile = workerResult.value.data;
+      setWorkerProfile(profile);
     } else {
       setWorkerProfile(null);
     }
@@ -114,6 +121,13 @@ const GigHubSellerDashboard = () => {
     } else {
       setMyGigs([]);
     }
+
+    const hubConnected =
+      hubResult.status === "fulfilled" && Boolean(hubResult.value?.data?.connected);
+    const legacyConnected = Boolean(
+      profile?.square_connected || profile?.square_access_token
+    );
+    setSquareConnected(hubConnected || legacyConnected);
     setLoadingGigs(false);
   };
 
@@ -125,26 +139,46 @@ const GigHubSellerDashboard = () => {
   });
 
   const handleSquareOnboarding = async () => {
-    if (!workerProfile?.id) {
-      toast.error("Seller account setup incomplete.");
+    if (!accessToken) {
+      toast.error("Please sign in again.");
       return;
     }
     setOnboardingLoading(true);
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/api/payments/square/onboarding-link/${workerProfile.id}/?type=gigworker`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+      const mint = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/api/integrations/square/connect-session/`,
+        { product: "gighub" },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      if (response.data?.action_url) {
-        window.location.href = response.data.action_url;
+      const url = mint.data?.url;
+      if (!url) throw new Error("No connect URL");
+      const popup = window.open(url, "ps-square-connect", "width=560,height=720");
+      const started = Date.now();
+      let connected = false;
+      while (Date.now() - started < 5 * 60 * 1000) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const statusRes = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/integrations/square/status/`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        if (statusRes.data?.connected) {
+          connected = true;
+          break;
+        }
+      }
+      try {
+        popup?.close();
+      } catch {
+        /* ignore */
+      }
+      if (connected) {
+        setSquareConnected(true);
+        toast.success("Square connected");
+      } else {
+        toast.error("Timed out waiting for Square connection.");
       }
     } catch {
-      toast.error("Failed to get Square onboarding link.");
+      toast.error("Failed to start Square connect.");
     } finally {
       setOnboardingLoading(false);
     }
@@ -281,12 +315,12 @@ const GigHubSellerDashboard = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div
                 className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide border text-center ${
-                  workerProfile?.square_connected
+                  squareConnected
                     ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-400"
                     : "bg-pink-500/10 border-pink-500/25 text-pink-300"
                 }`}
               >
-                {workerProfile?.square_connected ? "Square connected" : "Square not linked"}
+                {squareConnected ? "Square connected" : "Square not linked"}
               </div>
               <button
                 type="button"
@@ -299,11 +333,11 @@ const GigHubSellerDashboard = () => {
                 ) : (
                   <FiCreditCard />
                 )}
-                {workerProfile?.square_connected ? "Reconnect Square" : "Connect Square"}
+                {squareConnected ? "Reconnect Square" : "Connect Square"}
               </button>
             </div>
           </div>
-          {!workerProfile?.square_connected && (
+          {!squareConnected && (
             <div className="mt-5 p-4 rounded-2xl bg-pink-500/[0.06] border border-pink-500/15 flex items-start gap-3">
               <IoAlertCircleOutline className="text-pink-400 text-lg flex-shrink-0 mt-0.5" />
               <p className="text-white/55 text-sm leading-relaxed">
