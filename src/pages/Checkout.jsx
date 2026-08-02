@@ -32,7 +32,74 @@ const Checkout = () => {
   const [order_id, setOrderId] = useState();
   const [loading, setLoading] = useState(false);
   const [shippingSpeed, setShippingSpeed] = useState("standard");
+  const [shippingByProduct, setShippingByProduct] = useState({});
+  const [shippingLoading, setShippingLoading] = useState(false);
   const checkoutBlocked = cartBlocksCheckout(cartProducts);
+
+  const pickRateAmount = (rates, speed) => {
+    const list = Array.isArray(rates)
+      ? rates
+      : Array.isArray(rates?.rates)
+        ? rates.rates
+        : [];
+    if (!list.length) return 0;
+    const expressKeywords = ["priority", "express", "air", "nextday", "2day", "expedited"];
+    const scored = list
+      .map((r) => ({
+        rate: Number(r.rate ?? r.price ?? r.amount ?? 0),
+        service: String(r.service || r.servicelevel?.name || "").toLowerCase(),
+      }))
+      .filter((r) => !Number.isNaN(r.rate) && r.rate >= 0);
+    if (!scored.length) return 0;
+    if (speed === "express") {
+      const express = scored.filter((r) =>
+        expressKeywords.some((k) => r.service.includes(k))
+      );
+      if (express.length) {
+        return Math.min(...express.map((r) => r.rate));
+      }
+    }
+    return Math.min(...scored.map((r) => r.rate));
+  };
+
+  const shippingTotal = Object.values(shippingByProduct).reduce(
+    (sum, v) => sum + (Number(v) || 0),
+    0
+  );
+
+  useEffect(() => {
+    const fetchShippingQuotes = async () => {
+      if (!accessToken || !addressesId || !cartProducts?.length) {
+        setShippingByProduct({});
+        return;
+      }
+      setShippingLoading(true);
+      const next = {};
+      await Promise.all(
+        cartProducts.map(async (item) => {
+          const productId = item?.product?.id;
+          if (!productId) return;
+          try {
+            const res = await axios.get(
+              `${import.meta.env.VITE_SERVER_URL}/api/shipping/fetch-rates/${productId}/${addressesId}/`,
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              }
+            );
+            next[productId] = pickRateAmount(res.data, shippingSpeed);
+          } catch (err) {
+            console.error("Shipping rate fetch failed", productId, err);
+            next[productId] = 0;
+          }
+        })
+      );
+      setShippingByProduct(next);
+      setShippingLoading(false);
+    };
+    fetchShippingQuotes();
+  }, [accessToken, addressesId, cartProducts, shippingSpeed]);
 
   const PlaceOrder = async () => {
     if (!accessToken) {
@@ -52,12 +119,19 @@ const Checkout = () => {
     }
     setLoading(true);
     console.log(loading);
+    const shipping_quotes = cartProducts
+      .map((item) => ({
+        product_id: item?.product?.id,
+        shipping_cost: Number(shippingByProduct[item?.product?.id] || 0),
+      }))
+      .filter((q) => q.product_id);
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/create-order/`,
         {
           address: addressesId,
           shipping_speed: shippingSpeed,
+          shipping_quotes,
         },
         {
           headers: {
@@ -451,14 +525,15 @@ const Checkout = () => {
                   {formatMoney(subTotal)}
                 </p>
               </div>
-              {/* <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mt-2">
                 <p className="text-sm font-medium text-gray-900 dark:text-[#f5f5f5]">
-                  Shipping
+                  Shipping {shippingLoading ? "(calculating…)" : ""}
                 </p>
                 <p className="font-semibold text-gray-900 dark:text-[#f5f5f5]">
-                  {currency} 8.00
+                  {currency}
+                  {formatMoney(shippingTotal)}
                 </p>
-              </div> */}
+              </div>
             </div>
             <div className="mt-6 flex items-center justify-between">
               <p className="text-sm font-medium text-gray-900 dark:text-[#f5f5f5]">
@@ -466,7 +541,7 @@ const Checkout = () => {
               </p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-[#f5f5f5]">
                 {currency}
-                {formatMoney(subTotal)}
+                {formatMoney(Number(subTotal || 0) + Number(shippingTotal || 0))}
               </p>
             </div>
           </div>
