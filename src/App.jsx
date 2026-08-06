@@ -62,6 +62,8 @@ import MyNdas from "./pages/MyNdas";
 import DealsHomePage from "./pages/DealsHomePage";
 import OffMarketDealDetail from "./pages/OffMarketDealDetail";
 import DealUnlockReturn from "./pages/DealUnlockReturn";
+import MyUnlocks from "./pages/MyUnlocks";
+import DealSupplySubmit from "./pages/DealSupplySubmit";
 
 function App() {
   const {
@@ -118,7 +120,9 @@ function App() {
         <Route path="/nda-payment-return" element={<NdaPaymentReturn />} />
         <Route path="/deal-unlock-return" element={<DealUnlockReturn />} />
         <Route path="/deals" element={<DealsHomePage />} />
+        <Route path="/deals/submit/:token" element={<DealSupplySubmit />} />
         <Route path="/deals/:slug" element={<OffMarketDealDetail />} />
+        <Route path="/my-unlocks" element={<MyUnlocks />} />
         <Route path="/my-ndas" element={<MyNdas />} />
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />

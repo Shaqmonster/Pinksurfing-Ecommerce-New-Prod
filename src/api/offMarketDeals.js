@@ -55,6 +55,29 @@ export async function fetchUnlockStatus(unlockId, token) {
   return data;
 }
 
+export async function fetchMyUnlocks(token, include = "paid") {
+  const { data } = await axios.get(`${SERVER}/api/off-market-deals/mine/unlocks/`, {
+    params: { include },
+    headers: authHeaders(token),
+  });
+  return data;
+}
+
+export async function fetchSupplySubmitMeta(token) {
+  const { data } = await axios.get(
+    `${SERVER}/api/off-market-deals/supply/submit/${token}/`
+  );
+  return data;
+}
+
+export async function submitSupplyDeal(token, payload) {
+  const { data } = await axios.post(
+    `${SERVER}/api/off-market-deals/supply/submit/${token}/`,
+    payload
+  );
+  return data;
+}
+
 export async function fetchDealRoom(roomId, token) {
   const { data } = await axios.get(
     `${SERVER}/api/off-market-deals/rooms/${roomId}/`,

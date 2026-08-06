@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { NavigationItem } from "./NavigationItem";
-import { navigationItems, myNdasNavigationItem } from "../../utils/ProfileItems";
+import {
+    navigationItems,
+    myNdasNavigationItem,
+    myUnlocksNavigationItem,
+} from "../../utils/ProfileItems";
 import { dataContext } from "../../context/dataContext";
 import { authContext } from "../../context/authContext";
 import { useBuyerHasNdas } from "../../hooks/useBuyerHasNdas";
@@ -11,8 +15,9 @@ export function Sidebar() {
     const hasBuyerNdas = useBuyerHasNdas();
 
     const sidebarNavItems = React.useMemo(() => {
-        if (!hasBuyerNdas) return navigationItems;
-        return [...navigationItems, myNdasNavigationItem];
+        const base = [...navigationItems, myUnlocksNavigationItem];
+        if (!hasBuyerNdas) return base;
+        return [...base, myNdasNavigationItem];
     }, [hasBuyerNdas]);
 
     const [isOpen, setIsOpen] = React.useState(false);

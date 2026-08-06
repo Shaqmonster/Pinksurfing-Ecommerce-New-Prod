@@ -77,7 +77,7 @@ export default function DealsHomePage() {
               Deals Home
             </Link>
             <Link to="/category/residential-realestate">Residential RE</Link>
-            <Link to="/my-ndas">My Unlocks</Link>
+            <Link to="/my-unlocks">My Unlocks</Link>
           </nav>
 
           <header className="deals-hero">
@@ -108,6 +108,10 @@ export default function DealsHomePage() {
           ) : deals.length === 0 ? (
             <div className="deals-empty">
               <p>No off-market deals match your filters.</p>
+              <p style={{ marginTop: 10, fontSize: 13, maxWidth: 420, marginInline: "auto" }}>
+                Inventory grows as vendors activate listings and invited suppliers submit deals for
+                host review. Active Listings above only counts live off-market products.
+              </p>
               <Link to="/deals" style={{ color: "#f0318a" }}>
                 Clear filters
               </Link>
