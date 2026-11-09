@@ -135,7 +135,7 @@ export default function CategoryHeader({
                                                         : "text-gray-700 dark:text-gray-300"
                                                         } flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200`}
                                                 >
-                                                    <span className="text-lg">{option.icon}</span>
+                                                    {option.Icon && <option.Icon className="text-base opacity-80" aria-hidden />}
                                                     {option.name}
                                                 </button>
                                             )}

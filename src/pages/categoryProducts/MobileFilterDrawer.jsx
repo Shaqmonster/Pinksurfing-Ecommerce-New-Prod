@@ -166,7 +166,7 @@ export default function MobileFilterDrawer({
                                                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                                                     }`}
                                             >
-                                                <span>{option.icon}</span>
+                                                {option.Icon && <option.Icon className="text-base opacity-80" aria-hidden />}
                                                 {option.name}
                                             </button>
                                         ))}

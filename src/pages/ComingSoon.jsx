@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { authContext } from "../context/authContext";
 import SearchForm from "../components/Search";
+import {
+  IoGameControllerOutline,
+  IoGiftOutline,
+  IoSparklesOutline,
+  IoRocketOutline,
+} from "react-icons/io5";
 
 export default function ComingSoon() {
     const { isDarkMode } = useContext(authContext);
@@ -59,12 +65,18 @@ export default function ComingSoon() {
 
                     {/* Feature Pills */}
                     <div className="flex flex-wrap justify-center gap-3 mb-10">
-                        {["🎮 Gamified Shopping", "🎁 Exclusive Rewards", "✨ Personalized Picks", "🚀 Launching Soon"].map((feature, index) => (
+                        {[
+                          { label: "Gamified Shopping", Icon: IoGameControllerOutline },
+                          { label: "Exclusive Rewards", Icon: IoGiftOutline },
+                          { label: "Personalized Picks", Icon: IoSparklesOutline },
+                          { label: "Launching Soon", Icon: IoRocketOutline },
+                        ].map((feature) => (
                             <span
-                                key={index}
-                                className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm"
+                                key={feature.label}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm"
                             >
-                                {feature}
+                                <feature.Icon className="text-base opacity-80" aria-hidden />
+                                {feature.label}
                             </span>
                         ))}
                     </div>

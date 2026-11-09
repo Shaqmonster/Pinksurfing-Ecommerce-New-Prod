@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { IoCheckmarkCircle, IoCloseCircle, IoTimeOutline } from "react-icons/io5";
 
 const SERVER = import.meta.env.VITE_SERVER_URL || "";
 
@@ -104,7 +105,13 @@ const NdaPaymentReturn = () => {
               }`,
             }}
           >
-            {phase === "accepted" ? "✅" : phase === "verifying" ? "⏳" : "❌"}
+            {phase === "accepted" ? (
+              <IoCheckmarkCircle aria-hidden />
+            ) : phase === "verifying" ? (
+              <IoTimeOutline aria-hidden />
+            ) : (
+              <IoCloseCircle aria-hidden />
+            )}
           </div>
 
           {/* Heading */}

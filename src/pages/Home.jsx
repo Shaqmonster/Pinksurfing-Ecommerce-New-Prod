@@ -2,7 +2,14 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, LayoutGroup } from "framer-motion";
+import { PS_MOTION } from "../lib/motion-tokens";
+import {
+  IoStorefrontOutline,
+  IoTrendingUpOutline,
+  IoStarOutline,
+  IoSparklesOutline,
+} from "react-icons/io5";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { authContext } from "../context/authContext";
@@ -85,12 +92,16 @@ const Home = () => {
   };
 
 
+  const reducedMotion = useReducedMotion();
   const fetchedCategories = [
-    { id: 1, name: "Shop By Store" },
-    { id: 2, name: "Trending Top Sales" },
-    { id: 3, name: "Buyer's Choice" },
-    { id: 4, name: "Pinksurfing finds" },
+    { id: 1, name: "Shop by store", Icon: IoStorefrontOutline },
+    { id: 2, name: "Trending", Icon: IoTrendingUpOutline },
+    { id: 3, name: "Buyer's choice", Icon: IoStarOutline },
+    { id: 4, name: "PinkSurfing finds", Icon: IoSparklesOutline },
   ];
+  const tabTransition = reducedMotion
+    ? { duration: 0 }
+    : { duration: PS_MOTION.duration.normal, ease: PS_MOTION.easing.standard };
 
   // Initialize countries on component mount
   useEffect(() => {
@@ -375,45 +386,44 @@ const Home = () => {
         jsonLd={homeJsonLd}
       />
       {/* Main Container */}
-      <div className="w-full min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#13131a] to-[#0a0a0f] relative overflow-hidden">
-
-        {/* Simple Static Background */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-600/8 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-600/8 rounded-full blur-[100px]"></div>
+      <div className="w-full min-h-screen bg-[var(--ps-bg)] relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 opacity-40" aria-hidden>
+          <div className="absolute top-0 right-0 w-[320px] h-[320px] bg-[var(--ps-blur-orb)]/20 rounded-full blur-[90px]" />
         </div>
 
         {/* Hero Section - Main Categories */}
-        <section className="relative z-10 px-4 sm:px-6 lg:px-12 pt-8 pb-12">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-white">
-              PinkSurfing — Shop, Sell &amp; Hire
+        <section className="relative z-10 px-4 sm:px-6 lg:px-12 pt-6 pb-8">
+          <div className="text-center mb-8 max-w-3xl mx-auto">
+            <div className="flex justify-center mb-4">
+              <img src="/brand/logo.jpeg" alt="" className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)]" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-white tracking-tight">
+              PinkSurfing
             </h1>
-            <p className="text-gray-400 text-base sm:text-lg max-w-3xl mx-auto">
-              PinkSurfing is a multi-vendor marketplace for products, businesses for sale,
-              real estate, vehicles, and freelance services on GigHub—buy, list, or hire in one place.
+            <p className="text-[var(--ps-muted)] text-sm sm:text-base max-w-2xl mx-auto">
+              Shop products, list a store, or hire on GigHub — one marketplace.
             </p>
-            <motion.div className="mt-6 flex flex-wrap justify-center items-center gap-3">
+            <div className="mt-5 flex flex-wrap justify-center items-center gap-2">
               <Link
                 to="/shoppingMall"
-                className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold hover:opacity-95 transition-opacity"
+                className="inline-flex items-center justify-center min-h-[44px] px-5 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold"
               >
                 Browse shopping mall
               </Link>
               <button
                 type="button"
                 onClick={handleMyStoreClick}
-                className="inline-flex items-center justify-center min-h-[44px] px-5 rounded-[14px] border border-white/20 text-gray-200 text-sm font-semibold hover:border-[var(--ps-purple-light)]/50 transition-colors"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
               >
-                Sell on PinkSurfing
+                Sell
               </button>
               <Link
                 to="/gighub"
-                className="inline-flex items-center justify-center min-h-[44px] px-5 rounded-[14px] border border-white/20 text-gray-200 text-sm font-semibold hover:border-[var(--ps-purple-light)]/50 transition-colors"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
               >
-                Hire on GigHub
+                Hire
               </Link>
-            </motion.div>
+            </div>
           </div>
 
           {/* Main Category Cards - Mobile Carousel */}
@@ -432,7 +442,7 @@ const Home = () => {
                       onClick={() => handleCategoryCardClick(item)}
                       className={`group ${item.coming_soon ? "cursor-default" : "cursor-pointer"}`}
                     >
-                      <div className="rounded-2xl overflow-hidden h-[350px] relative border border-white/10">
+                      <div className="rounded-2xl overflow-hidden h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)]">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
                         <img
                           src={item.image}
@@ -513,30 +523,25 @@ const Home = () => {
                     : "cursor-pointer hover:-translate-y-1"
                 }`}
               >
-                <div className={`rounded-2xl overflow-hidden h-[260px] sm:h-[280px] relative border border-white/10 transition-colors ${item.coming_soon ? "" : "hover:border-purple-500/30"}`}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
+                <div className={`rounded-2xl overflow-hidden h-[180px] sm:h-[200px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)] transition-colors ${item.coming_soon ? "" : "hover:border-[var(--ps-primary)]/40"}`}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
                   <img
                     src={item.image}
                     alt={`${item.name} on PinkSurfing marketplace`}
-                    className={`w-full h-full object-cover transition-transform duration-300 ${item.coming_soon ? "opacity-80" : "group-hover:scale-105"}`}
+                    className={`w-full h-full object-cover transition-transform duration-ps-moderate ease-ps-standard ${item.coming_soon ? "opacity-80" : "group-hover:scale-[1.03]"}`}
                     loading="lazy"
                   />
                   {item.coming_soon && (
-                    <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-                      <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white tracking-wide">
+                    <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45">
+                      <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-semibold text-white">
                         Coming soon
                       </span>
                     </div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
-                    <h3 className="text-white text-lg sm:text-xl font-bold mb-1">{item.name}</h3>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
+                    <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5">{item.name}</h3>
                     {!item.coming_soon && (
-                      <div className="flex items-center text-purple-300">
-                        <span className="text-sm font-medium">Explore Now</span>
-                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </div>
+                      <span className="text-sm text-[var(--ps-purple-light)]">Explore</span>
                     )}
                   </div>
                 </div>
@@ -638,67 +643,90 @@ const Home = () => {
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-12">
           <div className="max-w-7xl mx-auto">
 
-            {/* Category Tabs */}
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8">
-              {fetchedCategories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${selectedCategory === category.id
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-                    : "bg-white/5 border border-white/10 text-gray-300 hover:border-purple-500/50"
-                    }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
+            <LayoutGroup>
+              <div
+                className="relative flex flex-wrap justify-center gap-1 sm:gap-2 mb-8 p-1 rounded-2xl bg-[var(--ps-surf)]/60 border border-[var(--ps-brd)] max-w-3xl mx-auto"
+                role="tablist"
+                aria-label="Featured collections"
+              >
+                {fetchedCategories.map((category) => {
+                  const active = selectedCategory === category.id;
+                  const Icon = category.Icon;
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`relative z-10 flex items-center gap-2 min-h-[44px] px-3 sm:px-4 rounded-xl text-sm font-medium transition-colors ${
+                        active ? "text-white" : "text-[var(--ps-muted)] hover:text-white"
+                      }`}
+                    >
+                      {active && (
+                        <motion.span
+                          layoutId="home-tab-pill"
+                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)]"
+                          transition={tabTransition}
+                        />
+                      )}
+                      <span className="relative z-10 inline-flex items-center gap-2">
+                        <Icon className="text-base" aria-hidden="true" />
+                        <span className="hidden sm:inline">{category.name}</span>
+                        <span className="sm:hidden">{category.name.split(" ")[0]}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </LayoutGroup>
 
-            {/* Content Area */}
-            <div>
-              {/* Shop By Store */}
-              {selectedCategory === 1 && (
-                <div>
-                  {storeLoading ? (
-                    <div className="flex justify-center items-center py-16">
-                      <div className="w-10 h-10 border-4 border-[var(--ps-primary)] border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {(stores || []).slice(0, 6).map((store, storeIndex) => (
-                        <StoreCard key={storeIndex} store={store} />
+            <div className="relative min-h-[280px]">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={selectedCategory}
+                  role="tabpanel"
+                  initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                  transition={tabTransition}
+                >
+                  {selectedCategory === 1 && (
+                    storeLoading ? (
+                      <div className="flex justify-center items-center py-16">
+                        <div className="w-10 h-10 border-4 border-[var(--ps-surf)] border-t-[var(--ps-primary)] rounded-full animate-spin" />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {(stores || []).slice(0, 6).map((store, storeIndex) => (
+                          <StoreCard key={store?.id || storeIndex} store={store} />
+                        ))}
+                      </div>
+                    )
+                  )}
+                  {selectedCategory === 2 && (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                      {(getDiscountedProducts() || []).slice(0, 8).map((product) => (
+                        <ProductCard key={product.id} product={product} isCard={true} />
                       ))}
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Trending Top Sales */}
-              {selectedCategory === 2 && (
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {(getDiscountedProducts() || []).slice(0, 8).map((product, productIndex) => (
-                    <ProductCard key={productIndex} product={product} isCard={true} />
-                  ))}
-                </div>
-              )}
-
-              {/* Buyer's Choice */}
-              {selectedCategory === 3 && (
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {(featuredProducts || []).slice(0, 8).map((product, productIndex) => (
-                    <ProductCard key={productIndex} product={product} isCard={true} />
-                  ))}
-                </div>
-              )}
-
-              {/* Pinksurfing Finds */}
-              {selectedCategory === 4 && (
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {(featuredProducts || []).slice(0, 4).map((product, productIndex) => (
-                    <ProductCard key={productIndex} product={product} isCard={true} />
-                  ))}
-                </div>
-              )}
+                  {selectedCategory === 3 && (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                      {(featuredProducts || []).slice(0, 8).map((product) => (
+                        <ProductCard key={product.id} product={product} isCard={true} />
+                      ))}
+                    </div>
+                  )}
+                  {selectedCategory === 4 && (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                      {(featuredProducts || []).slice(0, 4).map((product) => (
+                        <ProductCard key={product.id} product={product} isCard={true} />
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
 
           </div>

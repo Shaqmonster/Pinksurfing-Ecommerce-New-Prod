@@ -1,6 +1,7 @@
 import React from "react";
 import { useAddressTxHistory } from "../../hooks/useAddressTxHistory";
 import { useEscrowPayoutHistory } from "../../hooks/useEscrowPayoutHistory";
+import { SHOW_CRYPTO_WALLET } from "../../config/featureFlags";
 
 function shortHash(h = "") {
   return h.length > 18 ? `${h.slice(0, 10)}...${h.slice(-6)}` : h;
@@ -16,13 +17,22 @@ export default function WalletTxHistoryCard({
   orderScoped = false,
   title = "Wallet Transaction History",
 }) {
-  const { rows, loading, error, refresh, range } = useAddressTxHistory(address, { maxBlocks: 350, maxRows: 50 });
+  const { rows, loading, error, refresh, range } = useAddressTxHistory(
+    SHOW_CRYPTO_WALLET ? address : null,
+    { maxBlocks: 350, maxRows: 50 }
+  );
   const {
     rows: escrowRows,
     loading: escrowLoading,
     error: escrowError,
     refresh: refreshEscrow,
-  } = useEscrowPayoutHistory(address, escrowId, { maxBlocks: 450, maxRows: 50, orderScoped });
+  } = useEscrowPayoutHistory(
+    SHOW_CRYPTO_WALLET ? address : null,
+    SHOW_CRYPTO_WALLET ? escrowId : null,
+    { maxBlocks: 450, maxRows: 50, orderScoped }
+  );
+
+  if (!SHOW_CRYPTO_WALLET) return null;
 
   return (
     <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">

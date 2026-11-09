@@ -1,4 +1,6 @@
-export const navigationItems = [
+import { SHOW_CRYPTO_WALLET } from "../config/featureFlags";
+
+const ALL_NAVIGATION_ITEMS = [
   {
     icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/7f7788b961d63d59fa45f46b66d2acd7cb34407703c4417260da35d165ce69e8?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
     label: "Profile",
@@ -29,7 +31,8 @@ export const navigationItems = [
   {
     icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/f0c6fe10706ff1475945313dccdf751c4b29bea5296270e940c6e7f0a0e93167?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
     label: "Wallet",
-    altText: "My Wallet icon"
+    altText: "My Wallet icon",
+    feature: "cryptoWallet",
   },
   {
     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3C/svg%3E",
@@ -44,6 +47,11 @@ export const navigationItems = [
     route: "/bids/my-offers"
   }
 ];
+
+/** Visible profile nav — Wallet stays in source, gated by SHOW_CRYPTO_WALLET. */
+export const navigationItems = ALL_NAVIGATION_ITEMS.filter(
+  (item) => item.feature !== "cryptoWallet" || SHOW_CRYPTO_WALLET
+);
 
 /** Appended in sidebar/header only when buyer has NDAs (route nav — does not shift profile tab indices). */
 export const myNdasNavigationItem = {

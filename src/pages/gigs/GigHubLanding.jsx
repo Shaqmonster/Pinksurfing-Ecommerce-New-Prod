@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import PageSEO from "../../components/PageSEO";
 import { listGigs, getGigCategories, gigUrl } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
+import { SHOW_CRYPTO_WALLET } from "../../config/featureFlags";
 import {
   IoSearchSharp,
   IoStarSharp,
@@ -280,7 +281,7 @@ const GigHubLanding = () => {
         path="/gighub"
       />
       <div className="max-w-7xl mx-auto px-4 pt-6">
-        <InAppWalletBanner />
+        {SHOW_CRYPTO_WALLET ? <InAppWalletBanner /> : null}
       </div>
       {/* ── HERO ── */}
       <section className="relative overflow-hidden pt-20 pb-28 px-4">

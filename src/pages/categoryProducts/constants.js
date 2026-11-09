@@ -1,3 +1,5 @@
+import { IoTimeOutline, IoArrowUpOutline, IoArrowDownOutline } from "react-icons/io5";
+
 /** Category URL slugs (`/category/:slug`) that support zip/radius "Fetch by location" in the sidebar. */
 export const LOCATION_FILTER_CATEGORY_SLUGS = [
     "cars",
@@ -38,9 +40,9 @@ export function getLocationRadiusConfig(categorySlug) {
 
 // Sort method options
 export const SORT_METHODS = [
-    { name: "Newest", value: "date", icon: "newest" },
-    { name: "Price: Low to High", value: "ascPrice", icon: "price-asc" },
-    { name: "Price: High to Low", value: "descPrice", icon: "price-desc" },
+    { name: "Newest", value: "date", Icon: IoTimeOutline },
+    { name: "Price: Low to High", value: "ascPrice", Icon: IoArrowUpOutline },
+    { name: "Price: High to Low", value: "descPrice", Icon: IoArrowDownOutline },
 ];
 
 // Static filter arrays for Real Estate & Business
