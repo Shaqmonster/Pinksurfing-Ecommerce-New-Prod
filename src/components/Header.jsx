@@ -31,7 +31,7 @@ import { sumUnreadCount, resolveChatAccessToken } from "../utils/chatHelpers";
 import { useAccessToken } from "../hooks/useAccessToken";
 
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
-const BRAND_LOGO = "/brand/logo.jpeg";
+const BRAND_LOGO = "/brand/logo.jpeg?v=2";
 
 /** Primary destinations live on the homepage & footer — navbar stays search + account. */
 const NAV_ITEMS = [];

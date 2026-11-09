@@ -407,7 +407,7 @@ const Home = () => {
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 pt-6 pb-8">
           <div className="text-center mb-8 max-w-3xl mx-auto">
             <div className="flex justify-center mb-4">
-              <img src="/brand/logo.jpeg" alt="" className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)]" />
+              <img src="/brand/logo.jpeg?v=2" alt="" className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)]" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-white tracking-tight">
               PinkSurfing

@@ -4,7 +4,7 @@ import { authContext } from "../context/authContext";
 import { FaAppStore, FaGooglePlay } from "react-icons/fa";
 import { useAccessToken } from "../hooks/useAccessToken";
 
-const BRAND_LOGO = "/brand/logo.jpeg";
+const BRAND_LOGO = "/brand/logo.jpeg?v=2";
 
 const Footer = () => {
   const accessToken = useAccessToken();
