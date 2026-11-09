@@ -21,6 +21,8 @@ export default function CategorySidebar({
     handleSliderChange,
     filterBy,
     setFilterBy,
+    attributeFilters = {},
+    onFilterChange,
     isLocationCategory,
     radiusMiles,
     setRadiusMiles,
@@ -180,18 +182,31 @@ export default function CategorySidebar({
                                         <ChevronDownIcon className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
                                     </Disclosure.Button>
                                     <Disclosure.Panel className="pt-2 space-y-2">
-                                        {section.options.map((option, idx) => (
+                                        {section.options.map((option, idx) => {
+                                            const current = attributeFilters?.[section.id];
+                                            const isActive = current === option || filterBy === option;
+                                            return (
                                             <button
                                                 key={idx}
-                                                onClick={() => setFilterBy(option === filterBy ? "" : option)}
-                                                className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-all duration-300 ${option === filterBy
-                                                        ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-500/20"
-                                                        : "bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                type="button"
+                                                onClick={() => {
+                                                    const next = isActive ? "" : option;
+                                                    if (typeof onFilterChange === "function") {
+                                                        onFilterChange(section.id, next, "single");
+                                                    }
+                                                    if (typeof setFilterBy === "function") {
+                                                        setFilterBy(next);
+                                                    }
+                                                }}
+                                                className={`w-full min-h-[44px] px-3 py-2 rounded-xl text-left text-sm transition-colors duration-ps-normal ${isActive
+                                                        ? "bg-[var(--ps-primary)] text-white"
+                                                        : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-white"
                                                     }`}
                                             >
                                                 {option}
                                             </button>
-                                        ))}
+                                            );
+                                        })}
                                     </Disclosure.Panel>
                                 </>
                             )}

@@ -4,7 +4,7 @@ const CSS = `
 .deal-process{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px;}
 @media(max-width:900px){.deal-process{grid-template-columns:1fr 1fr;}}
 .deal-step{background:#141418;border:1px solid #2a2a33;border-radius:8px;padding:14px 16px;}
-.deal-step-num{font-size:10px;font-weight:800;color:#f0318a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.deal-step-num{font-size:10px;font-weight:800;color:#9747ff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
 .deal-step-title{font-size:13px;font-weight:700;color:#f0f0f4;margin-bottom:4px;}
 .deal-step-desc{font-size:12px;color:#66667a;line-height:1.45;}
 `;

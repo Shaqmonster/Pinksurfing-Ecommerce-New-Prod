@@ -313,7 +313,7 @@ export default function ProfileCartPage() {
                                 </div>
                                 <button
                                     onClick={() => {
-                                        navigate("/shoppingMall/all");
+                                        navigate("/shoppingMall");
                                         setIsCartOpen(false);
                                     }}
                                     className="px-12 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
@@ -344,7 +344,7 @@ export default function ProfileCartPage() {
                                     </div>
                                     <div className="flex flex-col sm:flex-row items-center gap-6">
                                         <button
-                                            onClick={() => navigate("/shoppingMall/all")}
+                                            onClick={() => navigate("/shoppingMall")}
                                             className="text-[10px] font-black text-white/30 hover:text-white transition-all uppercase tracking-widest px-8 py-5 border border-white/5 rounded-2xl hover:bg-white/5"
                                         >
                                             Continue Shopping

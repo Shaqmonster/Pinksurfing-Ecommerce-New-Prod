@@ -38,9 +38,9 @@ export function getLocationRadiusConfig(categorySlug) {
 
 // Sort method options
 export const SORT_METHODS = [
-    { name: "Newest", value: "date", icon: "🆕" },
-    { name: "Price: Low to High", value: "ascPrice", icon: "💰" },
-    { name: "Price: High to Low", value: "descPrice", icon: "💎" },
+    { name: "Newest", value: "date", icon: "newest" },
+    { name: "Price: Low to High", value: "ascPrice", icon: "price-asc" },
+    { name: "Price: High to Low", value: "descPrice", icon: "price-desc" },
 ];
 
 // Static filter arrays for Real Estate & Business

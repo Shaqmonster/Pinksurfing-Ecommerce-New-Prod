@@ -21,6 +21,7 @@ import {
 } from "react-icons/fa";
 import { getOpenRequests } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
+import PageSEO from "../../components/PageSEO";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -153,7 +154,12 @@ export default function BidsLandingPage() {
   }, [accessToken]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[var(--ps-bg)]">
+      <PageSEO
+        title="Bids marketplace"
+        description="Post project requests and send offers on PinkSurfing Bids — compare vendors and hire with confidence."
+        path="/bids"
+      />
       <BidsNavBar />
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}

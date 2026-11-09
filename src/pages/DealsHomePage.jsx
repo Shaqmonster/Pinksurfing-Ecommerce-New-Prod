@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import PageSEO from "../components/PageSEO";
 import DealCard from "../components/deals/DealCard";
 import DealFilterBar from "../components/deals/DealFilterBar";
 import DealKpiBar from "../components/deals/DealKpiBar";
@@ -8,15 +9,15 @@ import { fetchDealStats, fetchDealTags, fetchDeals } from "../api/offMarketDeals
 import { useAccessToken } from "../hooks/useAccessToken";
 
 const PAGE_CSS = `
-.deals-page{min-height:100vh;background:#0d0d10;color:#f0f0f4;font-family:'DM Sans',sans-serif;padding:24px 32px 80px;}
+.deals-page{min-height:100vh;background:var(--ps-bg,#0e0f13);color:#f0f0f4;font-family:var(--ps-font-sans),'Plus Jakarta Sans',sans-serif;padding:24px 16px 80px;}
 .deals-inner{max-width:1280px;margin:0 auto;}
 .deals-hero{margin-bottom:28px;}
 .deals-hero h1{font-size:32px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px;}
-.deals-hero h1 span{color:#f0318a;}
+.deals-hero h1 span{color:#9747ff;}
 .deals-hero p{color:#66667a;font-size:15px;max-width:640px;line-height:1.55;}
 .deals-nav{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
 .deals-nav a{font-size:13px;font-weight:600;color:#b0b0c0;text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid #2a2a33;}
-.deals-nav a.active,.deals-nav a:hover{color:#f0318a;border-color:rgba(240,49,138,.35);}
+.deals-nav a.active,.deals-nav a:hover{color:#9747ff;border-color:rgba(151, 71, 255,.35);}
 .deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
 .deals-empty{text-align:center;padding:60px 20px;color:#66667a;}
 .deals-loading{text-align:center;padding:40px;color:#66667a;}
@@ -69,6 +70,11 @@ export default function DealsHomePage() {
 
   return (
     <>
+      <PageSEO
+        title="Off-market deals"
+        description="Browse exclusive off-market investment deals on PinkSurfing — unlock listings and enter the deal room."
+        path="/deals"
+      />
       <style>{PAGE_CSS}</style>
       <div className="deals-page">
         <div className="deals-inner">
@@ -112,7 +118,7 @@ export default function DealsHomePage() {
                 Inventory grows as vendors activate listings and invited suppliers submit deals for
                 host review. Active Listings above only counts live off-market products.
               </p>
-              <Link to="/deals" style={{ color: "#f0318a" }}>
+              <Link to="/deals" style={{ color: "#9747ff" }}>
                 Clear filters
               </Link>
             </div>

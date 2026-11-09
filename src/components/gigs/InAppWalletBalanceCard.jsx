@@ -158,11 +158,6 @@ export default function InAppWalletBalanceCard({ compact = false }) {
           </div>
 
           {error ? <p className="text-amber-400 text-xs">{error}</p> : null}
-          {!error && canLoad && ethBalance === "0.0000" ? (
-            <p className="text-amber-400 text-xs">
-              Dev note: this wallet has no local Anvil ETH yet. Fund this exact address from account #0 or import a pre-funded Anvil wallet.
-            </p>
-          ) : null}
         </div>
       )}
     </div>

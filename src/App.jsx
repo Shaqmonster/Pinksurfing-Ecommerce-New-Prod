@@ -54,7 +54,6 @@ import GigHubLanding from "./pages/gigs/GigHubLanding";
 import GigHubDashboard from "./pages/gigs/GigHubDashboard";
 import GigHubSellerDashboard from "./pages/gigs/GigHubSellerDashboard";
 import ChatMessagesRedirect from "./pages/gigs/ChatMessagesRedirect";
-import GigHubEscrowPlayground from "./pages/gigs/GigHubEscrowPlayground";
 import GigOrderDetail from "./pages/gigs/GigOrderDetail";
 import VisitPaymentReturn from "./pages/VisitPaymentReturn";
 import NdaPaymentReturn from "./pages/NdaPaymentReturn";
@@ -84,8 +83,23 @@ function App() {
     location.pathname === "/forgotPassword" ||
     location.pathname === "/auth/google/complete";
 
-  // Footer only on the home page
-  const showFooter = location.pathname === "/";
+  // Site footer on public browse surfaces (not auth/checkout/payment returns)
+  const hideFooterPaths = [
+    "/signup",
+    "/signin",
+    "/forgotPassword",
+    "/auth/google/complete",
+    "/checkout",
+    "/success",
+    "/payment_failed",
+    "/completion",
+    "/visit-payment-return",
+    "/nda-payment-return",
+    "/deal-unlock-return",
+  ];
+  const showFooter = !hideFooterPaths.some(
+    (p) => location.pathname === p || location.pathname.startsWith(p + "/")
+  );
 
   return (
     <main className={`${isDarkMode && "dark"} `}>
@@ -141,7 +155,8 @@ function App() {
         <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
         <Route path="/gighub/seller" element={<GigHubSellerDashboard />} />
         <Route path="/gighub/messages" element={<ChatMessagesRedirect />} />
-        <Route path="/gighub/escrow" element={<GigHubEscrowPlayground />} />
+        {/* Escrow playground is a private/dev tool — redirect away from public crawl */}
+        <Route path="/gighub/escrow" element={<Navigate to="/gighub" replace />} />
 
         {/* Gigs routes — static paths before dynamic :id */}
         <Route path="/gigs" element={<GigsPage />} />

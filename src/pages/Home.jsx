@@ -49,7 +49,6 @@ const Home = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [categoryCarouselIndex, setCategoryCarouselIndex] = useState(0);
   const [isVendorDialogOpen, setIsVendorDialogOpen] = useState(false);
-  const [isShoppingMallDialogOpen, setIsShoppingMallDialogOpen] = useState(false);
   const [vendorFormData, setVendorFormData] = useState({
     store_name: "",
     website: "",
@@ -99,14 +98,24 @@ const Home = () => {
   }, []);
 
   const handleComingSoonClick = (item) => {
-    if (item.id === 1) {
-      setIsShoppingMallDialogOpen(true);
-      return;
-    }
     toast.info(`${item.name} is coming soon!`, {
       position: "top-right",
       autoClose: 2200,
     });
+  };
+
+  const handleCategoryCardClick = (item) => {
+    if (item.coming_soon) {
+      handleComingSoonClick(item);
+      return;
+    }
+    if (item.id === 3) {
+      handleMyStoreClick();
+      return;
+    }
+    if (item.link) {
+      navigate(item.link);
+    }
   };
 
   // Handle My Store click
@@ -370,40 +379,37 @@ const Home = () => {
 
         {/* Simple Static Background */}
         <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-600/20 rounded-full blur-[100px]"></div>
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-600/8 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-600/8 rounded-full blur-[100px]"></div>
         </div>
 
         {/* Hero Section - Main Categories */}
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 pt-8 pb-12">
           <div className="text-center mb-10">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3">
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                PinkSurfing — Shop, Sell &amp; Hire
-              </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-white">
+              PinkSurfing — Shop, Sell &amp; Hire
             </h1>
             <p className="text-gray-400 text-base sm:text-lg max-w-3xl mx-auto">
               PinkSurfing is a multi-vendor marketplace for products, businesses for sale,
               real estate, vehicles, and freelance services on GigHub—buy, list, or hire in one place.
             </p>
-            <motion.div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsShoppingMallDialogOpen(true)}
-                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/10 border border-white/15 text-gray-400 text-sm font-semibold hover:border-purple-500/50 transition-colors"
+            <motion.div className="mt-6 flex flex-wrap justify-center items-center gap-3">
+              <Link
+                to="/shoppingMall"
+                className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold hover:opacity-95 transition-opacity"
               >
-                Shopping Mall — Coming soon
-              </button>
+                Browse shopping mall
+              </Link>
               <button
                 type="button"
                 onClick={handleMyStoreClick}
-                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-200 text-sm font-semibold hover:border-purple-500/50 transition-colors"
+                className="inline-flex items-center justify-center min-h-[44px] px-5 rounded-[14px] border border-white/20 text-gray-200 text-sm font-semibold hover:border-[var(--ps-purple-light)]/50 transition-colors"
               >
                 Sell on PinkSurfing
               </button>
               <Link
                 to="/gighub"
-                className="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-200 text-sm font-semibold hover:border-purple-500/50 transition-colors"
+                className="inline-flex items-center justify-center min-h-[44px] px-5 rounded-[14px] border border-white/20 text-gray-200 text-sm font-semibold hover:border-[var(--ps-purple-light)]/50 transition-colors"
               >
                 Hire on GigHub
               </Link>
@@ -423,13 +429,7 @@ const Home = () => {
                     className="min-w-full px-2"
                   >
                     <div
-                      onClick={() => {
-                        if (item.coming_soon) {
-                          handleComingSoonClick(item);
-                          return;
-                        }
-                        if (item.id === 3) handleMyStoreClick();
-                      }}
+                      onClick={() => handleCategoryCardClick(item)}
                       className={`group ${item.coming_soon ? "cursor-default" : "cursor-pointer"}`}
                     >
                       <div className="rounded-2xl overflow-hidden h-[350px] relative border border-white/10">
@@ -506,13 +506,7 @@ const Home = () => {
             {categories.map((item) => (
               <div
                 key={item.id}
-                onClick={() => {
-                  if (item.coming_soon) {
-                    handleComingSoonClick(item);
-                    return;
-                  }
-                  if (item.id === 3) handleMyStoreClick();
-                }}
+                onClick={() => handleCategoryCardClick(item)}
                 className={`group transform transition-transform duration-200 ${
                   item.coming_soon
                     ? "cursor-default"
@@ -537,7 +531,7 @@ const Home = () => {
                   <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
                     <h3 className="text-white text-lg sm:text-xl font-bold mb-1">{item.name}</h3>
                     {!item.coming_soon && (
-                      <div className="flex items-center text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="flex items-center text-purple-300">
                         <span className="text-sm font-medium">Explore Now</span>
                         <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -587,7 +581,7 @@ const Home = () => {
                     initial={{ opacity: 0, y: 16 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-40px" }}
-                    transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.36) }}
+                    transition={{ duration: 0.25, delay: Math.min(index * 0.06, 0.36) }}
                     className={`min-w-0 ${isSoon ? "opacity-90" : ""}`}
                   >
                     <button
@@ -667,7 +661,7 @@ const Home = () => {
                 <div>
                   {storeLoading ? (
                     <div className="flex justify-center items-center py-16">
-                      <div className="w-10 h-10 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-10 h-10 border-4 border-[var(--ps-primary)] border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -712,86 +706,6 @@ const Home = () => {
       </div>
 
       {/* <ChannelsForSale /> */}
-
-      {/* Shopping Mall Coming Soon Dialog */}
-      <Transition appear show={isShoppingMallDialogOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-50"
-          onClose={() => setIsShoppingMallDialogOpen(false)}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-3xl glass bg-[#1a1a24] border border-purple-500/30 p-8 text-left align-middle shadow-2xl shadow-purple-500/20 transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-xl font-bold mb-4 flex items-center justify-between"
-                  >
-                    <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      Shopping Mall
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsShoppingMallDialogOpen(false)}
-                      className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
-                    >
-                      <IoClose size={24} />
-                    </button>
-                  </Dialog.Title>
-
-                  <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                    Shopping Mall coming soon. Do you want an open marketplace to list products right away? Then email us at{" "}
-                    <a
-                      href="mailto:marketing@pinksurfing.com?subject=Want%20marketplace%20now"
-                      className="text-purple-400 hover:text-pink-400 underline"
-                    >
-                      marketing@pinksurfing.com
-                    </a>{" "}
-                    and say &ldquo;want marketplace now&rdquo;, and any specific category you want to sell.
-                  </p>
-
-                  <div className="flex flex-wrap gap-3 justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setIsShoppingMallDialogOpen(false)}
-                      className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-colors"
-                    >
-                      Close
-                    </button>
-                    <a
-                      href="mailto:marketing@pinksurfing.com?subject=Want%20marketplace%20now&body=Want%20marketplace%20now%0A%0ACategory%20I%20want%20to%20sell%3A%20"
-                      className="inline-flex items-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:from-purple-500 hover:to-pink-500 transition-colors"
-                    >
-                      Email us
-                    </a>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
 
       {/* Vendor Registration Dialog */}
       <Transition appear show={isVendorDialogOpen} as={Fragment}>

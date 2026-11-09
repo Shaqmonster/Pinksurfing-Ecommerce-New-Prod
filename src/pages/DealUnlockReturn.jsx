@@ -83,7 +83,7 @@ export default function DealUnlockReturn() {
               style={{
                 display: "inline-block",
                 padding: "12px 24px",
-                background: "#f0318a",
+                background: "#9747ff",
                 color: "#fff",
                 borderRadius: 8,
                 fontWeight: 700,
@@ -100,7 +100,7 @@ export default function DealUnlockReturn() {
             <p style={{ color: "#b0b0c0", marginBottom: 24 }}>
               Payment may still be processing. Check back in a few minutes or contact support.
             </p>
-            <Link to="/deals" style={{ color: "#f0318a" }}>
+            <Link to="/deals" style={{ color: "#9747ff" }}>
               Back to Deals Home
             </Link>
           </>
@@ -108,7 +108,7 @@ export default function DealUnlockReturn() {
         {phase === "not_found" && (
           <>
             <h2 style={{ color: "#f87171" }}>Invalid return link</h2>
-            <Link to="/deals" style={{ color: "#f0318a" }}>
+            <Link to="/deals" style={{ color: "#9747ff" }}>
               Back to Deals Home
             </Link>
           </>

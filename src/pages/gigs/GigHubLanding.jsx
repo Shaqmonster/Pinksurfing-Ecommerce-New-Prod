@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import PageSEO from "../../components/PageSEO";
 import { listGigs, getGigCategories, gigUrl } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import {
@@ -82,7 +84,8 @@ const TRUST_STATS = [
 ];
 
 const InAppWalletBanner = () => {
-  const { status, address, createWallet, importMnemonic, lastError } = useInAppWallet();
+  const navigate = useNavigate();
+  const { status, address, createWallet, lastError } = useInAppWallet();
   const [mnemonic, setMnemonic] = useState("");
   const [showPhrase, setShowPhrase] = useState(false);
 
@@ -94,12 +97,12 @@ const InAppWalletBanner = () => {
     setShowPhrase(true);
   };
 
-  const onImport = async () => {
-    const phrase = window.prompt("Paste your 12/24-word seed phrase");
-    if (!phrase) return;
-    await importMnemonic(phrase);
-    setMnemonic("");
-    setShowPhrase(false);
+  const onImport = () => {
+    toast.info("Seed phrase import isn't available in the browser. Manage your wallet in account settings.", {
+      position: "top-center",
+      autoClose: 4000,
+    });
+    navigate("/userwallet");
   };
 
   if (status === "ready") {
@@ -270,7 +273,12 @@ const GigHubLanding = () => {
   };
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
+    <div className="bg-[var(--ps-bg)] min-h-screen">
+      <PageSEO
+        title="GigHub — Freelance services"
+        description="Hire freelancers or offer services on PinkSurfing GigHub with clear pricing and order tracking."
+        path="/gighub"
+      />
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <InAppWalletBanner />
       </div>

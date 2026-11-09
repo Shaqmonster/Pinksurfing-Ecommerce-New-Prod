@@ -27,13 +27,13 @@ const CSS = `
 .deal-met-cell{padding:14px 16px;border-right:1px solid #2a2a33;background:#1c1c22;}
 .deal-met-cell:last-child{border-right:none;}
 .deal-side{position:sticky;top:80px;background:#141418;border:1.5px solid #2a2a33;border-radius:8px;padding:20px;}
-.deal-side-cta{width:100%;padding:14px;border-radius:8px;font-weight:700;font-size:15px;background:#f0318a;color:#fff;border:none;cursor:pointer;margin-top:12px;}
+.deal-side-cta{width:100%;padding:14px;border-radius:8px;font-weight:700;font-size:15px;background:#9747ff;color:#fff;border:none;cursor:pointer;margin-top:12px;}
 .deal-side-cta:disabled{opacity:.5;cursor:not-allowed;}
 .deal-locked-note{font-size:13px;color:#66667a;line-height:1.5;margin-top:12px;}
 .deal-docs{margin-top:20px;}
 .deal-doc-item{padding:10px 12px;border:1px solid #2a2a33;border-radius:6px;margin-bottom:8px;font-size:13px;}
 .deal-back{color:#b0b0c0;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:20px;}
-.deal-back:hover{color:#f0318a;}
+.deal-back:hover{color:#9747ff;}
 `;
 
 export default function OffMarketDealDetail() {
@@ -176,7 +176,7 @@ export default function OffMarketDealDetail() {
                     <div style={{ fontSize: 10, color: "#66667a", textTransform: "uppercase" }}>
                       Asking
                     </div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "#f0318a" }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "#9747ff" }}>
                       {formatMoney(display.asking_price)}
                     </div>
                   </div>
@@ -204,7 +204,7 @@ export default function OffMarketDealDetail() {
                       target="_blank"
                       rel="noreferrer"
                       className="deal-doc-item"
-                      style={{ display: "block", color: "#f0318a" }}
+                      style={{ display: "block", color: "#9747ff" }}
                     >
                       {doc.document_name || doc.document_type}
                     </a>

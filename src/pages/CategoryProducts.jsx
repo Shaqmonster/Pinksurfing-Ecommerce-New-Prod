@@ -99,6 +99,8 @@ export default function CategoryProducts() {
             handleSliderChange={hook.handleSliderChange}
             filterBy={hook.filterBy}
             setFilterBy={hook.setFilterBy}
+            attributeFilters={hook.attributeFilters}
+            onFilterChange={hook.handleAttributeFilterChange}
             isLocationCategory={hook.isLocationCategory}
             radiusMiles={hook.radiusMiles}
             setRadiusMiles={hook.setRadiusMiles}

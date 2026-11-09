@@ -219,38 +219,6 @@ export default function Wishlist() {
                                               : ""}
                                           </p>
                                         </Link>
-                                        <div className="flex item-center sm:mt-2">
-                                          <svg
-                                            className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-700 dark:text-[#f5f5f5]"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                          </svg>
-                                          <svg
-                                            className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-700 dark:text-[#f5f5f5]"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                          </svg>
-                                          <svg
-                                            className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-700 dark:text-[#f5f5f5]"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                          </svg>
-                                          <svg
-                                            className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-500"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                          </svg>
-                                          <svg
-                                            className="w-4 h-4  sm:w-5 sm:h-5 fill-current text-gray-500"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                                          </svg>
-                                        </div>
                                         <div className="flex flex-col item-center justify-between sm:mt-1">
                                           <h1 className="text-gray-700 dark:text-[#f5f5f5] font-semibold text-base sm:text-md">
                                             {currency}
@@ -262,7 +230,7 @@ export default function Wishlist() {
                                               onClick={() => {
                                                 AddtoCart(product.id);
                                               }}
-                                              className=" px-2 sm:px-3 disabled:bg-gray-200 dark:disabled:bg-gray-500 dark:disabled:text-gray-400 disabled:text-gray-700 py-1 sm:py-2 bg-[#FFD814]  text-black text-[10px] lg:text-[11px] font-bold uppercase rounded"
+                                              className=" px-2 sm:px-3 disabled:bg-gray-200 dark:disabled:bg-gray-500 dark:disabled:text-gray-400 disabled:text-gray-700 py-1 sm:py-2 min-h-[44px] bg-[var(--ps-primary)] text-white text-[10px] lg:text-[11px] font-bold uppercase rounded hover:bg-[var(--ps-purple-dark)]"
                                             >
                                               Add to Cart
                                             </button>
@@ -301,7 +269,7 @@ export default function Wishlist() {
                           </p>
                           <button
                             onClick={() => {
-                              navigate("/shoppingMall/all");
+                              navigate("/shoppingMall");
                               setIsWishlistOpen(false);
                             }}
                             className=" bg-[#2d1e5f] px-3 text-sm sm:text-base py-1.5 rounded-md text-white mt-2"

@@ -178,11 +178,15 @@ const Summary = () => {
                   <div className="flex-1">
                     <h2 className="text-2xl font-black tracking-tight mb-2 uppercase">{order.product.name}</h2>
                     <div>
-                      <div 
+                      <div
                         className={`text-gray-400 text-sm leading-relaxed mb-2 transition-all duration-300 ${isDescriptionExpanded ? "" : "line-clamp-2"}`}
-                        dangerouslySetInnerHTML={{ __html: order.product.description }}
-                      />
-                      {order.product.description?.length > 150 && (
+                      >
+                        {String(order.product.description || "")
+                          .replace(/<[^>]*>/g, " ")
+                          .replace(/\s+/g, " ")
+                          .trim()}
+                      </div>
+                      {String(order.product.description || "").replace(/<[^>]*>/g, "").length > 150 && (
                         <button 
                           onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                           className="text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors"

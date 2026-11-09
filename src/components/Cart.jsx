@@ -309,7 +309,7 @@ export default function Cart() {
                                             DecrementQty(product.product.id);
                                           }}
                                           type="button"
-                                          className="inline-flex h-6 w-6 items-center justify-center rounded border border-gray-300 bg-gray-100 dark:border-white/10 dark:bg-[#1a1a24] dark:hover:bg-[#232329]"
+                                          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded border border-gray-300 bg-gray-100 dark:border-white/10 dark:bg-[#1a1a24] dark:hover:bg-[#232329]"
                                         >
                                           <svg
                                             className="h-2.5 w-2.5 text-gray-900 dark:text-[#f5f5f5]"
@@ -345,7 +345,7 @@ export default function Cart() {
                                           }}
                                           type="button"
                                           disabled={isAtMaxStock}
-                                          className="inline-flex h-6 w-6 items-center justify-center rounded border border-gray-300 bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30 dark:border-white/10 dark:bg-[#1a1a24] dark:hover:bg-[#232329]"
+                                          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded border border-gray-300 bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30 dark:border-white/10 dark:bg-[#1a1a24] dark:hover:bg-[#232329]"
                                         >
                                           <svg
                                             className="h-2.5 w-2.5 text-gray-900 dark:text-[#f5f5f5]"
@@ -411,7 +411,7 @@ export default function Cart() {
                           <Link to="/checkout" onClick={() => setIsCartOpen(false)}>
                             <button
                               type="button"
-                              className="flex w-full items-center justify-center rounded-md bg-[#6A1BBE] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#5e2d92]"
+                              className="flex w-full items-center justify-center rounded-md bg-[var(--ps-primary)] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--ps-purple-dark)]"
                             >
                               Checkout
                             </button>

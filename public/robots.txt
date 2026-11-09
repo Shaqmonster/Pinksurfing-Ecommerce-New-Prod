@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
 
+Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /my-ndas
+Disallow: /my-unlocks
+Disallow: /gighub/escrow
+Disallow: /userwallet
+Disallow: /success
+Disallow: /payment_failed
+
 Sitemap: https://pinksurfing.com/sitemap.xml

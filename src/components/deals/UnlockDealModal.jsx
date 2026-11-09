@@ -6,10 +6,10 @@ const CSS = `
 .unlock-modal{background:#141418;border:1px solid #2a2a33;border-radius:12px;max-width:420px;width:100%;padding:28px;}
 .unlock-modal h3{font-size:20px;font-weight:800;margin-bottom:8px;}
 .unlock-modal p{font-size:14px;color:#b0b0c0;line-height:1.55;margin-bottom:20px;}
-.unlock-fee{font-size:28px;font-weight:800;color:#f0318a;margin-bottom:16px;}
+.unlock-fee{font-size:28px;font-weight:800;color:#9747ff;margin-bottom:16px;}
 .unlock-actions{display:flex;gap:10px;}
 .unlock-btn{flex:1;padding:12px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:none;}
-.unlock-btn.primary{background:#f0318a;color:#fff;}
+.unlock-btn.primary{background:#9747ff;color:#fff;}
 .unlock-btn.ghost{background:transparent;border:1.5px solid #2a2a33;color:#b0b0c0;}
 `;
 

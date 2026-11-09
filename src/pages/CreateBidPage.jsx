@@ -51,7 +51,7 @@ const STEPS = [
   { label: "Photos", shortLabel: "Photos" },
   { label: "Category", shortLabel: "Category" },
   { label: "Location", shortLabel: "Location" },
-  { label: "AI Scope", shortLabel: "Scope" },
+  { label: "Project scope", shortLabel: "Scope" },
   { label: "Budget", shortLabel: "Budget" },
   { label: "Review", shortLabel: "Review" },
 ];
@@ -610,117 +610,48 @@ const LocationStep = ({ data, onUpdate }) => (
 );
 
 const ScopeAIStep = ({ data, onUpdate }) => {
-  const [generating, setGenerating] = useState(false);
-  const [realism, setRealism] = useState(50);
-  const [tone, setTone] = useState("concise");
-
-  const handleGenerate = () => {
-    setGenerating(true);
-    setTimeout(() => {
-      const mock = `${data.subcategory || data.category || "General"} project scope:\n\n\u2022 Full assessment and preparation of work area\n\u2022 Removal of existing materials as needed\n\u2022 Supply and installation of new materials per specifications\n\u2022 Clean-up and final inspection\n\u2022 1-year workmanship warranty included\n\nEstimated complexity: Medium\nLikely hidden costs: Permit fees, material upgrades, structural surprises behind walls.`;
-      onUpdate("scopeDraft", mock);
-      setGenerating(false);
-    }, 1500);
-  };
-
-  const realismLabel = realism < 33 ? "Conservative" : realism < 66 ? "Normal" : "Aggressive";
-
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">AI Scope Draft</h2>
+        <h2 className="text-xl font-bold text-white">Project scope</h2>
         <p className="text-sm text-white/50 mt-1">
-          AI generates a realistic scope from your inputs
+          Describe the work you need so vendors can quote accurately.
         </p>
       </div>
 
-      {/* Context preview */}
-      <div className="bg-[#13131a] border border-white/10 rounded-xl p-4 space-y-3">
-        <p className="text-xs font-mono text-pink-400 font-semibold tracking-wider">YOUR INPUTS</p>
-        <div className="flex items-center gap-4 text-sm text-white/50 flex-wrap">
-          {data.photos.length > 0 && (
-            <span className="flex items-center gap-1.5">
-              <IoCamera className="text-pink-400" />
-              {data.photos.length} photo{data.photos.length !== 1 ? "s" : ""}
-            </span>
-          )}
-          {data.category && (
-            <span className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-white/10 text-xs text-white/60">
-              {data.category}{data.subcategory ? ` \u2192 ${data.subcategory}` : ""}
-            </span>
-          )}
-          {!data.photos.length && !data.category && (
-            <span className="text-white/30 italic text-xs">Complete earlier steps to see context</span>
-          )}
-        </div>
-      </div>
-
-      {/* Generate controls */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          {["concise", "detailed"].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTone(t)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-all ${
-                tone === t
-                  ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white"
-                  : "bg-[#1a1a24] border border-white/10 text-white/50 hover:text-white"
-              }`}
-            >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-white/40">Realism</span>
-            <span className="text-xs font-mono text-white/40">{realismLabel}</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={realism}
-            onChange={(e) => setRealism(Number(e.target.value))}
-            className="w-full h-1.5 rounded-full bg-white/10 appearance-none cursor-pointer accent-pink-500"
-          />
-        </div>
-
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-pink-500/20 disabled:opacity-60 transition-all"
-        >
-          {generating ? <IoRefresh className="animate-spin" /> : <IoSparkles />}
-          {generating ? "Generating..." : "Generate Scope with AI"}
-        </button>
-      </div>
-
-      {/* Scope editor */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-white/70">Scope Draft</label>
-        <textarea
-          value={data.scopeDraft}
-          onChange={(e) => onUpdate("scopeDraft", e.target.value)}
-          placeholder="AI-generated scope will appear here, or write your own..."
-          rows={8}
-          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none font-mono"
-        />
-      </div>
-
-      {/* Warning */}
-      {data.scopeDraft && (
-        <div className="bg-[#13131a] border border-yellow-500/20 rounded-xl p-4">
-          <div className="flex items-start gap-2">
-            <IoAlertCircle className="text-yellow-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-white/50">
-              AI can be wrong. Review before publishing. Vendors can still clarify in chat.
-            </p>
+      {(data.photos.length > 0 || data.category) && (
+        <div className="bg-[#13131a] border border-white/10 rounded-xl p-4 space-y-3">
+          <p className="text-xs font-mono text-pink-400 font-semibold tracking-wider">YOUR INPUTS</p>
+          <div className="flex items-center gap-4 text-sm text-white/50 flex-wrap">
+            {data.photos.length > 0 && (
+              <span className="flex items-center gap-1.5">
+                <IoCamera className="text-pink-400" />
+                {data.photos.length} photo{data.photos.length !== 1 ? "s" : ""}
+              </span>
+            )}
+            {data.category && (
+              <span className="px-2 py-0.5 rounded-full bg-[#1a1a24] border border-white/10 text-xs text-white/60">
+                {data.category}
+                {data.subcategory ? ` \u2192 ${data.subcategory}` : ""}
+              </span>
+            )}
           </div>
         </div>
       )}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-white/70" htmlFor="scope-draft">
+          Scope of work
+        </label>
+        <textarea
+          id="scope-draft"
+          value={data.scopeDraft}
+          onChange={(e) => onUpdate("scopeDraft", e.target.value)}
+          placeholder="List tasks, materials, timeline, and any special requirements..."
+          rows={10}
+          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none"
+        />
+      </div>
 
       {/* Lock toggle */}
       <div className="bg-[#13131a] border border-white/10 rounded-xl p-4">
