@@ -37,7 +37,8 @@ const ProfileUserWallet = () => {
     try {
       const web3Modal = new Web3Modal({ cacheProvider: false });
       const instance = await web3Modal.connect();
-      const provider = new ethers.providers.Web3Provider(instance);
+      // ethers v6: BrowserProvider (ethers.providers.Web3Provider is v5-only)
+      const provider = new ethers.BrowserProvider(instance);
       console.log("Connected to:", provider);
     } catch (error) {
       console.error("Wallet connection failed", error);

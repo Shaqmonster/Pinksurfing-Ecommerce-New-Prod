@@ -10,9 +10,9 @@ import {
   FaHeart,
   FaGavel,
   FaBriefcase,
-  FaFileContract,
   FaStore,
   FaHandshake,
+  FaFileContract,
 } from "react-icons/fa";
 import {
   IoCart,

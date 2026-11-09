@@ -204,9 +204,22 @@ export function InAppWalletProvider({ children }) {
   return <inAppWalletContext.Provider value={value}>{children}</inAppWalletContext.Provider>;
 }
 
+const WALLET_STUB = {
+  status: "none",
+  address: "",
+  wallet: null,
+  lastError: "",
+  hasLocal: false,
+  createWallet: async () => ({ ok: false, error: "Wallet UI is disabled" }),
+  importMnemonic: async () => ({ ok: false, error: "Wallet UI is disabled" }),
+  restoreFromServer: async () => false,
+  resetWallet: () => {},
+};
+
 export function useInAppWallet() {
   const ctx = useContext(inAppWalletContext);
-  if (!ctx) throw new Error("useInAppWallet must be used within InAppWalletProvider");
+  // Soft-hide: allow hooks outside provider when crypto wallet UI is gated off.
+  if (!ctx) return WALLET_STUB;
   return ctx;
 }
 

@@ -25,8 +25,10 @@ import Completion from "./components/Completion";
 import OrderConfirm from "./components/OrderConfirm";
 import OrderFailed from "./components/OrderFailed";
 import ShoppingMallNew from "./pages/ShoppingMallNew";
-import UserOnSiteWallet from "./components/UserWallet";
 import { SHOW_CRYPTO_WALLET } from "./config/featureFlags";
+const UserOnSiteWallet = SHOW_CRYPTO_WALLET
+  ? React.lazy(() => import("./components/UserWallet"))
+  : null;
 import ProfilePage from "./pages/ProfilePage";
 import ShopByStore from "./pages/ShopByStore";
 import StoreProducts from "./pages/StoreProducts";
@@ -145,7 +147,13 @@ function App() {
         <Route
           path="/userwallet"
           element={
-            SHOW_CRYPTO_WALLET ? <UserOnSiteWallet /> : <Navigate to="/profile" replace />
+            SHOW_CRYPTO_WALLET && UserOnSiteWallet ? (
+              <React.Suspense fallback={null}>
+                <UserOnSiteWallet />
+              </React.Suspense>
+            ) : (
+              <Navigate to="/profile" replace />
+            )
           }
         />
         <Route path="/contact" element={<Contact />} />

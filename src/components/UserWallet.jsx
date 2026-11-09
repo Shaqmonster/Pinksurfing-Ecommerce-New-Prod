@@ -38,9 +38,8 @@ const UserOnSiteWallet = () => {
         providerOptions,
       });
       const web3ModalInstance = await web3Modal.connect();
-      const web3ModalProvider = new ethers.providers.Web3Provider(
-        web3ModalInstance
-      );
+      // ethers v6: BrowserProvider (ethers.providers.Web3Provider is v5-only)
+      const web3ModalProvider = new ethers.BrowserProvider(web3ModalInstance);
       console.log(web3ModalProvider);
     } catch (error) {
       console.log(error);
