@@ -25,6 +25,7 @@ export default function CategoryProducts() {
       <MobileFilterDrawer
         open={hook.mobileFiltersOpen}
         onClose={() => hook.setMobileFiltersOpen(false)}
+        categorySlug={slug}
         isElectronics={hook.isElectronics}
         subcategories={hook.subcategories}
         selectedSubcategorySlugs={hook.selectedSubcategorySlugs}
@@ -39,6 +40,8 @@ export default function CategoryProducts() {
         minValue={hook.minValue}
         maximumValue={hook.maximumValue}
         maxValue={hook.maxValue}
+        priceStep={hook.priceStep}
+        priceScaleLabel={hook.priceScaleLabel}
         handleSliderChange={hook.handleSliderChange}
         allowedAttributes={hook.allowedAttributes}
         attributeFilters={hook.attributeFilters}
@@ -96,6 +99,8 @@ export default function CategoryProducts() {
             minValue={hook.minValue}
             maximumValue={hook.maximumValue}
             maxValue={hook.maxValue}
+            priceStep={hook.priceStep}
+            priceScaleLabel={hook.priceScaleLabel}
             handleSliderChange={hook.handleSliderChange}
             filterBy={hook.filterBy}
             setFilterBy={hook.setFilterBy}
