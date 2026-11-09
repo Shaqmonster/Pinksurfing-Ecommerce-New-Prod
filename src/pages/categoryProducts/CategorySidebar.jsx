@@ -1,9 +1,18 @@
 import { Disclosure } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import MultiRangeSlider from "multi-range-slider-react";
 import { QUICK_FILTERS } from "./constants";
 import LocationFilterPanel from "./LocationFilterPanel";
 import ElectronicsSubcategoryFilter from "./ElectronicsSubcategoryFilter";
+import PriceRangeFilter from "./PriceRangeFilter";
+import { categoryShowsPriceRange, formatSubcategoryLabel } from "./priceRangeUtils";
+
+function SectionIcon({ children }) {
+    return (
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--ps-primary)] to-[var(--ps-purple-dark)] shadow-[0_6px_16px_-6px_rgba(151,71,255,0.55)]">
+            {children}
+        </div>
+    );
+}
 
 export default function CategorySidebar({
     categorySlug,
@@ -18,6 +27,8 @@ export default function CategorySidebar({
     minValue,
     maximumValue,
     maxValue,
+    priceStep,
+    priceScaleLabel,
     handleSliderChange,
     filterBy,
     setFilterBy,
@@ -41,18 +52,13 @@ export default function CategorySidebar({
     fetchCurrentLocationAndApply,
     clearLocationFilter,
 }) {
-    const formatPrice = (val) => {
-        if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
-        if (val >= 1000) return `$${(val / 1000).toFixed(0)}K`;
-        return `$${val}`;
-    };
-
-    const relevantFilters = QUICK_FILTERS.filter(f => 
-        !f.categoryMatch || f.categoryMatch.includes(categorySlug)
+    const relevantFilters = QUICK_FILTERS.filter(
+        (f) => !f.categoryMatch || f.categoryMatch.includes(categorySlug)
     );
+    const showPrice = categoryShowsPriceRange(categorySlug);
 
     return (
-        <aside className="hidden lg:block space-y-4">
+        <aside className="hidden space-y-4 lg:block">
             {isLocationCategory && (
                 <LocationFilterPanel
                     variant="desktop"
@@ -75,7 +81,6 @@ export default function CategorySidebar({
                 />
             )}
 
-            {/* Subcategories */}
             {isElectronics ? (
                 <ElectronicsSubcategoryFilter
                     subcategories={subcategories}
@@ -85,126 +90,121 @@ export default function CategorySidebar({
                     variant="desktop"
                 />
             ) : (
-                <div className="glass-card p-4 rounded-xl">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="glass-card rounded-xl border border-[var(--ps-brd)] p-4">
+                    <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
+                        <SectionIcon>
+                            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                             </svg>
-                        </div>
+                        </SectionIcon>
                         Subcategories
                     </h3>
-                    <div className="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
-                        {CategoryOnlyData.filter(cat => cat && cat !== 'null' && cat !== 'undefined').map((subcategory, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setCategoryFilter(subcategory === "all" ? "all" : subcategory)}
-                                className={`group w-full px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center justify-between ${subcategory === categoryFilter
-                                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md"
-                                        : "bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                                    }`}
-                            >
-                                <span className="capitalize">{subcategory}</span>
-                                {subcategory === categoryFilter && (
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                )}
-                            </button>
-                        ))}
+                    <div className="custom-scrollbar max-h-[500px] space-y-2 overflow-y-auto pr-1">
+                        {CategoryOnlyData.filter((cat) => cat && cat !== "null" && cat !== "undefined").map(
+                            (subcategory, index) => {
+                                const isActive = subcategory === categoryFilter;
+                                return (
+                                    <button
+                                        key={`${subcategory}-${index}`}
+                                        type="button"
+                                        onClick={() =>
+                                            setCategoryFilter(subcategory === "all" ? "all" : subcategory)
+                                        }
+                                        className={`group flex min-h-[44px] w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors duration-ps-normal ${
+                                            isActive
+                                                ? "bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white shadow-md"
+                                                : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-white"
+                                        }`}
+                                    >
+                                        <span className="capitalize leading-snug">
+                                            {formatSubcategoryLabel(subcategory)}
+                                        </span>
+                                        {isActive && (
+                                            <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        )}
+                                    </button>
+                                );
+                            }
+                        )}
                     </div>
                 </div>
             )}
 
-            {/* Price Range - Optimized Premium Look */}
-            {(categorySlug.includes('realestate') || categorySlug.includes('business')) && (
-                <div className="glass-card p-4 rounded-xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_rgba(31,38,135,0.07)] backdrop-blur-xl">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-green-500/20">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        Price Range
-                    </h3>
-                    <div className="mt-6 px-2">
-                        <MultiRangeSlider
-                            min={0}
-                            max={maxValue || 10000000}
-                            step={1000}
-                            minValue={minValue}
-                            maxValue={maximumValue}
-                            label={false}
-                            ruler={false}
-                            style={{ border: "none", boxShadow: "none", padding: "10px 0" }}
-                            barInnerColor="linear-gradient(90deg, #8B5CF6, #EC4899)"
-                            barRightColor="rgba(229, 231, 235, 0.3)"
-                            barLeftColor="rgba(229, 231, 235, 0.3)"
-                            thumbLeftColor="#8B5CF6"
-                            thumbRightColor="#EC4899"
-                            onChange={handleSliderChange}
-                        />
-                        <div className="flex justify-between mt-6 gap-3">
-                            <div className="flex-1 p-3 bg-white/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-center shadow-sm">
-                                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1 block">Min</span>
-                                <p className="text-sm font-black text-gray-900 dark:text-white">
-                                    {formatPrice(minValue)}
-                                </p>
-                            </div>
-                            <div className="flex-1 p-3 bg-white/50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl text-center shadow-sm">
-                                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1 block">Max</span>
-                                <p className="text-sm font-black text-gray-900 dark:text-white">
-                                    {formatPrice(maximumValue)}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {showPrice && (
+                <PriceRangeFilter
+                    variant="desktop"
+                    minValue={minValue}
+                    maximumValue={maximumValue}
+                    domainMin={0}
+                    domainMax={maxValue}
+                    step={priceStep}
+                    scaleLabel={priceScaleLabel}
+                    onChange={handleSliderChange}
+                />
             )}
 
-            {/* Quick Filters */}
             {relevantFilters.length > 0 && (
-                <div className="glass-card p-4 rounded-xl">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <div className="glass-card rounded-xl border border-[var(--ps-brd)] p-4">
+                    <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
+                        <SectionIcon>
+                            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                />
                             </svg>
-                        </div>
+                        </SectionIcon>
                         Quick Filters
                     </h3>
                     {relevantFilters.map((section) => (
-                        <Disclosure key={section.id} as="div" className="mt-4">
+                        <Disclosure key={section.id} as="div" className="mt-3">
                             {({ open }) => (
                                 <>
-                                    <Disclosure.Button className="flex w-full items-center justify-between py-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    <Disclosure.Button
+                                        className={`flex min-h-[44px] w-full items-center justify-between rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-3 py-2 text-sm font-medium text-white outline-none transition-colors duration-ps-normal hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--ps-cyan)_40%,transparent)] ${
+                                            open ? "border-[color-mix(in_srgb,var(--ps-primary)_45%,transparent)]" : ""
+                                        }`}
+                                    >
                                         {section.name}
-                                        <ChevronDownIcon className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+                                        <ChevronDownIcon
+                                            className={`h-5 w-5 text-[var(--ps-muted)] transition-transform duration-ps-normal ${
+                                                open ? "rotate-180" : ""
+                                            }`}
+                                        />
                                     </Disclosure.Button>
-                                    <Disclosure.Panel className="pt-2 space-y-2">
+                                    <Disclosure.Panel className="space-y-2 pt-2">
                                         {section.options.map((option, idx) => {
                                             const current = attributeFilters?.[section.id];
                                             const isActive = current === option || filterBy === option;
                                             return (
-                                            <button
-                                                key={idx}
-                                                type="button"
-                                                onClick={() => {
-                                                    const next = isActive ? "" : option;
-                                                    if (typeof onFilterChange === "function") {
-                                                        onFilterChange(section.id, next, "single");
-                                                    }
-                                                    if (typeof setFilterBy === "function") {
-                                                        setFilterBy(next);
-                                                    }
-                                                }}
-                                                className={`w-full min-h-[44px] px-3 py-2 rounded-xl text-left text-sm transition-colors duration-ps-normal ${isActive
-                                                        ? "bg-[var(--ps-primary)] text-white"
-                                                        : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-white"
+                                                <button
+                                                    key={`${section.id}-${idx}`}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const next = isActive ? "" : option;
+                                                        if (typeof onFilterChange === "function") {
+                                                            onFilterChange(section.id, next, "single");
+                                                        }
+                                                        if (typeof setFilterBy === "function") {
+                                                            setFilterBy(next);
+                                                        }
+                                                    }}
+                                                    className={`w-full min-h-[44px] rounded-xl px-3 py-2 text-left text-sm transition-colors duration-ps-normal ${
+                                                        isActive
+                                                            ? "bg-[var(--ps-primary)] text-white"
+                                                            : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-white"
                                                     }`}
-                                            >
-                                                {option}
-                                            </button>
+                                                >
+                                                    {option}
+                                                </button>
                                             );
                                         })}
                                     </Disclosure.Panel>

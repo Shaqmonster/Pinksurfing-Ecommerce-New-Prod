@@ -7,6 +7,7 @@ import { dataContext } from "../../context/dataContext";
 import { authContext } from "../../context/authContext";
 import { filterProducts, slugToTitle } from "./utils";
 import { LOCATION_FILTER_CATEGORY_SLUGS, getLocationRadiusConfig } from "./constants";
+import { computePriceDomain } from "./priceRangeUtils";
 import {
     geocodeZipWithFallback,
     inferCountryFromZipShape,
@@ -41,11 +42,13 @@ export default function useCategoryProducts() {
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [shoppingProduct, setShoppingProducts] = useState(products);
     const [maxValue, setMaxValue] = useState(1000);
+    const [priceStep, setPriceStep] = useState(10);
+    const [priceScale, setPriceScale] = useState("default");
     const [sortMethod, setSortMethod] = useState("default");
     const [sortName, setSortName] = useState("Newest");
     const [loading, setLoading] = useState(false);
     const [minValue, setMinValue] = useState(0);
-    const [maximumValue, setMaximumValue] = useState(20000);
+    const [maximumValue, setMaximumValue] = useState(1000);
     const [isCard, setIsCard] = useState(true);
     const [subcategories, setSubcategories] = useState([]);
     const [selectedSubcategorySlugs, setSelectedSubcategorySlugs] = useState([]);
@@ -257,12 +260,12 @@ export default function useCategoryProducts() {
                 );
                 setShoppingProducts(sortedProducts);
 
-                const prices = allProducts.map((product) => parseFloat(product.unit_price));
-                if (prices.length > 0) {
-                    setMinValue(Math.min(...prices));
-                    setMaximumValue(Math.max(...prices));
-                    setMaxValue(Math.max(...prices));
-                }
+                const domain = computePriceDomain(sortedProducts, categorySlug);
+                setMinValue(domain.selectedMin);
+                setMaximumValue(domain.selectedMax);
+                setMaxValue(domain.domainMax);
+                setPriceStep(domain.step);
+                setPriceScale(domain.scale);
 
             } catch (error) {
                 console.error(error);
@@ -274,24 +277,21 @@ export default function useCategoryProducts() {
         getFilterProducts();
     }, [categorySlug, isElectronics]);
 
-    // Recalculate max price when products change
-    useEffect(() => {
-        if (shoppingProduct && shoppingProduct.length > 0) {
-            const prices = shoppingProduct.map((p) => Number(p.unit_price) || 0);
-            const max = Math.max(...prices);
-            if (max > 0) {
-                setMaxValue(max);
-                setMaximumValue(max);
-            }
-        }
-    }, [shoppingProduct]);
-
     // ---------- Handlers ----------
 
     const handleSliderChange = (e) => {
-        setMinValue(Number(e.minValue));
-        setMaximumValue(Number(e.maxValue));
+        const nextMin = Number(e.minValue);
+        const nextMax = Number(e.maxValue);
+        if (!Number.isFinite(nextMin) || !Number.isFinite(nextMax)) return;
+        setMinValue(Math.min(nextMin, nextMax));
+        setMaximumValue(Math.max(nextMin, nextMax));
     };
+
+    const priceScaleLabel = useMemo(() => {
+        if (priceScale === "lease") return "Monthly rent / lease scale";
+        if (priceScale === "sale") return "Purchase price scale";
+        return "";
+    }, [priceScale]);
 
     const goToPage = (page) => {
         setCurrentPage(page);
@@ -514,7 +514,7 @@ export default function useCategoryProducts() {
         sortMethod, setSortMethod,
         sortName, setSortName,
         categoryFilter, setCategoryFilter,
-        minValue, maximumValue, maxValue,
+        minValue, maximumValue, maxValue, priceStep, priceScale, priceScaleLabel,
         filterBy, setFilterBy,
         CategoryOnlyData,
         subcategories,

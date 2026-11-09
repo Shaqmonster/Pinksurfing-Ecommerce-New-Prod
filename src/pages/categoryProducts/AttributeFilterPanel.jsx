@@ -135,6 +135,7 @@ export default function AttributeFilterPanel({
             return (
                 <div>
                     <MultiRangeSlider
+                        className="ps-range-slider"
                         min={numericRange.min}
                         max={numericRange.max || 100}
                         step={step}
@@ -143,11 +144,11 @@ export default function AttributeFilterPanel({
                         label={false}
                         ruler={false}
                         style={{ border: "none", boxShadow: "none" }}
-                        barInnerColor="#8B5CF6"
-                        barRightColor={isMobile ? "#374151" : "#E5E7EB"}
-                        barLeftColor={isMobile ? "#374151" : "#E5E7EB"}
-                        thumbLeftColor="#8B5CF6"
-                        thumbRightColor="#EC4899"
+                        barInnerColor="#9747ff"
+                        barRightColor={isMobile ? "rgba(255,255,255,0.14)" : "#E5E7EB"}
+                        barLeftColor={isMobile ? "rgba(255,255,255,0.14)" : "#E5E7EB"}
+                        thumbLeftColor="#9747ff"
+                        thumbRightColor="#b882ff"
                         onInput={(e) => {
                             setLocalMin(e.minValue);
                             setLocalMax(e.maxValue);
