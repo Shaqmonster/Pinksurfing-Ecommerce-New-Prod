@@ -136,7 +136,7 @@ export function computePriceDomain(products = [], categorySlug = "") {
     };
 }
 
-export function categoryShowsPriceRange(categorySlug = "") {
-    const slug = categorySlug || "";
-    return slug.includes("realestate") || slug.includes("business");
+/** Price slider on all CategoryProducts pages (business/RE keep existing domain logic). Off-market deals use a separate page. */
+export function categoryShowsPriceRange(_categorySlug = "") {
+    return true;
 }
