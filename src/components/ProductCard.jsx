@@ -273,9 +273,9 @@ const ProductCard = ({ product, isCard }) => {
 
   return (
     <div
-      className={`group mx-auto mt-4 rounded-2xl relative w-full lg:w-[100%] flex ${
+      className={`group mx-auto rounded-2xl relative w-full flex ${
         isCard ? "flex-col" : "flex-row items-center"
-      } overflow-hidden bg-[var(--ps-card)] border border-[var(--ps-brd)] shadow-lg hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] transition-colors duration-ps-normal`}
+      } overflow-hidden bg-[var(--ps-card)] border border-[var(--ps-brd)] hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] transition-colors duration-ps-normal`}
     >
       {/* Wishlist Icon */}
       <button
@@ -314,22 +314,22 @@ const ProductCard = ({ product, isCard }) => {
         </div>
       )}
 
-      {/* Product Image */}
+      {/* Product Image — single surface, no nested card */}
       {isCard ? (
-        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`} className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300 z-[1]" />
+        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`} className="relative block overflow-hidden bg-[var(--ps-surf)]">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent z-[1] pointer-events-none" />
           <img
-            className={`w-full ${isListing ? "min-h-[260px] max-h-[260px]" : "min-h-[200px] max-h-[200px]"} object-cover cursor-pointer transition-transform duration-700 group-hover:scale-110`}
+            className={`w-full ${isListing ? "h-[200px]" : "h-[160px]"} object-cover transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]`}
             src={product.image1 || "/emptyCart.png"}
             alt={product.name}
             loading="lazy"
           />
         </Link>
       ) : (
-        <div className="w-[40%] overflow-hidden relative">
+        <div className="w-[40%] overflow-hidden relative bg-[var(--ps-surf)]">
           <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
             <img
-              className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="h-48 w-full object-cover transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
               src={product.image1 || "/emptyCart.png"}
               alt={product.name}
               loading="lazy"
@@ -339,9 +339,9 @@ const ProductCard = ({ product, isCard }) => {
       )}
 
       {/* Product Details */}
-      <div className={`relative p-5 ${isCard ? "" : "w-[60%] flex flex-col justify-center"}`}>
+      <div className={`relative p-3.5 sm:p-4 ${isCard ? "" : "w-[60%] flex flex-col justify-center"}`}>
         {/* Top Info Row (Ratings or Days on Market) */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           {!isListing ? (
             <div className="flex items-center gap-2">
               {allRatings.length > 0 ? (
@@ -362,7 +362,7 @@ const ProductCard = ({ product, isCard }) => {
         </div>
 
         <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
-          <h2 className="text-base sm:text-lg font-bold text-white line-clamp-2 leading-tight mb-1 group-hover:text-[var(--ps-purple-light)] transition-colors">
+          <h2 className="text-sm sm:text-base font-semibold text-white line-clamp-2 leading-snug mb-1 group-hover:text-[var(--ps-purple-light)] transition-colors">
             {product.name}
           </h2>
         </Link>
@@ -435,7 +435,7 @@ const ProductCard = ({ product, isCard }) => {
         {/* Pricing & Call to Action */}
         <div className="flex items-center justify-between gap-4 mt-auto">
           <div className="flex flex-col">
-            <p className="text-xl font-semibold text-white">
+            <p className="text-base sm:text-lg font-semibold text-white">
               {currency}
               {formatMoney(product.unit_price)}
             </p>

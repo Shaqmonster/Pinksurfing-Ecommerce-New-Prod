@@ -10,6 +10,7 @@ import { FaWallet } from "react-icons/fa";
 import { FaBoxOpen } from "react-icons/fa";
 import axios from "axios";
 import { deleteCookie } from "../utils/cookie";
+import { SHOW_CRYPTO_WALLET } from "../config/featureFlags";
 const Profile = ({ user }) => {
   const {
     setIsCartOpen,
@@ -125,16 +126,18 @@ const Profile = ({ user }) => {
                   <FaBoxOpen className="text-[19px] sm:text-[20px]" />
                   <span>My Orders</span>
                 </Link>
-                <Link
-                  to="/userwallet"
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                  }}
-                  className="flex items-center leading-6 space-x-3 py-1.5 px-4 w-fulltext-[15px] sm:text-[15.5px]   text-gray-600 dark:text-[#f5f5f5] focus:outline-none hover:bg-gray-100 dark:hover:bg-white/20  rounded-md"
-                >
-                  <FaWallet className="text-[19px] sm:text-[20px]" />
-                  <span>My Wallet</span>
-                </Link>
+                {SHOW_CRYPTO_WALLET ? (
+                  <Link
+                    to="/userwallet"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                    }}
+                    className="flex items-center leading-6 space-x-3 py-1.5 px-4 w-fulltext-[15px] sm:text-[15.5px]   text-gray-600 dark:text-[#f5f5f5] focus:outline-none hover:bg-gray-100 dark:hover:bg-white/20  rounded-md"
+                  >
+                    <FaWallet className="text-[19px] sm:text-[20px]" />
+                    <span>My Wallet</span>
+                  </Link>
+                ) : null}
               </nav>
             </div>
             <div aria-label="footer" className="pt-2">

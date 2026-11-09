@@ -1815,12 +1815,12 @@ const ProductDetailPage = () => {
                       {/* Trust Badges */}
                       <div className="grid grid-cols-3 gap-3">
                         {[
-                          { icon: "🛡️", label: "Secure" },
-                          { icon: "🔄", label: "7 Day" },
-                          { icon: "✨", label: "Authentic" }
-                        ].map((badge, i) => (
-                          <div key={i} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
-                            <span className="text-lg">{badge.icon}</span>
+                          { Icon: FaCheckCircle, label: "Secure" },
+                          { Icon: FaHandshake, label: "7 Day" },
+                          { Icon: FaTags, label: "Authentic" },
+                        ].map((badge) => (
+                          <div key={badge.label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
+                            <badge.Icon className="text-base text-[var(--ps-purple-light)]" aria-hidden />
                             <span className="text-[7px] font-black uppercase tracking-[0.1em] text-gray-400">{badge.label}</span>
                           </div>
                         ))}
@@ -1836,22 +1836,23 @@ const ProductDetailPage = () => {
                   {/* Tab Navigation */}
                   <div className="flex border-b border-gray-100 dark:border-white/5">
                     {[
-                      { id: "story", label: "Product Story", icon: "✨" },
-                      { id: "specs", label: "Specifications", icon: "📋" }
+                      { id: "story", label: "Product Story", Icon: IoInformationCircleOutline },
+                      { id: "specs", label: "Specifications", Icon: FaTags },
                     ].map((tab) => (
                       <button
                         key={tab.id}
+                        type="button"
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 flex items-center justify-center gap-3 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative ${
-                          activeTab === tab.id 
-                            ? "text-purple-600 dark:text-purple-400" 
+                        className={`flex-1 flex items-center justify-center gap-3 py-6 text-[10px] font-black uppercase tracking-widest transition-colors duration-ps-normal relative ${
+                          activeTab === tab.id
+                            ? "text-purple-600 dark:text-purple-400"
                             : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                         }`}
                       >
-                        <span className="text-sm">{tab.icon}</span>
+                        <tab.Icon className="text-sm" aria-hidden />
                         {tab.label}
                         {activeTab === tab.id && (
-                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600 animate-fadeIn"></div>
+                          <span className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] transition-opacity duration-ps-normal" />
                         )}
                       </button>
                     ))}

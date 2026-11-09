@@ -8,6 +8,7 @@ import ProfileWishlist from "../components/ProfilePageComponents/ProfileWishlist
 import ProfileMyStore from "../components/ProfilePageComponents/ProfileMyStore";
 import ProfileUserWallet from "../components/ProfilePageComponents/ProfileUserWallet";
 import AllOrders from "../components/ProfilePageComponents/AllOrders";
+import { SHOW_CRYPTO_WALLET } from "../config/featureFlags";
 
 export default function ProfilePage() {
   const location = useLocation();
@@ -28,7 +29,7 @@ export default function ProfilePage() {
     2: <ProfileWishlist />,
     3: <ProfileMyStore />,
     4: <AllOrders />,
-    5: <ProfileUserWallet />
+    ...(SHOW_CRYPTO_WALLET ? { 5: <ProfileUserWallet /> } : {}),
   };
 
   return (

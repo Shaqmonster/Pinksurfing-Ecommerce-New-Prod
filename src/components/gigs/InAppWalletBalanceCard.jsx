@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import QRCode from "qrcode.react";
 import { IoWalletOutline, IoRefreshOutline, IoCopyOutline, IoCheckmarkDoneOutline } from "react-icons/io5";
 import { useInAppWallet } from "../../context/inAppWalletContext";
+import { SHOW_CRYPTO_WALLET } from "../../config/featureFlags";
 import { getGigHubProvider, getGigHubContracts } from "../../lib/gighubEscrowClient";
 import { useAddressTxHistory } from "../../hooks/useAddressTxHistory";
 
@@ -17,12 +18,17 @@ export default function InAppWalletBalanceCard({ compact = false }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
-  const { rows, loading: txLoading, refresh: refreshTx } = useAddressTxHistory(address, {
-    maxBlocks: 180,
-    maxRows: compact ? 4 : 6,
-  });
+  const { rows, loading: txLoading, refresh: refreshTx } = useAddressTxHistory(
+    SHOW_CRYPTO_WALLET ? address : null,
+    {
+      maxBlocks: 180,
+      maxRows: compact ? 4 : 6,
+    }
+  );
 
-  const canLoad = status === "ready" && wallet && address;
+  const canLoad = SHOW_CRYPTO_WALLET && status === "ready" && wallet && address;
+
+  if (!SHOW_CRYPTO_WALLET) return null;
 
   const refresh = async () => {
     if (!canLoad) return;

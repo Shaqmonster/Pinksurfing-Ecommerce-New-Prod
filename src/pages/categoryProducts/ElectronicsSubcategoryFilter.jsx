@@ -51,9 +51,9 @@ export default function ElectronicsSubcategoryFilter({
                       : "text-gray-800 dark:text-gray-200"
                 }`}
               >
-                <span className="mr-1.5" aria-hidden>
-                  {meta.icon}
-                </span>
+                {meta.Icon && (
+                  <meta.Icon className="inline-block mr-1.5 align-[-2px] text-base opacity-80" aria-hidden />
+                )}
                 {sub.name}
               </span>
             </span>

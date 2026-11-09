@@ -26,6 +26,7 @@ import OrderConfirm from "./components/OrderConfirm";
 import OrderFailed from "./components/OrderFailed";
 import ShoppingMallNew from "./pages/ShoppingMallNew";
 import UserOnSiteWallet from "./components/UserWallet";
+import { SHOW_CRYPTO_WALLET } from "./config/featureFlags";
 import ProfilePage from "./pages/ProfilePage";
 import ShopByStore from "./pages/ShopByStore";
 import StoreProducts from "./pages/StoreProducts";
@@ -141,7 +142,12 @@ function App() {
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />
         <Route path="/completion" element={<Completion />} />
-        <Route path="/userwallet" element={<UserOnSiteWallet />} />
+        <Route
+          path="/userwallet"
+          element={
+            SHOW_CRYPTO_WALLET ? <UserOnSiteWallet /> : <Navigate to="/profile" replace />
+          }
+        />
         <Route path="/contact" element={<Contact />} />
         <Route path="/create-bid" element={<CreateBidPage />} />
         <Route path="/my-bids" element={<MyBidsPage />} />

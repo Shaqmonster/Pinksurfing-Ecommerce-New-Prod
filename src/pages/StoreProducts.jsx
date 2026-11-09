@@ -18,6 +18,14 @@ import { authContext } from "../context/authContext";
 import MultiRangeSlider from "multi-range-slider-react";
 import { AiOutlineBars } from "react-icons/ai";
 import { HiMiniSquares2X2 } from "react-icons/hi2";
+import {
+  IoTimeOutline,
+  IoArrowUpOutline,
+  IoArrowDownOutline,
+  IoTextOutline,
+  IoSparklesOutline,
+  IoCubeOutline,
+} from "react-icons/io5";
 import SearchForm from "../components/Search";
 
 export default function StoreProducts() {
@@ -60,11 +68,11 @@ export default function StoreProducts() {
   ];
 
   const sortMethods = [
-    { name: "Newest", value: "date", icon: "🆕" },
-    { name: "Price: Low to High", value: "ascPrice", icon: "💰" },
-    { name: "Price: High to Low", value: "descPrice", icon: "💎" },
-    { name: "Name: A to Z", value: "ascName", icon: "🔤" },
-    { name: "Name: Z to A", value: "descName", icon: "🔠" },
+    { name: "Newest", value: "date", Icon: IoTimeOutline },
+    { name: "Price: Low to High", value: "ascPrice", Icon: IoArrowUpOutline },
+    { name: "Price: High to Low", value: "descPrice", Icon: IoArrowDownOutline },
+    { name: "Name: A to Z", value: "ascName", Icon: IoTextOutline },
+    { name: "Name: Z to A", value: "descName", Icon: IoTextOutline },
   ];
 
   const getUniqueData = (data, property) => {
@@ -312,7 +320,7 @@ export default function StoreProducts() {
                               : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                           }`}
                         >
-                          <span>{option.icon}</span>
+                          {option.Icon && <option.Icon className="text-base opacity-80" aria-hidden />}
                           {option.name}
                         </button>
                       ))}
@@ -446,7 +454,7 @@ export default function StoreProducts() {
                                   : "text-gray-700 dark:text-gray-300"
                               } flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200`}
                             >
-                              <span className="text-lg">{option.icon}</span>
+                              {option.Icon && <option.Icon className="text-base opacity-80" aria-hidden />}
                               {option.name}
                             </button>
                           )}
@@ -593,23 +601,23 @@ export default function StoreProducts() {
           <div className="lg:col-span-4 xl:col-span-5">
             {loading ? (
               /* Loading State */
-              <div className="flex flex-col items-center justify-center min-h-[500px] glass-card rounded-3xl">
-                <div className="relative">
-                  <div className="w-24 h-24 border-4 border-purple-200 dark:border-purple-900 rounded-full"></div>
-                  <div className="w-24 h-24 border-4 border-purple-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl">✨</span>
+              <div className="flex flex-col items-center justify-center min-h-[320px] rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)]">
+                <div className="relative w-14 h-14">
+                  <div className="w-14 h-14 border-2 border-[var(--ps-surf)] rounded-full" />
+                  <div className="w-14 h-14 border-2 border-[var(--ps-primary)] border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+                  <div className="absolute inset-0 flex items-center justify-center text-[var(--ps-primary)]">
+                    <IoSparklesOutline className="text-lg" aria-hidden />
                   </div>
                 </div>
-                <p className="mt-6 text-lg text-gray-500 dark:text-gray-400 animate-pulse">Loading amazing products...</p>
+                <p className="mt-5 text-sm text-[var(--ps-muted)]">Loading products…</p>
               </div>
             ) : filteredProducts.length === 0 ? (
               /* Empty State */
-              <div className="flex flex-col items-center justify-center min-h-[500px] glass-card rounded-3xl p-8">
-                <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full flex items-center justify-center mb-6 animate-bounce-subtle">
-                  <span className="text-6xl">📦</span>
+              <div className="flex flex-col items-center justify-center min-h-[320px] rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-8">
+                <div className="w-16 h-16 rounded-2xl bg-[var(--ps-surf)] border border-[var(--ps-brd)] flex items-center justify-center mb-5 text-[var(--ps-purple-light)]">
+                  <IoCubeOutline className="text-3xl" aria-hidden />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Products Found</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">No products found</h3>
                 <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mb-6">
                   We couldn't find any products matching your criteria. Try adjusting your filters.
                 </p>
