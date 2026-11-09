@@ -1,18 +1,30 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { FaHeart, FaStar, FaBed, FaBath, FaRulerCombined, FaChartLine, FaMoneyBillWave, FaClock, FaMapMarkerAlt } from "react-icons/fa";
+import {
+  FaHeart,
+  FaBed,
+  FaBath,
+  FaRulerCombined,
+  FaChartLine,
+  FaMoneyBillWave,
+  FaClock,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 import { formatListingLocation } from "../pages/categoryProducts/locationFilterUtils";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
-import { IoStarOutline, IoCart, IoMailOutline } from "react-icons/io5";
+import { IoCart, IoMailOutline, IoStarOutline } from "react-icons/io5";
 import Stars from "./Stars";
 import { formatMoney } from "../utils/formatMoney";
 import { isOutOfStock } from "../utils/cartStock";
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from "date-fns";
 import MediaImage from "./ui/MediaImage";
+
+const EMPTY_SPEC = "—";
+
 const ProductCard = ({ product, isCard }) => {
   const navigate = useNavigate();
   const [averageRating, setAverageRating] = useState(0);
@@ -50,7 +62,9 @@ const ProductCard = ({ product, isCard }) => {
 
   const requireSignIn = (message) => {
     toast.error(message, { position: "top-right" });
-    navigate("/signin", { state: { from: window.location.pathname + window.location.search } });
+    navigate("/signin", {
+      state: { from: window.location.pathname + window.location.search },
+    });
   };
 
   const AddtoCart = () => {
@@ -68,8 +82,7 @@ const ProductCard = ({ product, isCard }) => {
     }
     axios
       .post(
-        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${product.id
-        }/`,
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${product.id}/`,
         {},
         {
           headers: {
@@ -105,8 +118,7 @@ const ProductCard = ({ product, isCard }) => {
   const AddtoWishlist = (productId) => {
     axios
       .post(
-        `${import.meta.env.VITE_SERVER_URL
-        }/api/customer/wishlist/add/${productId}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/add/${productId}`,
         {},
         {
           headers: {
@@ -115,7 +127,7 @@ const ProductCard = ({ product, isCard }) => {
           },
         }
       )
-      .then((response) => {
+      .then(() => {
         GetWishlist();
         toast.success("Added to wishlist", {
           position: "top-right",
@@ -123,9 +135,15 @@ const ProductCard = ({ product, isCard }) => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
-          position: "top-right",
-        });
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.Status ||
+            error.response?.data?.detail ||
+            "An error occurred",
+          {
+            position: "top-right",
+          }
+        );
       });
   };
 
@@ -168,11 +186,16 @@ const ProductCard = ({ product, isCard }) => {
       console.error(error);
       const data = error.response?.data;
       toast.error(
-        data?.message || data?.Status || data?.Err || data?.detail || "Unable to remove from wishlist",
+        data?.message ||
+          data?.Status ||
+          data?.Err ||
+          data?.detail ||
+          "Unable to remove from wishlist",
         { position: "top-right" }
       );
     }
   };
+
   const handleWishlistClick = async () => {
     if (!accessToken) {
       requireSignIn("Please sign in to save items to your wishlist");
@@ -187,28 +210,12 @@ const ProductCard = ({ product, isCard }) => {
       } else {
         await AddtoWishlist(product.id);
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred", {
         position: "top-right",
       });
     }
   };
-
-  // const Stars = ({ stars }) => {
-  //   const ratingStars = Array.from({ length: 7 }, (elem, index) => {
-  //     return (
-  //       <div key={index}>
-  //         {stars >= index + 1 ? (
-  //           <FaStar className=" dark:text-yellow-400 text-black" />
-  //         ) : (
-  //           <IoStarOutline className=" text-black dark:text-yellow-400 " />
-  //         )}
-  //       </div>
-  //     );
-  //   });
-  //   return <div className=" flex items-center gap-0.5">{ratingStars}</div>;
-  // };
-
 
   useEffect(() => {
     const getProductRatings = async (productId) => {
@@ -229,8 +236,7 @@ const ProductCard = ({ product, isCard }) => {
             (sum, review) => sum + review.rating,
             0
           );
-          const avgRating = totalRating / ratingsReviews.length;
-          setAverageRating(avgRating);
+          setAverageRating(totalRating / ratingsReviews.length);
         } else {
           setAverageRating(0);
         }
@@ -246,15 +252,33 @@ const ProductCard = ({ product, isCard }) => {
 
   const isResidential = categorySlug === "residential-realestate";
   const isCommercial = categorySlug === "commercial-realestate";
-  const isBusiness = categorySlug === "business-for-sale" || categorySlug === "business4sale";
+  const isBusiness =
+    categorySlug === "business-for-sale" || categorySlug === "business4sale";
   const isListing = isResidential || isCommercial || isBusiness;
   const productOutOfStock = isOutOfStock(product);
 
-  const getAttr = (name) => {
-    const attr = (product.attributes || product.product_attributes || [])?.find(
-      (a) => a.name?.toLowerCase() === name.toLowerCase()
-    );
-    return attr?.value;
+  const getAttr = (...aliases) => {
+    const attrs = product.attributes || product.product_attributes || [];
+    for (const name of aliases) {
+      if (!name) continue;
+      const norm = String(name).toLowerCase().replace(/_/g, " ");
+      const attr = attrs.find(
+        (a) => (a?.name || "").toLowerCase().replace(/_/g, " ") === norm
+      );
+      if (attr?.value !== undefined && attr?.value !== null && attr?.value !== "") {
+        return attr.value;
+      }
+    }
+    return "";
+  };
+
+  const formatSpec = (value) => {
+    if (value === undefined || value === null || value === "") return EMPTY_SPEC;
+    const str = String(value).trim();
+    if (!str || str === "--" || str === "-" || str.toLowerCase() === "n/a") {
+      return EMPTY_SPEC;
+    }
+    return str;
   };
 
   const daysOnMarket = product.created_at
@@ -262,6 +286,24 @@ const ProductCard = ({ product, isCard }) => {
     : null;
 
   const listingLocation = isListing ? formatListingLocation(product) : null;
+
+  const listingTypeRaw =
+    getAttr("listing_type", "Listing Type", "status", "intent", "listing intent") ||
+    "";
+  const isLease = /lease|rent/i.test(listingTypeRaw);
+  const listingBadgeLabel = (() => {
+    if (!listingTypeRaw) return isBusiness ? "For Sale" : "For Sale";
+    if (/lease/i.test(listingTypeRaw)) return "For Lease";
+    if (/rent/i.test(listingTypeRaw)) return "For Rent";
+    if (/sale/i.test(listingTypeRaw)) return "For Sale";
+    return listingTypeRaw;
+  })();
+
+  const beds = formatSpec(getAttr("bedrooms", "beds"));
+  const baths = formatSpec(getAttr("bathrooms", "baths"));
+  const sqftRaw = getAttr("square_feet", "sqft", "size");
+  const sqft = formatSpec(sqftRaw);
+  const sqftLabel = sqft === EMPTY_SPEC ? EMPTY_SPEC : `${sqft} sqft`;
 
   const isWishlisted = wishlistProducts.some((i) => i.id === product.id);
   const mrpNum = Number(product.mrp);
@@ -271,68 +313,98 @@ const ProductCard = ({ product, isCard }) => {
     Number.isFinite(mrpNum) &&
     Number.isFinite(priceNum) &&
     mrpNum > priceNum;
+  const discountPct = showStrike
+    ? Math.round(((mrpNum - priceNum) / mrpNum) * 100)
+    : 0;
+
+  const detailHref = `/product/productDetail/${product.slug}?productId=${product.id}`;
+  const imageAspect = isListing ? "aspect-[16/10]" : "aspect-[4/3]";
+
+  const handleAddToCartClick = (e) => {
+    e.preventDefault();
+    if (!accessToken) {
+      requireSignIn("Please sign in to add to cart");
+      return;
+    }
+    if (productOutOfStock) {
+      toast.error("This product is out of stock", { position: "top-right" });
+      return;
+    }
+    if (isInCart) {
+      toast.info("Already in your cart", { position: "top-right" });
+      return;
+    }
+    AddtoCart();
+  };
 
   return (
     <div
       className={`group mx-auto rounded-2xl relative w-full flex ${
-        isCard ? "flex-col" : "flex-row items-center"
+        isCard ? "flex-col h-full" : "flex-row items-stretch"
       } overflow-hidden bg-[var(--ps-card)] border border-[var(--ps-brd)] hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] transition-colors duration-ps-normal`}
     >
-      {/* Wishlist Icon */}
+      {/* Wishlist */}
       <button
         type="button"
         aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         onClick={handleWishlistClick}
-        className={`absolute top-3 right-3 z-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full cursor-pointer transition-transform duration-ps-instant active:scale-[0.97] ${
+        className={`absolute top-2.5 right-2.5 z-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full cursor-pointer transition-colors duration-ps-instant active:scale-[0.97] ${
           isWishlisted
             ? "bg-red-500/20 text-red-500"
-            : "bg-black/40 text-[var(--ps-dim)] hover:text-red-400"
+            : "bg-black/45 text-white/80 hover:text-red-400"
         }`}
       >
-        <FaHeart className="text-lg" />
+        <FaHeart className="text-base" aria-hidden="true" />
       </button>
 
-      {/* Status Badge (For Sale/Rent) */}
+      {/* Listing badge */}
       {isListing && (
-        <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-lg bg-white/90 dark:bg-black/80 backdrop-blur-md shadow-sm border border-gray-100 dark:border-white/10">
-          <span className="text-[10px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400">
-            {getAttr("listing_type") || getAttr("Listing Type") || getAttr("status") || "For Sale"}
+        <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-md bg-[var(--ps-primary)] text-white shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em]">
+            {listingBadgeLabel}
           </span>
         </div>
       )}
 
-      {/* Discount Badge (Generic products only) */}
-      {!isListing && !productOutOfStock && showStrike && Math.round(((mrpNum - priceNum) / mrpNum) * 100) > 0 && (
-        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-[var(--ps-primary)] text-white text-xs font-bold shadow-lg">
-          {Math.round(((mrpNum - priceNum) / mrpNum) * 100)}% OFF
+      {/* Discount badge */}
+      {!isListing && !productOutOfStock && discountPct > 0 && (
+        <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full bg-[var(--ps-primary)] text-white text-[11px] font-bold">
+          {discountPct}% OFF
         </div>
       )}
 
-      {/* Out of Stock Badge */}
+      {/* Out of stock badge */}
       {productOutOfStock && (
-        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-bold shadow-lg">
+        <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full bg-red-500 text-white text-[11px] font-bold">
           Out of Stock
         </div>
       )}
 
-      {/* Product Image — skeleton until paint, single surface */}
+      {/* Media */}
       {isCard ? (
-        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`} className="relative block overflow-hidden bg-[var(--ps-surf)]">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent z-[1] pointer-events-none" />
+        <Link
+          to={detailHref}
+          className={`relative block w-full overflow-hidden bg-[var(--ps-surf)] ${imageAspect}`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-[1] pointer-events-none" />
           <MediaImage
-            className={`w-full ${isListing ? "h-[200px]" : "h-[160px]"} object-cover transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]`}
-            skeletonClassName={`w-full ${isListing ? "h-[200px]" : "h-[160px]"}`}
+            fill
+            className="transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
             src={product.image1 || "/emptyCart.png"}
             alt={product.name}
             loading="lazy"
           />
         </Link>
       ) : (
-        <div className="w-[40%] overflow-hidden relative bg-[var(--ps-surf)]">
-          <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
+        <div
+          className={`w-[38%] min-w-[120px] max-w-[200px] overflow-hidden relative bg-[var(--ps-surf)] ${
+            isListing ? "min-h-[140px]" : "min-h-[128px]"
+          }`}
+        >
+          <Link to={detailHref} className="absolute inset-0 block">
             <MediaImage
-              className="h-48 w-full object-cover transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
-              skeletonClassName="h-48 w-full"
+              fill
+              className="transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
               src={product.image1 || "/emptyCart.png"}
               alt={product.name}
               loading="lazy"
@@ -341,93 +413,149 @@ const ProductCard = ({ product, isCard }) => {
         </div>
       )}
 
-      {/* Product Details */}
-      <div className={`relative p-3.5 sm:p-4 ${isCard ? "" : "w-[60%] flex flex-col justify-center"}`}>
-        {/* Top Info Row (Ratings or Days on Market) */}
-        <div className="flex items-center justify-between mb-2">
-          {!isListing ? (
-            <div className="flex items-center gap-2">
-              {allRatings.length > 0 ? (
-                <>
-                  <Stars stars={averageRating} />
-                  <span className="text-xs text-[var(--ps-dim)]">({allRatings.length})</span>
-                </>
-              ) : (
-                <span className="text-xs text-[var(--ps-dim)]">No reviews yet</span>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-              <FaClock className="text-purple-500" />
-              <span>{daysOnMarket ? `${daysOnMarket} ago` : 'Recently listed'}</span>
-            </div>
-          )}
-        </div>
+      {/* Body */}
+      <div
+        className={`relative flex flex-col flex-1 min-w-0 ${
+          isCard ? "p-3 sm:p-3.5" : "w-[62%] p-3 sm:p-4 justify-center"
+        }`}
+      >
+        {/* Identity meta */}
+        {!isListing ? (
+          <div className="flex items-center gap-1.5 mb-1 min-h-[16px] text-[11px]">
+            {allRatings.length > 0 ? (
+              <>
+                <Stars stars={averageRating} />
+                <span className="leading-none text-[var(--ps-dim)]">
+                  ({allRatings.length})
+                </span>
+              </>
+            ) : (
+              <span className="inline-flex items-center gap-1 leading-none text-[var(--ps-dim)]/80">
+                <IoStarOutline className="text-[12px]" aria-hidden="true" />
+                No reviews yet
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 mb-1.5 text-[11px] sm:text-xs font-medium text-[var(--ps-dim)]">
+            <FaClock className="text-[var(--ps-primary)] shrink-0 text-[11px]" aria-hidden="true" />
+            <span>
+              {daysOnMarket ? `${daysOnMarket} ago` : "Recently listed"}
+            </span>
+          </div>
+        )}
 
-        <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
-          <h2 className="text-sm sm:text-base font-semibold text-white line-clamp-2 leading-snug mb-1 group-hover:text-[var(--ps-purple-light)] transition-colors">
+        <Link to={detailHref} className="block min-w-0">
+          <h2
+            className={`font-semibold text-white leading-snug group-hover:text-[var(--ps-purple-light)] transition-colors ${
+              isListing
+                ? "text-sm sm:text-[15px] line-clamp-2 mb-1.5"
+                : "text-sm sm:text-[15px] line-clamp-2 mb-2"
+            }`}
+          >
             {product.name}
           </h2>
         </Link>
 
         {listingLocation && (
-          <p className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-            <FaMapMarkerAlt className="text-purple-500 shrink-0" />
+          <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-[var(--ps-dim)] mb-2">
+            <FaMapMarkerAlt
+              className="text-[var(--ps-primary)] shrink-0 text-[11px]"
+              aria-hidden="true"
+            />
             <span className="line-clamp-1">{listingLocation}</span>
           </p>
         )}
 
-        {/* Specs Row (for Listings) */}
+        {/* Listing specs */}
         {isListing && (
-          <div className="flex items-center gap-4 mb-4 text-gray-600 dark:text-gray-400 overflow-hidden">
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 mb-3 text-[var(--ps-dim)]">
             {isResidential && (
               <>
-                <div className="flex items-center gap-1.5">
-                  <FaBed className="text-purple-500 text-sm" />
-                  <span className="text-sm font-bold">{getAttr("bedrooms") || "0"}</span>
+                <div className="flex items-center gap-1.5 min-w-[2.5rem]">
+                  <FaBed className="text-[var(--ps-primary)] text-[13px] shrink-0" aria-hidden="true" />
+                  <span className="text-sm font-semibold text-white/90 tabular-nums">
+                    {beds}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 min-w-[2.5rem]">
+                  <FaBath className="text-[var(--ps-primary)] text-[13px] shrink-0" aria-hidden="true" />
+                  <span className="text-sm font-semibold text-white/90 tabular-nums">
+                    {baths}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <FaBath className="text-purple-500 text-sm" />
-                  <span className="text-sm font-bold">{getAttr("bathrooms") || "0"}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <FaRulerCombined className="text-purple-500 text-sm" />
-                  <span className="text-sm font-bold whitespace-nowrap">{getAttr("square_feet") || "--"} sqft</span>
+                  <FaRulerCombined
+                    className="text-[var(--ps-primary)] text-[13px] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm font-semibold text-white/90 tabular-nums whitespace-nowrap">
+                    {sqftLabel}
+                  </span>
                 </div>
               </>
             )}
             {isCommercial && (
               <>
                 <div className="flex items-center gap-1.5">
-                  <FaRulerCombined className="text-purple-500 text-sm" />
-                  <span className="text-sm font-bold whitespace-nowrap">{getAttr("square_feet") || "--"} sqft</span>
+                  <FaRulerCombined
+                    className="text-[var(--ps-primary)] text-[13px] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm font-semibold text-white/90 tabular-nums whitespace-nowrap">
+                    {sqftLabel}
+                  </span>
                 </div>
                 {getAttr("cap_rate") && (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">CAP</span>
-                    <span className="text-sm font-bold">{getAttr("cap_rate")}%</span>
+                    <span className="text-[10px] font-bold bg-white/10 px-1.5 py-0.5 rounded">
+                      CAP
+                    </span>
+                    <span className="text-sm font-semibold text-white/90">
+                      {getAttr("cap_rate")}%
+                    </span>
                   </div>
                 )}
                 {getAttr("class_rating") && (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">CLASS</span>
-                    <span className="text-sm font-bold">{getAttr("class_rating")}</span>
+                    <span className="text-[10px] font-bold bg-white/10 px-1.5 py-0.5 rounded">
+                      CLASS
+                    </span>
+                    <span className="text-sm font-semibold text-white/90">
+                      {getAttr("class_rating")}
+                    </span>
                   </div>
                 )}
               </>
             )}
             {isBusiness && (
               <>
-                <div className="flex items-center gap-1.5">
-                  <FaChartLine className="text-purple-500 text-sm" />
-                  <span className="text-xs font-bold uppercase text-gray-400">Rev:</span>
-                  <span className="text-sm font-bold whitespace-nowrap">{getAttr("revenue") ? `$${formatMoney(getAttr("revenue"))}` : "--"}</span>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <FaChartLine
+                    className="text-[var(--ps-primary)] text-[13px] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[10px] font-bold uppercase text-[var(--ps-dim)]">
+                    Rev
+                  </span>
+                  <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                    {getAttr("revenue")
+                      ? `$${formatMoney(getAttr("revenue"))}`
+                      : EMPTY_SPEC}
+                  </span>
                 </div>
                 {getAttr("ebitda") && (
                   <div className="flex items-center gap-1.5">
-                    <FaMoneyBillWave className="text-purple-500 text-sm" />
-                    <span className="text-xs font-bold uppercase text-gray-400">EBITDA:</span>
-                    <span className="text-sm font-bold whitespace-nowrap">${formatMoney(getAttr("ebitda"))}</span>
+                    <FaMoneyBillWave
+                      className="text-[var(--ps-primary)] text-[13px] shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-[10px] font-bold uppercase text-[var(--ps-dim)]">
+                      EBITDA
+                    </span>
+                    <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                      ${formatMoney(getAttr("ebitda"))}
+                    </span>
                   </div>
                 )}
               </>
@@ -435,66 +563,60 @@ const ProductCard = ({ product, isCard }) => {
           </div>
         )}
 
-        {/* Pricing & Call to Action */}
-        <div className="flex items-center justify-between gap-4 mt-auto">
-          <div className="flex flex-col">
-            <p className="text-base sm:text-lg font-semibold text-white">
-              {currency}
-              {formatMoney(product.unit_price)}
+        {/* Price + CTA */}
+        <div className="flex items-center justify-between gap-3 mt-auto pt-0.5">
+          <div className="min-w-0 flex items-baseline gap-2 flex-wrap">
+            <p className="text-base sm:text-lg font-semibold text-white tabular-nums leading-none">
+              <span>
+                {currency}
+                {formatMoney(product.unit_price)}
+              </span>
+              {isListing && isLease && (
+                <span className="ml-0.5 text-xs font-medium text-[var(--ps-dim)]">
+                  /mo
+                </span>
+              )}
             </p>
             {showStrike && (
-              <p className="text-xs text-[var(--ps-dim)] line-through">
+              <p className="text-xs text-[var(--ps-dim)] line-through tabular-nums leading-none">
                 {currency}
                 {formatMoney(product.mrp)}
               </p>
             )}
           </div>
 
-          {/* Action Button */}
           {isListing ? (
             <Link
-              to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-              className="flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold shadow-lg active:scale-[0.97] transition-transform duration-ps-instant"
+              to={detailHref}
+              className="inline-flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] px-3.5 rounded-xl bg-[var(--ps-primary)] text-white text-sm font-semibold hover:brightness-110 active:scale-[0.97] transition-[transform,filter] duration-ps-instant"
             >
-              <IoMailOutline className="text-base" aria-hidden="true" />
+              <IoMailOutline className="text-[15px]" aria-hidden="true" />
               <span>View listing</span>
             </Link>
           ) : (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                if (!accessToken) {
-                  requireSignIn("Please sign in to add to cart");
-                  return;
-                }
-                if (productOutOfStock) {
-                  toast.error("This product is out of stock", { position: "top-right" });
-                  return;
-                }
-                if (isInCart) {
-                  toast.info("Already in your cart", { position: "top-right" });
-                  return;
-                }
-                AddtoCart();
-              }}
+              onClick={handleAddToCartClick}
               disabled={productOutOfStock || isInCart}
               aria-label={
                 productOutOfStock
                   ? "Out of stock"
                   : isInCart
-                  ? "Already in cart"
-                  : "Add to cart"
+                    ? "Already in cart"
+                    : "Add to cart"
               }
-              className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-3 rounded-[14px] text-white shadow-lg transition-transform duration-ps-instant active:scale-[0.97] ${
+              className={`inline-flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px] px-3 rounded-xl text-white text-sm font-semibold transition-[transform,filter,background-color] duration-ps-instant active:scale-[0.97] ${
                 productOutOfStock
                   ? "bg-[var(--ps-dim)] cursor-not-allowed"
                   : isInCart
-                  ? "bg-[var(--ps-green)] cursor-default"
-                  : "bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)]"
+                    ? "bg-[var(--ps-green)] cursor-default"
+                    : "bg-[var(--ps-primary)] hover:brightness-110"
               }`}
             >
-              <IoCart className="text-xl" aria-hidden="true" />
+              <IoCart className="text-lg" aria-hidden="true" />
+              <span className="hidden sm:inline">
+                {productOutOfStock ? "Unavailable" : isInCart ? "In cart" : "Add"}
+              </span>
             </button>
           )}
         </div>

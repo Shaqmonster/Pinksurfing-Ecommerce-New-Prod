@@ -18,11 +18,16 @@ export default function Skeleton({ className = "", rounded = "xl" }) {
 
 export function ProductCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-3 space-y-3">
-      <Skeleton className="h-[200px] w-full" />
-      <Skeleton className="h-4 w-3/4" />
-      <Skeleton className="h-4 w-1/2" />
-      <Skeleton className="h-10 w-full" />
+    <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] overflow-hidden flex flex-col h-full">
+      <Skeleton className="aspect-[4/3] w-full rounded-none" rounded="none" />
+      <div className="p-3 sm:p-3.5 space-y-2.5 flex-1 flex flex-col">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-4 w-[88%]" />
+        <div className="mt-auto flex items-center justify-between gap-3 pt-1">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-11 w-11 rounded-xl" />
+        </div>
+      </div>
     </div>
   );
 }
