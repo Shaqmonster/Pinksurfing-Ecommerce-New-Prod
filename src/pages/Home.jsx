@@ -28,7 +28,6 @@ import { Country, State, City } from "country-state-city";
 import ProductCard from "../components/ProductCard";
 import StoreCard from "../components/StoreCard";
 import PageSEO from "../components/PageSEO";
-import MediaImage from "../components/ui/MediaImage";
 import Skeleton, { ProductCardSkeleton } from "../components/ui/Skeleton";
 import { HOME_FAQ, HOME_META, homeJsonLd } from "../constants/homeSeo";
 import { useAccessToken } from "../hooks/useAccessToken";
@@ -462,13 +461,14 @@ const Home = () => {
                       className={`group ${item.coming_soon ? "cursor-default" : "cursor-pointer"}`}
                     >
                       <div className="rounded-2xl overflow-hidden h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)]">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
-                        <MediaImage
+                        <img
                           src={item.image}
                           alt={`${item.name} on PinkSurfing marketplace`}
-                          skeletonClassName="absolute inset-0"
+                          className="absolute inset-0 h-full w-full object-cover"
                           loading="eager"
+                          decoding="async"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
                         {item.coming_soon && (
                           <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
                             <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white tracking-wide">
@@ -543,14 +543,14 @@ const Home = () => {
                 }`}
               >
                 <div className={`rounded-2xl overflow-hidden h-[200px] sm:h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)] transition-colors ${item.coming_soon ? "" : "hover:border-white/25"}`}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
-                  <MediaImage
+                  <img
                     src={item.image}
                     alt={`${item.name} on PinkSurfing marketplace`}
-                    className={item.coming_soon ? "" : "transition-transform duration-500 group-hover:scale-[1.04]"}
-                    skeletonClassName="absolute inset-0"
+                    className={`absolute inset-0 h-full w-full object-cover ${item.coming_soon ? "" : "transition-transform duration-500 group-hover:scale-[1.04]"}`}
                     loading="eager"
+                    decoding="async"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
                   {item.coming_soon && (
                     <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45">
                       <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-semibold text-white">
@@ -621,16 +621,16 @@ const Home = () => {
                       `}
                     >
                       <div className="relative aspect-[4/5] sm:aspect-square w-full overflow-hidden">
+                        <img
+                          src={imgSrc}
+                          alt={`${item.name} category on PinkSurfing`}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                          loading="eager"
+                          decoding="async"
+                        />
                         <div
                           className="absolute inset-0 bg-gradient-to-t from-[#0e0f13] via-[#0e0f13]/30 to-transparent z-[1] pointer-events-none"
                           aria-hidden
-                        />
-                        <MediaImage
-                          src={imgSrc}
-                          alt={`${item.name} category on PinkSurfing`}
-                          className="transition-transform duration-500 ease-out group-hover:scale-105"
-                          skeletonClassName="absolute inset-0"
-                          loading="lazy"
                         />
                         {isSoon && (
                           <div className="absolute inset-0 z-[3] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
