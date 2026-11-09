@@ -1,20 +1,39 @@
 import React, { useContext, useEffect, useState } from "react";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import Header from "../components/Header";
 import ProductCard from "../components/ProductCard";
-import { toast } from "react-toastify";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
-import SearchForm from "../components/Search";
+import PageSEO from "../components/PageSEO";
+import EmptyState from "../components/ui/EmptyState";
 
-const SearchPage = ({ }) => {
+const SearchPage = () => {
   const navigate = useNavigate();
-  const { search } = useContext(authContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { search, setSearch } = useContext(authContext);
   const { products, setProducts } = useContext(dataContext);
   const [loading, setLoading] = useState(false);
-  console.log(search);
+
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q != null && q !== search) {
+      setSearch(q);
+    }
+    // Sync URL → context once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const urlQ = searchParams.get("q") ?? "";
+    if (search === urlQ) return;
+    if (search) {
+      setSearchParams({ q: search }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  }, [search, searchParams, setSearchParams]);
+
   useEffect(() => {
     const getAllProducts = async () => {
       setLoading(true);
@@ -29,10 +48,9 @@ const SearchPage = ({ }) => {
           {
             headers: {
               "Content-Type": "application/json",
-            }
+            },
           }
         );
-        console.log(response.data);
         setProducts(response.data);
       } catch (error) {
         console.error(error);
@@ -41,11 +59,11 @@ const SearchPage = ({ }) => {
       }
     };
     getAllProducts();
-  }, [search]);
+  }, [search, setProducts]);
 
   return (
     <div className="w-full min-h-screen dark:bg-[#0E0F13] bg-white flex flex-col">
-      {/* <SearchForm /> */}
+      <PageSEO title="Search" path="/search" noindex />
       <div className="flex relative flex-col w-full h-full px-[2%] 2xl:px-[4.5%]">
         <h2 className="font-bold text-[24px] sm:text-[27px] flex items-center gap-2 text-purple-900 dark:text-purple-600">
           <ArrowLeftCircleIcon
@@ -84,17 +102,29 @@ const SearchPage = ({ }) => {
         <div className="bg-white dark:bg-[#0E0F13]">
           <div className="w-full sm:py-0 sm:pb-10 lg:px-0">
             {!loading ? (
-              <div className="grid grid-cols-2 pb-6 sm:grid-cols-3 lg:grid-cols-4 gap-y-2.5 gap-x-0.5 lg:gap-x-2 lg:items-center lg:justify-start flex-wrap">
-                {products.length > 0 ? (
-                  products.map((product) => (
+              products.length > 0 ? (
+                <div className="grid grid-cols-2 pb-6 sm:grid-cols-3 lg:grid-cols-4 gap-y-2.5 gap-x-0.5 lg:gap-x-2 lg:items-center lg:justify-start flex-wrap">
+                  {products.map((product) => (
                     <ProductCard key={product.id} product={product} isCard={true} />
-                  ))
-                ) : (
-                  <p className="w-full text-center mt-[10%] text-[15px] dark:text-[#f5f5f5]">
-                    No Products Found
-                  </p>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : search ? (
+                <EmptyState
+                  title="No products found"
+                  description={`We couldn't find anything matching "${search}". Try different keywords or browse the mall.`}
+                  actionLabel="Return home"
+                  actionHref="/"
+                  className="mt-[8%]"
+                />
+              ) : (
+                <EmptyState
+                  title="Start searching"
+                  description="Use the search bar to find products across PinkSurfing."
+                  actionLabel="Return home"
+                  actionHref="/"
+                  className="mt-[8%]"
+                />
+              )
             ) : (
               <div className="lg:col-span-3 2xl:col-span-4 flex items-center justify-center">
                 <img

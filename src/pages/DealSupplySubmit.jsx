@@ -7,14 +7,14 @@ const PAGE_CSS = `
 .ds-inner{max-width:640px;margin:0 auto;}
 .ds-hero{margin-bottom:24px;}
 .ds-hero h1{font-size:26px;font-weight:800;margin-bottom:8px;}
-.ds-hero h1 span{color:#f0318a;}
+.ds-hero h1 span{color:#9747ff;}
 .ds-hero p{color:#66667a;font-size:14px;line-height:1.55;}
 .ds-form{background:#141418;border:1.5px solid #2a2a33;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px;}
 .ds-label{font-size:12px;font-weight:700;color:#b0b0c0;display:block;margin-bottom:4px;}
 .ds-input,.ds-select,.ds-textarea{width:100%;background:#1c1c22;border:1px solid #2a2a33;border-radius:6px;padding:10px 12px;color:#f0f0f4;font-size:14px;box-sizing:border-box;}
 .ds-textarea{min-height:90px;resize:vertical;}
 .ds-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.ds-btn{margin-top:8px;padding:12px;border:none;border-radius:8px;background:#f0318a;color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
+.ds-btn{margin-top:8px;padding:12px;border:none;border-radius:8px;background:#9747ff;color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
 .ds-btn:disabled{opacity:.5;cursor:not-allowed;}
 .ds-msg{padding:12px;border-radius:8px;font-size:13px;}
 .ds-msg.err{background:rgba(248,113,113,.12);color:#f87171;}
@@ -114,7 +114,7 @@ export default function DealSupplySubmit() {
               Submitted — host will review. You&apos;ll hear from the listing host if approved.
             </div>
             <p style={{ marginTop: 16 }}>
-              <Link to="/deals" style={{ color: "#f0318a" }}>
+              <Link to="/deals" style={{ color: "#9747ff" }}>
                 Browse live deals
               </Link>
             </p>

@@ -3,7 +3,7 @@ import React from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 /**
- * OrderFailed — shown at /payment_failed when a PayPal payment is cancelled or fails.
+ * OrderFailed — shown at /payment_failed when checkout payment is cancelled or fails.
  * Accepts an optional `orderId` query param to display the reference.
  * Cart items are preserved; the user can retry from /checkout.
  */
@@ -48,7 +48,7 @@ const OrderFailed = () => {
           </p>
           <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
             <li>· Payment was cancelled by you</li>
-            <li>· Insufficient funds in your PayPal account</li>
+            <li>· Insufficient funds with your payment method</li>
             <li>· Card / payment method was declined</li>
             <li>· Session timed out — please try again</li>
           </ul>

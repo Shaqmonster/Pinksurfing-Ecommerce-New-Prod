@@ -15,6 +15,7 @@ import shareImage from "/media/share.png";
 import ProductDetailReviewSection from "../components/ProductPageComponents/ProductDetail-ReviewSection";
 import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLike";
 import BusinessListingDetail from "../components/ProductPageComponents/BusinessListingDetail";
+import { EmptyState } from "../components/ui";
 import { Helmet } from "react-helmet";
 import ImageZoom from "../components/ProductPageComponents/ZoomImage";
 import parse from "html-react-parser";
@@ -112,6 +113,7 @@ const ProductDetailPage = () => {
   const [productQty, setProductQty] = useState(1);
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState("story");
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
@@ -584,10 +586,12 @@ const ProductDetailPage = () => {
       if (!productId) {
         setLoading(false);
         setProduct({});
+        setLoadError(true);
         return;
       }
       try {
         setLoading(true);
+        setLoadError(false);
         const encoded = encodeURIComponent(productId);
         const productResponse = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/product/product/${encoded}/`,
@@ -604,6 +608,7 @@ const ProductDetailPage = () => {
         }
         const normalizedProduct = withResolvedProductImages(productData);
         setProduct(normalizedProduct);
+        setLoadError(false);
         setActiveImage(firstProductImageUrl(normalizedProduct));
 
         // Build a lookup: attribute name (lowercase) → is_variant boolean
@@ -654,6 +659,7 @@ const ProductDetailPage = () => {
       } catch (error) {
         console.error(error);
         setProduct({});
+        setLoadError(true);
         const msg =
           error?.response?.data?.Status ||
           error?.response?.data?.detail ||
@@ -848,6 +854,19 @@ const ProductDetailPage = () => {
   };
 
 
+  if (!loading && (loadError || !product?.id)) {
+    return (
+      <section className="min-h-[70vh] bg-[var(--ps-bg)] flex items-center justify-center px-4">
+        <EmptyState
+          title="Listing not found"
+          description="This product may have been removed or the link is invalid. Try browsing the marketplace instead."
+          actionLabel="Back to home"
+          actionHref="/"
+        />
+      </section>
+    );
+  }
+
   // ── BUSINESS FOR SALE: render dedicated page ──
   if (!loading && isBusiness && product?.id) {
     return (
@@ -1010,9 +1029,6 @@ const ProductDetailPage = () => {
                         </div>
                       )}
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                      Est. {currency}{formatMoney(finalUnitPrice / 180)}/mo
-                    </div>
                   </div>
                 </div>
 
@@ -1113,9 +1129,6 @@ const ProductDetailPage = () => {
                       )}
                     </>
                   )}
-                  <div className="ml-auto hidden md:flex items-center gap-2 px-4 py-2 bg-purple-600/10 border border-purple-500/20 rounded-2xl text-purple-600 text-[10px] font-black uppercase tracking-widest">
-                    <IoInformationCircleOutline size={16} /> Verified Listing
-                  </div>
                 </div>
               </div>
             )}
@@ -1445,7 +1458,7 @@ const ProductDetailPage = () => {
                       {/* Stock Badge — goods/products only */}
                       {usesInventoryStock(product) && (
                         product.quantity > 0 ? (
-                          <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg animate-bounce">
+                          <div className="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">
                             In Stock
                           </div>
                         ) : (

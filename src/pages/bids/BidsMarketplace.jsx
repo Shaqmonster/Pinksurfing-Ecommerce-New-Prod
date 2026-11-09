@@ -578,17 +578,7 @@ const RequestCard = ({ request }) => {
 
           {/* Scope snippet */}
           <p className="text-sm text-white/50 line-clamp-2 leading-relaxed">
-            {request.description
-              ? (
-                <>
-                  <span className="inline-flex items-center gap-0.5 mr-1.5 px-1.5 py-0.5 rounded bg-pink-500/10 text-pink-400 text-[10px] font-mono font-semibold align-middle">
-                    <IoSparkles className="text-[10px]" />AI
-                  </span>
-                  {request.description}
-                </>
-              )
-              : "No description provided."
-            }
+            {request.description || "No description provided."}
           </p>
 
           {/* Meta row */}
@@ -598,20 +588,17 @@ const RequestCard = ({ request }) => {
                 <FaDollarSign className="text-emerald-500 text-base" />
                 {request.budget}
               </span>
-              <span className="flex items-center gap-1 text-xs text-white/40">
-                <FaShieldAlt className="text-pink-400 text-xs" />
-                Verified
-              </span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-white/40">
                 {bidCount} bid{bidCount !== 1 ? "s" : ""}
               </span>
-              <Link to={`/bids/requests/${request.id}`}>
-                <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-semibold hover:opacity-90 transition-all shadow-md shadow-pink-500/20">
-                  Send Offer
-                  <IoArrowForward className="text-sm" />
-                </button>
+              <Link
+                to={`/bids/requests/${request.id}`}
+                className="flex items-center gap-1.5 min-h-[44px] px-4 py-2 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold"
+              >
+                Send offer
+                <IoArrowForward className="text-sm" aria-hidden="true" />
               </Link>
             </div>
           </div>
@@ -736,6 +723,30 @@ export default function BidsMarketplace() {
       list = list.filter((r) =>
         catSelected.some((c) => r.category_name?.toLowerCase().includes(c.toLowerCase()))
       );
+    }
+
+    const timelineSelected = filters.timeline || [];
+    if (timelineSelected.length > 0) {
+      list = list.filter((r) => {
+        const t = String(r.timeline || r.duration || "").toLowerCase();
+        return timelineSelected.some((v) => t.includes(String(v).toLowerCase()));
+      });
+    }
+
+    const statusSelected = filters.bidStatus || [];
+    if (statusSelected.length > 0) {
+      list = list.filter((r) => {
+        const status = String(r.status || r.bid_status || "open").toLowerCase();
+        return statusSelected.some((v) => status.includes(String(v).toLowerCase()));
+      });
+    }
+
+    const contractSelected = filters.contractType || [];
+    if (contractSelected.length > 0) {
+      list = list.filter((r) => {
+        const ct = String(r.contract_type || r.contractType || "").toLowerCase();
+        return contractSelected.some((v) => ct.includes(String(v).toLowerCase()));
+      });
     }
 
     // Sort

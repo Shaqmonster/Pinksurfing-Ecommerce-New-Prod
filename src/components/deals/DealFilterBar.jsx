@@ -4,10 +4,10 @@ const CSS = `
 .deal-filters{margin-bottom:20px;}
 .deal-cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
 .deal-cat{padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #2a2a33;background:#141418;color:#b0b0c0;transition:all .15s;}
-.deal-cat.active,.deal-cat:hover{border-color:#f0318a;color:#f0318a;background:rgba(240,49,138,.08);}
+.deal-cat.active,.deal-cat:hover{border-color:#9747ff;color:#9747ff;background:rgba(151, 71, 255,.08);}
 .deal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
 .deal-tag{padding:5px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #2a2a33;background:#1c1c22;color:#66667a;}
-.deal-tag.active{border-color:#f0318a;color:#f0318a;}
+.deal-tag.active{border-color:#9747ff;color:#9747ff;}
 .deal-sort-row{display:flex;justify-content:flex-end;align-items:center;gap:8px;}
 .deal-sort-row label{font-size:12px;color:#66667a;}
 .deal-sort{padding:8px 12px;border-radius:6px;border:1px solid #2a2a33;background:#141418;color:#f0f0f4;font-size:13px;}

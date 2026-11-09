@@ -1,22 +1,22 @@
 export const authInputClass =
-  "w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 disabled:opacity-60 disabled:cursor-not-allowed";
+  "w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-[#9747ff] focus:ring-2 focus:ring-[#9747ff]/20 disabled:opacity-60 disabled:cursor-not-allowed";
 
 export const authLabelClass =
   "block text-sm font-semibold text-slate-700 mb-2";
 
-export const authRequiredMark = "text-pink-500 font-bold ml-0.5";
+export const authRequiredMark = "text-[#9747ff] font-bold ml-0.5";
 
 export const authBtnPrimary =
-  "w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 py-3.5 font-semibold text-white shadow-lg shadow-pink-500/20 transition-all duration-200 hover:shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none";
+  "w-full rounded-xl bg-gradient-to-r from-[#9747ff] to-[#7b2cbf] py-3.5 font-semibold text-white shadow-lg shadow-[#9747ff]/20 transition-all duration-200 hover:shadow-[#9747ff]/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none";
 
 export const authBtnSecondary =
-  "shrink-0 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed";
+  "shrink-0 rounded-xl bg-gradient-to-r from-[#9747ff] to-[#7b2cbf] px-4 py-3 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed";
 
 export const authBtnGoogle =
   "w-full flex items-center justify-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed";
 
 export const authLinkClass =
-  "font-medium text-pink-600 hover:text-pink-700 transition-colors";
+  "font-medium text-[#9747ff] hover:text-[#b882ff] transition-colors";
 
 export const otpInputStyle = {
   width: "44px",

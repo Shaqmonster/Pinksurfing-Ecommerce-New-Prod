@@ -297,7 +297,7 @@ export default function AllOrders() {
                                     </p>
                                 </div>
                                 <button
-                                    onClick={() => navigate("/shoppingMall/all")}
+                                    onClick={() => navigate("/shoppingMall")}
                                     className="px-12 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
                                 >
                                     Initialize Shopping

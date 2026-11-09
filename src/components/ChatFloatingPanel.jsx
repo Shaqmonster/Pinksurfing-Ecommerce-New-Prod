@@ -514,7 +514,7 @@ const ChatFloatingPanel = ({
           initial={{ opacity: 0, scale: 0.95, y: 16, x: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 16, x: 16 }}
-          className="fixed bottom-24 right-4 sm:right-8 w-[min(100vw-2rem,400px)] h-[min(72vh,560px)] bg-[#0E0F13] border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[60] overflow-hidden flex flex-col backdrop-blur-xl"
+          className="fixed bottom-24 right-4 sm:right-8 w-[min(calc(100vw_-_2rem),400px)] h-[min(72vh,560px)] bg-[var(--ps-bg)] border border-[var(--ps-brd)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[60] overflow-hidden flex flex-col"
         >
           <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
             {activeConv ? (

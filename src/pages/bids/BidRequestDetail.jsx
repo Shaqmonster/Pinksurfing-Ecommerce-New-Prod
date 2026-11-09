@@ -301,10 +301,8 @@ const JobOverviewStep = ({ request, onContinue }) => {
       </div>
 
       {/* Trust badges */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {[
-          { Icon: IoShieldCheckmark, label: "Escrow Protected" },
-          { Icon: FaShieldAlt, label: "Verified Buyer" },
           { Icon: FaCheckCircle, label: "Secure Payment" },
         ].map(({ Icon, label }) => (
           <div key={label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">

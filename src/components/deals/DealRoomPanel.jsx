@@ -4,10 +4,10 @@ import { transitionDealRoom, updateEscrowChecklist } from "../../api/offMarketDe
 const CSS = `
 .deal-room{background:#141418;border:1.5px solid #2a2a33;border-radius:8px;padding:20px;margin-top:20px;}
 .deal-room h3{font-size:16px;font-weight:700;margin-bottom:12px;}
-.deal-state{display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;text-transform:uppercase;background:rgba(240,49,138,.12);color:#f0318a;margin-bottom:16px;}
+.deal-state{display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;text-transform:uppercase;background:rgba(151, 71, 255,.12);color:#9747ff;margin-bottom:16px;}
 .deal-room-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
 .deal-room-btn{padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a33;background:#1c1c22;color:#f0f0f4;}
-.deal-room-btn:hover{border-color:#f0318a;color:#f0318a;}
+.deal-room-btn:hover{border-color:#9747ff;color:#9747ff;}
 .deal-audit{font-size:12px;color:#66667a;margin-top:16px;}
 .deal-audit li{margin-bottom:6px;}
 .escrow-list{list-style:none;padding:0;margin:0;}

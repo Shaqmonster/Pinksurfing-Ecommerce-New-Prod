@@ -1,7 +1,8 @@
 import React, { useContext, useRef, useCallback } from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { PS_MOTION, sheetTransition } from "../lib/motion-tokens";
 
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -83,6 +84,14 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const searchInputRef = React.useRef(null);
+  const reducedMotion = useReducedMotion();
+  const headerNavLinks = [
+    { to: "/gighub", label: "GigHub" },
+    { to: "/bids", label: "Bids" },
+    { to: "/deals", label: "Deals" },
+    { to: "/shoppingMall", label: "Shopping mall" },
+    { to: "/contact", label: "Help & support" },
+  ];
 
   const pathParts = window.location.pathname.split("/");
   const lastPart = pathParts[pathParts.length - 1];
@@ -251,176 +260,170 @@ const Header = () => {
       )}
       
       {/* Unified Compact Header */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="sticky top-0 z-40 bg-[#0E0F13]/60 backdrop-blur-3xl w-full py-5 border-b border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)]"
+      <header
+        className="sticky top-0 z-40 bg-[var(--ps-bg)]/95 backdrop-blur-xl w-full py-3 border-b border-[var(--ps-brd)]"
       >
-        <div className="max-w-[1800px] mx-auto flex items-center justify-between px-8 md:px-16 text-white gap-10">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between px-4 sm:px-8 lg:px-12 text-white gap-4 lg:gap-8">
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center"
-            >
-              <img 
-                src="/logo.jpg" 
-                className="w-12 h-12 rounded-full ring-2 ring-white/10 shadow-2xl transition-all duration-500 hover:ring-purple-500/50" 
-                alt="PinkSurfing Logo"
-              />
-            </motion.div>
+          <Link to="/" className="flex-shrink-0" aria-label="PinkSurfing home">
+            <img 
+              src="/logo.jpg" 
+              className="w-11 h-11 rounded-full ring-2 ring-white/10" 
+              alt="PinkSurfing"
+            />
           </Link>
 
-          {/* Search Bar - Stealth Integrated */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl relative group">
-            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-              <IoSearchSharp className="text-gray-500 group-focus-within:text-purple-400 transition-colors text-lg" />
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl relative group" role="search">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <IoSearchSharp className="text-[var(--ps-dim)] group-focus-within:text-[var(--ps-cyan)] transition-colors text-lg" aria-hidden="true" />
             </div>
+            <label htmlFor="header-search" className="sr-only">Search the marketplace</label>
             <input
-              type="text"
+              id="header-search"
+              type="search"
               placeholder="Search the marketplace..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-14 pr-6 py-3.5 bg-white/[0.03] border border-white/5 rounded-2xl outline-none text-white placeholder-gray-600 focus:bg-white/[0.07] focus:border-purple-500/30 transition-all duration-500 text-sm font-medium tracking-tight"
+              className="w-full min-h-[44px] pl-12 pr-4 py-2.5 bg-[var(--ps-surf)] border border-[var(--ps-brd)] rounded-xl outline-none text-white placeholder-[var(--ps-dim)] focus:border-[var(--ps-cyan)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-cyan)_30%,transparent)] transition-colors text-sm font-medium"
             />
           </form>
 
-          {/* Right Section - Unified Premium Actions */}
-          <div className="flex items-center gap-8">
-            <div className="hidden xl:flex items-center gap-3">
-              <Link
-                to="/gighub"
-                className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
-              >
-                GigHub
-              </Link>
-              <Link
-                to="/bids"
-                className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
-              >
-                Bids
-              </Link>
-              <Link
-                to="/deals"
-                className="px-6 py-3 bg-pink-600/10 hover:bg-pink-600/20 border border-pink-500/20 hover:border-pink-500/40 rounded-2xl text-pink-300 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
-              >
-                Deals
-              </Link>
-              <Link
-                to="/contact"
-                className="px-6 py-3 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 rounded-2xl text-purple-300 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
-              >
-                Help & Support
-              </Link>
-            </div>
+          {/* Right Section */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <nav className="hidden lg:flex items-center gap-2" aria-label="Primary">
+              {headerNavLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="min-h-[44px] px-4 py-2 flex items-center rounded-xl bg-[var(--ps-surf)] hover:bg-[var(--ps-card2)] border border-[var(--ps-brd)] text-white text-sm font-medium transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
 
-            <div className="flex items-center gap-6 border-l border-white/10 pl-8">
+            <div className="flex items-center gap-2 sm:gap-3 sm:border-l sm:border-[var(--ps-brd)] sm:pl-4">
               {authToken && user && (
-                <div className="flex items-center gap-6">
-                  <div className="relative group cursor-pointer" onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}>
-                    <FaHeart className="text-xl text-gray-500 hover:text-pink-500 transition-all duration-300 transform group-hover:scale-110" />
-                  </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    aria-label="Open wishlist"
+                    className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-[var(--ps-purple-light)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)]"
+                    onClick={() => { setIsProfileOpen(false); setIsWishlistOpen(true); }}
+                  >
+                    <FaHeart className="text-xl" aria-hidden="true" />
+                  </button>
                   
-                  <div 
-                    className="relative group cursor-pointer"
+                  <button
+                    type="button"
+                    aria-label={`Open cart${cartProducts.length ? `, ${cartProducts.length} items` : ""}`}
+                    className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-[var(--ps-purple-light)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)]"
                     onClick={() => { setIsProfileOpen(false); setIsCartOpen(true); }}
                   >
-                    <IoCart className="text-2xl text-gray-500 group-hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
+                    <IoCart className="text-2xl" aria-hidden="true" />
                     {cartProducts.length > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-purple-600 text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full ring-2 ring-[#0E0F13]">
+                      <span className="absolute top-1 right-1 bg-[var(--ps-primary)] text-[10px] font-bold min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full ring-2 ring-[var(--ps-bg)]">
                         {cartProducts.length}
                       </span>
                     )}
-                  </div>
+                  </button>
 
-                  <div
-                    className="relative group cursor-pointer"
+                  <button
+                    type="button"
+                    aria-label={`Messages${chatUnread ? `, ${chatUnread} unread` : ""}`}
+                    className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-[var(--ps-purple-light)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)]"
                     onClick={() => { setIsProfileOpen(false); setIsChatOpen(!isChatOpen); }}
-                    title="Messages"
                   >
-                    <IoChatbubbleOutline className="text-2xl text-gray-500 hover:text-purple-400 transition-all duration-300 transform group-hover:scale-110" />
+                    <IoChatbubbleOutline className="text-2xl" aria-hidden="true" />
                     {chatUnread > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-[9px] font-black min-w-[18px] h-[18px] flex items-center justify-center rounded-full ring-2 ring-[#0E0F13] px-1">
+                      <span className="absolute top-1 right-1 bg-[var(--ps-red)] text-[10px] font-bold min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full ring-2 ring-[var(--ps-bg)]">
                         {chatUnread > 9 ? "9+" : chatUnread}
                       </span>
                     )}
-                  </div>
+                  </button>
                 </div>
               )}
 
-              <div className="flex items-center gap-4">
-                {/* Mobile Search & Menu Triggers */}
-                <div className="flex md:hidden items-center gap-4 border-l border-white/10 pl-4">
-                  <IoSearchSharp 
-                    className="text-2xl text-gray-400 cursor-pointer hover:text-white transition-colors" 
-                    onClick={() => setShowMobileSearch(true)} 
-                  />
-                  <IoMenuOutline 
-                    className="text-3xl text-white cursor-pointer hover:text-purple-400 transition-colors" 
-                    onClick={() => setIsMobileMenuOpen(true)} 
-                  />
+              <div className="flex items-center gap-2">
+                <div className="flex lg:hidden items-center gap-1">
+                  <button
+                    type="button"
+                    aria-label="Open search"
+                    className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-white"
+                    onClick={() => setShowMobileSearch(true)}
+                  >
+                    <IoSearchSharp className="text-2xl" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Open menu"
+                    aria-expanded={isMobileMenuOpen}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-white hover:text-[var(--ps-purple-light)]"
+                    onClick={() => setIsMobileMenuOpen(true)}
+                  >
+                    <IoMenuOutline className="text-3xl" aria-hidden="true" />
+                  </button>
                 </div>
 
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-2">
                   {authToken ? (
                     <>
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <button
+                        type="button"
                         onClick={() => navigate("/profile")}
-                        className="flex items-center cursor-pointer gap-4 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all pl-1.5 pr-5"
+                        className="flex items-center gap-3 min-h-[44px] bg-[var(--ps-surf)] p-1.5 rounded-xl border border-[var(--ps-brd)] hover:bg-[var(--ps-card2)] transition-colors pl-1.5 pr-4"
                       >
                         <img
                           src={user?.customer_profile_picture || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"}
-                          alt="avatar"
-                          className="w-9 h-9 rounded-xl object-cover ring-1 ring-white/10"
+                          alt=""
+                          className="w-9 h-9 rounded-lg object-cover ring-1 ring-white/10"
                         />
-                        <div className="hidden sm:flex flex-col min-w-0 max-w-[200px]">
+                        <div className="hidden sm:flex flex-col min-w-0 max-w-[160px] text-left">
                           <span
-                            className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-1 line-clamp-2"
+                            className="text-sm font-semibold text-white leading-tight line-clamp-1"
                             title={getCustomerDisplayName(user)}
                           >
                             {getCustomerDisplayName(user)}
                           </span>
-                          <span className="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none opacity-50">
+                          <span className="text-xs text-[var(--ps-dim)]">
                             Account
                           </span>
                         </div>
-                      </motion.div>
+                      </button>
 
                       {user && hasBuyerNdas && (
                         <Link
                           to="/my-ndas"
                           title="Business listing confidentiality agreements"
-                          className="hidden md:flex items-center gap-2 px-4 py-3 rounded-2xl border border-purple-500/25 bg-purple-500/10 hover:bg-purple-500/15 transition-colors text-[10px] font-black uppercase tracking-[0.18em] text-purple-200"
+                          className="hidden xl:flex items-center gap-2 min-h-[44px] px-3 py-2 rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] hover:bg-[var(--ps-card2)] transition-colors text-sm font-medium text-[var(--ps-purple-light)]"
                         >
-                          <FaFileContract className="text-sm opacity-90" />
-                          My Business Financials
+                          <FaFileContract className="text-sm opacity-90" aria-hidden="true" />
+                          Financials
                         </Link>
                       )}
 
                       <button
+                        type="button"
                         onClick={Logout}
-                        className="px-6 py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.2em] border border-white/5 hover:border-white/20 rounded-2xl transition-all duration-300 bg-white/[0.02] hover:bg-white/[0.05]"
+                        className="min-h-[44px] px-4 py-2 text-sm font-medium text-[var(--ps-muted)] hover:text-white border border-[var(--ps-brd)] rounded-xl transition-colors bg-[var(--ps-surf)] hover:bg-[var(--ps-card2)]"
                       >
-                        Logout
+                        Log out
                       </button>
                     </>
                   ) : (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <Link
                         to="/signin"
-                        className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
+                        className="min-h-[44px] px-4 py-2 flex items-center bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] rounded-xl text-white text-sm font-semibold transition-transform active:scale-[0.97]"
                       >
-                        Sign In
+                        Sign in
                       </Link>
                       <Link
                         to="/signup"
-                        className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300"
+                        className="min-h-[44px] px-4 py-2 flex items-center bg-[var(--ps-surf)] border border-[var(--ps-brd)] rounded-xl text-white text-sm font-medium"
                       >
-                        Sign Up
+                        Sign up
                       </Link>
                     </div>
                   )}
@@ -429,64 +432,54 @@ const Header = () => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </header>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile / tablet Navigation Drawer (visible below lg — closes the 768–1279 gap) */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ x: "100%" }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Main menu"
+            initial={reducedMotion ? false : { x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed inset-0 z-[100] bg-[#0E0F13]/95 backdrop-blur-2xl md:hidden flex flex-col"
+            exit={reducedMotion ? { opacity: 0 } : { x: "100%" }}
+            transition={reducedMotion ? { duration: PS_MOTION.duration.fast } : sheetTransition}
+            className="fixed inset-0 z-[100] bg-[var(--ps-bg)]/98 backdrop-blur-xl lg:hidden flex flex-col"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setIsMobileMenuOpen(false);
+            }}
           >
-            <div className="flex justify-between items-center p-8 border-b border-white/5">
-              <img src="/logo.jpg" className="w-10 h-10 rounded-full ring-2 ring-white/10" alt="Logo" />
-              <button 
+            <div className="flex justify-between items-center p-6 border-b border-[var(--ps-brd)]">
+              <img src="/logo.jpg" className="w-10 h-10 rounded-full ring-2 ring-white/10" alt="PinkSurfing" />
+              <button
+                type="button"
+                aria-label="Close menu"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-[var(--ps-surf)] border border-[var(--ps-brd)]"
               >
-                <IoClose className="text-2xl text-white" />
+                <IoClose className="text-2xl text-white" aria-hidden="true" />
               </button>
             </div>
 
-            <nav className="flex-1 flex flex-col p-8 gap-6 overflow-y-auto">
-              <Link 
-                to="/gighub" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
-              >
-                GigHub
-              </Link>
-              <Link 
-                to="/bids" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors"
-              >
-                Bids
-              </Link>
-              <Link 
-                to="/deals" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-4xl font-black uppercase tracking-tighter text-pink-400 hover:text-pink-300 transition-colors"
-              >
-                Off-Market Deals
-              </Link>
-              <Link 
-                to="/contact" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-4xl font-black uppercase tracking-tighter text-purple-400 hover:text-purple-300 transition-colors"
-              >
-                Support
-              </Link>
+            <nav className="flex-1 flex flex-col p-6 gap-2 overflow-y-auto" aria-label="Mobile">
+              {headerNavLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="min-h-[44px] flex items-center text-xl font-semibold text-white/90 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
               <button
                 type="button"
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   openChatInbox();
                 }}
-                className="text-4xl font-black uppercase tracking-tighter text-white/90 hover:text-white transition-colors text-left"
+                className="min-h-[44px] flex items-center text-xl font-semibold text-white/90 hover:text-white transition-colors text-left"
               >
                 Messages
               </button>

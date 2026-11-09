@@ -248,7 +248,7 @@ export default function ProfileDetails() {
                                     : "Member"}
                             </div>
                             <div className="px-6 py-2.5 rounded-2xl bg-purple-600/20 border border-purple-500/20 text-[10px] font-black uppercase tracking-widest text-purple-300">
-                                {is_vendor ? 'Official Vendor' : 'Verified Profile'}
+                                {is_vendor ? 'Official Vendor' : 'Customer account'}
                             </div>
                         </div>
                     </div>

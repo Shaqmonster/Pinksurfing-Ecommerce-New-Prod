@@ -16,7 +16,7 @@ const ProductCard = ({ product, isCard }) => {
   const navigate = useNavigate();
   const [averageRating, setAverageRating] = useState(0);
   const [allRatings, setAllRatings] = useState([]);
-  const { currency, setIsProfileOpen } = useContext(authContext);
+  const { currency } = useContext(authContext);
   const {
     setCartProducts,
     setWishlistProducts,
@@ -47,10 +47,14 @@ const ProductCard = ({ product, isCard }) => {
       });
   };
 
+  const requireSignIn = (message) => {
+    toast.error(message, { position: "top-right" });
+    navigate("/signin", { state: { from: window.location.pathname + window.location.search } });
+  };
+
   const AddtoCart = () => {
     if (!accessToken) {
-      toast.error("Please sign in to add to cart", { position: "top-right" });
-      setIsProfileOpen(true);
+      requireSignIn("Please sign in to add to cart");
       return;
     }
     if (productOutOfStock) {
@@ -144,12 +148,8 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   const RemoveWishlistProduct = async (productId) => {
-    const heartElement = document.getElementById(`heart-${productId}`);
-    heartElement.classList.remove("text-red-500");
-    heartElement.classList.add("text-gray-400");
-
     try {
-      const response = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/remove/${productId}`,
         {},
         {
@@ -165,33 +165,20 @@ const ProductCard = ({ product, isCard }) => {
       });
     } catch (error) {
       console.error(error);
-      heartElement.classList.add("text-red-500");
-      heartElement.classList.remove("text-gray-400");
-      toast.error(error.response.data.message ||
-        error.response.data.Status ||
-        error.response.data.Err ||
-        error.response.data.detail || "unable to remove product from wishlist", {
-        position: "top-right",
-      });
+      const data = error.response?.data;
+      toast.error(
+        data?.message || data?.Status || data?.Err || data?.detail || "Unable to remove from wishlist",
+        { position: "top-right" }
+      );
     }
   };
   const handleWishlistClick = async () => {
     if (!accessToken) {
-      toast.error("You are not Signed In", {
-        position: "top-right",
-      });
-      setIsProfileOpen(true);
-      setTimeout(() => {
-        setIsProfileOpen(false);
-      }, 10000);
+      requireSignIn("Please sign in to save items to your wishlist");
       return;
     }
 
     const isInWishlist = wishlistProducts.find((i) => i.id === product.id);
-    const heartElement = document.getElementById(`heart-${product.id}`);
-
-    heartElement.classList.add("text-red-500");
-    heartElement.classList.remove("text-gray-400");
 
     try {
       if (isInWishlist) {
@@ -200,9 +187,6 @@ const ProductCard = ({ product, isCard }) => {
         await AddtoWishlist(product.id);
       }
     } catch (error) {
-      // Revert the color if there's an error
-      heartElement.classList.remove("text-red-500");
-      heartElement.classList.add("text-gray-400");
       toast.error("An error occurred", {
         position: "top-right",
       });
@@ -278,24 +262,34 @@ const ProductCard = ({ product, isCard }) => {
 
   const listingLocation = isListing ? formatListingLocation(product) : null;
 
+  const isWishlisted = wishlistProducts.some((i) => i.id === product.id);
+  const mrpNum = Number(product.mrp);
+  const priceNum = Number(product.unit_price);
+  const showStrike =
+    !isListing &&
+    Number.isFinite(mrpNum) &&
+    Number.isFinite(priceNum) &&
+    mrpNum > priceNum;
+
   return (
     <div
       className={`group mx-auto mt-4 rounded-2xl relative w-full lg:w-[100%] flex ${
         isCard ? "flex-col" : "flex-row items-center"
-      } overflow-hidden bg-white/80 dark:bg-white/5 backdrop-blur-md border border-gray-200/50 dark:border-white/10 shadow-lg hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/20 transition-all duration-300 hover:-translate-y-1`}
+      } overflow-hidden bg-[var(--ps-card)] border border-[var(--ps-brd)] shadow-lg hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] transition-colors duration-ps-normal`}
     >
       {/* Wishlist Icon */}
-      <div
-        id={`heart-${product.id}`}
+      <button
+        type="button"
+        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         onClick={handleWishlistClick}
-        className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md cursor-pointer transition-all duration-200 hover:scale-110 ${
-          wishlistProducts.find((i) => i.id === product.id)
+        className={`absolute top-3 right-3 z-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full cursor-pointer transition-transform duration-ps-instant active:scale-[0.97] ${
+          isWishlisted
             ? "bg-red-500/20 text-red-500"
-            : "bg-white/50 dark:bg-black/30 text-gray-400 hover:text-red-500 hover:bg-red-500/20"
+            : "bg-black/40 text-[var(--ps-dim)] hover:text-red-400"
         }`}
       >
         <FaHeart className="text-lg" />
-      </div>
+      </button>
 
       {/* Status Badge (For Sale/Rent) */}
       {isListing && (
@@ -307,9 +301,9 @@ const ProductCard = ({ product, isCard }) => {
       )}
 
       {/* Discount Badge (Generic products only) */}
-      {!isListing && !productOutOfStock && product.mrp && product.unit_price && product.mrp !== product.unit_price && Math.round(((product.mrp - product.unit_price) / product.mrp) * 100) > 0 && (
-        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold shadow-lg">
-          {Math.round(((product.mrp - product.unit_price) / product.mrp) * 100)}% OFF
+      {!isListing && !productOutOfStock && showStrike && Math.round(((mrpNum - priceNum) / mrpNum) * 100) > 0 && (
+        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-[var(--ps-primary)] text-white text-xs font-bold shadow-lg">
+          {Math.round(((mrpNum - priceNum) / mrpNum) * 100)}% OFF
         </div>
       )}
 
@@ -350,8 +344,14 @@ const ProductCard = ({ product, isCard }) => {
         <div className="flex items-center justify-between mb-3">
           {!isListing ? (
             <div className="flex items-center gap-2">
-              <Stars stars={averageRating} />
-              <span className="text-xs text-gray-400">({allRatings.length})</span>
+              {allRatings.length > 0 ? (
+                <>
+                  <Stars stars={averageRating} />
+                  <span className="text-xs text-[var(--ps-dim)]">({allRatings.length})</span>
+                </>
+              ) : (
+                <span className="text-xs text-[var(--ps-dim)]">No reviews yet</span>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -362,7 +362,7 @@ const ProductCard = ({ product, isCard }) => {
         </div>
 
         <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+          <h2 className="text-base sm:text-lg font-bold text-white line-clamp-2 leading-tight mb-1 group-hover:text-[var(--ps-purple-light)] transition-colors">
             {product.name}
           </h2>
         </Link>
@@ -435,12 +435,12 @@ const ProductCard = ({ product, isCard }) => {
         {/* Pricing & Call to Action */}
         <div className="flex items-center justify-between gap-4 mt-auto">
           <div className="flex flex-col">
-            <p className="text-xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+            <p className="text-xl font-semibold text-white">
               {currency}
               {formatMoney(product.unit_price)}
             </p>
-            {!isListing && product.mrp !== product.unit_price && (
-              <p className="text-xs text-gray-400 line-through">
+            {showStrike && (
+              <p className="text-xs text-[var(--ps-dim)] line-through">
                 {currency}
                 {formatMoney(product.mrp)}
               </p>
@@ -449,24 +449,20 @@ const ProductCard = ({ product, isCard }) => {
 
           {/* Action Button */}
           {isListing ? (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                toast.info("Connecting you with the agent...");
-              }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 active:scale-95 transition-all duration-300"
+            <Link
+              to={`/product/productDetail/${product.slug}?productId=${product.id}`}
+              className="flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold shadow-lg active:scale-[0.97] transition-transform duration-ps-instant"
             >
-              <IoMailOutline className="text-base" />
-              <span>{isBusiness || isCommercial ? "Contact Broker" : "Contact Agent"}</span>
-            </button>
+              <IoMailOutline className="text-base" aria-hidden="true" />
+              <span>View listing</span>
+            </Link>
           ) : (
             <button
               type="button"
               onClick={(e) => {
                 e.preventDefault();
                 if (!accessToken) {
-                  toast.error("Please sign in to add to cart", { position: "top-right" });
-                  setIsProfileOpen(true);
+                  requireSignIn("Please sign in to add to cart");
                   return;
                 }
                 if (productOutOfStock) {
@@ -480,22 +476,22 @@ const ProductCard = ({ product, isCard }) => {
                 AddtoCart();
               }}
               disabled={productOutOfStock || isInCart}
-              className={`p-3 rounded-xl text-white shadow-lg transition-all duration-300 ${
-                productOutOfStock
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : isInCart
-                  ? "bg-emerald-600 cursor-default"
-                  : "bg-gradient-to-r from-purple-600 to-pink-500 shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-110 active:scale-95"
-              }`}
-              title={
+              aria-label={
                 productOutOfStock
                   ? "Out of stock"
                   : isInCart
                   ? "Already in cart"
-                  : "Add to Cart"
+                  : "Add to cart"
               }
+              className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-3 rounded-[14px] text-white shadow-lg transition-transform duration-ps-instant active:scale-[0.97] ${
+                productOutOfStock
+                  ? "bg-[var(--ps-dim)] cursor-not-allowed"
+                  : isInCart
+                  ? "bg-[var(--ps-green)] cursor-default"
+                  : "bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)]"
+              }`}
             >
-              <IoCart className="text-xl" />
+              <IoCart className="text-xl" aria-hidden="true" />
             </button>
           )}
         </div>

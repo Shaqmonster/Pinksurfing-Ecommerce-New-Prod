@@ -37,19 +37,19 @@ const Footer = () => {
         },
         {
           id: "1.5",
-          name: "Privacy-policy",
-          link: "/",
+          name: "Contact",
+          link: "/contact",
         },
       ],
     },
     {
       id: 2,
-      heading: "About Us",
+      heading: "Explore",
       list: [
         {
           id: "2.1",
-          name: "About Us",
-          link: "/about",
+          name: "Shopping mall",
+          link: "/shoppingMall",
         },
         {
           id: "2.2",
@@ -58,18 +58,18 @@ const Footer = () => {
         },
         {
           id: "2.3",
-          name: "Shopping Guide",
-          link: "/about",
+          name: "Shop by category",
+          link: "/shopByCategory",
         },
         {
           id: "2.4",
-          name: "Register as Vendor",
-          link: "/",
+          name: "GigHub",
+          link: "/gighub",
         },
         {
           id: "2.5",
-          name: "FAQs",
-          link: "/",
+          name: "Bids",
+          link: "/bids",
         },
       ],
     },
@@ -103,8 +103,8 @@ const Footer = () => {
       <footer className="relative bg-gradient-to-b from-[#13131a] to-[#0a0a0f] text-gray-300 border-t border-purple-500/20 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/5 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative z-10 px-[8%] pt-12 pb-6">
@@ -132,7 +132,7 @@ const Footer = () => {
                 transition={{ delay: 0.3 }}
                 className="my-5 md:mb-7 text-[13.5px] text-gray-400 text-center leading-relaxed"
               >
-                A multidimensional chat and ecommerce for trading goods, selling services, and networking that pays you for your network… for life. What if the billions you - the people - made for social websites could be recreated and redistributed to the users. And you get a piece of that pie.
+                PinkSurfing is a marketplace for products, businesses for sale, services, and networking — built for clear discovery and trusted commerce.
               </motion.p>
               
               <motion.p 
@@ -193,41 +193,40 @@ const Footer = () => {
                         link = "#";
                       }
                       return (
-                        <Link
-                          to={link}
-                          key={idx}
-                          onClick={(event) => {
-                            if (e.id == "2.2") {
-                              if (!accessToken) {
-                                navigate("/signup");
-                              } else {
+                        <li key={idx}>
+                          <Link
+                            to={link}
+                            onClick={(event) => {
+                              if (e.id == "2.2") {
+                                if (!accessToken) {
+                                  navigate("/signup");
+                                } else {
+                                  event.preventDefault();
+                                  return;
+                                }
+                              }
+                              if (e.id === "2.4") {
                                 event.preventDefault();
-                                return;
+                                setIsVendorFormOpen(true);
                               }
-                            }
-                            if (e.id === "2.4") {
-                              event.preventDefault();
-                              setIsVendorFormOpen(true);
-                            }
-                            if (e.id === "1.1") {
-                              event.preventDefault();
-                              if (accessToken) {
-                                setIsProfilePopupOpen(true);
+                              if (e.id === "1.1") {
+                                event.preventDefault();
+                                if (accessToken) {
+                                  setIsProfilePopupOpen(true);
+                                }
                               }
-                            }
-                            if (e.id === "1.2") {
-                              event.preventDefault();
-                              setIsWishlistOpen(true);
-                            }
-                          }}
-                        >
-                          <motion.li 
-                            whileHover={{ x: 5, color: "#a855f7" }}
-                            className="transition-colors cursor-pointer"
+                              if (e.id === "1.2") {
+                                event.preventDefault();
+                                setIsWishlistOpen(true);
+                              }
+                            }}
+                            className="block transition-colors cursor-pointer hover:text-[#a855f7]"
                           >
-                            {e.name}
-                          </motion.li>
-                        </Link>
+                            <motion.span whileHover={{ x: 5 }}>
+                              {e.name}
+                            </motion.span>
+                          </Link>
+                        </li>
                       );
                     })}
                 </ul>
@@ -288,7 +287,7 @@ const Footer = () => {
             className="py-6 mt-8 border-t border-purple-500/20 text-[13px] text-gray-400"
           >
             <p className="text-center">
-              Copyright ©2024{" "}
+              Copyright ©{new Date().getFullYear()}{" "}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold">
                 Pinksurfing LLC
               </span>{" "}

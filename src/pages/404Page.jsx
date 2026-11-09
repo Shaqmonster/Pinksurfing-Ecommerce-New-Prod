@@ -1,16 +1,15 @@
 // src/pages/NotFound.js
 import React from "react";
 import { Link } from "react-router-dom";
-import Header from "../components/Header";
 
 const NotFound = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-black text-center">
-      <div className="flex flex-grow flex-col items-center justify-center">
+      <div className="flex flex-grow flex-col items-center justify-center px-4">
         <img
-          src="https://admiral.digital/wp-content/uploads/2023/08/404_page-not-found.png"
-          alt="404 Not Found"
-          className="w-3/4 md:w-1/2 lg:w-1/3 mb-8"
+          src="/logo.jpg"
+          alt="PinkSurfing"
+          className="w-32 h-32 md:w-40 md:h-40 object-contain mb-8 rounded-2xl opacity-90"
         />
         <h1 className="text-4xl font-bold mb-4 text-black dark:text-white">
           OOPS !! Page not found
@@ -20,7 +19,7 @@ const NotFound = () => {
         </p>
         <Link
           to="/"
-          className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="inline-flex items-center justify-center min-h-[44px] px-6 py-2 rounded-xl bg-[var(--ps-primary)] text-white font-semibold hover:bg-[var(--ps-purple-dark)] transition-colors"
         >
           Return Home
         </Link>

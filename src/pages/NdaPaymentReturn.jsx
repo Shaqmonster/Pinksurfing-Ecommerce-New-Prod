@@ -94,13 +94,13 @@ const NdaPaymentReturn = () => {
                   ? "rgba(52,211,153,.15)"
                   : phase === "failed" || phase === "not_found"
                   ? "rgba(248,113,113,.15)"
-                  : "rgba(240,49,138,.12)",
+                  : "rgba(151, 71, 255,.12)",
               border: `1px solid ${
                 phase === "accepted"
                   ? "rgba(52,211,153,.3)"
                   : phase === "failed" || phase === "not_found"
                   ? "rgba(248,113,113,.3)"
-                  : "rgba(240,49,138,.25)"
+                  : "rgba(151, 71, 255,.25)"
               }`,
             }}
           >
@@ -141,7 +141,7 @@ const NdaPaymentReturn = () => {
                 width: 32,
                 height: 32,
                 border: "3px solid #2a2a33",
-                borderTop: "3px solid #f0318a",
+                borderTop: "3px solid #9747ff",
                 borderRadius: "50%",
                 animation: "spin 0.8s linear infinite",
                 margin: "0 auto 28px",
@@ -191,7 +191,7 @@ const NdaPaymentReturn = () => {
               to={productLink}
               style={{
                 display: "block",
-                background: "#f0318a",
+                background: "#9747ff",
                 color: "#fff",
                 padding: "13px 24px",
                 borderRadius: 9,
