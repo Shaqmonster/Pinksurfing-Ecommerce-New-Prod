@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import Skeleton from "./Skeleton";
 
 /**
- * Image with skeleton until paint. Handles cached images where onLoad may not fire.
+ * Fills its wrapper; skeleton overlays until pixels are ready.
+ * Img stays mounted and visible — never gated behind opacity-0.
  */
 export default function MediaImage({
   src,
@@ -11,47 +12,32 @@ export default function MediaImage({
   skeletonClassName = "",
   ...props
 }) {
-  const imgRef = useRef(null);
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(true);
 
-  useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-  }, [src]);
-
-  useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
-    if (img.complete && img.naturalWidth > 0) {
-      setLoaded(true);
+  const markReady = useCallback((node) => {
+    if (!node) return;
+    if (node.complete && node.naturalWidth > 0) {
+      setShowSkeleton(false);
     }
-  }, [src]);
+  }, []);
 
   return (
     <div className={`relative overflow-hidden ${skeletonClassName}`}>
-      {!loaded && !failed && (
-        <Skeleton className="absolute inset-0 h-full w-full" rounded="none" />
+      {showSkeleton && (
+        <div className="absolute inset-0 z-[1]" aria-hidden>
+          <Skeleton className="h-full w-full" rounded="none" />
+        </div>
       )}
-      {!failed && (
-        <img
-          ref={imgRef}
-          src={src}
-          alt={alt}
-          className={`${className} transition-opacity duration-300 ${
-            loaded ? "opacity-100" : "opacity-0"
-          }`}
-          onLoad={() => setLoaded(true)}
-          onError={() => {
-            setFailed(true);
-            setLoaded(true);
-          }}
-          {...props}
-        />
-      )}
-      {failed && (
-        <div className="absolute inset-0 bg-[var(--ps-surf)]" aria-hidden />
-      )}
+      <img
+        ref={markReady}
+        key={src}
+        src={src}
+        alt={alt}
+        className={`absolute inset-0 z-0 h-full w-full object-cover ${className}`}
+        onLoad={() => setShowSkeleton(false)}
+        onError={() => setShowSkeleton(false)}
+        {...props}
+      />
     </div>
   );
 }

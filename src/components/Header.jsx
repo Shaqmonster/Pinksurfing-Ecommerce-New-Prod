@@ -16,7 +16,6 @@ import {
   IoLogOutOutline,
   IoPersonOutline,
   IoChevronDown,
-  IoHelpCircleOutline,
 } from "react-icons/io5";
 
 import Cart from "./Cart";
@@ -34,8 +33,8 @@ import { useAccessToken } from "../hooks/useAccessToken";
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 const BRAND_LOGO = "/brand/logo.jpeg";
 
-/** Slim primary nav — Bids / mall / GigHub / deals live on the homepage. */
-const NAV_ITEMS = [{ to: "/contact", label: "Contact", Icon: IoHelpCircleOutline }];
+/** Primary destinations live on the homepage & footer — navbar stays search + account. */
+const NAV_ITEMS = [];
 
 const Header = () => {
   const accessToken = useAccessToken();
