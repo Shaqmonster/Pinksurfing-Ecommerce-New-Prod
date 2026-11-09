@@ -23,8 +23,14 @@ export function Sidebar() {
     const [isOpen, setIsOpen] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(0);
     const sidebarRef = React.useRef(null);
-    const { setProfileActiveIndex } = React.useContext(dataContext);
+    const { profileActiveIndex, setProfileActiveIndex } = React.useContext(dataContext);
     const { Logout } = React.useContext(authContext);
+
+    React.useEffect(() => {
+        if (typeof profileActiveIndex === "number") {
+            setActiveIndex(profileActiveIndex);
+        }
+    }, [profileActiveIndex]);
     
     // Close sidebar when clicking outside
     React.useEffect(() => {

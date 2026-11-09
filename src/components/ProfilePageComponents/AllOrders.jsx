@@ -242,7 +242,7 @@ export default function AllOrders() {
                                                                         setIsSingleOrderFormOpen(true);
                                                                         setIsProfileOpen(false);
                                                                     } else {
-                                                                        navigate(`/summary/${order.id}`, { state: { fromTab: 4 } });
+                                                                        navigate(`/summary/${order.id}`, { state: { fromTab: 5 } });
                                                                     }
                                                                 }}
                                                             >

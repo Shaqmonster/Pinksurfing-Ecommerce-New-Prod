@@ -7,6 +7,11 @@ const ALL_NAVIGATION_ITEMS = [
     altText: "Profile icon"
   },
   {
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f0318a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E",
+    label: "Addresses",
+    altText: "Saved addresses icon"
+  },
+  {
     icon: "https://cdn.builder.io/api/v1/image/assets/c068411fd41a4439a16ce94f0609cbfd/a72786292b87314fec82585e2a39272f85c961e2d8f150f3f35f9b607aad3418?apiKey=c068411fd41a4439a16ce94f0609cbfd&",
     label: "Shopping Cart",
     altText: "Shopping Cart icon"
