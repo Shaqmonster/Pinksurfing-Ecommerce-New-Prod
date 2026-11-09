@@ -24,7 +24,7 @@ const Footer = () => {
       },
     },
     { name: "Orders", link: accessToken ? "/profile" : "/signin" },
-    { name: "Help", link: "/contact" },
+    { name: "Contact", link: "/contact" },
   ];
 
   const exploreLinks = [
@@ -139,7 +139,7 @@ const Footer = () => {
           </p>
           {!user?.is_vendor && (
             <Link to="/contact" className="hover:text-white transition-colors">
-              Contact support
+              Contact
             </Link>
           )}
         </div>

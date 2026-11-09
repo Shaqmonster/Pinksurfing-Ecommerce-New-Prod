@@ -56,6 +56,7 @@ const Home = () => {
   const [storeLoading, setStoreLoading] = useState(false);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(1);
+  const [tabPending, setTabPending] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [categoryCarouselIndex, setCategoryCarouselIndex] = useState(0);
   const [isVendorDialogOpen, setIsVendorDialogOpen] = useState(false);
@@ -105,6 +106,19 @@ const Home = () => {
   const tabTransition = reducedMotion
     ? { duration: 0 }
     : { duration: PS_MOTION.duration.fast, ease: PS_MOTION.easing.standard };
+
+  const selectFeaturedTab = (id) => {
+    if (id === selectedCategory && !tabPending) return;
+    setSelectedCategory(id);
+    setTabPending(true);
+  };
+
+  useEffect(() => {
+    if (!tabPending) return undefined;
+    const delay = reducedMotion ? 0 : 320;
+    const t = window.setTimeout(() => setTabPending(false), delay);
+    return () => window.clearTimeout(t);
+  }, [selectedCategory, tabPending, reducedMotion]);
 
   // Initialize countries on component mount
   useEffect(() => {
@@ -452,7 +466,6 @@ const Home = () => {
                         <MediaImage
                           src={item.image}
                           alt={`${item.name} on PinkSurfing marketplace`}
-                          className="absolute inset-0 w-full h-full object-cover"
                           skeletonClassName="absolute inset-0"
                           loading="eager"
                         />
@@ -534,7 +547,7 @@ const Home = () => {
                   <MediaImage
                     src={item.image}
                     alt={`${item.name} on PinkSurfing marketplace`}
-                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 ${item.coming_soon ? "" : "group-hover:scale-[1.04]"}`}
+                    className={item.coming_soon ? "" : "transition-transform duration-500 group-hover:scale-[1.04]"}
                     skeletonClassName="absolute inset-0"
                     loading="eager"
                   />
@@ -615,7 +628,7 @@ const Home = () => {
                         <MediaImage
                           src={imgSrc}
                           alt={`${item.name} category on PinkSurfing`}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                          className="transition-transform duration-500 ease-out group-hover:scale-105"
                           skeletonClassName="absolute inset-0"
                           loading="lazy"
                         />
@@ -659,7 +672,7 @@ const Home = () => {
                       type="button"
                       role="tab"
                       aria-selected={active}
-                      onClick={() => setSelectedCategory(category.id)}
+                      onClick={() => selectFeaturedTab(category.id)}
                       className={`relative z-10 flex items-center gap-2 min-h-[44px] px-3 sm:px-4 rounded-xl text-sm font-medium transition-colors ${
                         active ? "text-white" : "text-[var(--ps-muted)] hover:text-white"
                       }`}
@@ -683,18 +696,18 @@ const Home = () => {
             </LayoutGroup>
 
             <div className="relative min-h-[280px]">
-              <AnimatePresence mode="sync" initial={false}>
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={selectedCategory}
                   role="tabpanel"
-                  initial={reducedMotion ? false : { opacity: 0.35 }}
+                  initial={reducedMotion ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={reducedMotion ? undefined : { opacity: 0 }}
                   transition={tabTransition}
                 >
                   {selectedCategory === 1 && (
-                    storeLoading ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    storeLoading || tabPending ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-busy="true">
                         {Array.from({ length: 3 }).map((_, i) => (
                           <div key={i} className="rounded-2xl border border-[var(--ps-brd)] overflow-hidden">
                             <Skeleton className="h-[160px] w-full" rounded="none" />
@@ -710,8 +723,8 @@ const Home = () => {
                     )
                   )}
                   {selectedCategory === 2 && (
-                    catalogLoading ? (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                    catalogLoading || tabPending ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4" aria-busy="true">
                         {Array.from({ length: 8 }).map((_, i) => (
                           <ProductCardSkeleton key={i} />
                         ))}
@@ -725,8 +738,8 @@ const Home = () => {
                     )
                   )}
                   {selectedCategory === 3 && (
-                    catalogLoading ? (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                    catalogLoading || tabPending ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4" aria-busy="true">
                         {Array.from({ length: 8 }).map((_, i) => (
                           <ProductCardSkeleton key={i} />
                         ))}
@@ -740,8 +753,8 @@ const Home = () => {
                     )
                   )}
                   {selectedCategory === 4 && (
-                    catalogLoading ? (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                    catalogLoading || tabPending ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4" aria-busy="true">
                         {Array.from({ length: 4 }).map((_, i) => (
                           <ProductCardSkeleton key={i} />
                         ))}
