@@ -28,6 +28,8 @@ import { Country, State, City } from "country-state-city";
 import ProductCard from "../components/ProductCard";
 import StoreCard from "../components/StoreCard";
 import PageSEO from "../components/PageSEO";
+import MediaImage from "../components/ui/MediaImage";
+import Skeleton, { ProductCardSkeleton } from "../components/ui/Skeleton";
 import { HOME_FAQ, HOME_META, homeJsonLd } from "../constants/homeSeo";
 import { useAccessToken } from "../hooks/useAccessToken";
 import {
@@ -52,7 +54,8 @@ const Home = () => {
   const [discountedProducts, setDiscountedProducts] = useState([]);
   const [stores, setStores] = useState([]);
   const [storeLoading, setStoreLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(1); // Default to 'Buyer's Choice'
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [categoryCarouselIndex, setCategoryCarouselIndex] = useState(0);
   const [isVendorDialogOpen, setIsVendorDialogOpen] = useState(false);
@@ -94,14 +97,14 @@ const Home = () => {
 
   const reducedMotion = useReducedMotion();
   const fetchedCategories = [
-    { id: 1, name: "Shop by store", Icon: IoStorefrontOutline },
+    { id: 1, name: "Stores", Icon: IoStorefrontOutline },
     { id: 2, name: "Trending", Icon: IoTrendingUpOutline },
     { id: 3, name: "Buyer's choice", Icon: IoStarOutline },
     { id: 4, name: "PinkSurfing finds", Icon: IoSparklesOutline },
   ];
   const tabTransition = reducedMotion
     ? { duration: 0 }
-    : { duration: PS_MOTION.duration.normal, ease: PS_MOTION.easing.standard };
+    : { duration: PS_MOTION.duration.fast, ease: PS_MOTION.easing.standard };
 
   // Initialize countries on component mount
   useEffect(() => {
@@ -118,10 +121,6 @@ const Home = () => {
   const handleCategoryCardClick = (item) => {
     if (item.coming_soon) {
       handleComingSoonClick(item);
-      return;
-    }
-    if (item.id === 3) {
-      handleMyStoreClick();
       return;
     }
     if (item.link) {
@@ -316,6 +315,7 @@ const Home = () => {
     };
 
     const fetchProducts = async () => {
+      setCatalogLoading(true);
       try {
         const [featured, discounted] = await Promise.all([
           fetchHomeFeaturedProducts(12),
@@ -325,6 +325,8 @@ const Home = () => {
         setDiscountedProducts(discounted);
       } catch (error) {
         console.error(error);
+      } finally {
+        setCatalogLoading(false);
       }
     };
 
@@ -401,7 +403,7 @@ const Home = () => {
               PinkSurfing
             </h1>
             <p className="text-[var(--ps-muted)] text-sm sm:text-base max-w-2xl mx-auto">
-              Shop products, list a store, or hire on GigHub — one marketplace.
+              Shop products, sell from your store, find gigs, or close deals — one marketplace.
             </p>
             <div className="mt-5 flex flex-wrap justify-center items-center gap-2">
               <Link
@@ -421,7 +423,13 @@ const Home = () => {
                 to="/gighub"
                 className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
               >
-                Hire
+                Gigs
+              </Link>
+              <Link
+                to="/deals"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
+              >
+                Deals
               </Link>
             </div>
           </div>
@@ -444,10 +452,11 @@ const Home = () => {
                     >
                       <div className="rounded-2xl overflow-hidden h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)]">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
-                        <img
+                        <MediaImage
                           src={item.image}
                           alt={`${item.name} on PinkSurfing marketplace`}
-                          className={`w-full h-full object-cover ${item.coming_soon ? "opacity-80" : ""}`}
+                          className={`absolute inset-0 w-full h-full object-cover ${item.coming_soon ? "opacity-80" : ""}`}
+                          skeletonClassName="absolute inset-0"
                           loading="lazy"
                         />
                         {item.coming_soon && (
@@ -523,12 +532,13 @@ const Home = () => {
                     : "cursor-pointer hover:-translate-y-1"
                 }`}
               >
-                <div className={`rounded-2xl overflow-hidden h-[180px] sm:h-[200px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)] transition-colors ${item.coming_soon ? "" : "hover:border-[var(--ps-primary)]/40"}`}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
-                  <img
+                <div className={`rounded-2xl overflow-hidden h-[200px] sm:h-[220px] relative border border-white/10 bg-[var(--ps-card)] shadow-[0_16px_48px_-20px_rgba(151,71,255,0.55)] transition-all duration-ps-normal ${item.coming_soon ? "" : "hover:border-[var(--ps-primary)]/60 hover:shadow-[0_22px_56px_-18px_rgba(236,72,153,0.4)]"}`}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10" />
+                  <MediaImage
                     src={item.image}
                     alt={`${item.name} on PinkSurfing marketplace`}
-                    className={`w-full h-full object-cover transition-transform duration-ps-moderate ease-ps-standard ${item.coming_soon ? "opacity-80" : "group-hover:scale-[1.03]"}`}
+                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-ps-moderate ease-ps-standard ${item.coming_soon ? "opacity-80" : "group-hover:scale-[1.04]"}`}
+                    skeletonClassName="absolute inset-0"
                     loading="lazy"
                   />
                   {item.coming_soon && (
@@ -538,10 +548,10 @@ const Home = () => {
                       </span>
                     </div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-                    <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5">{item.name}</h3>
+                  <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
+                    <h3 className="text-white text-lg sm:text-xl font-semibold mb-1 tracking-tight">{item.name}</h3>
                     {!item.coming_soon && (
-                      <span className="text-sm text-[var(--ps-purple-light)]">Explore</span>
+                      <span className="text-sm font-medium text-pink-200/90">Explore</span>
                     )}
                   </div>
                 </div>
@@ -583,10 +593,10 @@ const Home = () => {
                   <motion.div
                     key={item.id}
                     role="listitem"
-                    initial={{ opacity: 0, y: 16 }}
+                    initial={reducedMotion ? false : { opacity: 0, y: 16 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-40px" }}
-                    transition={{ duration: 0.25, delay: Math.min(index * 0.06, 0.36) }}
+                    transition={{ duration: 0.22, delay: Math.min(index * 0.05, 0.3) }}
                     className={`min-w-0 ${isSoon ? "opacity-90" : ""}`}
                   >
                     <button
@@ -594,28 +604,29 @@ const Home = () => {
                       onClick={handleClick}
                       className={`
                         group w-full text-left rounded-2xl overflow-hidden
-                        border border-white/10 bg-[#14141c]/80 backdrop-blur-sm
-                        shadow-lg shadow-black/20
-                        transition-all duration-300 ease-out
-                        hover:border-purple-400/40 hover:shadow-xl hover:shadow-purple-500/15
-                        hover:-translate-y-1 hover:scale-[1.02]
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]
+                        border border-white/10 bg-[var(--ps-card)]
+                        shadow-[0_12px_40px_-18px_rgba(151,71,255,0.55)]
+                        transition-all duration-ps-normal ease-ps-standard
+                        hover:border-[var(--ps-primary)]/70 hover:-translate-y-2
+                        hover:shadow-[0_20px_50px_-16px_rgba(236,72,153,0.45)]
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)]
                         ${isSoon ? "cursor-default" : "cursor-pointer active:scale-[0.98]"}
                       `}
                     >
-                      <div className="relative aspect-square w-full overflow-hidden">
+                      <div className="relative aspect-[4/5] sm:aspect-square w-full overflow-hidden">
                         <div
-                          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-[1] opacity-90 group-hover:opacity-100 transition-opacity"
+                          className="absolute inset-0 bg-gradient-to-t from-[#0e0f13] via-[#0e0f13]/35 to-transparent z-[1]"
                           aria-hidden
                         />
                         <div
-                          className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-pink-600/0 group-hover:from-purple-500/10 group-hover:to-pink-600/10 z-[2] transition-all duration-300"
+                          className="absolute -inset-8 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_80%,rgba(151,71,255,0.35),transparent_60%)]"
                           aria-hidden
                         />
-                        <img
+                        <MediaImage
                           src={imgSrc}
                           alt={`${item.name} category on PinkSurfing`}
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                          skeletonClassName="absolute inset-0"
                           loading="lazy"
                         />
                         {isSoon && (
@@ -625,8 +636,8 @@ const Home = () => {
                             </span>
                           </div>
                         )}
-                        <div className="absolute bottom-0 left-0 right-0 z-[4] p-2 sm:p-3 pt-8 sm:pt-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                          <h3 className="text-[11px] sm:text-xs lg:text-sm font-semibold text-white text-center leading-tight line-clamp-2 drop-shadow-md group-hover:text-purple-100 transition-colors">
+                        <div className="absolute bottom-0 left-0 right-0 z-[4] p-3 sm:p-3.5 pt-10 bg-gradient-to-t from-black via-black/70 to-transparent">
+                          <h3 className="text-xs sm:text-sm font-semibold text-white text-center leading-snug line-clamp-2 drop-shadow-lg group-hover:text-pink-100 transition-colors">
                             {item.name}
                           </h3>
                         </div>
@@ -682,19 +693,23 @@ const Home = () => {
             </LayoutGroup>
 
             <div className="relative min-h-[280px]">
-              <AnimatePresence mode="wait" initial={false}>
+              <AnimatePresence mode="sync" initial={false}>
                 <motion.div
                   key={selectedCategory}
                   role="tabpanel"
-                  initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                  initial={reducedMotion ? false : { opacity: 0.35 }}
+                  animate={{ opacity: 1 }}
+                  exit={reducedMotion ? undefined : { opacity: 0 }}
                   transition={tabTransition}
                 >
                   {selectedCategory === 1 && (
                     storeLoading ? (
-                      <div className="flex justify-center items-center py-16">
-                        <div className="w-10 h-10 border-4 border-[var(--ps-surf)] border-t-[var(--ps-primary)] rounded-full animate-spin" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <div key={i} className="rounded-2xl border border-[var(--ps-brd)] overflow-hidden">
+                            <Skeleton className="h-[160px] w-full" rounded="none" />
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -705,25 +720,49 @@ const Home = () => {
                     )
                   )}
                   {selectedCategory === 2 && (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                      {(getDiscountedProducts() || []).slice(0, 8).map((product) => (
-                        <ProductCard key={product.id} product={product} isCard={true} />
-                      ))}
-                    </div>
+                    catalogLoading ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                          <ProductCardSkeleton key={i} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                        {(getDiscountedProducts() || []).slice(0, 8).map((product) => (
+                          <ProductCard key={product.id} product={product} isCard={true} />
+                        ))}
+                      </div>
+                    )
                   )}
                   {selectedCategory === 3 && (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                      {(featuredProducts || []).slice(0, 8).map((product) => (
-                        <ProductCard key={product.id} product={product} isCard={true} />
-                      ))}
-                    </div>
+                    catalogLoading ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                          <ProductCardSkeleton key={i} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                        {(featuredProducts || []).slice(0, 8).map((product) => (
+                          <ProductCard key={product.id} product={product} isCard={true} />
+                        ))}
+                      </div>
+                    )
                   )}
                   {selectedCategory === 4 && (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                      {(featuredProducts || []).slice(0, 4).map((product) => (
-                        <ProductCard key={product.id} product={product} isCard={true} />
-                      ))}
-                    </div>
+                    catalogLoading ? (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <ProductCardSkeleton key={i} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                        {(featuredProducts || []).slice(0, 4).map((product) => (
+                          <ProductCard key={product.id} product={product} isCard={true} />
+                        ))}
+                      </div>
+                    )
                   )}
                 </motion.div>
               </AnimatePresence>

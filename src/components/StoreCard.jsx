@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { IoArrowForward } from "react-icons/io5";
+import MediaImage from "./ui/MediaImage";
 
 const StoreCard = ({ store }) => {
   const awsS3BaseUrl = "https://pinksurfing-ecom.s3.us-east-2.amazonaws.com/";
@@ -9,20 +10,21 @@ const StoreCard = ({ store }) => {
     ? store.store_image.startsWith("http")
       ? store.store_image
       : `${awsS3BaseUrl}${store.store_image}`
-    : "/brand/hero-shop-by-store.jpg";
+    : "/brand/hero-gighub.jpg";
 
   return (
     <Link to={`/store/${store.slug}`} className="block group">
       <article className="relative overflow-hidden rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] transition-colors duration-ps-normal hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)]">
         <div className="relative h-[160px] overflow-hidden bg-[var(--ps-surf)]">
-          <img
+          <MediaImage
             src={storeImage}
             alt={store.store_name}
             className="w-full h-full object-cover transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
+            skeletonClassName="absolute inset-0 h-full w-full"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-[1]" />
+          <div className="absolute bottom-0 left-0 right-0 p-4 z-[2]">
             <h3 className="text-base font-semibold text-white line-clamp-1">
               {store.store_name}
             </h3>

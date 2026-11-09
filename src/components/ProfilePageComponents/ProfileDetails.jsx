@@ -1,372 +1,316 @@
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { authContext } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { IoClose } from "react-icons/io5";
-import Loader from "../Loader";
-import { FaEdit, FaCopy, FaCheck } from 'react-icons/fa';
+import { FaCopy, FaCheck } from "react-icons/fa";
 import { fetchCustomerProfile, getAccessToken } from "../../utils/authSession";
 import { getJoinedYear } from "../../utils/userDisplay";
 import { storeUrl, STOREFRONT_BASE } from "../../utils/envUrls";
 import { useAccessToken } from "../../hooks/useAccessToken";
+import MediaImage from "../ui/MediaImage";
 
 export default function ProfileDetails() {
   const accessToken = useAccessToken();
-    const [isEditing, setIsEditing] = useState(false);
-    const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { user: authUser, authToken, setUser } = useContext(authContext);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
-    const { user: authUser, authToken, setUser } = useContext(authContext);
-    const [cookies] = useCookies([]);
-    const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
+  const [profile, setProfile] = useState({
+    customer_phone: "",
+    customer_profile_picture: null,
+    date_registered: "",
+    email: "",
+    first_name: "",
+    id: "",
+    is_active: true,
+    last_name: "",
+    addresses: [],
+    is_vendor: false,
+  });
 
-    let [profile, setProfile] = useState({
-        customer_phone: "",
-        customer_profile_picture: null,
-        date_registered: "",
-        email: "",
-        first_name: "",
-        id: "",
-        is_active: true,
-        last_name: "",
-        addresses: [],
-        is_vendor: false,
+  const [initialData, setInitialData] = useState(null);
+
+  const {
+    customer_phone,
+    customer_profile_picture,
+    first_name,
+    last_name,
+    is_vendor,
+  } = profile;
+
+  const handleOnChange = (e) => {
+    const { name, value } = e.target;
+    setProfile({
+      ...profile,
+      [name]: value,
     });
+  };
 
-    const [initialData, setInitialData] = useState(null);
+  useEffect(() => {
+    const token = authToken || getAccessToken();
+    if (!token) {
+      setPageLoading(false);
+      return;
+    }
 
-    const {
-        customer_phone,
-        customer_profile_picture,
-        date_registered,
-        email,
-        first_name,
-        id,
-        is_active,
-        last_name,
-        addresses,
-        is_vendor,
-    } = profile;
+    let cancelled = false;
+    setPageLoading(true);
 
+    void (async () => {
+      try {
+        const enriched = await fetchCustomerProfile(token);
+        if (!enriched || cancelled) return;
+        setProfile(enriched);
+        setInitialData(enriched);
+        setUser(enriched);
+      } catch (error) {
+        if (cancelled) return;
+        if (authUser?.email) {
+          setProfile(authUser);
+          setInitialData(authUser);
+          return;
+        }
+        console.error(error);
+      } finally {
+        if (!cancelled) setPageLoading(false);
+      }
+    })();
 
-    const [formData, setFormData] = useState({
-        first_name: profile?.first_name || "",
-        last_name: profile?.last_name || "",
-        customer_phone: profile?.customer_phone || "",
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, authUser?.email, setUser]);
+
+  const reloadProfile = async () => {
+    const token = authToken || getAccessToken();
+    if (!token) return;
+    try {
+      const enriched = await fetchCustomerProfile(token);
+      if (!enriched) return;
+      setProfile(enriched);
+      setInitialData(enriched);
+      setUser(enriched);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const UpdateProfile = async (e) => {
+    e.preventDefault();
+    if (!accessToken) {
+      navigate("/signin");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/update-profile/`,
+        {
+          customer_phone,
+          customer_profile_picture,
+          first_name,
+          last_name,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Profile updated successfully", {
+          position: "top-center",
+        });
+        await reloadProfile();
+      }
+    } catch (error) {
+      console.error(error);
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Failed to update profile. Please fill the details correctly.";
+      toast.error(message, {
+        position: "top-center",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCopyStoreLink = () => {
+    const url = storeUrl(profile?.vendor?.slug);
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
     });
+  };
 
-    const handleEdit = () => setIsEditing(true);
-    const handleSave = (e) => {
-        e.preventDefault();
-        UpdateProfile(formData);
-        setIsEditing(false);
-    };
-
-    const handleOnChange = (e) => {
-        const { name, value } = e.target;
-        setProfile({
-            ...profile,
-            [name]: value,
-        });
-    };
-
-    const handleAddressChange = (e, index) => {
-        const { name, value } = e.target;
-        const updatedAddresses = addresses.map((address, i) =>
-            i === index ? { ...address, [name]: value } : address
-        );
-        setProfile({ ...profile, addresses: updatedAddresses });
-    };
-
-    const addAddressField = () => {
-        setProfile({
-            ...profile,
-            addresses: [
-                ...addresses,
-                {
-                    street1: "",
-                    street2: "",
-                    city: "",
-                    state: "",
-                    country: "",
-                    zip_code: "",
-                },
-            ],
-        });
-    };
-
-    const removeAddressField = (index) => {
-        const updatedAddresses = addresses.filter((_, i) => i !== index);
-        setProfile({ ...profile, addresses: updatedAddresses });
-    };
-
-    useEffect(() => {
-        const token = authToken || getAccessToken();
-        if (!token) return;
-
-        let cancelled = false;
-
-        void (async () => {
-            try {
-                const enriched = await fetchCustomerProfile(token);
-                if (!enriched || cancelled) return;
-                setProfile(enriched);
-                setInitialData(enriched);
-                setUser(enriched);
-            } catch (error) {
-                if (cancelled) return;
-                if (authUser?.email) {
-                    setProfile(authUser);
-                    setInitialData(authUser);
-                    return;
-                }
-                console.error(error);
-            }
-        })();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [authToken, authUser?.email, setUser]);
-
-    const reloadProfile = async () => {
-        const token = authToken || getAccessToken();
-        if (!token) return;
-        try {
-            const enriched = await fetchCustomerProfile(token);
-            if (!enriched) return;
-            setProfile(enriched);
-            setInitialData(enriched);
-            setUser(enriched);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const UpdateProfile = async (e) => {
-        e.preventDefault();
-        if (!accessToken) {
-            navigate("/signin");
-            return;
-        }
-        try {
-            setIsLoading(true);
-
-            const response = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/api/customer/update-profile/`,
-                {
-                    customer_phone,
-                    customer_profile_picture,
-                    first_name,
-                    last_name,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                }
-            );
-
-            if (response.status === 200) {
-                toast.success("Profile updated successfully", {
-                    position: "top-center",
-                });
-                await reloadProfile();
-            }
-        } catch (error) {
-            console.error(error);
-            const message =
-                error?.response?.data?.error ||
-                error?.response?.data?.message ||
-                "Failed to update profile. Please fill the details correctly.";
-            toast.error(message, {
-                position: "top-center",
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-
-
-    const toggleEdit = () => {
-        setIsEditing(!isEditing);
-    };
-
-    const handleCopyStoreLink = () => {
-        const url = storeUrl(profile?.vendor?.slug);
-        navigator.clipboard.writeText(url).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 3000);
-        });
-    };
-
+  if (pageLoading) {
     return (
-        <>
-            <div
-                className={`fixed inset-0 z-[9999] flex items-center justify-center ${isLoading ? "visible" : "hidden"}`}
-            >
-                {isLoading && <Loader />}
+      <div className="w-full max-w-3xl mx-auto space-y-6 pb-16" aria-busy="true">
+        <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-6 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+          <div className="ps-skeleton h-24 w-24 rounded-full shrink-0" />
+          <div className="flex-1 w-full space-y-3">
+            <div className="ps-skeleton h-7 w-48 rounded mx-auto sm:mx-0" />
+            <div className="ps-skeleton h-4 w-32 rounded mx-auto sm:mx-0" />
+            <div className="flex gap-2 justify-center sm:justify-start">
+              <div className="ps-skeleton h-8 w-24 rounded-lg" />
+              <div className="ps-skeleton h-8 w-28 rounded-lg" />
             </div>
-
-            <div className="w-full max-w-6xl mx-auto space-y-12 pb-32">
-                {/* Header Section - Statement Glass */}
-                <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 p-12 md:p-16 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center gap-12 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none"></div>
-                    
-                    <div className="relative">
-                        <div className="relative w-44 h-44 md:w-52 md:h-52 overflow-hidden rounded-full border-[6px] border-white/5 shadow-2xl">
-                            <img
-                                src={
-                                    profile.customer_profile_picture ||
-                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
-                                }
-                                alt="Profile"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex-1 text-center md:text-left space-y-6">
-                        <div className="space-y-2">
-                            <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9]">
-                                {first_name} <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-purple-500/50">
-                                    {last_name}
-                                </span>
-                            </h2>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                            <div className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/40">
-                                {getJoinedYear(profile.date_registered)
-                                    ? `Joined ${getJoinedYear(profile.date_registered)}`
-                                    : "Member"}
-                            </div>
-                            <div className="px-6 py-2.5 rounded-2xl bg-purple-600/20 border border-purple-500/20 text-[10px] font-black uppercase tracking-widest text-purple-300">
-                                {is_vendor ? 'Official Vendor' : 'Customer account'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Form Section - Clean Minimalist */}
-                <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 p-12 md:p-20 rounded-[3.5rem] shadow-2xl">
-                    <form onSubmit={UpdateProfile} className="space-y-16">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
-                                    Identity / First Name
-                                </label>
-                                <input
-                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 text-white font-bold text-lg outline-none focus:bg-white/[0.06] focus:border-purple-500/40 transition-all duration-500 placeholder:text-white/5"
-                                    name="first_name"
-                                    type="text"
-                                    placeholder="First Name"
-                                    value={first_name}
-                                    onChange={handleOnChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
-                                    Identity / Last Name
-                                </label>
-                                <input
-                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 text-white font-bold text-lg outline-none focus:bg-white/[0.06] focus:border-purple-500/40 transition-all duration-500 placeholder:text-white/5"
-                                    name="last_name"
-                                    type="text"
-                                    placeholder="Last Name"
-                                    value={last_name}
-                                    onChange={handleOnChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
-                                    Secure Contact / Phone
-                                </label>
-                                <input
-                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 text-white font-bold text-lg outline-none focus:bg-white/[0.06] focus:border-purple-500/40 transition-all duration-500 placeholder:text-white/5"
-                                    id="customer_phone"
-                                    name="customer_phone"
-                                    type="text"
-                                    placeholder="Phone Number"
-                                    value={customer_phone}
-                                    onChange={handleOnChange}
-                                    required
-                                />
-                            </div>
-
-                            {/* Store Link Section */}
-                            {profile?.vendor?.slug && (
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">
-                                        Marketplace Presence
-                                    </label>
-                                    <div className="flex items-center gap-6 bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-10 group hover:bg-white/[0.05] transition-all duration-500">
-                                        <a
-                                            href={storeUrl(profile.vendor.slug)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex-1 text-purple-400 font-bold text-base truncate hover:text-purple-300 transition-colors"
-                                        >
-                                            {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
-                                        </a>
-                                        <button
-                                            type="button"
-                                            onClick={handleCopyStoreLink}
-                                            className="p-3 bg-white/5 rounded-xl text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                                        >
-                                            {copied ? <FaCheck className="w-5 h-5 text-green-500" /> : <FaCopy className="w-5 h-5" />}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {initialData && JSON.stringify(profile) !== JSON.stringify(initialData) && (
-                            <div className="pt-12 flex flex-col sm:flex-row items-center gap-8 border-t border-white/5 mt-12">
-                                <motion.button
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    type="submit"
-                                    className="w-full sm:w-auto px-16 py-6 bg-white text-black font-black rounded-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-purple-50 active:bg-gray-200"
-                                >
-                                    Save Changes
-                                </motion.button>
-                            </div>
-                        )}
-                    </form>
-                </div>
-
-                {!profile.is_vendor && (
-                    <div className="bg-gradient-to-r from-purple-600/10 via-transparent to-transparent border border-white/5 p-12 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-12">
-                        <div className="space-y-4 text-center md:text-left">
-                            <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Elevate to Merchant Status</h3>
-                            <p className="text-white/30 text-base font-medium max-w-md">Unlock specialized marketplace tools and reach our global community.</p>
-                        </div>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            type="button"
-                            className="px-12 py-5 bg-purple-600 text-white font-black rounded-2xl transition-all duration-500 uppercase tracking-widest text-xs shadow-xl shadow-purple-500/20"
-                            onClick={() => {}}
-                        >
-                            Apply Now
-                        </motion.button>
-                    </div>
-                )}
-            </div>
-        </>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-6 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="ps-skeleton h-3 w-20 rounded" />
+                <div className="ps-skeleton h-12 w-full rounded-xl" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     );
+  }
 
+  return (
+    <div className="w-full max-w-3xl mx-auto space-y-6 pb-16 relative">
+      {isLoading && (
+        <div className="absolute inset-0 z-10 rounded-2xl bg-[var(--ps-bg)]/50 backdrop-blur-[1px]" aria-busy="true" />
+      )}
+
+      <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+        <MediaImage
+          src={
+            profile.customer_profile_picture ||
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s"
+          }
+          alt=""
+          className="h-24 w-24 rounded-full object-cover"
+          skeletonClassName="h-24 w-24 rounded-full shrink-0 border border-[var(--ps-brd)]"
+        />
+        <div className="flex-1 text-center sm:text-left space-y-2 min-w-0">
+          <h2 className="text-2xl font-semibold text-white tracking-tight truncate">
+            {first_name || "Your"} {last_name || "profile"}
+          </h2>
+          <p className="text-sm text-[var(--ps-muted)] truncate">{profile.email}</p>
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+            <span className="inline-flex items-center min-h-[32px] px-3 rounded-lg border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-xs text-[var(--ps-muted)]">
+              {getJoinedYear(profile.date_registered)
+                ? `Joined ${getJoinedYear(profile.date_registered)}`
+                : "Member"}
+            </span>
+            <span className="inline-flex items-center min-h-[32px] px-3 rounded-lg border border-[var(--ps-primary)]/30 bg-[var(--ps-primary)]/10 text-xs text-[var(--ps-purple-light)]">
+              {is_vendor ? "Vendor" : "Customer"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
+        <form onSubmit={UpdateProfile} className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="block space-y-1.5">
+              <span className="text-xs font-medium text-[var(--ps-muted)]">First name</span>
+              <input
+                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-white outline-none focus:border-[var(--ps-primary)]/50 focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
+                name="first_name"
+                type="text"
+                placeholder="First name"
+                value={first_name || ""}
+                onChange={handleOnChange}
+                required
+              />
+            </label>
+
+            <label className="block space-y-1.5">
+              <span className="text-xs font-medium text-[var(--ps-muted)]">Last name</span>
+              <input
+                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-white outline-none focus:border-[var(--ps-primary)]/50 focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
+                name="last_name"
+                type="text"
+                placeholder="Last name"
+                value={last_name || ""}
+                onChange={handleOnChange}
+                required
+              />
+            </label>
+
+            <label className="block space-y-1.5 sm:col-span-2">
+              <span className="text-xs font-medium text-[var(--ps-muted)]">Phone</span>
+              <input
+                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-white outline-none focus:border-[var(--ps-primary)]/50 focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
+                name="customer_phone"
+                type="text"
+                placeholder="Phone number"
+                value={customer_phone || ""}
+                onChange={handleOnChange}
+                required
+              />
+            </label>
+
+            {profile?.vendor?.slug && (
+              <div className="space-y-1.5 sm:col-span-2">
+                <span className="text-xs font-medium text-[var(--ps-muted)]">Store link</span>
+                <div className="flex items-center gap-2 min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-3">
+                  <a
+                    href={storeUrl(profile.vendor.slug)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-sm text-[var(--ps-purple-light)] truncate hover:text-white"
+                  >
+                    {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleCopyStoreLink}
+                    className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-[var(--ps-muted)] hover:text-white"
+                    aria-label="Copy store link"
+                  >
+                    {copied ? <FaCheck className="text-green-400" /> : <FaCopy />}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {initialData && JSON.stringify(profile) !== JSON.stringify(initialData) && (
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              type="submit"
+              disabled={isLoading}
+              className="min-h-[48px] px-6 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold disabled:opacity-60"
+            >
+              {isLoading ? "Saving…" : "Save changes"}
+            </motion.button>
+          )}
+        </form>
+      </div>
+
+      {!profile.is_vendor && (
+        <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold text-white">Sell on PinkSurfing</h3>
+            <p className="text-sm text-[var(--ps-muted)] mt-1">
+              Open a store and reach buyers across the marketplace.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="min-h-[44px] px-5 rounded-[14px] border border-[var(--ps-brd)] text-sm font-medium text-white hover:border-[var(--ps-primary)]/50"
+            onClick={() => {}}
+          >
+            Apply
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

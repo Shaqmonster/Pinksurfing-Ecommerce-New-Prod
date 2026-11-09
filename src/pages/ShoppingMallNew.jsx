@@ -22,6 +22,7 @@ import { AiOutlineBars } from "react-icons/ai";
 import { HiMiniSquares2X2 } from "react-icons/hi2";
 import SearchForm from "../components/Search";
 import { fetchCategoryProducts } from "../api/catalogProducts";
+import { ProductCardSkeleton } from "../components/ui/Skeleton";
 
 export default function ShoppingMallNew() {
   const { category } = useParams();
@@ -40,7 +41,7 @@ export default function ShoppingMallNew() {
   const [uniqueAttributes, setUniqueAttributes] = useState([]);
   const [sortMethod, setSortMethod] = useState("default");
   const [sortName, setSortName] = useState("Sort By Newest");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [minValue, setMinValue] = useState(0);
   const [maximumValue, setMaximumValue] = useState(0);
   const [isCard, setIsCard] = useState(true);
@@ -751,10 +752,24 @@ export default function ShoppingMallNew() {
                   </div>
                 </div>
               </form>
-              {!loading ? (
+              {loading ? (
+                <div className="lg:col-span-3 2xl:col-span-4" aria-busy="true">
+                  <div
+                    className={`grid pb-6 ${
+                      isCard
+                        ? "lg:grid-cols-3 sm:grid-cols-2 grid-cols-2 2xl:grid-cols-4"
+                        : "2xl:grid-cols-2 lg:grid-cols-2 sm:grid-cols-2 grid-cols-1"
+                    } gap-x-3 gap-y-3 lg:gap-x-5`}
+                  >
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <ProductCardSkeleton key={i} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
                 <div className="lg:col-span-3 2xl:col-span-4">
                   <div className="bg-white dark:bg-black">
-                    <div className=" w-full  sm:py-0 sm:pb-10  lg:px-0">
+                    <div className="w-full sm:py-0 sm:pb-10 lg:px-0">
                       <div
                         className={`grid pb-6 ${
                           isCard
@@ -764,7 +779,6 @@ export default function ShoppingMallNew() {
                       >
                         {shoppingProduct
                           ?.filter((i) => {
-                            console.log(i)
                             const priceFilter =
                               i.unit_price >= minValue &&
                               i.unit_price <= maximumValue;
@@ -777,33 +791,23 @@ export default function ShoppingMallNew() {
                             return priceFilter && categoryFilterReturn;
                           })
                           .sort(handleSort(sortMethod))
-                          .map((product, index) => {
-                            return (
-                              <ProductCard
-                                key={product.id}
-                                product={product}
-                                isCard={isCard}
-                              />
-                            );
-                          })}
+                          .map((product) => (
+                            <ProductCard
+                              key={product.id}
+                              product={product}
+                              isCard={isCard}
+                            />
+                          ))}
                       </div>
                       {shoppingProduct?.length === 0 && (
-                        <div className=" w-full h-full text-center">
-                          <p className=" dark:text-[#f5f5f5]">
-                            No Products Available
+                        <div className="w-full text-center py-16">
+                          <p className="dark:text-[#f5f5f5] text-[var(--ps-muted)]">
+                            No products available
                           </p>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className=" lg:col-span-3 2xl:col-span-4 flex items-center justify-center">
-                  <img
-                    src="/loading.svg"
-                    alt="loading"
-                    className="w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] object-contain"
-                  />
                 </div>
               )}
             </div>
