@@ -27,6 +27,7 @@ const Summary = () => {
   let [orderStatus, setOrderStatus] = useState("");
   const [reviews, setReviews] = useState([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const { orderId } = useParams();
@@ -36,6 +37,7 @@ const Summary = () => {
       navigate("/signin");
       return;
     }
+    setLoading(true);
     axios
       .get(
         `${import.meta.env.VITE_SERVER_URL}/api/order/track-order/${orderId}/`,
@@ -51,6 +53,9 @@ const Summary = () => {
       })
       .catch((error) => {
         console.error(error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -119,64 +124,82 @@ const Summary = () => {
     }
   };
 
-  if (!order) return null;
-
   const getStatusColor = (status) => {
     const s = status?.toUpperCase();
     if (s === "DELIVERED") return "text-emerald-400 bg-emerald-400/10 border-emerald-400/20";
     if (["PENDING", "RECEIVED", "PACKED", "SHIPPED"].includes(s)) return "text-amber-400 bg-amber-400/10 border-amber-400/20";
     if (s === "CANCELED") return "text-rose-400 bg-rose-400/10 border-rose-400/20";
-    return "text-purple-400 bg-purple-400/10 border-purple-400/20";
+    return "text-[var(--ps-purple-light)] bg-[var(--ps-primary)]/10 border-[var(--ps-primary)]/20";
   };
 
-  return (
-    <div className="min-h-screen bg-[#0E0F13] text-white selection:bg-purple-500/30">
-      {/* Background Glows */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full" />
-        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-pink-600/5 blur-[100px] rounded-full" />
+  if (loading || !order) {
+    return (
+      <div className="min-h-screen bg-[var(--ps-bg)] text-white">
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6" aria-busy="true">
+          <div className="space-y-3">
+            <div className="ps-skeleton h-4 w-28 rounded" />
+            <div className="ps-skeleton h-9 w-56 rounded" />
+            <div className="ps-skeleton h-4 w-40 rounded" />
+          </div>
+          <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-4 sm:p-6 flex flex-col sm:flex-row gap-4">
+            <div className="ps-skeleton h-40 w-full sm:w-40 rounded-xl shrink-0" />
+            <div className="flex-1 space-y-3">
+              <div className="ps-skeleton h-6 w-2/3 rounded" />
+              <div className="ps-skeleton h-4 w-full rounded" />
+              <div className="ps-skeleton h-4 w-4/5 rounded" />
+              <div className="ps-skeleton h-10 w-32 rounded-xl" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 ps-skeleton h-48 rounded-2xl" />
+            <div className="ps-skeleton h-48 rounded-2xl" />
+          </div>
+        </main>
       </div>
+    );
+  }
 
-      <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+  return (
+    <div className="min-h-screen bg-[var(--ps-bg)] text-white">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
             <button 
+              type="button"
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors mb-4 group"
+              className="inline-flex items-center gap-2 min-h-[44px] text-[var(--ps-muted)] hover:text-white transition-colors mb-2"
             >
-              <ArrowLeftCircleIcon className="w-6 h-6 transition-transform group-hover:-translate-x-1" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Back to orders</span>
+              <ArrowLeftCircleIcon className="w-5 h-5" />
+              <span className="text-sm">Back to orders</span>
             </button>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2">
-              Order Details
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-1">
+              Order details
             </h1>
-            <p className="text-gray-500 font-mono text-sm tracking-tight">
-              ID: <span className="text-purple-400">{order.order_number || orderId}</span>
+            <p className="text-[var(--ps-muted)] text-sm">
+              ID: <span className="text-[var(--ps-purple-light)]">{order.order_number || orderId}</span>
             </p>
           </div>
           
-          <div className={`px-6 py-2.5 rounded-2xl border text-xs font-black uppercase tracking-[0.2em] backdrop-blur-xl ${getStatusColor(order.order_status)}`}>
+          <div className={`inline-flex px-3 py-1.5 rounded-xl border text-xs font-semibold uppercase tracking-wide ${getStatusColor(order.order_status)}`}>
             {order.order_status}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Product & Tracking */}
-          <div className="lg:col-span-8 space-y-8">
-            {/* Product Card */}
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div className="lg:col-span-8 space-y-5">
+            <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] overflow-hidden">
               <div className="flex flex-col md:flex-row">
-                <div className="md:w-72 h-72 bg-white/5 p-8 flex items-center justify-center">
+                <div className="md:w-52 h-52 bg-[var(--ps-surf)] p-4 flex items-center justify-center shrink-0">
                   <img
-                    className="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                    className="max-w-full max-h-full object-contain"
                     alt={order.product.name}
                     src={order.product.image1}
+                    loading="lazy"
                   />
                 </div>
-                <div className="flex-1 p-8 md:p-10 flex flex-col">
+                <div className="flex-1 p-5 sm:p-6 flex flex-col">
                   <div className="flex-1">
-                    <h2 className="text-2xl font-black tracking-tight mb-2 uppercase">{order.product.name}</h2>
+                    <h2 className="text-lg font-semibold tracking-tight mb-2">{order.product.name}</h2>
                     <div>
                       <div
                         className={`text-gray-400 text-sm leading-relaxed mb-2 transition-all duration-300 ${isDescriptionExpanded ? "" : "line-clamp-2"}`}
@@ -196,39 +219,42 @@ const Summary = () => {
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-8 mb-8 mt-8">
+                    <div className="grid grid-cols-2 gap-4 mt-4 mb-5">
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Quantity</p>
-                        <p className="text-xl font-bold">x{order.quantity}</p>
+                        <p className="text-xs text-[var(--ps-muted)] mb-1">Quantity</p>
+                        <p className="text-base font-semibold">x{order.quantity}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Unit Price</p>
-                        <p className="text-xl font-bold">{currency} {formatMoney(order.total_price / order.quantity)}</p>
+                        <p className="text-xs text-[var(--ps-muted)] mb-1">Unit price</p>
+                        <p className="text-base font-semibold">{currency}{formatMoney(order.total_price / order.quantity)}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-4 pt-8 border-t border-white/5">
+                  <div className="flex flex-wrap gap-2 pt-4 border-t border-[var(--ps-brd)]">
                     <button
+                      type="button"
                       onClick={() => navigate(`/product/productDetail/${order.product.slug}?productId=${order.product.id}`)}
-                      className="px-8 py-3.5 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all"
+                      className="min-h-[44px] px-4 rounded-xl bg-white text-black text-xs font-semibold"
                     >
-                      View Product
+                      View product
                     </button>
                     {["PENDING", "RECEIVED", "PACKED"].includes(order.order_status.toUpperCase()) && (
                       <button
+                        type="button"
                         onClick={() => { setIsOpen(true); setDeleteOrderId(order.id); }}
-                        className="px-8 py-3.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/20 transition-all"
+                        className="min-h-[44px] px-4 rounded-xl border border-red-500/30 text-red-400 text-xs font-semibold"
                       >
-                        Cancel Order
+                        Cancel order
                       </button>
                     )}
                     {order.order_status.toUpperCase() === "DELIVERED" && (
                       <button
+                        type="button"
                         onClick={() => handleReturnOrder(order.id)}
-                        className="px-8 py-3.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-500/20 transition-all"
+                        className="min-h-[44px] px-4 rounded-xl border border-[var(--ps-brd)] text-[var(--ps-muted)] text-xs font-semibold"
                       >
-                        Return Item
+                        Return item
                       </button>
                     )}
                   </div>
@@ -236,96 +262,77 @@ const Summary = () => {
               </div>
             </div>
 
-            {/* Tracking Section */}
             {order.order_status && ["RECEIVED", "PACKED", "SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(order.order_status.toUpperCase().replace(/\s+/g, "_")) && (
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">Shipment Progress</h3>
+              <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
+                <h3 className="text-sm font-semibold text-white mb-4">Shipment progress</h3>
                 <TrackingTimeline orderItemId={orderId} />
               </div>
             )}
 
-            {/* Payment Protection Status */}
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">Security & Verification</h3>
-              <div className="flex items-start gap-6">
-                <div className="w-14 h-14 rounded-[1.25rem] bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="text-lg font-black tracking-tight uppercase mb-1">
-                    {order.held_in_escrow > 0 ? "Payment Protected" : "Transaction Verified"}
-                  </h4>
-                  <p className="text-gray-400 text-sm leading-relaxed max-w-xl">
-                    {order.held_in_escrow > 0 
-                      ? `Your payment of ${currency}${formatMoney(order.held_in_escrow)} is held securely until fulfillment. Our automated protection system is active for this transaction.`
-                      : "Your payment has been successfully processed and verified. This order is fully covered by our merchant fulfillment guarantee."
-                    }
-                  </p>
-                </div>
-              </div>
+            <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
+              <h3 className="text-sm font-semibold text-white mb-3">Payment status</h3>
+              <p className="text-sm text-[var(--ps-muted)] leading-relaxed">
+                {order.held_in_escrow > 0
+                  ? `Payment of ${currency}${formatMoney(order.held_in_escrow)} is held until fulfillment.`
+                  : "Payment processed and verified for this order."}
+              </p>
             </div>
           </div>
 
-          {/* Right Column: Summary & Reviews */}
-          <div className="lg:col-span-4 space-y-8">
-            {/* Order Summary */}
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">Price Summary</h3>
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm uppercase tracking-wider">Subtotal</span>
-                  <span className="font-bold">{currency} {formatMoney(order.total_price)}</span>
+          <div className="lg:col-span-4 space-y-5">
+            <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
+              <h3 className="text-sm font-semibold text-white mb-4">Price summary</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[var(--ps-muted)]">Subtotal</span>
+                  <span className="font-medium">{currency}{formatMoney(order.total_price)}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm uppercase tracking-wider">Shipping</span>
-                  <span className="text-emerald-400 font-bold">FREE</span>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[var(--ps-muted)]">Shipping</span>
+                  <span className="text-emerald-400 font-medium">FREE</span>
                 </div>
-                <div className="pt-6 border-t border-white/5 flex justify-between items-center">
-                  <span className="text-sm font-black uppercase tracking-[0.2em]">Total</span>
-                  <span className="text-3xl font-black text-purple-400 tracking-tighter">
-                    {currency} {formatMoney(order.total_price)}
+                <div className="pt-3 border-t border-[var(--ps-brd)] flex justify-between items-center">
+                  <span className="text-sm font-semibold">Total</span>
+                  <span className="text-xl font-semibold text-white">
+                    {currency}{formatMoney(order.total_price)}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Review Section */}
             {order.order_status.toLowerCase() === "delivered" && (() => {
               const myRating = reviews.find((r) => String(r.order_item) === String(order.id));
               return (
-                <div className="bg-gradient-to-br from-purple-600/10 to-pink-600/10 backdrop-blur-xl border border-purple-500/20 rounded-[2.5rem] p-10 flex flex-col items-center text-center">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-300 mb-6">Product Feedback</h3>
-                  
+                <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">Product feedback</h3>
                   {myRating ? (
                     <>
-                      <div className="flex gap-1 mb-6">
+                      <div className="flex gap-1 mb-3">
                         {Array.from({ length: 7 }, (_, i) => (
-                          <IoStar key={i} className={`text-xl ${myRating.rating >= i + 1 ? "text-amber-400" : "text-white/10"}`} />
+                          <IoStar key={i} className={`text-lg ${myRating.rating >= i + 1 ? "text-amber-400" : "text-white/10"}`} />
                         ))}
                       </div>
-                      <p className="text-white font-bold mb-2 uppercase tracking-tight">{myRating.title || "Experience Shared"}</p>
-                      <p className="text-gray-400 text-sm mb-8 italic line-clamp-3">"{myRating.body}"</p>
+                      <p className="text-white font-medium mb-1">{myRating.title || "Your review"}</p>
+                      <p className="text-[var(--ps-muted)] text-sm mb-4 line-clamp-3">"{myRating.body}"</p>
                       <button
+                        type="button"
                         onClick={() => setIsRatingFormOpen(true)}
-                        className="text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors underline underline-offset-8"
+                        className="text-sm text-[var(--ps-purple-light)] hover:text-white"
                       >
-                        Modify Review
+                        Edit review
                       </button>
                     </>
                   ) : (
                     <>
-                      <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
-                        <IoStar className="text-3xl text-emerald-400" />
-                      </div>
-                      <h4 className="text-xl font-black uppercase tracking-tight mb-2">Share your thoughts</h4>
-                      <p className="text-gray-400 text-sm mb-8 leading-relaxed">Your feedback helps others make informed decisions. Share your experience!</p>
+                      <p className="text-sm text-[var(--ps-muted)] mb-4">
+                        Share your experience to help other buyers.
+                      </p>
                       <button
+                        type="button"
                         onClick={() => setIsRatingFormOpen(true)}
-                        className="w-full py-4 bg-emerald-500 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all"
+                        className="w-full min-h-[44px] rounded-xl bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-sm font-semibold text-white"
                       >
-                        Rate Item
+                        Rate item
                       </button>
                     </>
                   )}

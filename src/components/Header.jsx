@@ -6,7 +6,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { FaHeart, FaGavel } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 import {
   IoCart,
   IoMenuOutline,
@@ -16,6 +16,7 @@ import {
   IoLogOutOutline,
   IoPersonOutline,
   IoChevronDown,
+  IoHelpCircleOutline,
 } from "react-icons/io5";
 
 import Cart from "./Cart";
@@ -33,8 +34,8 @@ import { useAccessToken } from "../hooks/useAccessToken";
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 const BRAND_LOGO = "/brand/logo.jpeg";
 
-/** Slim primary nav — mall / GigHub / deals / contact live on the homepage & footer. */
-const NAV_ITEMS = [{ to: "/bids", label: "Bids", Icon: FaGavel }];
+/** Slim primary nav — Bids / mall / GigHub / deals live on the homepage. */
+const NAV_ITEMS = [{ to: "/contact", label: "Contact", Icon: IoHelpCircleOutline }];
 
 const Header = () => {
   const accessToken = useAccessToken();
