@@ -45,7 +45,7 @@ const Footer = () => {
               <img
                 src={BRAND_LOGO}
                 alt="PinkSurfing"
-                className="w-14 h-14 rounded-2xl object-cover ring-1 ring-white/15 shadow-[0_0_24px_-6px_rgba(236,72,153,0.55)] group-hover:ring-[var(--ps-primary)]/40 transition-all"
+                className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)] group-hover:ring-white/25 transition-all"
               />
               <div>
                 <span className="block text-lg font-semibold text-white tracking-tight">PinkSurfing</span>

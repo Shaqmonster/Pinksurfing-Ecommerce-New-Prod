@@ -389,9 +389,6 @@ const Home = () => {
       />
       {/* Main Container */}
       <div className="w-full min-h-screen bg-[var(--ps-bg)] relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-40" aria-hidden>
-          <div className="absolute top-0 right-0 w-[320px] h-[320px] bg-[var(--ps-blur-orb)]/20 rounded-full blur-[90px]" />
-        </div>
 
         {/* Hero Section - Main Categories */}
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 pt-6 pb-8">
@@ -407,10 +404,10 @@ const Home = () => {
             </p>
             <div className="mt-5 flex flex-wrap justify-center items-center gap-2">
               <Link
-                to="/shoppingMall"
-                className="inline-flex items-center justify-center min-h-[44px] px-5 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold"
+                to="/bids"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
               >
-                Browse shopping mall
+                Bids
               </Link>
               <button
                 type="button"
@@ -451,13 +448,13 @@ const Home = () => {
                       className={`group ${item.coming_soon ? "cursor-default" : "cursor-pointer"}`}
                     >
                       <div className="rounded-2xl overflow-hidden h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)]">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
                         <MediaImage
                           src={item.image}
                           alt={`${item.name} on PinkSurfing marketplace`}
-                          className={`absolute inset-0 w-full h-full object-cover ${item.coming_soon ? "opacity-80" : ""}`}
+                          className="absolute inset-0 w-full h-full object-cover"
                           skeletonClassName="absolute inset-0"
-                          loading="lazy"
+                          loading="eager"
                         />
                         {item.coming_soon && (
                           <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
@@ -532,14 +529,14 @@ const Home = () => {
                     : "cursor-pointer hover:-translate-y-1"
                 }`}
               >
-                <div className={`rounded-2xl overflow-hidden h-[200px] sm:h-[220px] relative border border-white/10 bg-[var(--ps-card)] shadow-[0_16px_48px_-20px_rgba(151,71,255,0.55)] transition-all duration-ps-normal ${item.coming_soon ? "" : "hover:border-[var(--ps-primary)]/60 hover:shadow-[0_22px_56px_-18px_rgba(236,72,153,0.4)]"}`}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10" />
+                <div className={`rounded-2xl overflow-hidden h-[200px] sm:h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)] transition-colors ${item.coming_soon ? "" : "hover:border-white/25"}`}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
                   <MediaImage
                     src={item.image}
                     alt={`${item.name} on PinkSurfing marketplace`}
-                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-ps-moderate ease-ps-standard ${item.coming_soon ? "opacity-80" : "group-hover:scale-[1.04]"}`}
+                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 ${item.coming_soon ? "" : "group-hover:scale-[1.04]"}`}
                     skeletonClassName="absolute inset-0"
-                    loading="lazy"
+                    loading="eager"
                   />
                   {item.coming_soon && (
                     <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45">
@@ -562,7 +559,6 @@ const Home = () => {
 
         {/* Browse by Category */}
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-10 sm:py-12 bg-white/5 border-y border-white/10 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none" aria-hidden />
           <div className="relative max-w-6xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-center">
               <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -604,28 +600,22 @@ const Home = () => {
                       onClick={handleClick}
                       className={`
                         group w-full text-left rounded-2xl overflow-hidden
-                        border border-white/10 bg-[var(--ps-card)]
-                        shadow-[0_12px_40px_-18px_rgba(151,71,255,0.55)]
-                        transition-all duration-ps-normal ease-ps-standard
-                        hover:border-[var(--ps-primary)]/70 hover:-translate-y-2
-                        hover:shadow-[0_20px_50px_-16px_rgba(236,72,153,0.45)]
+                        border border-[var(--ps-brd)] bg-[var(--ps-card)]
+                        transition-colors
+                        hover:border-white/25 hover:-translate-y-1
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)]
                         ${isSoon ? "cursor-default" : "cursor-pointer active:scale-[0.98]"}
                       `}
                     >
                       <div className="relative aspect-[4/5] sm:aspect-square w-full overflow-hidden">
                         <div
-                          className="absolute inset-0 bg-gradient-to-t from-[#0e0f13] via-[#0e0f13]/35 to-transparent z-[1]"
-                          aria-hidden
-                        />
-                        <div
-                          className="absolute -inset-8 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_80%,rgba(151,71,255,0.35),transparent_60%)]"
+                          className="absolute inset-0 bg-gradient-to-t from-[#0e0f13] via-[#0e0f13]/30 to-transparent z-[1] pointer-events-none"
                           aria-hidden
                         />
                         <MediaImage
                           src={imgSrc}
                           alt={`${item.name} category on PinkSurfing`}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                           skeletonClassName="absolute inset-0"
                           loading="lazy"
                         />
