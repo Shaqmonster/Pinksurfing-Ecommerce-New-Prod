@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Sidebar } from "../components/ProfilePageComponents/ProfileSidebar";
 import { dataContext } from "../context/dataContext";
 import ProfileDetails from "../components/ProfilePageComponents/ProfileDetails";
+import ProfileAddresses from "../components/ProfilePageComponents/ProfileAddresses";
 import ProfileCartPage from "../components/ProfilePageComponents/ProfileCartPage";
 import ProfileWishlist from "../components/ProfilePageComponents/ProfileWishlist";
 import ProfileMyStore from "../components/ProfilePageComponents/ProfileMyStore";
@@ -26,15 +27,17 @@ export default function ProfilePage() {
     window.history.replaceState({}, document.title);
   }, [location.state, setProfileActiveIndex]);
 
+  // Indices must match ProfileItems.js tab order (Addresses sits after Profile).
   const profileComponents = {
     0: <ProfileDetails />,
-    1: <ProfileCartPage />,
-    2: <ProfileWishlist />,
-    3: <ProfileMyStore />,
-    4: <AllOrders />,
+    1: <ProfileAddresses />,
+    2: <ProfileCartPage />,
+    3: <ProfileWishlist />,
+    4: <ProfileMyStore />,
+    5: <AllOrders />,
     ...(SHOW_CRYPTO_WALLET && ProfileUserWallet
       ? {
-          5: (
+          6: (
             <React.Suspense fallback={null}>
               <ProfileUserWallet />
             </React.Suspense>
