@@ -2,14 +2,18 @@ import React, { useCallback, useState } from "react";
 import Skeleton from "./Skeleton";
 
 /**
- * Fills its wrapper; skeleton overlays until pixels are ready.
- * Img stays mounted and visible — never gated behind opacity-0.
+ * Image with optional skeleton overlay.
+ *
+ * fill=true → absolute inset-0 (must sit inside a sized relative parent).
+ * Never combine `relative` + `absolute` on the wrapper — Tailwind conflict
+ * collapses height to 0 and images become invisible.
  */
 export default function MediaImage({
   src,
   alt = "",
   className = "",
   skeletonClassName = "",
+  fill = false,
   ...props
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
@@ -21,8 +25,12 @@ export default function MediaImage({
     }
   }, []);
 
+  const wrapperClass = fill
+    ? `absolute inset-0 overflow-hidden ${skeletonClassName}`
+    : `relative overflow-hidden ${skeletonClassName}`;
+
   return (
-    <div className={`relative overflow-hidden ${skeletonClassName}`}>
+    <div className={wrapperClass}>
       {showSkeleton && (
         <div className="absolute inset-0 z-[1]" aria-hidden>
           <Skeleton className="h-full w-full" rounded="none" />
@@ -33,7 +41,11 @@ export default function MediaImage({
         key={src}
         src={src}
         alt={alt}
-        className={`absolute inset-0 z-0 h-full w-full object-cover ${className}`}
+        className={
+          fill
+            ? `absolute inset-0 z-0 h-full w-full object-cover ${className}`
+            : `relative z-0 h-full w-full object-cover ${className}`
+        }
         onLoad={() => setShowSkeleton(false)}
         onError={() => setShowSkeleton(false)}
         {...props}

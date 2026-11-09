@@ -20,7 +20,7 @@ const StoreCard = ({ store }) => {
             src={storeImage}
             alt={store.store_name}
             className="transition-transform duration-500 group-hover:scale-[1.03]"
-            skeletonClassName="absolute inset-0"
+            fill
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-[1]" />
