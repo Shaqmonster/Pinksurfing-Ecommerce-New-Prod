@@ -10,7 +10,7 @@ const StoreCard = ({ store }) => {
     ? store.store_image.startsWith("http")
       ? store.store_image
       : `${awsS3BaseUrl}${store.store_image}`
-    : "/brand/hero-gighub.jpg";
+    : "/brand/hero-gighub.jpg?v=3";
 
   return (
     <Link to={`/store/${store.slug}`} className="block group">
