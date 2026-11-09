@@ -1,4 +1,4 @@
-import { Fragment, useContext, useMemo } from "react";
+import { Fragment, useContext, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
@@ -9,6 +9,7 @@ import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { formatMoney } from "../utils/formatMoney";
+import MediaImage from "./ui/MediaImage";
 import {
   cartBlocksCheckout,
   cartStockLimitMessage,
@@ -19,19 +20,23 @@ import {
 } from "../utils/cartStock";
 
 export default function Cart() {
-  const { isCartOpen, setIsCartOpen, currency, isDarkMode } =
-    useContext(authContext);
+  const { isCartOpen, setIsCartOpen, currency } = useContext(authContext);
   const { setCartProducts, cartProducts } = useContext(dataContext);
   const navigate = useNavigate();
   const accessToken = useAccessToken();
+  const [loading, setLoading] = useState(true);
   const checkoutBlocked = useMemo(
     () => cartBlocksCheckout(cartProducts),
     [cartProducts]
   );
-  const isEmpty = !cartProducts?.length;
+  const isEmpty = !loading && !cartProducts?.length;
 
   const GetCartProducts = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
@@ -54,6 +59,8 @@ export default function Cart() {
         position: "top-center",
         autoClose: 3000,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,25 +183,21 @@ export default function Cart() {
     navigate("/shoppingMall");
   };
 
-  const checkoutDisabled = isEmpty || checkoutBlocked;
+  const checkoutDisabled = isEmpty || checkoutBlocked || loading;
 
   return (
     <Transition.Root show={isCartOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        className={`relative ${isDarkMode ? "dark" : ""} z-50`}
-        onClose={setIsCartOpen}
-      >
+      <Dialog as="div" className="relative z-50" onClose={setIsCartOpen}>
         <Transition.Child
           as={Fragment}
-          enter="ease-in-out duration-300"
+          enter="ease-out duration-200"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="ease-in-out duration-300"
+          leave="ease-in duration-150"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/70 transition-opacity" />
+          <div className="fixed inset-0 bg-black/70" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden">
@@ -202,48 +205,64 @@ export default function Cart() {
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
               <Transition.Child
                 as={Fragment}
-                enter="transform transition ease-in-out duration-300"
+                enter="transform transition ease-out duration-250"
                 enterFrom="translate-x-full"
                 enterTo="translate-x-0"
-                leave="transform transition ease-in-out duration-300"
+                leave="transform transition ease-in duration-200"
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col bg-white dark:bg-[#0E0F13] dark:border-l dark:border-white/10 shadow-xl">
-                    {/* Header */}
-                    <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-5 dark:border-white/10">
-                      <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-[#f5f5f5]">
-                        Shopping cart
+                  <div className="flex h-full flex-col bg-[var(--ps-bg)] border-l border-[var(--ps-brd)] shadow-2xl">
+                    <div className="flex shrink-0 items-center justify-between border-b border-[var(--ps-brd)] px-5 py-4">
+                      <Dialog.Title className="text-base font-semibold text-white">
+                        Cart
                       </Dialog.Title>
                       <button
                         type="button"
-                        className="rounded-md p-1.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-white"
+                        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)]"
                         onClick={() => setIsCartOpen(false)}
                       >
                         <span className="sr-only">Close panel</span>
-                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                        <XMarkIcon className="h-5 w-5" aria-hidden="true" />
                       </button>
                     </div>
 
-                    {/* Body */}
                     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                      {isEmpty ? (
-                        <div className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+                      {loading ? (
+                        <ul className="flex-1 space-y-3 overflow-y-auto px-5 py-4" aria-busy="true">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <li key={i} className="flex gap-3">
+                              <div className="ps-skeleton h-20 w-20 rounded-xl shrink-0" />
+                              <div className="flex-1 space-y-2 py-1">
+                                <div className="ps-skeleton h-4 w-3/4 rounded" />
+                                <div className="ps-skeleton h-3 w-1/2 rounded" />
+                                <div className="ps-skeleton h-8 w-28 rounded-lg" />
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : isEmpty ? (
+                        <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
                           <img
-                            className="w-[55%] max-w-[220px] object-contain opacity-90"
+                            className="w-[50%] max-w-[180px] object-contain opacity-80 mb-4"
                             src="/cartEmpty.svg"
                             alt=""
                           />
-                          <p className="mt-4 text-base font-semibold text-gray-900 dark:text-white">
-                            Your Cart is Empty
+                          <p className="text-base font-semibold text-white">Your cart is empty</p>
+                          <p className="mt-1 text-sm text-[var(--ps-muted)]">
+                            Add items from the shopping mall to check out.
                           </p>
+                          <button
+                            type="button"
+                            onClick={handleContinueShopping}
+                            className="mt-5 min-h-[44px] px-5 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-sm font-semibold text-white"
+                          >
+                            Browse shopping mall
+                          </button>
                         </div>
                       ) : (
-                        <ul
-                          role="list"
-                          className="flex-1 divide-y divide-gray-200 overflow-y-auto px-6 dark:divide-white/10"
-                        >
+                        <ul role="list" className="flex-1 divide-y divide-[var(--ps-brd)] overflow-y-auto px-5">
                           {cartProducts.map((product, index) => {
                             const stockQty = getCartItemStockQty(product);
                             const isAtMaxStock = isCartItemAtMaxStock(product);
@@ -256,119 +275,88 @@ export default function Cart() {
                             return (
                               <li
                                 key={`${product.product.id}-${index}`}
-                                className="flex gap-4 py-5"
+                                className="flex gap-3 py-4"
                               >
-                                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-white/10">
-                                  <img
-                                    src={product.product.image1}
-                                    alt={product.product.imageAlt || product.product.name}
-                                    className="h-full w-full object-cover object-center"
-                                  />
-                                </div>
+                                <MediaImage
+                                  src={product.product.image1}
+                                  alt={product.product.imageAlt || product.product.name}
+                                  className="h-20 w-20 object-cover rounded-xl"
+                                  skeletonClassName="h-20 w-20 rounded-xl shrink-0 border border-[var(--ps-brd)]"
+                                  loading="lazy"
+                                />
 
-                                <div className="flex min-w-0 flex-1 flex-col">
+                                <div className="flex min-w-0 flex-1 flex-col gap-1">
                                   <div className="flex justify-between gap-3">
-                                    <h3 className="text-sm font-medium text-gray-900 dark:text-[#f5f5f5]">
+                                    <h3 className="text-sm font-medium text-white">
                                       <Link
                                         to={`/product/productDetail/${product.product.slug}?productId=${product.product.id}`}
                                         onClick={() => setIsCartOpen(false)}
-                                        className="line-clamp-2 hover:text-[#8b5cf6]"
+                                        className="line-clamp-2 hover:text-[var(--ps-purple-light)]"
                                       >
                                         {product.product.name}
                                       </Link>
                                     </h3>
-                                    <p className="shrink-0 text-sm font-medium text-gray-900 dark:text-[#f5f5f5]">
-                                      {currency} {formatMoney(unitPrice)}
+                                    <p className="shrink-0 text-sm font-semibold text-white">
+                                      {currency}
+                                      {formatMoney(unitPrice)}
                                     </p>
                                   </div>
 
-                                  <p className="mt-1 line-clamp-1 text-xs text-gray-500 dark:text-[#a8a8b3]">
-                                    {htmlToText(
-                                      product.product?.short_description ?? ""
-                                    )}
+                                  <p className="line-clamp-1 text-xs text-[var(--ps-muted)]">
+                                    {htmlToText(product.product?.short_description ?? "")}
                                   </p>
 
                                   {isCartItemOutOfStock(product) && (
-                                    <p className="mt-1 text-xs font-medium text-red-400">
+                                    <p className="text-xs font-medium text-red-400">
                                       Out of stock — remove to checkout
                                     </p>
                                   )}
 
-                                  <div className="mt-3 flex items-end justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs text-gray-500 dark:text-[#a8a8b3]">
-                                        Qty:
+                                  <div className="mt-2 flex items-center justify-between gap-2">
+                                    <div className="inline-flex items-center rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)]">
+                                      <button
+                                        onClick={() => {
+                                          if (product.quantity === 1) {
+                                            RemoveCartProduct(product.product.id);
+                                            return;
+                                          }
+                                          DecrementQty(product.product.id);
+                                        }}
+                                        type="button"
+                                        className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-white"
+                                        aria-label="Decrease quantity"
+                                      >
+                                        −
+                                      </button>
+                                      <span className="min-w-[2rem] text-center text-sm text-white">
+                                        {product.quantity}
                                       </span>
-                                      <div className="flex items-center">
-                                        <button
-                                          onClick={() => {
-                                            if (product.quantity === 1) {
-                                              RemoveCartProduct(product.product.id);
-                                              return;
-                                            }
-                                            DecrementQty(product.product.id);
-                                          }}
-                                          type="button"
-                                          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded border border-gray-300 bg-gray-100 dark:border-white/10 dark:bg-[#1a1a24] dark:hover:bg-[#232329]"
-                                        >
-                                          <svg
-                                            className="h-2.5 w-2.5 text-gray-900 dark:text-[#f5f5f5]"
-                                            fill="none"
-                                            viewBox="0 0 18 2"
-                                          >
-                                            <path
-                                              stroke="currentColor"
-                                              strokeLinecap="round"
-                                              strokeWidth="2"
-                                              d="M1 1h16"
-                                            />
-                                          </svg>
-                                        </button>
-                                        <span className="min-w-[2rem] px-2 text-center text-sm text-gray-900 dark:text-[#f5f5f5]">
-                                          {product.quantity}
-                                        </span>
-                                        <button
-                                          onClick={() => {
-                                            if (isAtMaxStock) {
-                                              toast.info(
-                                                stockQty != null
-                                                  ? cartStockLimitMessage(stockQty)
-                                                  : "Unable to increase quantity for this item",
-                                                {
-                                                  position: "top-center",
-                                                  autoClose: 2500,
-                                                }
-                                              );
-                                              return;
-                                            }
-                                            IncrementQty(product.product.id);
-                                          }}
-                                          type="button"
-                                          disabled={isAtMaxStock}
-                                          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded border border-gray-300 bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30 dark:border-white/10 dark:bg-[#1a1a24] dark:hover:bg-[#232329]"
-                                        >
-                                          <svg
-                                            className="h-2.5 w-2.5 text-gray-900 dark:text-[#f5f5f5]"
-                                            fill="none"
-                                            viewBox="0 0 18 18"
-                                          >
-                                            <path
-                                              stroke="currentColor"
-                                              strokeLinecap="round"
-                                              strokeWidth="2"
-                                              d="M9 1v16M1 9h16"
-                                            />
-                                          </svg>
-                                        </button>
-                                      </div>
+                                      <button
+                                        onClick={() => {
+                                          if (isAtMaxStock) {
+                                            toast.info(
+                                              stockQty != null
+                                                ? cartStockLimitMessage(stockQty)
+                                                : "Unable to increase quantity for this item",
+                                              { position: "top-center", autoClose: 2500 }
+                                            );
+                                            return;
+                                          }
+                                          IncrementQty(product.product.id);
+                                        }}
+                                        type="button"
+                                        disabled={isAtMaxStock}
+                                        className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-white disabled:opacity-30"
+                                        aria-label="Increase quantity"
+                                      >
+                                        +
+                                      </button>
                                     </div>
 
                                     <button
-                                      onClick={() =>
-                                        RemoveCartProduct(product.product.id)
-                                      }
+                                      onClick={() => RemoveCartProduct(product.product.id)}
                                       type="button"
-                                      className="text-xs font-medium text-[#8b5cf6] hover:text-[#a78bfa]"
+                                      className="text-xs font-medium text-[var(--ps-purple-light)] hover:text-white"
                                     >
                                       Remove
                                     </button>
@@ -381,56 +369,46 @@ export default function Cart() {
                       )}
                     </div>
 
-                    {/* Footer */}
-                    <div className="shrink-0 border-t border-gray-200 px-6 py-6 dark:border-white/10">
-                      <div className="flex justify-between text-base font-medium text-gray-900 dark:text-[#f5f5f5]">
+                    <div className="shrink-0 border-t border-[var(--ps-brd)] px-5 py-5 space-y-3">
+                      <div className="flex justify-between text-sm font-medium text-white">
                         <p>Subtotal</p>
                         <p>
                           {currency}
                           {formatMoney(subTotal ?? 0)}
                         </p>
                       </div>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-[#a8a8b3]">
+                      <p className="text-xs text-[var(--ps-muted)]">
                         Shipping and taxes calculated at checkout.
                       </p>
                       {checkoutBlocked && !isEmpty && (
-                        <p className="mt-2 text-sm text-red-400">
+                        <p className="text-sm text-red-400">
                           {getCartStockIssueMessage(cartProducts)}
                         </p>
                       )}
-                      <div className="mt-6">
-                        {checkoutDisabled ? (
-                          <button
-                            type="button"
-                            disabled
-                            className="flex w-full cursor-not-allowed items-center justify-center rounded-md bg-gray-400 px-6 py-3 text-sm font-medium text-white dark:bg-[#3a3a44]"
-                          >
-                            Checkout
-                          </button>
-                        ) : (
-                          <Link to="/checkout" onClick={() => setIsCartOpen(false)}>
-                            <button
-                              type="button"
-                              className="flex w-full items-center justify-center rounded-md bg-[var(--ps-primary)] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--ps-purple-dark)]"
-                            >
-                              Checkout
-                            </button>
-                          </Link>
-                        )}
-                      </div>
-                      <div className="mt-6 flex justify-center text-center text-sm text-gray-500 dark:text-[#a8a8b3]">
-                        <p>
-                          or{" "}
-                          <button
-                            type="button"
-                            className="font-medium text-[#8b5cf6] transition-colors hover:text-[#a78bfa]"
-                            onClick={handleContinueShopping}
-                          >
-                            Continue Shopping
-                            <span aria-hidden="true"> &rarr;</span>
-                          </button>
-                        </p>
-                      </div>
+                      {checkoutDisabled ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="flex w-full min-h-[48px] cursor-not-allowed items-center justify-center rounded-[14px] bg-[var(--ps-surf)] text-sm font-semibold text-[var(--ps-dim)]"
+                        >
+                          Checkout
+                        </button>
+                      ) : (
+                        <Link
+                          to="/checkout"
+                          onClick={() => setIsCartOpen(false)}
+                          className="flex w-full min-h-[48px] items-center justify-center rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-sm font-semibold text-white"
+                        >
+                          Checkout
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        className="w-full text-center text-sm text-[var(--ps-muted)] hover:text-white"
+                        onClick={handleContinueShopping}
+                      >
+                        Continue shopping
+                      </button>
                     </div>
                   </div>
                 </Dialog.Panel>

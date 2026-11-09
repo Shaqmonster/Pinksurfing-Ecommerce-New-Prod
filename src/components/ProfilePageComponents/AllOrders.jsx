@@ -1,21 +1,15 @@
 import { useContext, useEffect, useState } from "react";
 import {
     ArrowLeftCircleIcon,
-    ArrowRightIcon,
     ShoppingBagIcon,
-    TruckIcon,
-    CheckCircleIcon,
-    XCircleIcon,
-    ArrowPathIcon
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import CancelDialog from "../CancelDialog";
 import { formatMoney } from "../../utils/formatMoney";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
 export default function AllOrders() {
@@ -23,10 +17,8 @@ export default function AllOrders() {
     const { currency, authToken, setIsSingleOrderFormOpen, setSingleOrderProduct, setIsProfileOpen } =
         useContext(authContext);
     const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const [cookies] = useCookies(["access_token"]);
-    
     const [isOpen, setIsOpen] = useState(false);
     const [deleteOrderId, setDeleteOrderId] = useState("");
 
@@ -139,178 +131,175 @@ export default function AllOrders() {
         }
     };
 
+    const grouped = groupOrdersByOrderId(orders);
+    const visibleOrderIds = Object.keys(grouped).filter(
+        (id) => !grouped[id].some((o) => o.order_status.toUpperCase() === "PENDING")
+    );
+
     return (
-        <div className="font-sen min-h-screen">
-            <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-8 lg:p-14 shadow-2xl relative overflow-hidden">
-                <div className="flex items-center justify-between mb-12 border-b border-white/5 pb-8 relative z-10">
-                    <div className="flex items-center gap-6">
-                        <motion.button
-                            whileHover={{ scale: 1.1, x: -5 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => navigate("/")}
-                            className="p-3 bg-white/5 rounded-2xl border border-white/10 text-white hover:bg-white/10 transition-all"
-                        >
-                            <ArrowLeftCircleIcon className="w-6 h-6" />
-                        </motion.button>
-                        <div className="space-y-1">
-                            <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.4em]">Fulfillment</p>
-                            <h2 className="text-4xl font-black text-white tracking-tighter uppercase">My Orders</h2>
-                        </div>
-                    </div>
-                    <div className="hidden md:flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
-                        <ShoppingBagIcon className="w-5 h-5 text-purple-400" />
-                        <span className="text-xs font-black text-white tracking-widest uppercase">
-                            {Object.keys(groupOrdersByOrderId(orders)).filter(id => !groupOrdersByOrderId(orders)[id].some(o => o.order_status.toUpperCase() === "PENDING")).length} Global Orders
-                        </span>
-                    </div>
+        <div className="w-full max-w-4xl mx-auto space-y-6 pb-16">
+            <div className="flex items-center gap-3">
+                <button
+                    type="button"
+                    onClick={() => navigate("/")}
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-white"
+                    aria-label="Back"
+                >
+                    <ArrowLeftCircleIcon className="w-5 h-5" />
+                </button>
+                <div>
+                    <h2 className="text-xl font-semibold text-white">My orders</h2>
+                    <p className="text-sm text-[var(--ps-muted)]">
+                        {loading ? "Loading…" : `${visibleOrderIds.length} order${visibleOrderIds.length === 1 ? "" : "s"}`}
+                    </p>
                 </div>
+            </div>
 
-                {!loading ? (
-                    <div className="space-y-10 relative z-10">
-                        {Object.keys(groupOrdersByOrderId(orders))
-                            .filter(id => !groupOrdersByOrderId(orders)[id].some(o => o.order_status.toUpperCase() === "PENDING"))
-                            .map((orderId) => (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    key={orderId}
-                                    className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl group"
-                                >
-                                    <div className="p-8 md:p-10 bg-white/[0.02] border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Master Order ID</span>
-                                                <span className="text-sm font-black text-purple-400 uppercase tracking-tighter">#{groupOrdersByOrderId(orders)[orderId][0].order_number || orderId}</span>
-                                            </div>
-                                            <p className="text-white font-black text-xl tracking-tighter uppercase">
-                                                Planted on {new Date(groupOrdersByOrderId(orders)[orderId][0].date_of_order).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-8">
-                                            <div className="text-right">
-                                                <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">Total Investment</p>
-                                                <p className="text-3xl font-black text-white tracking-tighter">
-                                                    {currency}{formatMoney(calculateTotalPrice(groupOrdersByOrderId(orders)[orderId]))}
-                                                </p>
-                                            </div>
-                                        </div>
+            {loading ? (
+                <div className="space-y-3" aria-busy="true">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-4 flex gap-4">
+                            <div className="ps-skeleton h-20 w-20 rounded-xl shrink-0" />
+                            <div className="flex-1 space-y-2">
+                                <div className="ps-skeleton h-4 w-2/3 rounded" />
+                                <div className="ps-skeleton h-3 w-1/3 rounded" />
+                                <div className="ps-skeleton h-8 w-28 rounded-lg" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {visibleOrderIds.map((orderId) => {
+                        const items = grouped[orderId];
+                        const head = items[0];
+                        return (
+                            <article
+                                key={orderId}
+                                className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] overflow-hidden"
+                            >
+                                <div className="px-4 py-3 border-b border-[var(--ps-brd)] flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <p className="text-xs text-[var(--ps-dim)]">
+                                            Order #{head.order_number || orderId}
+                                        </p>
+                                        <p className="text-sm text-white">
+                                            {new Date(head.date_of_order).toLocaleDateString()}
+                                        </p>
                                     </div>
-
-                                    <div className="divide-y divide-white/5">
-                                        {groupOrdersByOrderId(orders)[orderId].map((order, index) => (
-                                            <div key={index} className="p-8 md:p-10 flex flex-col lg:flex-row gap-10 hover:bg-white/[0.02] transition-all">
-                                                <div className="h-40 w-40 flex-shrink-0 rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative group-hover:border-purple-500/30 transition-all duration-500">
-                                                    <img
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                        src={`${order.product.image1}`}
-                                                        alt={order.product.name}
-                                                    />
-                                                </div>
-
-                                                <div className="flex-1 flex flex-col md:flex-row justify-between gap-8">
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <h3 className="text-2xl font-black text-white tracking-tighter uppercase mb-1">{order.product.name}</h3>
-                                                            <div className="flex items-center gap-4">
-                                                                <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Qty: {order.quantity}</span>
-                                                                <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                                                                <span className="text-xs font-bold text-purple-400 uppercase tracking-widest">{currency}{formatMoney(order.total_price)}</span>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${getStatusStyle(order.order_status)}`}>
-                                                            {order.order_status === "DELIVERED" && <CheckCircleIcon className="w-3.5 h-3.5" />}
-                                                            {order.order_status === "CANCELED" && <XCircleIcon className="w-3.5 h-3.5" />}
-                                                            {["PENDING", "RECEIVED", "PACKED"].includes(order.order_status) && <ArrowPathIcon className="w-3.5 h-3.5 animate-spin-slow" />}
-                                                            {order.order_status}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 justify-center">
-                                                        {order.order_status.toUpperCase() === "CANCELED" ? (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSingleOrderProduct(order.product);
-                                                                    setIsSingleOrderFormOpen(true);
-                                                                    setIsProfileOpen(false);
-                                                                }}
-                                                                className="px-8 py-4 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-purple-50 transition-all shadow-xl active:scale-95"
-                                                            >
-                                                                Re-Initialize Order
-                                                            </button>
-                                                        ) : (
-                                                            <>
-                                                                <button
-                                                                    className="px-8 py-4 bg-purple-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-purple-500 transition-all shadow-xl shadow-purple-500/20 active:scale-95"
-                                                                    onClick={() => {
-                                                                        if (order.order_status === "DELIVERED") {
-                                                                            setSingleOrderProduct(order.product);
-                                                                            setIsSingleOrderFormOpen(true);
-                                                                            setIsProfileOpen(false);
-                                                                        } else {
-                                                                            navigate(`/summary/${order.id}`, { state: { fromTab: 4 } });
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    {order.order_status === "DELIVERED" ? "Buy Again" : "Live Tracking"}
-                                                                </button>
-
-                                                                {["PENDING", "RECEIVED", "PACKED"].includes(order.order_status.toUpperCase()) && (
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setDeleteOrderId(order.id);
-                                                                            setIsOpen(true);
-                                                                        }}
-                                                                        className="px-8 py-4 bg-transparent border border-red-500/30 text-red-400 hover:bg-red-500/5 font-black text-[10px] uppercase tracking-widest rounded-2xl transition-all"
-                                                                    >
-                                                                        Abort Mission
-                                                                    </button>
-                                                                )}
-
-                                                                {order.order_status.toUpperCase() === "DELIVERED" && (
-                                                                    <button
-                                                                        onClick={() => handleReturnOrder(order.id)}
-                                                                        className="px-8 py-4 bg-transparent border border-orange-500/30 text-orange-400 hover:bg-orange-500/5 font-black text-[10px] uppercase tracking-widest rounded-2xl transition-all"
-                                                                    >
-                                                                        Initiate Return
-                                                                    </button>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            ))}
-                        
-                        {orders.length === 0 && (
-                            <div className="py-32 flex flex-col items-center justify-center space-y-10">
-                                <div className="relative">
-                                    <ShoppingBagIcon className="relative text-white/10 text-8xl" />
-                                </div>
-                                <div className="text-center space-y-3">
-                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter">No Active Protocols</h3>
-                                    <p className="text-white/30 text-sm font-medium max-w-xs mx-auto">
-                                        Your acquisition history is empty. Start building your portfolio today.
+                                    <p className="text-base font-semibold text-white">
+                                        {currency}
+                                        {formatMoney(calculateTotalPrice(items))}
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() => navigate("/shoppingMall")}
-                                    className="px-12 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
-                                >
-                                    Initialize Shopping
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="py-40 flex items-center justify-center">
-                        <div className="w-16 h-16 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin"></div>
-                    </div>
-                )}
-            </div>
+                                <ul className="divide-y divide-[var(--ps-brd)]">
+                                    {items.map((order) => (
+                                        <li key={order.id} className="p-4 flex gap-3 sm:gap-4">
+                                            <img
+                                                src={order.product.image1}
+                                                alt=""
+                                                className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-cover bg-[var(--ps-surf)] shrink-0"
+                                                loading="lazy"
+                                            />
+                                            <div className="min-w-0 flex-1 space-y-2">
+                                                <div className="flex flex-wrap items-start justify-between gap-2">
+                                                    <div className="min-w-0">
+                                                        <h3 className="text-sm font-medium text-white line-clamp-2">
+                                                            {order.product.name}
+                                                        </h3>
+                                                        <p className="text-xs text-[var(--ps-muted)] mt-0.5">
+                                                            Qty {order.quantity} · {currency}
+                                                            {formatMoney(order.total_price)}
+                                                        </p>
+                                                    </div>
+                                                    <span
+                                                        className={`inline-flex items-center px-2 py-0.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(order.order_status)}`}
+                                                    >
+                                                        {order.order_status}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {order.order_status.toUpperCase() === "CANCELED" ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSingleOrderProduct(order.product);
+                                                                setIsSingleOrderFormOpen(true);
+                                                                setIsProfileOpen(false);
+                                                            }}
+                                                            className="min-h-[40px] px-3 rounded-xl bg-white text-black text-xs font-semibold"
+                                                        >
+                                                            Order again
+                                                        </button>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                className="min-h-[40px] px-3 rounded-xl bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-xs font-semibold"
+                                                                onClick={() => {
+                                                                    if (order.order_status === "DELIVERED") {
+                                                                        setSingleOrderProduct(order.product);
+                                                                        setIsSingleOrderFormOpen(true);
+                                                                        setIsProfileOpen(false);
+                                                                    } else {
+                                                                        navigate(`/summary/${order.id}`, { state: { fromTab: 4 } });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {order.order_status === "DELIVERED" ? "Buy again" : "Track"}
+                                                            </button>
+                                                            {["PENDING", "RECEIVED", "PACKED"].includes(
+                                                                order.order_status.toUpperCase()
+                                                            ) && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setDeleteOrderId(order.id);
+                                                                        setIsOpen(true);
+                                                                    }}
+                                                                    className="min-h-[40px] px-3 rounded-xl border border-red-500/30 text-red-400 text-xs font-semibold"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            )}
+                                                            {order.order_status.toUpperCase() === "DELIVERED" && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleReturnOrder(order.id)}
+                                                                    className="min-h-[40px] px-3 rounded-xl border border-[var(--ps-brd)] text-[var(--ps-muted)] text-xs font-semibold"
+                                                                >
+                                                                    Return
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </article>
+                        );
+                    })}
+
+                    {visibleOrderIds.length === 0 && (
+                        <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] px-6 py-14 text-center">
+                            <ShoppingBagIcon className="w-10 h-10 mx-auto text-[var(--ps-dim)] mb-3" />
+                            <h3 className="text-lg font-semibold text-white mb-1">No orders yet</h3>
+                            <p className="text-sm text-[var(--ps-muted)] mb-5">
+                                When you place an order, it will show up here.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => navigate("/shoppingMall")}
+                                className="min-h-[44px] px-5 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold"
+                            >
+                                Browse shopping mall
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <AnimatePresence>
                 {isOpen && (

@@ -8,21 +8,22 @@ export const categories = [
   },
   {
     id: 2,
-    name: "Shop by store",
-    image: "/brand/hero-shop-by-store.jpg",
-    link: "/shopByStore",
+    name: "GigHub",
+    image: "/brand/hero-gighub.jpg",
+    link: "/gighub",
     coming_soon: false,
   },
   {
     id: 3,
-    name: "My Store",
-    image: "/brand/hero-my-store.jpg",
-    link: "/profile",
+    name: "Deals",
+    image: "/brand/hero-deals.jpg",
+    link: "/deals",
+    coming_soon: false,
   },
 ];
 
 /**
- * Live browse categories — brand-aligned tile artwork under /public/brand.
+ * Live browse categories — photographic tiles under /public/brand.
  */
 export const subCategories = [
   {

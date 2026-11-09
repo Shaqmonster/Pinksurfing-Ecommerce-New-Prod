@@ -12,6 +12,7 @@ import Stars from "./Stars";
 import { formatMoney } from "../utils/formatMoney";
 import { isOutOfStock } from "../utils/cartStock";
 import { formatDistanceToNow } from 'date-fns';
+import MediaImage from "./ui/MediaImage";
 const ProductCard = ({ product, isCard }) => {
   const navigate = useNavigate();
   const [averageRating, setAverageRating] = useState(0);
@@ -314,12 +315,13 @@ const ProductCard = ({ product, isCard }) => {
         </div>
       )}
 
-      {/* Product Image — single surface, no nested card */}
+      {/* Product Image — skeleton until paint, single surface */}
       {isCard ? (
         <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`} className="relative block overflow-hidden bg-[var(--ps-surf)]">
           <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent z-[1] pointer-events-none" />
-          <img
+          <MediaImage
             className={`w-full ${isListing ? "h-[200px]" : "h-[160px]"} object-cover transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]`}
+            skeletonClassName={`w-full ${isListing ? "h-[200px]" : "h-[160px]"}`}
             src={product.image1 || "/emptyCart.png"}
             alt={product.name}
             loading="lazy"
@@ -328,8 +330,9 @@ const ProductCard = ({ product, isCard }) => {
       ) : (
         <div className="w-[40%] overflow-hidden relative bg-[var(--ps-surf)]">
           <Link to={`/product/productDetail/${product.slug}?productId=${product.id}`}>
-            <img
+            <MediaImage
               className="h-48 w-full object-cover transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
+              skeletonClassName="h-48 w-full"
               src={product.image1 || "/emptyCart.png"}
               alt={product.name}
               loading="lazy"

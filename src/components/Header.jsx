@@ -1,4 +1,4 @@
-import React, { useContext, useCallback, useState, useEffect } from "react";
+import React, { useContext, useCallback, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { PS_MOTION, sheetTransition } from "../lib/motion-tokens";
@@ -6,23 +6,16 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import {
-  FaHeart,
-  FaGavel,
-  FaBriefcase,
-  FaStore,
-  FaHandshake,
-  FaFileContract,
-} from "react-icons/fa";
+import { FaHeart, FaGavel } from "react-icons/fa";
 import {
   IoCart,
   IoMenuOutline,
   IoSearchSharp,
   IoClose,
   IoChatbubbleOutline,
-  IoHelpCircleOutline,
   IoLogOutOutline,
   IoPersonOutline,
+  IoChevronDown,
 } from "react-icons/io5";
 
 import Cart from "./Cart";
@@ -33,7 +26,6 @@ import ProfilePopup from "./ProfilePopup";
 import ChatFloatingPanel from "./ChatFloatingPanel";
 import IconTip from "./ui/IconTip";
 import { getCustomerDisplayName } from "../utils/userDisplay";
-import { useBuyerHasNdas } from "../hooks/useBuyerHasNdas";
 import { getConversations } from "../api/gigs";
 import { sumUnreadCount, resolveChatAccessToken } from "../utils/chatHelpers";
 import { useAccessToken } from "../hooks/useAccessToken";
@@ -41,19 +33,15 @@ import { useAccessToken } from "../hooks/useAccessToken";
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 const BRAND_LOGO = "/brand/logo.jpeg";
 
-const NAV_ITEMS = [
-  { to: "/shoppingMall", label: "Shopping mall", Icon: FaStore },
-  { to: "/gighub", label: "GigHub", Icon: FaBriefcase },
-  { to: "/bids", label: "Bids", Icon: FaGavel },
-  { to: "/deals", label: "Deals", Icon: FaHandshake },
-  { to: "/contact", label: "Help & support", Icon: IoHelpCircleOutline },
-];
+/** Slim primary nav — mall / GigHub / deals / contact live on the homepage & footer. */
+const NAV_ITEMS = [{ to: "/bids", label: "Bids", Icon: FaGavel }];
 
 const Header = () => {
   const accessToken = useAccessToken();
-  const hasBuyerNdas = useBuyerHasNdas();
   const [cookies] = useCookies(["token", "refresh", "access_token"]);
   const [chatUnread, setChatUnread] = useState(0);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
   const location = useLocation();
   const {
     user,
@@ -161,6 +149,28 @@ const Header = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [isMobileMenuOpen]);
 
+  useEffect(() => {
+    if (!profileOpen) return undefined;
+    const onDoc = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setProfileOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [profileOpen]);
+
+  useEffect(() => {
+    setProfileOpen(false);
+  }, [location.pathname]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (search.trim()) {
@@ -171,6 +181,26 @@ const Header = () => {
 
   const isActive = (to) =>
     location.pathname === to || location.pathname.startsWith(`${to}/`);
+
+  const openWishlist = () => {
+    setProfileOpen(false);
+    setIsProfileOpen(false);
+    if (!authToken) {
+      navigate("/signin");
+      return;
+    }
+    setIsWishlistOpen(true);
+  };
+
+  const openCart = () => {
+    setProfileOpen(false);
+    setIsProfileOpen(false);
+    if (!authToken) {
+      navigate("/signin");
+      return;
+    }
+    setIsCartOpen(true);
+  };
 
   return (
     <>
@@ -249,84 +279,156 @@ const Header = () => {
               <IoSearchSharp className="text-xl" aria-hidden="true" />
             </IconTip>
 
-            {authToken && user && (
-              <>
-                <IconTip
-                  label="Wishlist"
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    setIsWishlistOpen(true);
-                  }}
-                >
-                  <FaHeart className="text-lg" aria-hidden="true" />
-                </IconTip>
-                <IconTip
-                  label={`Cart${cartProducts.length ? ` (${cartProducts.length})` : ""}`}
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    setIsCartOpen(true);
-                  }}
-                >
-                  <span className="relative inline-flex">
-                    <IoCart className="text-xl" aria-hidden="true" />
-                    {cartProducts.length > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--ps-primary)] text-[10px] font-bold flex items-center justify-center">
-                        {cartProducts.length}
-                      </span>
-                    )}
-                  </span>
-                </IconTip>
-                <IconTip
-                  label={`Messages${chatUnread ? ` (${chatUnread} unread)` : ""}`}
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    setIsChatOpen(!isChatOpen);
-                  }}
-                >
-                  <span className="relative inline-flex">
-                    <IoChatbubbleOutline className="text-xl" aria-hidden="true" />
-                    {chatUnread > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--ps-red)] text-[10px] font-bold flex items-center justify-center">
-                        {chatUnread > 9 ? "9+" : chatUnread}
-                      </span>
-                    )}
-                  </span>
-                </IconTip>
-                {hasBuyerNdas && (
-                  <IconTip as={Link} to="/my-ndas" label="Business financials" className="hidden sm:inline-flex">
-                    <FaFileContract className="text-lg" aria-hidden="true" />
-                  </IconTip>
-                )}
-                <IconTip label="Account" onClick={() => navigate("/profile")}>
-                  {user?.customer_profile_picture ? (
-                    <img
-                      src={user.customer_profile_picture}
-                      alt=""
-                      className="w-7 h-7 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <IoPersonOutline className="text-xl" aria-hidden="true" />
+            {authToken && (
+              <IconTip
+                label={`Messages${chatUnread ? ` (${chatUnread} unread)` : ""}`}
+                onClick={() => {
+                  setProfileOpen(false);
+                  setIsProfileOpen(false);
+                  setIsChatOpen(!isChatOpen);
+                }}
+              >
+                <span className="relative inline-flex">
+                  <IoChatbubbleOutline className="text-xl" aria-hidden="true" />
+                  {chatUnread > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--ps-red)] text-[10px] font-bold flex items-center justify-center">
+                      {chatUnread > 9 ? "9+" : chatUnread}
+                    </span>
                   )}
-                </IconTip>
-                <IconTip label="Log out" onClick={Logout} className="hidden sm:inline-flex">
-                  <IoLogOutOutline className="text-xl" aria-hidden="true" />
-                </IconTip>
-              </>
+                </span>
+              </IconTip>
             )}
 
-            {!authToken && (
-              <>
-                <IconTip as={Link} to="/signin" label="Sign in">
+            <div className="relative" ref={profileRef}>
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={profileOpen}
+                aria-label="Account menu"
+                onClick={() => setProfileOpen((o) => !o)}
+                className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-2 rounded-xl text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)] border border-transparent hover:border-[var(--ps-brd)] transition-colors"
+              >
+                {authToken && user?.customer_profile_picture ? (
+                  <img
+                    src={user.customer_profile_picture}
+                    alt=""
+                    className="w-7 h-7 rounded-lg object-cover"
+                  />
+                ) : (
                   <IoPersonOutline className="text-xl" aria-hidden="true" />
-                </IconTip>
-                <Link
-                  to="/signup"
-                  className="hidden sm:inline-flex min-h-[44px] items-center px-4 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-sm font-semibold text-white"
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
+                )}
+                <IoChevronDown
+                  className={`text-xs transition-transform ${profileOpen ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+              </button>
+
+              <AnimatePresence>
+                {profileOpen && (
+                  <motion.div
+                    role="menu"
+                    initial={reducedMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
+                    transition={{ duration: PS_MOTION.duration.fast, ease: PS_MOTION.easing.standard }}
+                    className="absolute right-0 mt-2 w-56 rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] shadow-xl shadow-black/40 overflow-hidden z-50"
+                  >
+                    {authToken ? (
+                      <>
+                        <div className="px-3 py-2.5 border-b border-[var(--ps-brd)]">
+                          <p className="text-xs text-[var(--ps-dim)]">Signed in</p>
+                          <p className="text-sm font-medium text-white truncate">
+                            {getCustomerDisplayName(user)}
+                          </p>
+                        </div>
+                        <Link
+                          role="menuitem"
+                          to="/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                        >
+                          <IoPersonOutline aria-hidden="true" />
+                          View profile
+                        </Link>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={openWishlist}
+                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)] text-left"
+                        >
+                          <FaHeart aria-hidden="true" />
+                          Wishlist
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={openCart}
+                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)] text-left"
+                        >
+                          <IoCart aria-hidden="true" />
+                          Cart
+                          {cartProducts.length > 0 && (
+                            <span className="ml-auto text-xs text-[var(--ps-purple-light)]">
+                              {cartProducts.length}
+                            </span>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setProfileOpen(false);
+                            Logout();
+                          }}
+                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-[var(--ps-red)] hover:bg-[var(--ps-surf)] text-left border-t border-[var(--ps-brd)]"
+                        >
+                          <IoLogOutOutline aria-hidden="true" />
+                          Log out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          role="menuitem"
+                          to="/signin"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                        >
+                          <IoPersonOutline aria-hidden="true" />
+                          Sign in
+                        </Link>
+                        <Link
+                          role="menuitem"
+                          to="/signup"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)] border-t border-[var(--ps-brd)]"
+                        >
+                          Sign up
+                        </Link>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={openWishlist}
+                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-[var(--ps-muted)] hover:bg-[var(--ps-surf)] text-left"
+                        >
+                          <FaHeart aria-hidden="true" />
+                          Wishlist
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={openCart}
+                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-[var(--ps-muted)] hover:bg-[var(--ps-surf)] text-left"
+                        >
+                          <IoCart aria-hidden="true" />
+                          Cart
+                        </button>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <IconTip
               label="Open menu"
@@ -396,6 +498,28 @@ const Header = () => {
                         {getCustomerDisplayName(user)}
                       </span>
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        openWishlist();
+                      }}
+                      className="w-full flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-white"
+                    >
+                      <FaHeart aria-hidden="true" />
+                      Wishlist
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        openCart();
+                      }}
+                      className="w-full flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-white"
+                    >
+                      <IoCart aria-hidden="true" />
+                      Cart
+                    </button>
                     <button
                       type="button"
                       onClick={() => {

@@ -1,76 +1,78 @@
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
-import { FaHeart, FaHeartBroken } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 import { formatMoney } from "../utils/formatMoney";
 import { isOutOfStock } from "../utils/cartStock";
 import { useAccessToken } from "../hooks/useAccessToken";
+import MediaImage from "./ui/MediaImage";
 
 export default function Wishlist() {
   const accessToken = useAccessToken();
-  const { isWishlistOpen, isDarkMode, setIsWishlistOpen } =
-    useContext(authContext);
-  const { setCartProducts } = useContext(dataContext);
-  const { wishlistProducts, setWishlistProducts } = useContext(dataContext);
-  const { currency } = useContext(authContext);
+  const { isWishlistOpen, setIsWishlistOpen, currency } = useContext(authContext);
+  const { setCartProducts, wishlistProducts, setWishlistProducts } =
+    useContext(dataContext);
   const navigate = useNavigate();
-  const [cookies, removeCookie] = useCookies([]);
-  const [subTotal, setSubTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
   const GetWishlist = async () => {
-    if (!accessToken) return;
-    axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((response) => {
-        // console.log(response.data.items);
-        setWishlistProducts(response.data.items);
-        // console.log(wishlistProducts);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    if (!accessToken) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/view/`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setWishlistProducts(response.data.items || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // const additionalPrice = 2;
-  // fetch cart products --------------------------------------------------------
   const GetCartProducts = async () => {
     if (!accessToken) return;
-    axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((response) => {
-        setCartProducts(response.data);
-        // console.log(subTotal);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const payload = response.data;
+      setCartProducts(Array.isArray(payload) ? payload : payload?.items || []);
+    } catch (error) {
+      console.error(error);
+    }
   };
+
   useEffect(() => {
     if (!isWishlistOpen || !accessToken) return;
     GetWishlist();
   }, [isWishlistOpen, accessToken]);
+
   const AddtoCart = (productId) => {
-    // console.log(accessToken);
     axios
       .post(
-        `${import.meta.env.VITE_SERVER_URL
-        }/api/customer/cart/add/${productId}/`,
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${productId}/`,
         {},
         {
           headers: {
@@ -79,29 +81,26 @@ export default function Wishlist() {
           },
         }
       )
-      .then((response) => {
-        // console.log(response.data);
-        toast.success("Added to Cart", {
-          position: "top-right",
-        });
+      .then(() => {
+        toast.success("Added to Cart", { position: "top-right" });
         GetCartProducts();
       })
       .catch((error) => {
         console.error(error);
-        // Handle the error here
-        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
-          position: "top-right",
-        });
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.Status ||
+            error.response?.data?.detail ||
+            "An error occurred",
+          { position: "top-right" }
+        );
       });
   };
-  //   remove product--------------------------------------------------------
+
   const RemoveWishlistProduct = (productId) => {
-    // console.log(productId);
-    // console.log(accessToken);
     axios
       .post(
-        `${import.meta.env.VITE_SERVER_URL
-        }/api/customer/wishlist/remove/${productId}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/customer/wishlist/remove/${productId}`,
         {},
         {
           headers: {
@@ -110,48 +109,40 @@ export default function Wishlist() {
           },
         }
       )
-      .then((response) => {
-        // console.log(response.data);
-        // setWishlistProducts(response.data);
-        // console.log(products);
-        GetWishlist();
-      })
+      .then(() => GetWishlist())
       .catch((error) => {
         console.error(error);
-        // Handle the error here
-        toast.error(error.response.data.message ||
-          error.response.data.Status ||
-          error.response.data.Err ||
-          error.response.data.detail ||
-          "An error occurred", {
-          position: "top-right",
-          autoClose: 3000
-        });
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.Status ||
+            error.response?.data?.Err ||
+            error.response?.data?.detail ||
+            "An error occurred",
+          { position: "top-right", autoClose: 3000 }
+        );
       });
   };
 
   function htmlToText(html) {
-    let doc = new DOMParser().parseFromString(html, "text/html");
+    const doc = new DOMParser().parseFromString(html || "", "text/html");
     return doc.body.textContent || "";
   }
 
+  const isEmpty = !loading && (!wishlistProducts || wishlistProducts.length === 0);
+
   return (
     <Transition.Root show={isWishlistOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        className={`relative ${isDarkMode && "dark"}  z-50`}
-        onClose={setIsWishlistOpen}
-      >
+      <Dialog as="div" className="relative z-50" onClose={setIsWishlistOpen}>
         <Transition.Child
           as={Fragment}
-          enter="ease-in-out duration-500"
+          enter="ease-out duration-200"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="ease-in-out duration-500"
+          leave="ease-in duration-150"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/70 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-black/70" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden">
@@ -159,124 +150,110 @@ export default function Wishlist() {
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
               <Transition.Child
                 as={Fragment}
-                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enter="transform transition ease-out duration-250"
                 enterFrom="translate-x-full"
                 enterTo="translate-x-0"
-                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leave="transform transition ease-in duration-200"
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto  w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-[#0E0F13] shadow-xl">
-                    <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-6 sm:px-6">
-                      <div className="flex items-start justify-between">
-                        <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-[#f5f5f5]">
-                          My Wishlist
-                        </Dialog.Title>
-                        <div className="ml-3 flex h-7 items-center">
-                          <button
-                            type="button"
-                            className="relative -m-2 p-2 border-none outline-none text-gray-500 dark:text-[#f5f5f5]"
-                            onClick={() => setIsWishlistOpen(false)}
-                          >
-                            <span className="absolute -inset-0.5" />
-                            <span className="sr-only">Close panel</span>
-                            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                          </button>
-                        </div>
-                      </div>
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
+                  <div className="flex h-full flex-col bg-[var(--ps-bg)] border-l border-[var(--ps-brd)] shadow-2xl">
+                    <div className="flex shrink-0 items-center justify-between border-b border-[var(--ps-brd)] px-5 py-4">
+                      <Dialog.Title className="text-base font-semibold text-white">
+                        Wishlist
+                      </Dialog.Title>
+                      <button
+                        type="button"
+                        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)]"
+                        onClick={() => setIsWishlistOpen(false)}
+                      >
+                        <span className="sr-only">Close panel</span>
+                        <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    </div>
 
-                      <div className=" ">
-                        <div className="flow-root ">
-                          <ul role="list" className="  pt-3 sm:pt-5">
-                            {wishlistProducts?.map((product) => {
-                              return (
-                                <li
-                                  key={product.id}
-                                  className="flex  py-1 sm:py-2"
-                                >
-                                  <div className=" w-full">
-                                    <div className="flex max-w-md h-[120px] sm:h-[155px] w-full bg-white dark:bg-[#0E0F13] shadow-lg shadow-black/30 rounded-lg overflow-hidden">
-                                      <img
-                                        className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200"
-                                        src={`${product.image1}`}
-                                      // src="https://images.unsplash.com/photo-1494726161322-5360d4d0eeae?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
-                                      />
-                                      <div className="w-2/3 p-2 pt-0">
-                                      <Link
-                                          to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-                                          onClick={() => setIsWishlistOpen(false)}
-                                        >
-                                        <h1 className="text-gray-900 dark:text-[#f5f5f5] font-bold text-base sm:text-sm">
-                                          {product.name.length > 17 ? `${product.name.slice(0, 17)}...` : product.name}
-                                        </h1>
-                                          <p className=" text-ellipsis h-[20px] dark:text-[#f5f5f5] text-[13px] sm:text-sm overflow-hidden text-gray-600">
-                                            {htmlToText(
-                                              product.short_description
-                                            ).slice(0, 10)}
-                                            {product.short_description.length > 10
-                                              ? "..."
-                                              : ""}
-                                          </p>
-                                        </Link>
-                                        <div className="flex flex-col item-center justify-between sm:mt-1">
-                                          <h1 className="text-gray-700 dark:text-[#f5f5f5] font-semibold text-base sm:text-md">
-                                            {currency}
-                                            {formatMoney(product.unit_price)}
-                                          </h1>
-                                          <div className=" w-full flex sm:gap-1 items-center sm:mt-2 ">
-                                            <button
-                                              disabled={isOutOfStock(product)}
-                                              onClick={() => {
-                                                AddtoCart(product.id);
-                                              }}
-                                              className=" px-2 sm:px-3 disabled:bg-gray-200 dark:disabled:bg-gray-500 dark:disabled:text-gray-400 disabled:text-gray-700 py-1 sm:py-2 min-h-[44px] bg-[var(--ps-primary)] text-white text-[10px] lg:text-[11px] font-bold uppercase rounded hover:bg-[var(--ps-purple-dark)]"
-                                            >
-                                              Add to Cart
-                                            </button>
-                                            <button
-                                              onClick={() => {
-                                                RemoveWishlistProduct(
-                                                  product.id
-                                                );
-                                              }}
-                                              className="px-1.5 sm:px-3 py-2 text-purple-800 dark:text-[#fff] text-[11px] sm:text-[13.4px] font-semibold uppercase rounded"
-                                            >
-                                              Remove
-                                            </button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <p
-                                    className={` ${!wishlistProducts ? "block" : "hidden"
-                                      } w-full h-full flex items-center justify-center pt-5 top-3 left-3 z-50 text-black/80`}
-                                  >
-                                    your wishlist is empty
-                                  </p>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      </div>
-                      {wishlistProducts.length === 0 && (
-                        <div className=" w-full h-[90%] flex flex-col items-center justify-center">
-                          <FaHeart className=" text-red-500 text-[13vw] lg:text-[80px] " />
-                          <p className=" text-[16px] sm:text-[19px] dark:text-[#f5f5f5] mt-1 font-semibold">
-                            Your Wishlist is Empty
+                    <div className="flex-1 overflow-y-auto px-5 py-4">
+                      {loading ? (
+                        <ul className="space-y-3" aria-busy="true">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <li key={i} className="flex gap-3">
+                              <div className="ps-skeleton h-20 w-20 rounded-xl shrink-0" />
+                              <div className="flex-1 space-y-2 py-1">
+                                <div className="ps-skeleton h-4 w-3/4 rounded" />
+                                <div className="ps-skeleton h-3 w-1/2 rounded" />
+                                <div className="ps-skeleton h-8 w-32 rounded-lg" />
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : isEmpty ? (
+                        <div className="h-full min-h-[280px] flex flex-col items-center justify-center text-center px-4">
+                          <FaHeart className="text-[var(--ps-dim)] text-4xl mb-3" />
+                          <p className="text-base font-semibold text-white">Wishlist is empty</p>
+                          <p className="mt-1 text-sm text-[var(--ps-muted)]">
+                            Save products you love and find them here later.
                           </p>
                           <button
+                            type="button"
                             onClick={() => {
                               navigate("/shoppingMall");
                               setIsWishlistOpen(false);
                             }}
-                            className=" bg-[#2d1e5f] px-3 text-sm sm:text-base py-1.5 rounded-md text-white mt-2"
+                            className="mt-5 min-h-[44px] px-5 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-sm font-semibold text-white"
                           >
-                            Shop Now{" "}
+                            Browse shopping mall
                           </button>
                         </div>
+                      ) : (
+                        <ul role="list" className="divide-y divide-[var(--ps-brd)]">
+                          {wishlistProducts.map((product) => (
+                            <li key={product.id} className="flex gap-3 py-4">
+                              <MediaImage
+                                src={product.image1}
+                                alt={product.name}
+                                className="h-20 w-20 object-cover rounded-xl"
+                                skeletonClassName="h-20 w-20 rounded-xl shrink-0 border border-[var(--ps-brd)]"
+                                loading="lazy"
+                              />
+                              <div className="min-w-0 flex-1 space-y-1.5">
+                                <Link
+                                  to={`/product/productDetail/${product.slug}?productId=${product.id}`}
+                                  onClick={() => setIsWishlistOpen(false)}
+                                  className="block"
+                                >
+                                  <h3 className="text-sm font-medium text-white line-clamp-2 hover:text-[var(--ps-purple-light)]">
+                                    {product.name}
+                                  </h3>
+                                  <p className="text-xs text-[var(--ps-muted)] line-clamp-1 mt-0.5">
+                                    {htmlToText(product.short_description)}
+                                  </p>
+                                </Link>
+                                <p className="text-sm font-semibold text-white">
+                                  {currency}
+                                  {formatMoney(product.unit_price)}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                  <button
+                                    type="button"
+                                    disabled={isOutOfStock(product)}
+                                    onClick={() => AddtoCart(product.id)}
+                                    className="min-h-[40px] px-3 rounded-xl bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-xs font-semibold text-white disabled:opacity-40"
+                                  >
+                                    Add to cart
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => RemoveWishlistProduct(product.id)}
+                                    className="min-h-[40px] px-3 rounded-xl text-xs font-medium text-[var(--ps-muted)] hover:text-white"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
                   </div>
