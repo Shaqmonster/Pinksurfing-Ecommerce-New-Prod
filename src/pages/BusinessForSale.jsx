@@ -17,6 +17,7 @@ import {
   IoMenuOutline
 } from "react-icons/io5";
 import useCategoryProducts from "./categoryProducts/useCategoryProducts";
+import { parseMoney, ebitdaMultiple, REVENUE_ATTR_ALIASES, EBITDA_ATTR_ALIASES } from "../utils/businessMetrics";
 
 // Smart tag labels must match exactly what the vendor wizard saves (SMART_TAG_DEFS labels)
 const SMART_TAG_OPTIONS = [
@@ -29,7 +30,7 @@ const SMART_TAG_OPTIONS = [
 ];
 
 const fmt = (n) => {
-  if (!n && n !== 0) return "—";
+  if (!n) return "—"; // missing or 0: show a dash, never "$0"
   if (typeof n === 'string') n = parseFloat(n.replace(/[^0-9.]/g, ''));
   if (isNaN(n)) return "—";
   if (n >= 1000000) return "$" + (n / 1000000).toFixed(1) + "M";
@@ -83,10 +84,14 @@ const BusinessForSale = () => {
       state: getAttr("state") || p.state || "",
       city: getAttr("city") || p.city || "",
       zip: getAttr("zip", "zip_code") || p.zip_code || "",
-      asking: parseFloat(p.unit_price) || 0,
-      revenue: parseFloat(getAttr("revenue", "annual revenue", "annual_revenue")) || 0,
-      ebitda: parseFloat(getAttr("ebitda")) || 0,
-      multi: parseFloat(getAttr("ebitda multiple")) || (parseFloat(p.unit_price) / (parseFloat(getAttr("ebitda")) || 1)).toFixed(1),
+      asking: parseMoney(p.unit_price) || 0,
+      revenue: parseMoney(getAttr(...REVENUE_ATTR_ALIASES)) || 0,
+      ebitda: parseMoney(getAttr(...EBITDA_ATTR_ALIASES)) || 0,
+      multi: ebitdaMultiple({
+        explicit: getAttr("ebitda multiple", "multiple"),
+        asking: parseMoney(p.unit_price) || 0,
+        ebitda: parseMoney(getAttr(...EBITDA_ATTR_ALIASES)) || 0,
+      }),
       remote: getAttr("remote")?.toLowerCase() === "yes",
       smart: (() => {
         const v = getAttr("smart_tags");
@@ -321,7 +326,7 @@ const BusinessForSale = () => {
                     <div className="grid grid-cols-3 gap-1 bg-white/[0.03] rounded p-2 mb-4">
                       <div className="text-center"><div className="text-[11px] font-bold text-white">{fmt(biz.revenue)}</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Revenue</div></div>
                       <div className="text-center border-x border-white/5"><div className="text-[11px] font-bold text-white">{fmt(biz.ebitda)}</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">EBITDA</div></div>
-                      <div className="text-center"><div className="text-[11px] font-bold text-white">{biz.multi}x</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Multiple</div></div>
+                      <div className="text-center"><div className="text-[11px] font-bold text-white">{biz.multi ? `${biz.multi}x` : "—"}</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Multiple</div></div>
                     </div>
                     <div className="flex flex-wrap gap-1 mb-3">
                       {biz.smart.map(s => <div key={s} className="px-2 py-0.5 rounded bg-[#9747ff]/10 border border-[#9747ff]/20 text-[#9747ff] text-[8px] font-bold uppercase tracking-tighter">{s}</div>)}
@@ -367,7 +372,7 @@ const BusinessForSale = () => {
                       <div className="space-y-1 text-right mt-2">
                         <div className="text-[10px] text-gray-500">Rev: <span className="text-white font-semibold">{fmt(biz.revenue)}</span></div>
                         <div className="text-[10px] text-gray-500">EBITDA: <span className="text-white font-semibold">{fmt(biz.ebitda)}</span></div>
-                        <div className="text-[10px] text-gray-500">Multiple: <span className="text-white font-semibold">{biz.multi}x</span></div>
+                        <div className="text-[10px] text-gray-500">Multiple: <span className="text-white font-semibold">{biz.multi ? `${biz.multi}x` : "—"}</span></div>
                       </div>
                       <span className="text-[10px] font-bold text-[#9747ff] flex items-center gap-1 mt-3">View <IoArrowForwardOutline /></span>
                     </div>
@@ -402,7 +407,7 @@ const BusinessForSale = () => {
                     <span className="text-sm font-bold text-[#9747ff]">{fmt(biz.asking)}</span>
                     <span className="text-xs text-white">{fmt(biz.revenue)}</span>
                     <span className="text-xs text-white">{fmt(biz.ebitda)}</span>
-                    <span className="text-xs text-white">{biz.multi}x</span>
+                    <span className="text-xs text-white">{biz.multi ? `${biz.multi}x` : "—"}</span>
                     <span className="text-[10px] font-bold text-[#9747ff] flex items-center gap-1">View <IoArrowForwardOutline /></span>
                   </Link>
                 </motion.div>

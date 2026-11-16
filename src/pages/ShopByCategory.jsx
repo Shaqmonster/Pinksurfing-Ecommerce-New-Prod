@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -18,11 +18,24 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 import SearchForm from "../components/Search";
-import { fetchCategoryProducts } from "../api/catalogProducts";
 
 export default function ShopByCategory() {
   const { shopHeading } = useContext(authContext);
-  const localSubCategory = localStorage.getItem("subcategory");
+  const [searchParams] = useSearchParams();
+  let localSubCategory = null;
+  try {
+    localSubCategory = localStorage.getItem("subcategory");
+  } catch {
+    localSubCategory = null;
+  }
+  // Category to show: ?subcategory= / ?category= in the URL, else the one picked in the
+  // menu, else none (show everything).
+  const activeSlug =
+    searchParams.get("subcategory") ||
+    searchParams.get("category") ||
+    shopHeading ||
+    localSubCategory ||
+    "";
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const { products } = useContext(dataContext);
@@ -185,94 +198,52 @@ export default function ShopByCategory() {
   };
 
   // axios requests ===================================================================
+  // One fetch for the product grid. Two effects used to race (all products vs. the
+  // "perfumes" category), and whichever finished last decided what the page showed.
   useEffect(() => {
-    const getPerfumes = async () => {
-      setLoading(true);
-      axios
-        .get(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/api/product/filter-products/?${perfumeCategory1}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        )
-        .then((response) => {
-          setShopByCategoryProducts(response.data);
-          setLoading(false);
-          // console.log(response.data);
-          // setCategoryOnlyData(
-          // getUniqueData(response.data.Products, "category")
-          // );
-          // console.log(CategoryOnlyData);
-          const allAttributes = response.data.Products?.flatMap(
-            (product) => product.attributes || []
-          );
-          setUniqueAttributes(Array.from(new Set(allAttributes)));
-
-          // getting maximum and minimun values -----
-          setMaxValue(() => {
-            ShopByCategoryProducts?.reduce((max, obj) => {
-              return Math.max(max, obj["unit_price"]);
-            }, -Infinity);
-          });
-          // console.log(maxValue);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    let cancelled = false;
+    const query = filterBy
+      ? `attributes__value=${encodeURIComponent(filterBy)}`
+      : perfumeCategory1;
+    setLoading(true);
+    axios
+      .get(
+        `${import.meta.env.VITE_SERVER_URL}/api/product/filter-products/?${query}`,
+        { headers: { "Content-Type": "application/json" } }
+      )
+      .then((response) => {
+        if (cancelled) return;
+        const items = Array.isArray(response.data)
+          ? response.data
+          : response.data?.Products || [];
+        setShopByCategoryProducts(items);
+        const allAttributes = items.flatMap((product) => product.attributes || []);
+        setUniqueAttributes(Array.from(new Set(allAttributes)));
+        const prices = items
+          .map((product) => Number(product.unit_price))
+          .filter(Number.isFinite);
+        if (prices.length > 0) setMaxValue(Math.max(...prices));
+      })
+      .catch((error) => {
+        console.error("[ShopByCategory] product fetch failed:", error);
+        if (!cancelled) setShopByCategoryProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
     };
-    getPerfumes();
-  }, [perfumeCategory1]);
-  useEffect(() => {
-    const getFilterProducts = async () => {
-      if (filterBy === "") {
-        setLoading(true);
-        fetchCategoryProducts("perfumes")
-          .then((items) => {
-            setShopByCategoryProducts(items);
-            setLoading(false);
-            const allAttributes = items?.flatMap(
-              (product) => product.attributes || []
-            );
-            setUniqueAttributes(Array.from(new Set(allAttributes)));
+  }, [filterBy, perfumeCategory1]);
 
-            const prices = items.map((product) => Number(product.unit_price)).filter(Number.isFinite);
-            if (prices.length > 0) {
-              setMaxValue(Math.max(...prices));
-            }
-          })
-          .catch((error) => {
-            console.error(error);
-            setLoading(false);
-          });
-      } else {
-        setLoading(true);
-        axios
-          .get(
-            `${
-              import.meta.env.VITE_SERVER_URL
-            }/api/product/filter-products/?attributes__value=${filterBy}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          )
-          .then((response) => {
-            // console.log(response.data);
-            setShopByCategoryProducts(response.data);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      }
-    };
-    getFilterProducts();
-  }, [cookies, filterBy, navigate, removeCookie]);
+  // Products shown in the grid: everything when no category was picked (e.g. the
+  // footer's "Shop by category" link), otherwise only that category or subcategory.
+  const visibleProducts = (ShopByCategoryProducts || []).filter(
+    (product) =>
+      !activeSlug ||
+      product?.category?.slug === activeSlug ||
+      product?.subcategory?.slug === activeSlug
+  );
 
   uniqueAttributes.forEach((attribute) => {
     const { name, value } = attribute;
@@ -428,11 +399,7 @@ export default function ShopByCategory() {
                 }}
                 className=" cursor-pointer hidden lg:block w-[30px] text-[#f5f5f5] right-[2%]"
               />
-              {shopHeading
-                ? shopHeading
-                : localSubCategory
-                ? localSubCategory
-                : "Shopping Mall"}
+              {activeSlug ? activeSlug.replace(/-/g, " ") : "All products"}
             </h1>
             <div className="flex  items-center">
               <button
@@ -457,7 +424,7 @@ export default function ShopByCategory() {
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4 2xl:grid-cols-5">
               <form className="hidden lg:block dark:text-[#f5f5f5]">
                 <h3 className="sr-only">Categories</h3>
-                {(shopHeading || localSubCategory) === "perfumes" && (
+                {activeSlug === "perfumes" && (
                   <div>
                     <h2 className=" dark:text-purple-500">
                       Filter By Category
@@ -657,38 +624,30 @@ export default function ShopByCategory() {
                   <div className="bg-white dark:bg-black w-full h-full min-h-screen">
                     <div className="w-full sm:py-0 sm:pb-10 lg:px-0 h-full">
                       <div className="grid grid-cols-2 pb-6 sm:grid-cols-3 lg:grid-cols-3 2xl:grid-cols-4 gap-x-0.5 gap-y-1 lg:gap-x-2 lg:items-center lg:justify-start flex-wrap h-full">
-                        {ShopByCategoryProducts?.filter((product) => {
-                          return (
-                            product?.category?.slug ===
-                              (shopHeading || localSubCategory) ||
-                            product?.subcategory?.slug ===
-                              (shopHeading || localSubCategory)
-                          );
-                        })
+                        {[...visibleProducts]
                           .sort(handleSort(sortMethod))
                           .map((product) => {
                             return (
-                              <ProductCard product={product} isCard={true} />
+                              <ProductCard key={product.id} product={product} isCard={true} />
                             );
                           })}
                       </div>
-                      {ShopByCategoryProducts?.filter((product) => {
-                        return (
-                          product?.category?.slug ===
-                            (shopHeading || localSubCategory) ||
-                          product?.subcategory?.slug ===
-                            (shopHeading || localSubCategory)
-                        );
-                      }).length === 0 && (
+                      {visibleProducts.length === 0 && (
                         <p className="text-gray-700 dark:text-[#f5f5f5] text-center text-base sm:text-[17px] mt-6 w-full">
-                          No products available in{" "}
-                          <span className="font-semibold capitalize">
-                            {shopHeading}
-                          </span>{" "}
-                          sub category.
+                          {activeSlug ? (
+                            <>
+                              No products available in{" "}
+                              <span className="font-semibold capitalize">
+                                {activeSlug.replace(/-/g, " ")}
+                              </span>{" "}
+                              yet.
+                            </>
+                          ) : (
+                            "No products available yet."
+                          )}
                         </p>
                       )}
-                      {(shopHeading || localSubCategory) === "perfumes" &&
+                      {activeSlug === "perfumes" &&
                         !ShopByCategoryProducts && (
                           <p className="text-gray-700 dark:text-[#f5f5f5] text-center text-base sm:text-[17px] mt-6 w-full">
                             No perfumes available in this sub category.
