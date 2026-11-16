@@ -31,7 +31,7 @@ const Footer = () => {
     { name: "Shopping mall", link: "/shoppingMall" },
     { name: "GigHub", link: "/gighub" },
     { name: "Deals", link: "/deals" },
-    { name: "Bids", link: "/bids" },
+    { name: "Jobs", link: "/bids" },
     { name: "Shop by category", link: "/shopByCategory" },
     ...(!accessToken ? [{ name: "Register", link: "/signup" }] : []),
   ];

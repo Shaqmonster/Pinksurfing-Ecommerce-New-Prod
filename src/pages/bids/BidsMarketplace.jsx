@@ -31,6 +31,7 @@ import {
 } from "react-icons/fa";
 import { getOpenRequests } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
+import { JOB_CATEGORIES, requestCategoryText, requestCategoryLabel } from "../../constants/jobCategories";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
 // ─── Filter Data (from bidding/src/components/marketplace/filterData.ts) ───────
@@ -42,57 +43,8 @@ const PROPOSAL_SOURCE_FILTERS = [
   { value: "public", label: "Public (Gov / Municipal)" },
 ];
 
-const CATEGORY_FILTERS = {
-  "Construction & Property": [
-    "General Contracting", "Home Remodeling", "Kitchen Remodeling", "Bathroom Remodeling",
-    "Roofing", "Flooring", "Painting", "Plumbing", "Electrical", "HVAC", "Landscaping",
-    "Masonry", "Windows & Doors", "Pool Construction", "Demolition", "Structural Engineering",
-    "Architecture & Design", "Commercial Construction", "Facility Maintenance",
-  ],
-  "Real Estate & Property Services": [
-    "Property Management", "Appraisal", "Inspection", "Property Marketing",
-    "Leasing Services", "Real Estate Photography", "Title & Escrow Services",
-  ],
-  "Professional Services": [
-    "Legal", "Accounting", "Tax Preparation", "Business Consulting",
-    "Management Consulting", "Financial Advisory", "HR & Recruiting",
-    "Market Research", "Compliance & Regulatory",
-  ],
-  "Technology & Software": [
-    "Software Development", "Web Development", "Mobile App Development",
-    "AI / Machine Learning", "Blockchain", "Data Engineering", "Cybersecurity",
-    "DevOps / Cloud", "IT Support", "System Integration", "ERP Implementation",
-  ],
-  "Creative & Marketing": [
-    "Graphic Design", "Branding", "Advertising", "Digital Marketing", "SEO",
-    "Social Media Management", "Content Creation", "Copywriting",
-    "Video Production", "Photography", "UI / UX Design",
-  ],
-  "Manufacturing & Product Development": [
-    "Industrial Design", "Prototyping", "Product Engineering", "Tooling",
-    "Contract Manufacturing", "Packaging Design", "Quality Assurance",
-  ],
-  "Logistics & Transportation": [
-    "Freight Shipping", "Trucking", "Last Mile Delivery", "Warehousing",
-    "Fulfillment", "Supply Chain Logistics", "Customs Brokerage",
-  ],
-  "Equipment & Procurement": [
-    "Equipment Purchase", "Equipment Leasing", "Industrial Machinery",
-    "Medical Equipment", "Construction Equipment", "IT Hardware",
-  ],
-  "Maintenance & Field Services": [
-    "Appliance Repair", "Equipment Repair", "Cleaning Services",
-    "Security Services", "Pest Control", "Elevator Maintenance",
-  ],
-  "Healthcare Services": [
-    "Telehealth Providers", "Medical Staffing", "Medical Billing",
-    "Healthcare IT", "Medical Equipment Installation",
-  ],
-  "Government & Public Contracts": [
-    "Infrastructure Projects", "Public Works", "Government IT",
-    "Defense Contracts", "Municipal Services",
-  ],
-};
+// Shared with the job form so buyers and vendors use the same categories.
+const CATEGORY_FILTERS = JOB_CATEGORIES;
 
 const TIMELINE_FILTERS = [
   { value: "immediate", label: "Immediate" },
@@ -342,7 +294,7 @@ const FilterSidebar = ({ filters, onFilterChange, locationFilters, onLocationCha
       </div>
 
       {/* Proposal Source */}
-      <FilterSection title="Proposal Source" defaultOpen>
+      <FilterSection title="Proposal Source">
         <ChipFilter
           options={PROPOSAL_SOURCE_FILTERS}
           selected={filters.source || []}
@@ -359,7 +311,7 @@ const FilterSidebar = ({ filters, onFilterChange, locationFilters, onLocationCha
       </FilterSection>
 
       {/* Location */}
-      <FilterSection title="Location" defaultOpen>
+      <FilterSection title="Location">
         <div className="space-y-2">
           <select
             value={locationFilters.country}
@@ -547,10 +499,10 @@ const RequestCard = ({ request }) => {
                 {request.title}
               </h3>
               <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                {request.category_name && (
+                {requestCategoryLabel(request) && (
                   <span className="flex items-center gap-1 text-xs text-white/50">
                     <FaTag className="text-pink-400 text-[10px]" />
-                    {request.category_name}
+                    {requestCategoryLabel(request)}
                   </span>
                 )}
                 {request.deadline && (
@@ -713,16 +665,17 @@ export default function BidsMarketplace() {
         (r) =>
           r.title?.toLowerCase().includes(q) ||
           r.description?.toLowerCase().includes(q) ||
-          r.category_name?.toLowerCase().includes(q)
+          requestCategoryText(r).toLowerCase().includes(q)
       );
     }
 
-    // Category filter (matches category_name)
+    // Category filter (matches the job category / subcategory chosen on the job form)
     const catSelected = filters.category || [];
     if (catSelected.length > 0) {
-      list = list.filter((r) =>
-        catSelected.some((c) => r.category_name?.toLowerCase().includes(c.toLowerCase()))
-      );
+      list = list.filter((r) => {
+        const text = requestCategoryText(r).toLowerCase();
+        return catSelected.some((c) => text.includes(c.toLowerCase()));
+      });
     }
 
     const timelineSelected = filters.timeline || [];
@@ -897,7 +850,7 @@ export default function BidsMarketplace() {
               <>
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-sm text-white/50">
-                    {filtered.length} open request{filtered.length !== 1 ? "s" : ""}
+                    {filtered.length} open job request{filtered.length !== 1 ? "s" : ""}
                     {activeFilterCount > 0 && (
                       <span className="ml-2 text-pink-400">({activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} active)</span>
                     )}
@@ -906,14 +859,29 @@ export default function BidsMarketplace() {
                 {filtered.length === 0 ? (
                   <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
                     <FaGavel className="text-5xl text-white/15 mx-auto mb-4" />
-                    <p className="text-white/50 mb-2">No requests match your filters.</p>
-                    <button
-                      type="button"
-                      onClick={clearAll}
-                      className="text-pink-400 text-sm hover:text-pink-300 transition-colors"
-                    >
-                      Clear all filters
-                    </button>
+                    {activeFilterCount > 0 || searchQuery.trim() ? (
+                      <>
+                        <p className="text-white/50 mb-2">No job requests match your filters.</p>
+                        <button
+                          type="button"
+                          onClick={clearAll}
+                          className="text-pink-400 text-sm hover:text-pink-300 transition-colors"
+                        >
+                          Clear all filters
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-white/70 mb-1">No open job requests yet.</p>
+                        <p className="text-white/40 text-sm mb-4">Be the first: post what you need and get bids from vendors.</p>
+                        <Link
+                          to="/create-bid"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold"
+                        >
+                          Post a job
+                        </Link>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">

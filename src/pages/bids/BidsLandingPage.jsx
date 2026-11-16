@@ -156,8 +156,8 @@ export default function BidsLandingPage() {
   return (
     <div className="min-h-screen bg-[var(--ps-bg)]">
       <PageSEO
-        title="Bids marketplace"
-        description="Post project requests and send offers on PinkSurfing Bids — compare vendors and hire with confidence."
+        title="Jobs marketplace"
+        description="Post a job on PinkSurfing and get bids from vendors — compare offers and hire with confidence."
         path="/bids"
       />
       <BidsNavBar />

@@ -420,7 +420,7 @@ const Home = () => {
                 to="/bids"
                 className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
               >
-                Bids
+                Jobs
               </Link>
               <button
                 type="button"

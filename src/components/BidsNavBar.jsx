@@ -9,10 +9,10 @@ import {
 } from "react-icons/io5";
 
 const NAV_ITEMS = [
-  { to: "/bids", label: "Bids Home", Icon: IoHome },
-  { to: "/bids/marketplace", label: "Marketplace", Icon: IoStorefrontOutline },
-  { to: "/create-bid", label: "Create Request", Icon: IoAddCircleOutline },
-  { to: "/my-bids", label: "My Bids", Icon: IoReceiptOutline },
+  { to: "/bids", label: "Jobs Home", Icon: IoHome },
+  { to: "/bids/marketplace", label: "Find Jobs", Icon: IoStorefrontOutline },
+  { to: "/create-bid", label: "Post a Job", Icon: IoAddCircleOutline },
+  { to: "/my-bids", label: "My Jobs", Icon: IoReceiptOutline },
   { to: "/bids/my-offers", label: "My Offers", Icon: IoPaperPlaneOutline },
 ];
 
