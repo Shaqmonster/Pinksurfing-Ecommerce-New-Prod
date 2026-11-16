@@ -749,7 +749,7 @@ const BudgetStep = ({ data, onUpdate }) => (
   </div>
 );
 
-const RequestReviewStep = ({ data, onPublish, submitting, onEdit }) => {
+const RequestReviewStep = ({ data, onPublish, onUpdate, submitting, onEdit }) => {
   const sections = [
     {
       Icon: FaTag,
@@ -818,6 +818,24 @@ const RequestReviewStep = ({ data, onPublish, submitting, onEdit }) => {
         <h2 className="text-xl font-bold text-white">Review &amp; Publish</h2>
         <p className="text-sm text-white/50 mt-1">
           Confirm everything looks right before going live
+        </p>
+      </div>
+
+      {/* Job title */}
+      <div>
+        <label htmlFor="bid-title" className="block text-sm font-semibold text-white mb-2">
+          Job title
+        </label>
+        <input
+          id="bid-title"
+          value={data.title}
+          onChange={(e) => onUpdate("title", e.target.value)}
+          maxLength={255}
+          placeholder={deriveTitle(data)}
+          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all"
+        />
+        <p className="text-xs text-white/30 mt-1">
+          This is what vendors see first. Leave blank to use the suggestion.
         </p>
       </div>
 
@@ -890,10 +908,37 @@ const RequestReviewStep = ({ data, onPublish, submitting, onEdit }) => {
         )}
       </motion.button>
       <p className="text-xs text-white/30 text-center">
-        Expect bids in 2\u201324 hours. You can edit anytime before a vendor is awarded.
+        Expect bids in 2–24 hours. You can edit anytime before a vendor is awarded.
       </p>
     </div>
   );
+};
+
+// ─── Helpers ────────────────────────────────────────────────────────────────────
+
+// Suggested title when the poster leaves the title box empty: first line of the scope,
+// else "Category - Subcategory", else a generic label.
+const deriveTitle = (data) => {
+  const scope = typeof data.scopeDraft === "string" ? data.scopeDraft : String(data.scopeDraft || "");
+  const firstLine = scope.split("\n").find((l) => l.trim()) || "";
+  return (
+    firstLine.replace(/^[•#\-*\s]+/, "").slice(0, 255) ||
+    [data.category, data.subcategory].filter(Boolean).join(" - ") ||
+    "Job Request"
+  ).trim();
+};
+
+// Turn a DRF error response (detail, non_field_errors or per-field lists) into one readable line.
+const extractApiError = (err) => {
+  const data = err?.response?.data;
+  if (!data) return err?.message ? `Failed to publish: ${err.message}` : "Failed to publish. Please try again.";
+  if (typeof data === "string") return "Failed to publish. Please try again.";
+  if (data.detail) return String(data.detail);
+  const parts = Object.entries(data).map(([field, msgs]) => {
+    const msg = Array.isArray(msgs) ? msgs.join(" ") : String(msgs);
+    return field === "non_field_errors" ? msg : `${field}: ${msg}`;
+  });
+  return parts.length ? parts.join(" · ") : "Failed to publish. Please try again.";
 };
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
@@ -926,6 +971,7 @@ const CreateBidPage = () => {
     licensedOnly: false,
     insuranceRequired: false,
     financingInterest: false,
+    title: "",
   });
 
   useEffect(() => {
@@ -951,7 +997,21 @@ const CreateBidPage = () => {
   const handleBack = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
   const handleSaveDraft = () => toast.info("Draft saved!");
 
+  const accessToken = cookies.access_token;
+
   const handlePublish = async () => {
+    if (submitting) return;
+    try {
+      await publishRequest();
+    } catch (err) {
+      // Never fail silently: anything thrown while building or sending the request reaches the user.
+      console.error("[CreateBidPage] publish failed:", err);
+      toast.error(extractApiError(err));
+      setSubmitting(false);
+    }
+  };
+
+  const publishRequest = async () => {
     if (!accessToken) {
       toast.error("Please sign in to post a request.");
       navigate("/signin");
@@ -966,17 +1026,7 @@ const CreateBidPage = () => {
       ? new Date(Date.now() + timelineOpt.days * 86400000).toISOString().split("T")[0]
       : undefined;
 
-    if (typeof requestData.scopeDraft !== "string") {
-      console.error("[CreateBidPage:L1030] scopeDraft is not a string:", typeof requestData.scopeDraft, requestData.scopeDraft);
-    }
-    const scopeLines = (typeof requestData.scopeDraft === "string" ? requestData.scopeDraft : String(requestData.scopeDraft || "")).split("\n");
-    if (!Array.isArray(scopeLines)) {
-      console.error("[CreateBidPage:L1034] scopeLines is not an array:", typeof scopeLines, scopeLines);
-    }
-    const firstLine = scopeLines.find((l) => l.trim()) || "";
-    const title = (firstLine.replace(/^[\u2022#\-*\s]+/, "").slice(0, 255) ||
-      [requestData.category, requestData.subcategory].filter(Boolean).join(" - ") ||
-      "Buyer Request").trim();
+    const title = (requestData.title || "").trim().slice(0, 255) || deriveTitle(requestData);
 
     const descParts = [
       requestData.scopeDraft,
@@ -996,7 +1046,7 @@ const CreateBidPage = () => {
     }
     const catMatch = Array.isArray(apiCategories)
       ? apiCategories.find(
-          (c) => c.name?.toLowerCase() === requestData.category.toLowerCase()
+          (c) => c.name?.toLowerCase() === (requestData.category || "").toLowerCase()
         )
       : undefined;
     const category = catMatch?.id;
@@ -1016,9 +1066,8 @@ const CreateBidPage = () => {
       toast.success("Request published! Expect bids in 2\u201324 hours.");
       navigate("/my-bids");
     } catch (err) {
-      toast.error(
-        err?.response?.data?.detail || "Failed to publish. Please try again."
-      );
+      console.error("[CreateBidPage] createBuyerRequest failed:", err?.response?.data || err);
+      toast.error(extractApiError(err));
     } finally {
       setSubmitting(false);
     }
@@ -1041,6 +1090,7 @@ const CreateBidPage = () => {
           <RequestReviewStep
             data={requestData}
             onPublish={handlePublish}
+            onUpdate={updateField}
             submitting={submitting}
             onEdit={(step) => setCurrentStep(step)}
           />
