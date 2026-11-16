@@ -7,6 +7,7 @@ import GoogleAuthComplete from "./pages/GoogleAuthComplete";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import "react-toastify/dist/ReactToastify.css";
 import Cart from "./components/Cart";
+import CartRoute from "./pages/CartRoute";
 import Wishlist from "./components/Wishlist";
 import { authContext } from "./context/authContext";
 import Checkout from "./pages/Checkout";
@@ -128,6 +129,7 @@ function App() {
         <Route path="/coming-soon" element={<ComingSoon />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/cart" element={<CartRoute />} />
         <Route path="/summary/:orderId" element={<Summary />} />
         <Route
           path="/product/productDetail/:slug"

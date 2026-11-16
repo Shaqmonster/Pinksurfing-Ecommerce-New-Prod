@@ -126,11 +126,15 @@ export function computePriceDomain(products = [], categorySlug = "") {
     let domainMax = roundUpToStep(padded, step);
     if (domainMax <= step) domainMax = step * 10;
 
+    // A category holding both homes for sale and rentals must not be labelled "Monthly rent"
+    // (UAT P2.5); the slider step still follows the predominant kind.
+    const isMixedRealEstate = isRE && leaseCount > 0 && saleCount > 0;
+
     return {
         domainMin: 0,
         domainMax,
         step,
-        scale,
+        scale: isMixedRealEstate ? "mixed" : scale,
         selectedMin: 0,
         selectedMax: domainMax,
     };

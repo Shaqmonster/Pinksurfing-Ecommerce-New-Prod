@@ -290,6 +290,7 @@ export default function useCategoryProducts() {
     const priceScaleLabel = useMemo(() => {
         if (priceScale === "lease") return "Monthly rent / lease scale";
         if (priceScale === "sale") return "Purchase price scale";
+        if (priceScale === "mixed") return "Sale price or monthly rent";
         return "";
     }, [priceScale]);
 

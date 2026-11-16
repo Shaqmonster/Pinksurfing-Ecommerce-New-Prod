@@ -30,7 +30,40 @@ const CSS = `
 .deal-cta-btn{display:block;width:100%;text-align:center;padding:10px;border-radius:6px;font-size:13px;font-weight:700;background:#9747ff;color:#fff;border:none;cursor:pointer;text-decoration:none;}
 .deal-cta-btn:hover{background:#d4246f;color:#fff;}
 .deal-cta-btn.secondary{background:transparent;border:1.5px solid #9747ff;color:#9747ff;}
+.deal-lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(180deg,rgba(14,15,19,.15),rgba(14,15,19,.55));color:#f0f0f4;pointer-events:none;}
+.deal-lock svg{width:26px;height:26px;opacity:.9;}
+.deal-lock span{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(14,15,19,.7);padding:3px 8px;border-radius:4px;}
+.deal-deadline{font-size:11px;font-weight:700;color:#fbbf24;}
+.deal-cta-note{font-size:11px;color:#66667a;text-align:center;margin-top:6px;line-height:1.4;}
 `;
+
+const DEADLINE_LABELS = {
+  close_of_escrow: "Escrow closes",
+  offers_due: "Offers due",
+};
+
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <rect x="4" y="11" width="16" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </svg>
+);
+
+// "20/20 slots open" read as "no one wants this"; lead with demand when there is some.
+function slotsText(deal) {
+  const unlocked = Number(deal.unlock_count) || 0;
+  const remaining = deal.slots_remaining ?? 0;
+  if (deal.is_slots_full) return "All unlock spots taken";
+  if (unlocked === 0) return `Be the first to unlock · ${remaining} spots available`;
+  return `${unlocked} investor${unlocked === 1 ? "" : "s"} unlocked · ${remaining} spot${remaining === 1 ? "" : "s"} left`;
+}
+
+function deadlineText(deal) {
+  if (deal.days_left == null) return null;
+  const label = DEADLINE_LABELS[deal.deadline_type] || "Deadline";
+  if (deal.days_left === 0) return `${label} today`;
+  return `${label} in ${deal.days_left} day${deal.days_left === 1 ? "" : "s"}`;
+}
 
 export default function DealCard({ deal }) {
   const slug = deal.slug || deal.product_id;
@@ -50,8 +83,20 @@ export default function DealCard({ deal }) {
           ) : (
             <div style={{ width: "100%", height: "100%", background: "#232329" }} />
           )}
+          {!deal.is_unlocked && (
+            <div className="deal-lock">
+              <LockIcon />
+              <span>Address hidden</span>
+            </div>
+          )}
           <div className="deal-card-badges">
-            <span className="deal-badge verified">
+            <span
+              className="deal-badge verified"
+              title={
+                "Verification label and score are provided by the seller with the listing. " +
+                "Unlocking shows the documents behind them."
+              }
+            >
               {deal.verification_label === "verified" ? "Verified" : "Pending"}{" "}
               {deal.verification_score}%
             </span>
@@ -84,8 +129,9 @@ export default function DealCard({ deal }) {
               <div className="deal-met-v green">{Number(deal.spread_pct).toFixed(0)}%</div>
             </div>
           </div>
+          {deadlineText(deal) && <div className="deal-deadline">{deadlineText(deal)}</div>}
           <div className="deal-slots">
-            {deal.slots_remaining ?? 0}/{deal.max_unlock_slots} unlock slots open
+            {slotsText(deal)}
             <div className="deal-slots-bar">
               <div className="deal-slots-fill" style={{ width: `${pctUsed}%` }} />
             </div>
@@ -108,8 +154,14 @@ export default function DealCard({ deal }) {
                 ? "View Deal Room"
                 : deal.is_slots_full
                   ? "Slots Full"
-                  : `Unlock from ${formatMoney(deal.unlock_fee)}`}
+                  : `Unlock address & photos · ${formatMoney(deal.unlock_fee)}`}
             </Link>
+            {!deal.is_unlocked && !deal.is_slots_full && (
+              <p className="deal-cta-note">
+                One-time fee. Reveals the address, photos, documents and deal room.
+                {deal.unlock_fee_credited_at_close ? " Credited back if you close this deal." : ""}
+              </p>
+            )}
           </div>
         </div>
       </article>

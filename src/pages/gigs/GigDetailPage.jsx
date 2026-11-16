@@ -625,9 +625,12 @@ const GigDetailPage = () => {
                 )}
               </div>
             ) : (
-              <div className="rounded-2xl bg-[#13131a] border border-white/5 aspect-video flex flex-col items-center justify-center mb-6 gap-2">
-                <FaBriefcase className="text-6xl text-white/10" />
-                <p className="text-white/20 text-sm">No images uploaded yet</p>
+              <div className="rounded-2xl bg-gradient-to-br from-purple-900/40 via-[#13131a] to-pink-900/30 border border-white/5 aspect-video flex flex-col items-center justify-center mb-6 gap-3 px-6 text-center">
+                <FaBriefcase className="text-5xl text-white/25" />
+                <p className="text-white/70 text-base font-semibold line-clamp-2">{gig.title}</p>
+                {gig.category_details?.name && (
+                  <p className="text-white/40 text-xs uppercase tracking-wider">{gig.category_details.name}</p>
+                )}
               </div>
             )}
 
@@ -686,19 +689,20 @@ const GigDetailPage = () => {
                   {/* Quick Info Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      {
+                      gig.category_details?.name && {
                         label: "Category",
-                        value: gig.category_details?.name || "—",
+                        value: gig.category_details.name,
                         icon: <IoGridOutline className="text-purple-400" />,
                       },
-                      {
+                      gig.subcategory_details?.name && {
                         label: "Subcategory",
-                        value: gig.subcategory_details?.name || "—",
+                        value: gig.subcategory_details.name,
                         icon: <IoLayersOutline className="text-pink-400" />,
                       },
                       {
                         label: "Rating",
-                        value: `${gig.rating || "0.00"} ★`,
+                        // "0.00 ★" on a brand-new gig looked like a bad rating.
+                        value: Number(gig.rating) > 0 ? `${gig.rating} ★` : "New seller",
                         icon: <IoStarSharp className="text-yellow-400" />,
                       },
                       {
@@ -706,8 +710,8 @@ const GigDetailPage = () => {
                         value: gig.total_orders_completed || 0,
                         icon: <IoCheckmarkCircle className="text-green-400" />,
                       },
-                    ].map((item, i) => (
-                      <div key={i} className="bg-[#13131a] border border-white/5 rounded-xl p-3">
+                    ].filter(Boolean).map((item) => (
+                      <div key={item.label} className="bg-[#13131a] border border-white/5 rounded-xl p-3">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm">{item.icon}</span>
                           <span className="text-white/40 text-[10px] uppercase tracking-wider font-medium">{item.label}</span>
@@ -832,6 +836,7 @@ const GigDetailPage = () => {
                           </div>
                         </div>
                         <p className="text-white font-bold text-xl mt-3">${parseFloat(pkg.price).toFixed(2)}</p>
+                        <p className="text-white/40 text-[11px] mt-0.5">+ 5% service fee at checkout</p>
                       </motion.div>
                     );
                   })}
@@ -959,7 +964,10 @@ const GigDetailPage = () => {
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${(TIER_STYLES[selectedPkg.tier] || TIER_STYLES.basic).badge}`}>
                           {(TIER_STYLES[selectedPkg.tier] || TIER_STYLES.basic).label}
                         </span>
-                        <p className="text-white font-bold text-xl">${parseFloat(selectedPkg.price).toFixed(2)}</p>
+                        <div className="text-right">
+                          <p className="text-white font-bold text-xl">${parseFloat(selectedPkg.price).toFixed(2)}</p>
+                          <p className="text-white/40 text-[11px]">+ 5% service fee</p>
+                        </div>
                       </div>
                       {selectedPkg.title && (
                         <p className="text-white font-semibold text-sm">{selectedPkg.title}</p>

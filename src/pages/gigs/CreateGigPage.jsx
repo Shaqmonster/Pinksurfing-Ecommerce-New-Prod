@@ -32,7 +32,7 @@ const emptyPkg = (tier) => ({
   title: "",
   description: "",
   price: "",
-  delivery_days: "",
+  delivery_days: "3", // shown as the default, so it must be in state (was only a placeholder)
   revisions: 1,
   enabled: tier === "basic",
 });
@@ -159,6 +159,11 @@ const CreateGigPage = () => {
   const handleDetailsNext = () => {
     if (!details.title.trim() || !details.description.trim()) {
       toast.error("Title and description are required.");
+      return;
+    }
+    // Without a category the gig page shows blanks and buyers can't find it by category.
+    if (!details.category) {
+      toast.error("Please choose a category.");
       return;
     }
     setStep(1);
@@ -351,7 +356,7 @@ const CreateGigPage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-white/70 text-sm font-medium">Category</label>
+              <label className="text-white/70 text-sm font-medium">Category *</label>
               <select
                 name="category"
                 value={details.category}
