@@ -7,6 +7,7 @@ import DealKpiBar from "../components/deals/DealKpiBar";
 import DealProcessStrip from "../components/deals/DealProcessStrip";
 import { fetchDealStats, fetchDealTags, fetchDeals } from "../api/offMarketDeals";
 import { useAccessToken } from "../hooks/useAccessToken";
+import { VENDOR_PORTAL_BASE } from "../utils/envUrls";
 
 const PAGE_CSS = `
 .deals-page{min-height:100vh;background:var(--ps-bg,#0e0f13);color:#f0f0f4;font-family:var(--ps-font-sans),'Plus Jakarta Sans',sans-serif;padding:24px 16px 80px;}
@@ -21,6 +22,9 @@ const PAGE_CSS = `
 .deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
 .deals-empty{text-align:center;padding:60px 20px;color:#66667a;}
 .deals-loading{text-align:center;padding:40px;color:#66667a;}
+.deals-more{margin-top:20px;border:1.5px dashed #2a2a33;border-radius:10px;padding:20px;text-align:center;color:#b0b0c0;}
+.deals-more strong{display:block;color:#f0f0f4;font-size:15px;margin-bottom:6px;}
+.deals-more a{color:#9747ff;font-weight:700;text-decoration:none;}
 `;
 
 export default function DealsHomePage() {
@@ -61,6 +65,23 @@ export default function DealsHomePage() {
   useEffect(() => {
     loadDeals();
   }, [loadDeals]);
+
+  const hasFilters = Boolean(propertyClass) || selectedTags.length > 0;
+  const clearFilters = () => {
+    setPropertyClass("");
+    setSelectedTags([]);
+  };
+
+  // Shown under a short (or empty) list so the page still invites buyers and sellers in.
+  const moreDealsPrompt = (
+    <div className="deals-more">
+      <strong>More deals are on the way</strong>
+      New off-market deals go live as sellers list them, so check back soon. Have a deal to sell?{" "}
+      <a href={VENDOR_PORTAL_BASE} target="_blank" rel="noreferrer">
+        List it on PinkSurfing
+      </a>
+    </div>
+  );
 
   const onTagToggle = (tag) => {
     setSelectedTags((prev) =>
@@ -112,22 +133,29 @@ export default function DealsHomePage() {
           {loading ? (
             <div className="deals-loading">Loading deals…</div>
           ) : deals.length === 0 ? (
-            <div className="deals-empty">
-              <p>No off-market deals match your filters.</p>
-              <p style={{ marginTop: 10, fontSize: 13, maxWidth: 420, marginInline: "auto" }}>
-                Inventory grows as vendors activate listings and invited suppliers submit deals for
-                host review. Active Listings above only counts live off-market products.
-              </p>
-              <Link to="/deals" style={{ color: "#9747ff" }}>
-                Clear filters
-              </Link>
-            </div>
+            hasFilters ? (
+              <div className="deals-empty">
+                <p>No off-market deals match your filters.</p>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  style={{ color: "#9747ff", background: "none", border: "none", cursor: "pointer", marginTop: 10 }}
+                >
+                  Clear filters
+                </button>
+              </div>
+            ) : (
+              moreDealsPrompt
+            )
           ) : (
-            <div className="deals-grid">
-              {deals.map((deal) => (
-                <DealCard key={deal.id} deal={deal} />
-              ))}
-            </div>
+            <>
+              <div className="deals-grid">
+                {deals.map((deal) => (
+                  <DealCard key={deal.id} deal={deal} />
+                ))}
+              </div>
+              {!hasFilters && deals.length < 6 && moreDealsPrompt}
+            </>
           )}
         </div>
       </div>

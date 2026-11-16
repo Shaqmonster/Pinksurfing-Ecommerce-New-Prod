@@ -2,8 +2,7 @@ import React from "react";
 import { formatMoney } from "../../api/offMarketDeals";
 
 const CSS = `
-.deal-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
-@media(max-width:768px){.deal-kpi{grid-template-columns:repeat(2,1fr);}}
+.deal-kpi{display:grid;grid-template-columns:repeat(2,minmax(0,240px));gap:12px;margin-bottom:24px;}
 .deal-kpi-item{background:#141418;border:1px solid #2a2a33;border-radius:8px;padding:16px 18px;}
 .deal-kpi-val{font-size:22px;font-weight:800;color:#f0f0f4;line-height:1.1;}
 .deal-kpi-val.pink{color:#9747ff;}
@@ -16,7 +15,7 @@ export default function DealKpiBar({ stats, loading }) {
       <>
         <style>{CSS}</style>
         <div className="deal-kpi">
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2].map((i) => (
             <div key={i} className="deal-kpi-item">
               <div className="deal-kpi-val">—</div>
               <div className="deal-kpi-label">Loading…</div>
@@ -27,14 +26,15 @@ export default function DealKpiBar({ stats, loading }) {
     );
   }
 
+  // Only figures computed from live listings. "Closed deals" and "satisfaction" were
+  // admin-entered headline numbers ($2.4B+ / 94% by default) that read as inflated next to
+  // a handful of listings, so they are not shown.
   const items = [
-    { label: "Closed Deals", value: formatMoney(stats.closed_deals_volume), pink: true },
-    { label: "Active Listings", value: String(stats.active_listings_count ?? 0) },
+    { label: "Active Listings", value: String(stats.active_listings_count ?? 0), pink: true },
     {
       label: "Avg Spread",
       value: formatMoney(stats.avg_spread),
     },
-    { label: "Satisfaction", value: `${stats.satisfaction_pct ?? 0}%` },
   ];
 
   return (
