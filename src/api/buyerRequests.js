@@ -7,13 +7,18 @@ const authHeader = (token) => ({
 });
 
 // Create a new buyer request (multipart/form-data for images)
-export const createBuyerRequest = async (token, { title, description, budget, deadline, category, images }) => {
+export const createBuyerRequest = async (
+  token,
+  { title, description, budget, deadline, category, jobCategory, jobSubcategory, images }
+) => {
   const form = new FormData();
   form.append("title", title);
   form.append("description", description);
   form.append("budget", budget);
   if (deadline) form.append("deadline", deadline);
   if (category) form.append("category", category);
+  if (jobCategory) form.append("job_category", jobCategory);
+  if (jobSubcategory) form.append("job_subcategory", jobSubcategory);
   images.forEach((img, i) => form.append(`image${i + 1}`, img));
 
   return axios.post(`${BASE_URL}/api/buyer_requests/customer/requests/`, form, {

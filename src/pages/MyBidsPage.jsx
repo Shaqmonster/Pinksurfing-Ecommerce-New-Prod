@@ -349,7 +349,7 @@ const MyBidsPage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <IoReceiptOutline className="text-pink-400 text-xl" />
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Bid Requests</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Job Requests</h1>
                 </div>
                 <p className="text-white/50 text-sm">
                   Track your requests and review vendor bids.

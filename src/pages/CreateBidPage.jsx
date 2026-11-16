@@ -1,6 +1,5 @@
 import React, { useState, useContext, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import {
@@ -23,16 +22,17 @@ import {
 } from "react-icons/io5";
 import {
   FaHome,
-  FaTint,
-  FaBolt,
   FaPaintBrush,
   FaShieldAlt,
-  FaTree,
   FaTools,
   FaHardHat,
   FaTruck,
   FaDesktop,
   FaHammer,
+  FaBriefcase,
+  FaIndustry,
+  FaHeartbeat,
+  FaLandmark,
   FaDollarSign,
   FaCheck,
   FaEdit,
@@ -43,44 +43,50 @@ import { authContext } from "../context/authContext";
 import { createBuyerRequest, getCategories } from "../api/buyerRequests";
 import BidsNavBar from "../components/BidsNavBar";
 import { useAccessToken } from "../hooks/useAccessToken";
+import { JOB_CATEGORIES, JOB_CATEGORY_NAMES } from "../constants/jobCategories";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+// Step ids: 0 start, 1 photos, 2 category, 3 location, 4 scope (description), 5 budget, 6 review.
 const STEPS = [
   { label: "Get Started", shortLabel: "Start" },
   { label: "Photos", shortLabel: "Photos" },
   { label: "Category", shortLabel: "Category" },
   { label: "Location", shortLabel: "Location" },
-  { label: "Project scope", shortLabel: "Scope" },
+  { label: "Describe the job", shortLabel: "Describe" },
   { label: "Budget", shortLabel: "Budget" },
   { label: "Review", shortLabel: "Review" },
 ];
 
-const CATEGORIES = [
-  { id: "renovation", label: "Renovation", Icon: FaHome },
-  { id: "plumbing", label: "Plumbing", Icon: FaTint },
-  { id: "electrical", label: "Electrical", Icon: FaBolt },
-  { id: "painting", label: "Painting", Icon: FaPaintBrush },
-  { id: "roofing", label: "Roofing", Icon: FaHammer },
-  { id: "landscaping", label: "Landscaping", Icon: FaTree },
-  { id: "general", label: "General Repair", Icon: FaTools },
-  { id: "construction", label: "Construction", Icon: FaHardHat },
-  { id: "moving", label: "Moving", Icon: FaTruck },
-  { id: "technology", label: "Technology", Icon: FaDesktop },
-];
-
-const SUBCATEGORIES = {
-  renovation: ["Kitchen", "Bathroom", "Basement", "Full Home", "Addition"],
-  plumbing: ["Leak Repair", "Water Heater", "Clogged Drain", "Pipe Replacement", "Fixture Install"],
-  electrical: ["Wiring", "Panel Upgrade", "Lighting", "Outlet Install", "Smart Home"],
-  painting: ["Interior", "Exterior", "Cabinet", "Deck / Fence", "Commercial"],
-  roofing: ["Leak Repair", "Full Replacement", "Gutter Install", "Inspection", "Flashing"],
-  landscaping: ["Lawn Care", "Hardscape", "Tree Service", "Irrigation", "Design"],
-  general: ["Drywall", "Flooring", "Door / Window", "Appliance", "Other"],
-  construction: ["New Build", "Commercial", "Foundation", "Framing", "Demolition"],
-  moving: ["Local Move", "Long Distance", "Packing", "Storage", "Junk Removal"],
-  technology: ["Networking", "Security Cameras", "AV Setup", "Computer Repair", "Software"],
+// "Describe it instead" opens the description box first; photos become an optional late step.
+const STEP_ORDERS = {
+  describe: [0, 4, 2, 3, 5, 1, 6],
+  default: [0, 1, 2, 3, 4, 5, 6],
 };
+const stepOrderFor = (startMethod) => STEP_ORDERS[startMethod] || STEP_ORDERS.default;
+
+// Same categories the marketplace filters on (src/constants/jobCategories.js).
+const CATEGORY_ICONS = {
+  "Construction & Property": FaHardHat,
+  "Real Estate & Property Services": FaHome,
+  "Professional Services": FaBriefcase,
+  "Technology & Software": FaDesktop,
+  "Creative & Marketing": FaPaintBrush,
+  "Manufacturing & Product Development": FaIndustry,
+  "Logistics & Transportation": FaTruck,
+  "Equipment & Procurement": FaTools,
+  "Maintenance & Field Services": FaHammer,
+  "Healthcare Services": FaHeartbeat,
+  "Government & Public Contracts": FaLandmark,
+};
+
+const CATEGORIES = JOB_CATEGORY_NAMES.map((name) => ({
+  id: name,
+  label: name,
+  Icon: CATEGORY_ICONS[name] || FaTag,
+}));
+
+const SUBCATEGORIES = JOB_CATEGORIES;
 
 const BUDGET_OPTIONS = [
   { value: "under1k", label: "Under $1K", num: 500 },
@@ -123,28 +129,31 @@ const Toggle = ({ checked, onChange }) => (
   </button>
 );
 
-const StepProgressBar = ({ currentStep }) => (
+const StepProgressBar = ({ currentStep, order }) => {
+  const position = Math.max(order.indexOf(currentStep), 0);
+  const steps = order.map((id) => STEPS[id]);
+  return (
   <div className="sticky top-0 z-40 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-white/10 px-4 py-3">
     <div className="max-w-6xl mx-auto">
       {/* Mobile */}
       <div className="flex items-center justify-between md:hidden">
         <span className="text-sm font-medium text-white">
-          Step {currentStep + 1} of {STEPS.length}
+          Step {position + 1} of {steps.length}
         </span>
         <span className="text-sm text-white/50">{STEPS[currentStep]?.label}</span>
       </div>
       <div className="md:hidden mt-2 h-1 rounded-full bg-white/10 overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+          style={{ width: `${((position + 1) / steps.length) * 100}%` }}
         />
       </div>
 
       {/* Desktop */}
       <div className="hidden md:flex items-center gap-1">
-        {STEPS.map((step, i) => {
-          const done = i < currentStep;
-          const active = i === currentStep;
+        {steps.map((step, i) => {
+          const done = i < position;
+          const active = i === position;
           return (
             <div key={i} className="flex items-center flex-1">
               <div
@@ -165,7 +174,7 @@ const StepProgressBar = ({ currentStep }) => (
                 </div>
                 <span className="hidden lg:inline truncate">{step.shortLabel}</span>
               </div>
-              {i < STEPS.length - 1 && (
+              {i < steps.length - 1 && (
                 <div className={`w-4 h-px flex-shrink-0 ${done ? "bg-pink-400/50" : "bg-white/10"}`} />
               )}
             </div>
@@ -175,6 +184,7 @@ const StepProgressBar = ({ currentStep }) => (
     </div>
   </div>
 );
+};
 
 const StickyFooter = ({ currentStep, onBack, onNext, onSaveDraft }) => (
   <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0f]/90 backdrop-blur-md border-t border-white/10 px-4 py-3">
@@ -308,7 +318,7 @@ const RequestPreviewSidebar = ({ data }) => (
 
 // ─── Step Components ────────────────────────────────────────────────────────────
 
-const StartStep = ({ onContinue, onStartWith }) => {
+const StartStep = ({ onStartWith }) => {
   const startOptions = [
     {
       id: "photos",
@@ -345,7 +355,7 @@ const StartStep = ({ onContinue, onStartWith }) => {
         {startOptions.map((opt) => (
           <button
             key={opt.id}
-            onClick={() => { onStartWith(opt.id); onContinue(); }}
+            onClick={() => onStartWith(opt.id)}
             className="w-full bg-[#13131a] border border-white/10 rounded-xl p-5 flex items-center gap-4 text-left hover:border-pink-500/50 hover:bg-white/5 transition-all duration-200 group"
           >
             <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-500/20 transition-colors">
@@ -487,7 +497,7 @@ const CategoryStep = ({ data, onUpdate }) => (
   <div className="space-y-6">
     <div>
       <h2 className="text-xl font-bold text-white">Category</h2>
-      <p className="text-sm text-white/50 mt-1">What type of work do you need?</p>
+      <p className="text-sm text-white/50 mt-1">What kind of job is it? Vendors filter by this.</p>
     </div>
 
     {/* Category grid */}
@@ -519,7 +529,9 @@ const CategoryStep = ({ data, onUpdate }) => (
     {/* Subcategory chips */}
     {data.category && SUBCATEGORIES[data.category] && (
       <div className="space-y-3">
-        <p className="text-sm font-medium text-white">What specifically?</p>
+        <p className="text-sm font-medium text-white">
+          Narrow it down <span className="text-white/40 font-normal">(optional)</span>
+        </p>
         <div className="flex flex-wrap gap-2">
           {SUBCATEGORIES[data.category].map((sub) => (
             <button
@@ -945,7 +957,6 @@ const extractApiError = (err) => {
 
 const CreateBidPage = () => {
   const navigate = useNavigate();
-  const [cookies] = useCookies(["access_token"]);
   const { user } = useContext(authContext);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -993,11 +1004,19 @@ const CreateBidPage = () => {
     setRequestData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleNext = () => setCurrentStep((prev) => Math.min(prev + 1, 6));
-  const handleBack = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
+  const stepOrder = stepOrderFor(requestData.startMethod);
+  const moveStep = (delta) =>
+    setCurrentStep((prev) => {
+      const i = stepOrder.indexOf(prev);
+      const next = Math.min(Math.max((i === -1 ? 0 : i) + delta, 0), stepOrder.length - 1);
+      return stepOrder[next];
+    });
+  const handleNext = () => moveStep(1);
+  const handleBack = () => moveStep(-1);
   const handleSaveDraft = () => toast.info("Draft saved!");
 
-  const accessToken = cookies.access_token;
+  // Same token source as the rest of the app: auth context, then cookie, then localStorage.
+  const accessToken = useAccessToken();
 
   const handlePublish = async () => {
     if (submitting) return;
@@ -1057,6 +1076,8 @@ const CreateBidPage = () => {
       setSubmitting(true);
       await createBuyerRequest(accessToken, {
         title,
+        jobCategory: requestData.category,
+        jobSubcategory: requestData.subcategory,
         description,
         budget,
         deadline,
@@ -1104,7 +1125,7 @@ const CreateBidPage = () => {
     <div className="bg-[#0a0a0f] min-h-screen">
       <BidsNavBar />
       {/* Progress Bar — hidden on step 0 */}
-      {currentStep > 0 && <StepProgressBar currentStep={currentStep} />}
+      {currentStep > 0 && <StepProgressBar currentStep={currentStep} order={stepOrder} />}
 
       <div className="max-w-6xl mx-auto px-4 py-6 pb-28">
         {currentStep === 0 ? (
@@ -1118,8 +1139,12 @@ const CreateBidPage = () => {
                 transition={{ duration: 0.25 }}
               >
                 <StartStep
-                  onContinue={handleNext}
-                  onStartWith={(m) => updateField("startMethod", m)}
+                  onStartWith={(m) => {
+                    // Set the method and jump straight to its first step; handleNext would
+                    // still see the previous (default) order in this render.
+                    updateField("startMethod", m);
+                    setCurrentStep(stepOrderFor(m)[1]);
+                  }}
                 />
               </motion.div>
             </AnimatePresence>
