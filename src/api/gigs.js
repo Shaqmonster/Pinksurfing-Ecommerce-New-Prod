@@ -23,6 +23,10 @@ const authHeader = (token) => ({
   Authorization: `Bearer ${token}`,
 });
 
+// Publishing must never hang on "Publishing…" (retest N2.16): give up and show an error.
+const SAVE_TIMEOUT_MS = 30000;
+const UPLOAD_TIMEOUT_MS = 90000;
+
 // ─── Worker ─────────────────────────────────────────────────────────────────
 
 export const createGigWorkerProfile = (token, { bio, profile_picture }) => {
@@ -60,11 +64,13 @@ export const getGigSubcategories = (categoryId) =>
 export const createGig = (token, payload) =>
   axios.post(`${BASE_URL}/api/gigs/`, payload, {
     headers: { ...authHeader(token), "Content-Type": "application/json" },
+    timeout: SAVE_TIMEOUT_MS,
   });
 
 export const addGigPackage = (token, gigId, payload) =>
   axios.post(`${BASE_URL}/api/gigs/${gigId}/packages/`, payload, {
     headers: { ...authHeader(token), "Content-Type": "application/json" },
+    timeout: SAVE_TIMEOUT_MS,
   });
 
 export const addGigMedia = (token, gigId, file, isMain = false) => {
@@ -74,6 +80,7 @@ export const addGigMedia = (token, gigId, file, isMain = false) => {
   form.append("is_main", isMain);
   return axios.post(`${BASE_URL}/api/gigs/${gigId}/media/`, form, {
     headers: authHeader(token),
+    timeout: UPLOAD_TIMEOUT_MS,
   });
 };
 
@@ -124,6 +131,7 @@ export const updateGig = (token, gigId, details, packages = [], mediaFiles = [])
 export const updateGigJson = (token, gigId, payload) =>
   axios.patch(`${BASE_URL}/api/gigs/${gigId}/`, payload, {
     headers: { ...authHeader(token), "Content-Type": "application/json" },
+    timeout: SAVE_TIMEOUT_MS,
   });
 
 export const deleteGig = (token, gigId) =>

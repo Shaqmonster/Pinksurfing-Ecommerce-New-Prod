@@ -16,7 +16,8 @@ export const REFRESH_BEFORE_EXPIRY_SECONDS = 120;
 /** Safety poll — half of default access lifetime. */
 export const TOKEN_REFRESH_FALLBACK_MS = 5 * 60 * 1000;
 /** Never block app bootstrap on a stuck SSO refresh. */
-export const AUTH_NETWORK_TIMEOUT_MS = 15_000;
+// The app waits on this at start-up when it has to refresh the session, so keep it short.
+export const AUTH_NETWORK_TIMEOUT_MS = 8_000;
 
 let ensureSessionInflight = null;
 let refreshInflight = null;

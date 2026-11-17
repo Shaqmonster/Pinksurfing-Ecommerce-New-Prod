@@ -201,22 +201,39 @@ export default function ShopByCategory() {
   // axios requests ===================================================================
   // One fetch for the product grid. Two effects used to race (all products vs. the
   // "perfumes" category), and whichever finished last decided what the page showed.
+  // With a category picked, ask the API for just that category instead of downloading the
+  // whole catalog and filtering here (retest N2.6). A timeout and Retry mean the page can't
+  // sit on "Loading" forever.
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const slugField = searchParams.get("subcategory") ? "subcategory__slug" : "category__slug";
+
   useEffect(() => {
     let cancelled = false;
-    const query = filterBy
-      ? `attributes__value=${encodeURIComponent(filterBy)}`
-      : perfumeCategory1;
+    const base = `${import.meta.env.VITE_SERVER_URL}/api/product/filter-products/`;
+    const get = (query) =>
+      axios.get(`${base}?${query}`, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 20000,
+      });
+    const rows = (response) =>
+      Array.isArray(response.data) ? response.data : response.data?.Products || [];
+
+    const load = async () => {
+      if (filterBy) return rows(await get(`attributes__value=${encodeURIComponent(filterBy)}`));
+      if (!activeSlug) return rows(await get(perfumeCategory1));
+      const slug = encodeURIComponent(activeSlug);
+      const first = rows(await get(`${slugField}=${slug}`));
+      if (first.length > 0 || slugField === "subcategory__slug") return first;
+      // A slug picked from the menu may be a subcategory rather than a category.
+      return rows(await get(`subcategory__slug=${slug}`));
+    };
+
     setLoading(true);
-    axios
-      .get(
-        `${import.meta.env.VITE_SERVER_URL}/api/product/filter-products/?${query}`,
-        { headers: { "Content-Type": "application/json" } }
-      )
-      .then((response) => {
+    setLoadError(false);
+    load()
+      .then((items) => {
         if (cancelled) return;
-        const items = Array.isArray(response.data)
-          ? response.data
-          : response.data?.Products || [];
         setShopByCategoryProducts(items);
         const allAttributes = items.flatMap((product) => product.attributes || []);
         setUniqueAttributes(Array.from(new Set(allAttributes)));
@@ -227,7 +244,10 @@ export default function ShopByCategory() {
       })
       .catch((error) => {
         console.error("[ShopByCategory] product fetch failed:", error);
-        if (!cancelled) setShopByCategoryProducts([]);
+        if (!cancelled) {
+          setShopByCategoryProducts([]);
+          setLoadError(true);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -235,7 +255,7 @@ export default function ShopByCategory() {
     return () => {
       cancelled = true;
     };
-  }, [filterBy, perfumeCategory1]);
+  }, [filterBy, perfumeCategory1, activeSlug, slugField, reloadKey]);
 
   // Products shown in the grid: everything when no category was picked (e.g. the
   // footer's "Shop by category" link), otherwise only that category or subcategory.
@@ -633,7 +653,21 @@ export default function ShopByCategory() {
                             );
                           })}
                       </div>
-                      {visibleProducts.length === 0 && (
+                      {loadError && (
+                        <div role="alert" className="text-center mt-6 w-full">
+                          <p className="text-gray-700 dark:text-[#f5f5f5] text-base sm:text-[17px]">
+                            Products didn&apos;t load. Check your connection and try again.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setReloadKey((k) => k + 1)}
+                            className="mt-3 min-h-[44px] px-5 rounded-xl bg-[var(--ps-primary,#9747ff)] text-white text-sm font-semibold"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      )}
+                      {!loadError && visibleProducts.length === 0 && (
                         <p className="text-gray-700 dark:text-[#f5f5f5] text-center text-base sm:text-[17px] mt-6 w-full">
                           {activeSlug ? (
                             <>

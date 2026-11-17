@@ -150,11 +150,28 @@ const Home = () => {
       return;
     }
 
-    // Check if user is already a vendor
-    const isVendor = user?.is_vendor || localStorage.getItem("user.vendorAccess") === "true";
+    // Check if user is already a vendor. Registration saves "vendorAccess"; this used to
+    // read "user.vendorAccess", so new sellers got the sign-up dialog again (retest N2.17).
+    let savedVendorAccess = false;
+    try {
+      savedVendorAccess =
+        localStorage.getItem("vendorAccess") === "true" ||
+        localStorage.getItem("user.vendorAccess") === "true";
+    } catch {
+      savedVendorAccess = false;
+    }
+    const isVendor = user?.is_vendor || savedVendorAccess;
+
+    if (!isVendor && !user) {
+      // The profile loads in the background after start-up; don't guess "not a seller".
+      toast.info("Loading your account. Tap Sell again in a moment.");
+      return;
+    }
 
     if (isVendor) {
-      window.open("https://vendors.pinksurfing.com", "_blank");
+      // Same tab: a new-tab window.open can be silently blocked, which looked like
+      // "Sell does nothing".
+      window.location.assign("https://vendors.pinksurfing.com");
     } else {
       // Show vendor registration dialog
       setIsVendorDialogOpen(true);
