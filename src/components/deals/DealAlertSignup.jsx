@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { fetchDealAlert, saveDealAlert, turnOffDealAlert } from "../../api/offMarketDeals";
+import { authContext } from "../../context/authContext";
 
 const PROPERTY_TYPES = [
   { id: "", label: "Any property type" },
@@ -33,6 +34,9 @@ export default function DealAlertSignup({ token }) {
   const [form, setForm] = useState({ property_class: "", state: "", max_price: "" });
   const [active, setActive] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Alerts go to the signed-in account's email; say which one (retest N2.12).
+  const { user } = useContext(authContext);
+  const email = user?.email || "";
 
   useEffect(() => {
     if (!token) return;
@@ -58,7 +62,11 @@ export default function DealAlertSignup({ token }) {
     try {
       const a = await saveDealAlert(token, form);
       setActive(Boolean(a?.active));
-      toast.success("Deal alert saved. We'll email you when a matching deal goes live.");
+      toast.success(
+        email
+          ? `Deal alert saved. We'll email ${email} when a matching deal goes live.`
+          : "Deal alert saved. We'll email you when a matching deal goes live."
+      );
     } catch (err) {
       const data = err?.response?.data;
       const msg = data && typeof data === "object" ? Object.values(data).flat().join(" ") : "";
@@ -96,6 +104,12 @@ export default function DealAlertSignup({ token }) {
       ) : (
         <>
           {active && <div className="on">✓ Your deal alert is on</div>}
+          {email && (
+            <p style={{ margin: "0 0 12px" }}>
+              Alerts go to <strong style={{ color: "#f0f0f4" }}>{email}</strong>, the email on your
+              account.
+            </p>
+          )}
           <form onSubmit={onSubmit}>
             <div>
               <label htmlFor="da-type">Property type</label>

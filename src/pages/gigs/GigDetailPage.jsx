@@ -556,6 +556,22 @@ const GigDetailPage = () => {
                   {gig.subcategory_details.name}
                 </span>
               )}
+              {/* Gigs saved before the category fix have none (retest P2.8). */}
+              {!gig.category_details &&
+                (isOwner ? (
+                  <Link
+                    to={`/gigs/create?edit=${gig.id}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-300 text-xs font-medium hover:bg-amber-500/20 transition-all"
+                  >
+                    <IoGridOutline className="text-[10px]" />
+                    No category: pick one so buyers can find this gig
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-white/50 text-xs font-medium">
+                    <IoGridOutline className="text-[10px]" />
+                    Uncategorized
+                  </span>
+                ))}
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
                 gig.status === "active"
                   ? "bg-green-500/10 border-green-500/20 text-green-400"

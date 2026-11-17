@@ -1,5 +1,6 @@
 import React from "react";
 import { unlockFeePolicy } from "./unlockPolicy";
+import DealImage from "./DealImage";
 import { Link } from "react-router-dom";
 import { formatMoney } from "../../api/offMarketDeals";
 
@@ -12,6 +13,7 @@ const CSS = `
 .deal-card-badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;}
 .deal-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
 .deal-badge.verified{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
+.deal-badge.unverified{background:rgba(255,255,255,.06);color:#a0a0b0;border:1px solid #2a2a33;}
 .deal-badge.sale{background:rgba(151, 71, 255,.12);color:#9747ff;border:1px solid rgba(151, 71, 255,.28);}
 .deal-card-body{padding:16px;flex:1;display:flex;flex-direction:column;gap:10px;}
 .deal-card-type{font-size:10px;color:#66667a;text-transform:uppercase;font-weight:700;letter-spacing:.06em;}
@@ -79,20 +81,7 @@ export default function DealCard({ deal }) {
       <style>{CSS}</style>
       <article className="deal-card">
         <Link to={`/deals/${slug}`} className={`deal-card-img ${deal.is_unlocked ? "unlocked" : ""}`}>
-          {img ? (
-            <img src={img} alt="" />
-          ) : (
-            <div
-              aria-hidden="true"
-              style={{
-                width: "100%",
-                height: "100%",
-                // No photo yet: a soft gradient so the lock overlay reads as "hidden", not "broken".
-                background:
-                  "radial-gradient(circle at 30% 30%, rgba(151,71,255,.35), transparent 60%), radial-gradient(circle at 75% 70%, rgba(236,72,153,.25), transparent 55%), #1c1c22",
-              }}
-            />
-          )}
+          <DealImage src={img} propertyClass={deal.property_class} />
           {!deal.is_unlocked && (
             <div className="deal-lock">
               <LockIcon />
@@ -100,16 +89,22 @@ export default function DealCard({ deal }) {
             </div>
           )}
           <div className="deal-card-badges">
-            <span
-              className="deal-badge verified"
-              title={
-                "Verification label and score are provided by the seller with the listing. " +
-                "Unlocking shows the documents behind them."
-              }
-            >
-              {deal.verification_label === "verified" ? "Verified" : "Pending"}{" "}
-              {deal.verification_score}% · seller-reported
-            </span>
+            {/* Only PinkSurfing staff can verify a deal (retest P2.12). */}
+            {deal.is_verified ? (
+              <span
+                className="deal-badge verified"
+                title={deal.verification_note || "Checked by the PinkSurfing team."}
+              >
+                Verified by PinkSurfing
+              </span>
+            ) : (
+              <span
+                className="deal-badge unverified"
+                title="The PinkSurfing team hasn't checked this deal yet. Unlocking shows the seller's documents."
+              >
+                Not yet verified
+              </span>
+            )}
             <span className="deal-badge sale">
               {deal.listing_intent === "for_lease" ? "For Lease" : "For Sale"}
             </span>
