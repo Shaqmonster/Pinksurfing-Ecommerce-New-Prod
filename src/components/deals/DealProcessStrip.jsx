@@ -18,12 +18,12 @@ const STEPS = [
   {
     n: "02",
     title: "Pay to Unlock",
-    desc: "Deposit unlock fee — credited toward closing costs when you close.",
+    desc: "Pay the unlock fee. It's credited toward closing costs, and refunded if the seller cancels or the deal expires.",
   },
   {
     n: "03",
     title: "Enter Deal Room",
-    desc: "Business chat with state machine and full audit trail.",
+    desc: "Chat with the seller and track contract, escrow and every step in one place.",
   },
   {
     n: "04",

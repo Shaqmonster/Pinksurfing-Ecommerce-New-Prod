@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { unlockFeePolicy } from "./unlockPolicy";
+import { slotsText } from "./DealCard";
 import { formatMoney } from "../../api/offMarketDeals";
 
 const CSS = `
@@ -23,14 +25,12 @@ export default function UnlockDealModal({ deal, onClose, onConfirm, loading }) {
         <div className="unlock-modal" onClick={(e) => e.stopPropagation()}>
           <h3>Unlock this deal</h3>
           <p>
-            Pay the unlock fee to access full address, photos, comps, and the deal room. Fee is
-            {deal.unlock_fee_credited_at_close !== false
-              ? " credited toward closing costs when you close."
-              : " non-refundable if you do not proceed."}
+            Pay the unlock fee to access the full address, photos, comps and the deal room.{" "}
+            {unlockFeePolicy(deal)}
           </p>
           <div className="unlock-fee">{formatMoney(deal.unlock_fee)}</div>
           <p style={{ fontSize: 12, color: "#66667a", marginBottom: 16 }}>
-            {deal.slots_remaining} of {deal.max_unlock_slots} slots remaining
+            {slotsText(deal)}
           </p>
           <div className="unlock-actions">
             <button type="button" className="unlock-btn ghost" onClick={onClose}>

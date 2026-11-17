@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
@@ -9,7 +9,6 @@ import {
   IoTrashOutline,
   IoCheckmarkCircle,
   IoTimeOutline,
-  IoStorefrontOutline,
   IoReceiptOutline,
   IoImageOutline,
 } from "react-icons/io5";
@@ -17,12 +16,13 @@ import { FaGavel } from "react-icons/fa";
 import { authContext } from "../context/authContext";
 import {
   getMyRequests,
-  acceptBid,
   deleteRequest,
-  addToCart,
   getJobProposals,
   hireProposal,
 } from "../api/buyerRequests";
+import OfferCard, { sortOffers } from "../components/requests/OfferCard";
+import { useAcceptOffer } from "../hooks/useAcceptOffer";
+import { conditionLabel } from "../utils/requestLabels";
 import BidsNavBar from "../components/BidsNavBar";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { jobBudgetLabel } from "../constants/jobBudgets";
@@ -59,7 +59,7 @@ const COPY = {
 };
 
 const responseCount = (req, type) =>
-  type === "job" ? req.proposal_count ?? 0 : req.bids?.length ?? 0;
+  type === "job" ? req.proposal_count ?? 0 : req.bid_count ?? req.bids?.length ?? 0;
 
 const PROPOSAL_STATUS_COLORS = {
   PENDING: "bg-yellow-500/20 text-yellow-400",
@@ -179,12 +179,6 @@ const STATUS_COLORS = {
   CANCELLED: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
-const BID_STATUS_COLORS = {
-  PENDING: "bg-yellow-500/20 text-yellow-400",
-  SHORTLISTED: "bg-blue-500/20 text-blue-400",
-  ACCEPTED: "bg-emerald-500/20 text-emerald-400",
-  REJECTED: "bg-red-500/20 text-red-400",
-};
 
 const FILTER_TABS = [
   { key: "all", label: "All" },
@@ -224,14 +218,32 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
                   {type === "job" ? jobLabel : req.category_name}
                 </span>
               )}
-              {type === "product" && req.quantity > 1 && (
-                <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
-                  Qty {req.quantity}
-                </span>
+              {type === "product" && (
+                <>
+                  <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                    Qty {req.quantity || 1}
+                  </span>
+                  {req.condition && (
+                    <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                      {conditionLabel(req.condition)}
+                    </span>
+                  )}
+                  {req.ship_to_zip && (
+                    <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                      Ships to {req.ship_to_zip}
+                    </span>
+                  )}
+                </>
               )}
             </div>
             <h3 className="text-white font-semibold text-base sm:text-lg truncate">
-              {req.title}
+              {type === "product" ? (
+                <Link to={`/my-bids/${req.id}`} className="hover:text-pink-300 transition-colors">
+                  {req.title}
+                </Link>
+              ) : (
+                req.title
+              )}
             </h3>
             <p className="text-white/50 text-sm mt-1 line-clamp-2">{req.description}</p>
           </div>
@@ -286,11 +298,20 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
           </div>
         )}
 
+        {type === "product" && (
+          <Link
+            to={`/my-bids/${req.id}`}
+            className="mt-4 mr-4 inline-flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white"
+          >
+            Open request →
+          </Link>
+        )}
+
         {/* Toggle bids */}
         {count > 0 && (
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="mt-4 flex items-center gap-2 text-pink-400 hover:text-pink-300 text-sm font-medium transition-colors"
+            className="mt-4 inline-flex items-center gap-2 text-pink-400 hover:text-pink-300 text-sm font-medium transition-colors"
           >
             {expanded ? <IoChevronUp /> : <IoChevronDown />}
             {expanded ? "Hide" : "View"} {count} {word}
@@ -315,112 +336,27 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
               {type === "job" ? (
                 <JobProposals req={req} accessToken={accessToken} onHired={onChanged} />
               ) : (
-                req.bids.map((bid) => (
-                <BidRow
-                  key={bid.id}
-                  bid={bid}
-                  requestStatus={req.status}
-                  requestId={req.id}
-                  onAcceptBid={onAcceptBid}
-                  accepting={accepting === bid.id}
-                />
-                ))
+                (() => {
+                  const { sorted, lowestId } = sortOffers(req.bids, req.quantity);
+                  return sorted.map((bid) => (
+                    <OfferCard
+                      key={bid.id}
+                      bid={bid}
+                      requestStatus={req.status}
+                      requestId={req.id}
+                      quantity={req.quantity}
+                      isLowest={bid.id === lowestId}
+                      onAcceptBid={onAcceptBid}
+                      accepting={accepting === bid.id}
+                    />
+                  ));
+                })()
               )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
-  );
-};
-
-const BidRow = ({ bid, requestStatus, requestId, onAcceptBid, accepting }) => {
-  const bidImages = [bid.image1, bid.image2, bid.image3, bid.image4].filter(Boolean);
-  const canAccept = ["OPEN", "EVALUATING"].includes(requestStatus) && bid.status === "PENDING";
-
-  return (
-    <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <IoStorefrontOutline className="text-purple-400 text-lg shrink-0" />
-          <div className="min-w-0">
-            <p className="text-white font-medium text-sm truncate">{bid.vendor_store_name}</p>
-          </div>
-        </div>
-        <span
-          className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-            BID_STATUS_COLORS[bid.status] || "bg-gray-500/20 text-gray-400"
-          }`}
-        >
-          {bid.status}
-        </span>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        <div className="bg-white/5 rounded-lg p-2.5">
-          <p className="text-white/40 text-xs">Price</p>
-          <p className="text-emerald-400 font-bold text-sm sm:text-base">${formatMoney(bid.bid_amount)}</p>
-          <p className="text-white/40 text-[11px]">
-            {Number(bid.shipping_cost) > 0 ? `+ $${formatMoney(bid.shipping_cost)} shipping` : "Free shipping"}
-          </p>
-        </div>
-        <div className="bg-white/5 rounded-lg p-2.5">
-          <p className="text-white/40 text-xs">Delivery</p>
-          <p className="text-white font-semibold text-sm">{bid.delivery_time_days} days</p>
-          <p className="text-white/40 text-[11px] capitalize">
-            {bid.condition || "new"}
-            {bid.stock_available === false ? " · not in stock yet" : " · in stock"}
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-white/5 rounded-lg p-3">
-        <p className="text-white/40 text-xs mb-1">Vendor note</p>
-        <p className="text-white/80 text-sm leading-relaxed">{bid.proposal}</p>
-      </div>
-
-      {bidImages?.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto">
-          {bidImages.map((img, i) => (
-            <img
-              key={i}
-              src={img}
-              alt={`bid-img-${i}`}
-              className="w-10 h-10 rounded-lg object-cover border border-white/10 shrink-0"
-            />
-          ))}
-        </div>
-      )}
-
-      {canAccept && (
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onAcceptBid(requestId, bid.id)}
-          disabled={accepting}
-          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-emerald-500/30 transition-all"
-        >
-          {accepting ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Accepting...
-            </>
-          ) : (
-            <>
-              <IoCheckmarkCircle className="text-lg" />
-              Accept and Add to Cart
-            </>
-          )}
-        </motion.button>
-      )}
-
-      {bid.status === "ACCEPTED" && (
-        <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium">
-          <IoCheckmarkCircle className="text-lg shrink-0" />
-          Offer accepted. It&apos;s in your cart, ready to check out.
-        </div>
-      )}
-    </div>
   );
 };
 
@@ -433,7 +369,6 @@ const MyBidsPage = ({ type = "product" }) => {
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [accepting, setAccepting] = useState(null);
   const [filter, setFilter] = useState("all");
 
   const fetchRequests = async () => {
@@ -459,24 +394,7 @@ const MyBidsPage = ({ type = "product" }) => {
     fetchRequests();
   }, [accessToken, type]);
 
-  const handleAcceptBid = async (requestId, bidId) => {
-    try {
-      setAccepting(bidId);
-      const res = await acceptBid(accessToken, requestId, bidId);
-      const productId = res.data.product_id;
-
-      await addToCart(accessToken, productId);
-
-      toast.success("Offer accepted and added to your cart!");
-      fetchRequests();
-    } catch (err) {
-      toast.error(
-        err?.response?.data?.error || "Failed to accept bid. Please try again."
-      );
-    } finally {
-      setAccepting(null);
-    }
-  };
+  const { accept: handleAcceptBid, accepting } = useAcceptOffer(accessToken, () => fetchRequests());
 
   const handleDelete = async (requestId) => {
     if (!window.confirm(copy.deleteConfirm)) return;

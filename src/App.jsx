@@ -48,6 +48,7 @@ import BidsMarketplace from "./pages/bids/BidsMarketplace";
 import BidRequestDetail from "./pages/bids/BidRequestDetail";
 import MyOffersPage from "./pages/bids/MyOffersPage";
 import RequestProductPage from "./pages/requests/RequestProductPage";
+import RequestDetailPage from "./pages/requests/RequestDetailPage";
 
 import GigsPage from "./pages/gigs/GigsPage";
 import GigDetailPage from "./pages/gigs/GigDetailPage";
@@ -170,6 +171,7 @@ function App() {
         {/* Bids: product requests (buyer asks for an item, vendors send offers) */}
         <Route path="/request-product" element={<RequestProductPage />} />
         <Route path="/my-bids" element={<MyBidsPage type="product" />} />
+        <Route path="/my-bids/:id" element={<RequestDetailPage />} />
         {/* Jobs: freelance work inside GigHub (freelancers send proposals, poster hires) */}
         <Route path="/gigs/jobs" element={<BidsMarketplace />} />
         <Route path="/gigs/jobs/about" element={<BidsLandingPage />} />
