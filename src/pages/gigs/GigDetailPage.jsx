@@ -1051,9 +1051,10 @@ const GigDetailPage = () => {
                   {/* Trust badges */}
                   <div className="mt-4 space-y-2">
                     {[
-                      { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Square" },
+                      { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Square (card details never reach the seller)" },
                       { icon: <IoRefreshOutline className="text-blue-400" />, text: "Revisions as specified" },
-                      { icon: <IoCheckmarkCircle className="text-purple-400" />, text: "Money-back guarantee" },
+                      // Matches what exists: buyers can open a dispute; PinkSurfing can refund via Square.
+                      { icon: <IoCheckmarkCircle className="text-purple-400" />, text: "Open a dispute if the work isn't delivered" },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-2 text-white/40 text-xs">
                         {item.icon}

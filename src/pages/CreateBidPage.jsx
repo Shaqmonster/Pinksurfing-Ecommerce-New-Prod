@@ -44,6 +44,7 @@ import { createBuyerRequest, getCategories } from "../api/buyerRequests";
 import BidsNavBar from "../components/BidsNavBar";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { JOB_CATEGORIES, JOB_CATEGORY_NAMES } from "../constants/jobCategories";
+import { BUDGET_OPTIONS } from "../constants/jobBudgets";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -87,16 +88,6 @@ const CATEGORIES = JOB_CATEGORY_NAMES.map((name) => ({
 }));
 
 const SUBCATEGORIES = JOB_CATEGORIES;
-
-const BUDGET_OPTIONS = [
-  { value: "under1k", label: "Under $1K", num: 500 },
-  { value: "1k-5k", label: "$1K \u2013 $5K", num: 1000 },
-  { value: "5k-15k", label: "$5K \u2013 $15K", num: 5000 },
-  { value: "15k-50k", label: "$15K \u2013 $50K", num: 15000 },
-  { value: "50k-100k", label: "$50K \u2013 $100K", num: 50000 },
-  { value: "100k+", label: "$100K+", num: 100000 },
-  { value: "unsure", label: "Not sure", num: 1 },
-];
 
 const TIMELINE_OPTIONS = [
   { value: "asap", label: "ASAP", days: 7 },
@@ -406,7 +397,7 @@ const PhotosStep = ({ data, onUpdate }) => {
       <div>
         <h2 className="text-xl font-bold text-white">Upload Photos</h2>
         <p className="text-sm text-white/50 mt-1">
-          Photos help vendors give more accurate bids \u2014 upload 3\u201310
+          Photos help vendors give more accurate bids — upload 3–10
         </p>
       </div>
 
@@ -475,7 +466,7 @@ const PhotosStep = ({ data, onUpdate }) => {
             <IoAlertCircle className="text-yellow-400 text-lg flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-white">Emergency / Urgent</p>
-              <p className="text-xs text-white/40">Rush \u2014 need help ASAP</p>
+              <p className="text-xs text-white/40">Rush — need help ASAP</p>
             </div>
           </div>
           <Toggle checked={data.isUrgent} onChange={(v) => onUpdate("isUrgent", v)} />

@@ -22,8 +22,29 @@ import { formatMoney } from "../utils/formatMoney";
 import { isOutOfStock } from "../utils/cartStock";
 import { formatDistanceToNow } from "date-fns";
 import MediaImage from "./ui/MediaImage";
+import { EBITDA_ATTR_ALIASES, REVENUE_ATTR_ALIASES, parseMoney } from "../utils/businessMetrics";
 
 const EMPTY_SPEC = "—";
+
+// Shown when a listing has no photo. The old fallback (/emptyCart.png, an empty-cart icon)
+// read as an error; this shows the listing's initial and category instead.
+const NoImagePlaceholder = ({ product }) => {
+  const name = String(product?.name || "").trim();
+  const initial = name ? name[0].toUpperCase() : "P";
+  const category = product?.subcategory?.name || product?.category?.name || "";
+  return (
+    <div
+      className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-purple-900/50 via-[var(--ps-surf)] to-pink-900/40 text-center px-3"
+      aria-label={name ? `${name} (no photo yet)` : "No photo yet"}
+      role="img"
+    >
+      <span className="text-3xl font-bold text-white/60 leading-none">{initial}</span>
+      {category && (
+        <span className="text-[10px] uppercase tracking-wider text-white/40 line-clamp-1">{category}</span>
+      )}
+    </div>
+  );
+};
 
 const ProductCard = ({ product, isCard }) => {
   const navigate = useNavigate();
@@ -272,6 +293,10 @@ const ProductCard = ({ product, isCard }) => {
     return "";
   };
 
+  // Same aliases and "$80,000"-style parsing as the business detail page.
+  const bizRevenue = parseMoney(getAttr(...REVENUE_ATTR_ALIASES));
+  const bizEbitda = parseMoney(getAttr(...EBITDA_ATTR_ALIASES));
+
   const formatSpec = (value) => {
     if (value === undefined || value === null || value === "") return EMPTY_SPEC;
     const str = String(value).trim();
@@ -387,13 +412,17 @@ const ProductCard = ({ product, isCard }) => {
           className={`relative block w-full overflow-hidden bg-[var(--ps-surf)] ${imageAspect}`}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-[1] pointer-events-none" />
-          <MediaImage
-            fill
-            className="transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
-            src={product.image1 || "/emptyCart.png"}
-            alt={product.name}
-            loading="lazy"
-          />
+          {product.image1 ? (
+            <MediaImage
+              fill
+              className="transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
+              src={product.image1}
+              alt={product.name}
+              loading="lazy"
+            />
+          ) : (
+            <NoImagePlaceholder product={product} />
+          )}
         </Link>
       ) : (
         <div
@@ -402,13 +431,17 @@ const ProductCard = ({ product, isCard }) => {
           }`}
         >
           <Link to={detailHref} className="absolute inset-0 block">
-            <MediaImage
-              fill
-              className="transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
-              src={product.image1 || "/emptyCart.png"}
-              alt={product.name}
-              loading="lazy"
-            />
+            {product.image1 ? (
+              <MediaImage
+                fill
+                className="transition-transform duration-ps-moderate ease-ps-standard group-hover:scale-[1.03]"
+                src={product.image1}
+                alt={product.name}
+                loading="lazy"
+              />
+            ) : (
+              <NoImagePlaceholder product={product} />
+            )}
           </Link>
         </div>
       )}
@@ -539,12 +572,10 @@ const ProductCard = ({ product, isCard }) => {
                     Rev
                   </span>
                   <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
-                    {getAttr("revenue")
-                      ? `$${formatMoney(getAttr("revenue"))}`
-                      : EMPTY_SPEC}
+                    {bizRevenue !== null ? `$${formatMoney(bizRevenue)}` : EMPTY_SPEC}
                   </span>
                 </div>
-                {getAttr("ebitda") && (
+                {bizEbitda !== null && (
                   <div className="flex items-center gap-1.5">
                     <FaMoneyBillWave
                       className="text-[var(--ps-primary)] text-[13px] shrink-0"
@@ -554,7 +585,7 @@ const ProductCard = ({ product, isCard }) => {
                       EBITDA
                     </span>
                     <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
-                      ${formatMoney(getAttr("ebitda"))}
+                      ${formatMoney(bizEbitda)}
                     </span>
                   </div>
                 )}

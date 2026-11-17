@@ -18,6 +18,7 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 import SearchForm from "../components/Search";
+import { ProductCardSkeleton } from "../components/ui/Skeleton";
 
 export default function ShopByCategory() {
   const { shopHeading } = useContext(authContext);
@@ -135,7 +136,7 @@ export default function ShopByCategory() {
   const [sortMethod, setSortMethod] = useState("default");
   const [perfumeCategory1, setPerfumeCategory1] = useState("");
   const [perfumeCategory2, setPerfumeCategory2] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Arrays==========================================================================
   const colorArray = [];
@@ -657,12 +658,14 @@ export default function ShopByCategory() {
                   </div>
                 </div>
               ) : (
-                <div className=" lg:col-span-3 2xl:col-span-4 flex items-center justify-center">
-                  <img
-                    src="/loading.svg"
-                    alt="lading"
-                    className=" w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] object-contain"
-                  />
+                <div
+                  className="lg:col-span-4 w-full grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-4 gap-x-0.5 gap-y-1 lg:gap-x-2"
+                  role="status"
+                  aria-label="Loading products"
+                >
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))}
                 </div>
               )}
             </div>

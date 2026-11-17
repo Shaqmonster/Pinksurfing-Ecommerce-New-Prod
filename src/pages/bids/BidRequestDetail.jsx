@@ -41,6 +41,7 @@ import {
 import { toast } from "react-toastify";
 import BidsNavBar from "../../components/BidsNavBar";
 import { useAccessToken } from "../../hooks/useAccessToken";
+import { jobBudgetLabel } from "../../constants/jobBudgets";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -203,7 +204,7 @@ const JobSidebar = ({ request }) => {
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div className="flex items-center gap-1.5 text-white/60">
           <FaDollarSign className="text-emerald-500 flex-shrink-0" />
-          <span className="font-semibold text-emerald-400 truncate">${request.budget}</span>
+          <span className="font-semibold text-emerald-400 truncate">{jobBudgetLabel(request.budget)}</span>
         </div>
         {request.deadline && (
           <div className="flex items-center gap-1.5 text-white/60">
@@ -256,7 +257,7 @@ const JobOverviewStep = ({ request, onContinue }) => {
         <div className="grid grid-cols-2 gap-3">
           {[
             { Icon: FaTag, text: request.category_name || "General" },
-            { Icon: FaDollarSign, text: `$${request.budget}`, cls: "text-emerald-400" },
+            { Icon: FaDollarSign, text: jobBudgetLabel(request.budget), cls: "text-emerald-400" },
             ...(request.deadline
               ? [{ Icon: IoCalendarOutline, text: `Due ${new Date(request.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` }]
               : []),
@@ -1309,7 +1310,7 @@ export default function BidRequestDetail() {
               <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/10 text-sm">
                 <div className="flex items-center gap-1.5">
                   <FaDollarSign className="text-emerald-500 text-xs" />
-                  <span className="font-semibold text-emerald-400">${request.budget}</span>
+                  <span className="font-semibold text-emerald-400">{jobBudgetLabel(request.budget)}</span>
                   <span className="text-white/30">budget</span>
                 </div>
                 {request.deadline && (

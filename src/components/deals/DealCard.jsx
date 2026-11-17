@@ -50,7 +50,7 @@ const LockIcon = () => (
 );
 
 // "20/20 slots open" read as "no one wants this"; lead with demand when there is some.
-function slotsText(deal) {
+export function slotsText(deal) {
   const unlocked = Number(deal.unlock_count) || 0;
   const remaining = deal.slots_remaining ?? 0;
   if (deal.is_slots_full) return "All unlock spots taken";
@@ -81,7 +81,16 @@ export default function DealCard({ deal }) {
           {img ? (
             <img src={img} alt="" />
           ) : (
-            <div style={{ width: "100%", height: "100%", background: "#232329" }} />
+            <div
+              aria-hidden="true"
+              style={{
+                width: "100%",
+                height: "100%",
+                // No photo yet: a soft gradient so the lock overlay reads as "hidden", not "broken".
+                background:
+                  "radial-gradient(circle at 30% 30%, rgba(151,71,255,.35), transparent 60%), radial-gradient(circle at 75% 70%, rgba(236,72,153,.25), transparent 55%), #1c1c22",
+              }}
+            />
           )}
           {!deal.is_unlocked && (
             <div className="deal-lock">
@@ -98,7 +107,7 @@ export default function DealCard({ deal }) {
               }
             >
               {deal.verification_label === "verified" ? "Verified" : "Pending"}{" "}
-              {deal.verification_score}%
+              {deal.verification_score}% · seller-reported
             </span>
             <span className="deal-badge sale">
               {deal.listing_intent === "for_lease" ? "For Lease" : "For Sale"}

@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import DealRoomPanel from "../components/deals/DealRoomPanel";
 import UnlockDealModal from "../components/deals/UnlockDealModal";
+import { slotsText } from "../components/deals/DealCard";
 import {
   fetchDealDetail,
   fetchDealFull,
@@ -233,7 +234,7 @@ export default function OffMarketDealDetail() {
               )}
 
               <div style={{ marginTop: 16, fontSize: 13, color: "#b0b0c0" }}>
-                {display.slots_remaining ?? 0} / {display.max_unlock_slots} unlock slots open
+                {slotsText(display)}
               </div>
 
               {!isUnlocked ? (
