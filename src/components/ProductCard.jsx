@@ -16,65 +16,16 @@ import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
-import {
-  IoBagHandleOutline,
-  IoBriefcaseOutline,
-  IoBusinessOutline,
-  IoCarSportOutline,
-  IoCart,
-  IoHomeOutline,
-  IoMailOutline,
-  IoStarOutline,
-} from "react-icons/io5";
+import { IoCart, IoMailOutline, IoStarOutline } from "react-icons/io5";
 import Stars from "./Stars";
 import { formatMoney } from "../utils/formatMoney";
 import { isOutOfStock } from "../utils/cartStock";
 import { formatDistanceToNow } from "date-fns";
 import MediaImage from "./ui/MediaImage";
+import NoImagePlaceholder from "./ui/NoImagePlaceholder";
 import { EBITDA_ATTR_ALIASES, REVENUE_ATTR_ALIASES, parseMoney } from "../utils/businessMetrics";
 
 const EMPTY_SPEC = "—";
-
-// Shown when a listing has no photo. The old fallback (/emptyCart.png, an empty-cart icon)
-// read as an error, and a bare initial read as a blank tile (UAT P3.4). This shows an icon for
-// the kind of listing, its category and a clear "photo coming soon" line.
-const PLACEHOLDER_KIND = {
-  residential: { Icon: IoHomeOutline, tint: "from-sky-900/50 to-purple-900/40" },
-  commercial: { Icon: IoBusinessOutline, tint: "from-indigo-900/50 to-slate-900/40" },
-  business: { Icon: IoBriefcaseOutline, tint: "from-amber-900/40 to-purple-900/40" },
-  vehicle: { Icon: IoCarSportOutline, tint: "from-emerald-900/40 to-slate-900/40" },
-  product: { Icon: IoBagHandleOutline, tint: "from-purple-900/50 to-pink-900/40" },
-};
-
-function placeholderKind(product) {
-  const slug = `${product?.category?.slug || ""} ${product?.subcategory?.slug || ""}`.toLowerCase();
-  if (slug.includes("residential")) return "residential";
-  if (slug.includes("commercial")) return "commercial";
-  if (slug.includes("business")) return "business";
-  if (/vehicle|car|auto|motor/.test(slug)) return "vehicle";
-  return "product";
-}
-
-const NoImagePlaceholder = ({ product }) => {
-  const name = String(product?.name || "").trim();
-  const category = product?.subcategory?.name || product?.category?.name || "";
-  const { Icon, tint } = PLACEHOLDER_KIND[placeholderKind(product)];
-  return (
-    <div
-      className={`absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-br ${tint} text-center px-3`}
-      aria-label={name ? `${name} (no photo yet)` : "No photo yet"}
-      role="img"
-    >
-      <span className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 ring-1 ring-white/15">
-        <Icon className="text-2xl text-white/70" aria-hidden="true" />
-      </span>
-      {category && (
-        <span className="text-[10px] uppercase tracking-wider text-white/55 line-clamp-1">{category}</span>
-      )}
-      <span className="text-[10px] text-white/40">Photo coming soon</span>
-    </div>
-  );
-};
 
 const ProductCard = ({ product, isCard }) => {
   const navigate = useNavigate();
@@ -603,20 +554,26 @@ const ProductCard = ({ product, isCard }) => {
                 )}
               </>
             )}
+            {isBusiness && bizRevenue === null && bizEbitda === null && (
+              // No figures given: say so instead of "REV —" (retest N3.1).
+              <span className="text-xs text-[var(--ps-dim)]">Financials not listed</span>
+            )}
             {isBusiness && (
               <>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <FaChartLine
-                    className="text-[var(--ps-primary)] text-[13px] shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="text-[10px] font-bold uppercase text-[var(--ps-dim)]">
-                    Rev
-                  </span>
-                  <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
-                    {bizRevenue !== null ? `$${formatMoney(bizRevenue)}` : EMPTY_SPEC}
-                  </span>
-                </div>
+                {bizRevenue !== null && (
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <FaChartLine
+                      className="text-[var(--ps-primary)] text-[13px] shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-[10px] font-bold uppercase text-[var(--ps-dim)]">
+                      Rev
+                    </span>
+                    <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                      ${formatMoney(bizRevenue)}
+                    </span>
+                  </div>
+                )}
                 {bizEbitda !== null && (
                   <div className="flex items-center gap-1.5">
                     <FaMoneyBillWave

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import DealRoomPanel from "../components/deals/DealRoomPanel";
+import DealImage from "../components/deals/DealImage";
 import UnlockDealModal from "../components/deals/UnlockDealModal";
 import { unlockFeePolicy } from "../components/deals/unlockPolicy";
 import { slotsText } from "../components/deals/DealCard";
@@ -146,11 +147,7 @@ export default function OffMarketDealDetail() {
             <div>
               <div className="deal-gallery">
                 <div className={`deal-gallery-main ${!isUnlocked ? "blurred" : ""}`}>
-                  {heroImg ? (
-                    <img src={heroImg} alt="" />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", background: "#232329" }} />
-                  )}
+                  <DealImage src={heroImg} propertyClass={display.property_class} />
                 </div>
               </div>
 
@@ -212,6 +209,34 @@ export default function OffMarketDealDetail() {
                       {doc.document_name || doc.document_type}
                     </a>
                   ))}
+                </div>
+              )}
+
+              {isUnlocked && full && !(full.documents?.length > 0) && (
+                <div className="deal-docs">
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Documents</h3>
+                  <p style={{ fontSize: 13, color: "#9a9aae", lineHeight: 1.5 }}>
+                    The seller hasn&apos;t added documents or comps yet. Ask for them in the deal
+                    room{full.gallery?.length ? "" : ", along with photos"}.
+                  </p>
+                </div>
+              )}
+
+              {isUnlocked && full?.gallery?.length > 1 && (
+                <div className="deal-docs">
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Photos</h3>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {full.gallery.map((url) => (
+                      <a key={url} href={url} target="_blank" rel="noreferrer">
+                        <img
+                          src={url}
+                          alt=""
+                          loading="lazy"
+                          style={{ width: 96, height: 72, objectFit: "cover", borderRadius: 6 }}
+                        />
+                      </a>
+                    ))}
+                  </div>
                 </div>
               )}
 

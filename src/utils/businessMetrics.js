@@ -3,7 +3,16 @@
 
 // Attribute names vendors' listings use for each figure (matched case-insensitively,
 // underscores treated as spaces). Keep in sync with ProductDetailPage.
-export const REVENUE_ATTR_ALIASES = ["annual revenue", "revenue", "revenue ($)", "annual_revenue"];
+export const REVENUE_ATTR_ALIASES = [
+  "annual revenue",
+  "revenue",
+  "revenue ($)",
+  "annual_revenue",
+  "annual revenue ($)",
+  "revenue (annual)",
+  "gross revenue",
+  "total revenue",
+];
 export const EBITDA_ATTR_ALIASES = [
   "ebitda",
   "ebitda ($)",
