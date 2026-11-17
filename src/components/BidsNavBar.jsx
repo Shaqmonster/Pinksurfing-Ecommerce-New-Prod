@@ -8,12 +8,13 @@ import {
   IoPaperPlaneOutline,
 } from "react-icons/io5";
 
+// GigHub jobs (freelance work). Product requests ("bids") live in the Shopping Mall instead.
 const NAV_ITEMS = [
-  { to: "/bids", label: "Jobs Home", Icon: IoHome },
-  { to: "/bids/marketplace", label: "Find Jobs", Icon: IoStorefrontOutline },
-  { to: "/create-bid", label: "Post a Job", Icon: IoAddCircleOutline },
-  { to: "/my-bids", label: "My Jobs", Icon: IoReceiptOutline },
-  { to: "/bids/my-offers", label: "My Offers", Icon: IoPaperPlaneOutline },
+  { to: "/gigs", label: "GigHub", Icon: IoHome },
+  { to: "/gigs/jobs", label: "Find Jobs", Icon: IoStorefrontOutline },
+  { to: "/gigs/jobs/post", label: "Post a Job", Icon: IoAddCircleOutline },
+  { to: "/gigs/jobs/mine", label: "My Jobs", Icon: IoReceiptOutline },
+  { to: "/gigs/jobs/proposals", label: "My Proposals", Icon: IoPaperPlaneOutline },
 ];
 
 const BidsNavBar = () => {

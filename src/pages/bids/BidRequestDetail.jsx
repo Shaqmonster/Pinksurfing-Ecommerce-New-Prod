@@ -33,10 +33,10 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import {
-  getOpenRequestDetail,
-  createBidOffer,
-  getMySubmittedBids,
-  withdrawBidOffer,
+  getJobDetail,
+  createJobProposal,
+  getMyProposals,
+  withdrawProposal,
 } from "../../api/buyerRequests";
 import { toast } from "react-toastify";
 import BidsNavBar from "../../components/BidsNavBar";
@@ -47,19 +47,26 @@ import { jobBudgetLabel } from "../../constants/jobBudgets";
 
 const STEPS = [
   { label: "Job Overview", shortLabel: "Overview" },
-  { label: "Offer Basics", shortLabel: "Basics" },
+  { label: "Proposal Basics", shortLabel: "Basics" },
   { label: "Price & Payment", shortLabel: "Price" },
   { label: "Timeline", shortLabel: "Timeline" },
   { label: "Scope & Inclusions", shortLabel: "Scope" },
   { label: "Milestones", shortLabel: "Milestones" },
-  { label: "Attachments", shortLabel: "Files" },
   { label: "Review & Send", shortLabel: "Review" },
 ];
+
+// A job proposal shown with the same view as before (amount / days / text).
+const toOfferView = (p) => ({
+  ...p,
+  bid_amount: p.amount,
+  delivery_time_days: p.delivery_days,
+  proposal: p.cover_letter,
+});
 
 const BID_STATUS_COLORS = {
   PENDING: "bg-yellow-500/20 text-yellow-400",
   SHORTLISTED: "bg-blue-500/20 text-blue-400",
-  ACCEPTED: "bg-emerald-500/20 text-emerald-400",
+  HIRED: "bg-emerald-500/20 text-emerald-400",
   REJECTED: "bg-red-500/20 text-red-400",
 };
 
@@ -175,7 +182,7 @@ const StickyFooter = ({ currentStep, onBack, onNext, isLastStep, isLoading }) =>
           <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
           <>
-            {isLastStep ? "Send Offer" : "Continue"}
+            {isLastStep ? "Send Proposal" : "Continue"}
             {!isLastStep && <IoArrowForward />}
           </>
         )}
@@ -236,7 +243,7 @@ const JobSidebar = ({ request }) => {
 
       <div className="pt-2 border-t border-white/10">
         <div className="flex items-center justify-between text-xs text-white/40">
-          <span>{request.bids?.length ?? 0} bid{(request.bids?.length ?? 0) !== 1 ? "s" : ""} submitted</span>
+          <span>{request.proposal_count ?? 0} proposal{(request.proposal_count ?? 0) !== 1 ? "s" : ""} received</span>
           <span>Posted {timeAgo(request.created_at)}</span>
         </div>
       </div>
@@ -282,9 +289,9 @@ const JobOverviewStep = ({ request, onContinue }) => {
 
       {/* Desktop prompt */}
       <div className="hidden md:block space-y-2">
-        <h2 className="text-2xl font-bold text-white">Ready to Submit Your Offer?</h2>
+        <h2 className="text-2xl font-bold text-white">Ready to Send a Proposal?</h2>
         <p className="text-white/50">
-          Review the job details on the left, then create a professional offer in just a few steps.
+          Review the job details on the left, then write your proposal in a few steps.
         </p>
       </div>
 
@@ -318,7 +325,7 @@ const JobOverviewStep = ({ request, onContinue }) => {
         onClick={onContinue}
         className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-base flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-pink-500/20"
       >
-        Create Offer
+        Write Proposal
         <IoArrowForward />
       </button>
     </div>
@@ -339,12 +346,12 @@ const OfferBasicsStep = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Offer Basics</h2>
+        <h2 className="text-xl font-bold text-white">Proposal Basics</h2>
         <p className="text-sm text-white/50 mt-1">Start with the essentials</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <label className={labelClass}>Offer Title</label>
+          <label className={labelClass}>Proposal Title</label>
           <input
             value={data.title}
             onChange={(e) => onChange("title", e.target.value)}
@@ -373,12 +380,12 @@ const OfferBasicsStep = ({ data, onChange }) => {
           </div>
         </div>
         <div className="space-y-1.5">
-          <label className={labelClass}>Offer Summary</label>
+          <label className={labelClass}>Summary</label>
           <textarea
             value={data.summary}
             onChange={(e) => onChange("summary", e.target.value)}
             rows={4}
-            placeholder="Briefly describe your offer and why you're the best fit for this job..."
+            placeholder="Briefly describe your approach and why you're the best fit for this job..."
             className={textareaClass}
           />
         </div>
@@ -399,7 +406,7 @@ const PricePaymentStep = ({ data, onChange }) => {
       </div>
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <label className={labelClass}>Your Bid Amount (USD)</label>
+          <label className={labelClass}>Your Price (USD)</label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-sm">$</span>
             <input
@@ -717,71 +724,10 @@ const MilestonesStep = ({ milestones, onAdd, onChange, onRemove, totalPrice }) =
   );
 };
 
-const AttachmentsStep = ({ attachments, onAdd, onRemove }) => {
-  const fileInputRef = useRef(null);
-
-  const handleFiles = (fileList) => {
-    if (!fileList) return;
-    const files = Array.from(fileList).filter((f) => f.size <= 20 * 1024 * 1024);
-    onAdd(files);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-white">Attachments</h2>
-        <p className="text-sm text-white/50 mt-1">Upload portfolio samples, plans, or documents (up to 4 files)</p>
-      </div>
-
-      {attachments.length < 4 && (
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
-          className="border-2 border-dashed border-white/15 rounded-xl p-8 text-center cursor-pointer hover:border-pink-500/40 hover:bg-white/3 transition-all"
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,.pdf,.doc,.docx"
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
-          <IoCloudUpload className="text-4xl text-white/20 mx-auto mb-3" />
-          <p className="text-sm font-medium text-white/60">Drag files here or tap to upload</p>
-          <p className="text-xs text-white/30 mt-1">Images, PDF, Word — up to 20MB each (max 4 files)</p>
-        </div>
-      )}
-
-      {attachments.length > 0 && (
-        <div className="space-y-2">
-          {attachments.map((file, i) => (
-            <div key={i} className="flex items-center gap-3 bg-[#13131a] border border-white/10 rounded-xl p-3">
-              <IoDocumentText className="text-pink-400 text-lg flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-white truncate">{file.name}</p>
-                <p className="text-xs text-white/40">{(file.size / 1024).toFixed(1)} KB</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => onRemove(i)}
-                className="text-white/30 hover:text-red-400 transition-colors flex-shrink-0"
-              >
-                <IoClose />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const ReviewStep = ({ offerData, milestones, onEdit }) => {
   const sections = [
     {
-      step: 1, title: "Offer Basics",
+      step: 1, title: "Proposal Basics",
       fields: [
         { label: "Title", value: offerData.title || "Not set" },
         { label: "Type", value: offerData.offerType || "Not set" },
@@ -820,7 +766,7 @@ const ReviewStep = ({ offerData, milestones, onEdit }) => {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-bold text-white">Review &amp; Send</h2>
-        <p className="text-sm text-white/50 mt-1">Review your offer before submission</p>
+        <p className="text-sm text-white/50 mt-1">Review your proposal before sending</p>
       </div>
 
       {sections.map(({ step, title, fields }) => (
@@ -902,9 +848,9 @@ const ConfirmationStep = ({ onGoBack }) => (
       transition={{ delay: 0.3 }}
       className="space-y-3"
     >
-      <h2 className="text-2xl font-bold text-white">Offer Sent Successfully!</h2>
+      <h2 className="text-2xl font-bold text-white">Proposal Sent!</h2>
       <p className="text-white/50 max-w-sm mx-auto text-sm leading-relaxed">
-        Your offer has been submitted. The buyer will review proposals and reach out if they&apos;re interested.
+        The job poster will review proposals and message you in chat if they hire you.
       </p>
     </motion.div>
     <motion.div
@@ -939,7 +885,7 @@ const ConfirmationStep = ({ onGoBack }) => (
       className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white text-sm font-semibold hover:bg-white/5 transition-all mx-auto"
     >
       <IoArrowBack />
-      View All Requests
+      Browse More Jobs
     </motion.button>
   </div>
 );
@@ -950,16 +896,16 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
   return (
     <div className="space-y-4">
       {/* Accepted banner */}
-      {bid.status === "ACCEPTED" && (
+      {bid.status === "HIRED" && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
               <IoCheckmarkCircle className="text-emerald-400 text-2xl" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-emerald-400">Your Offer Was Accepted!</h3>
+              <h3 className="text-base font-bold text-emerald-400">You Were Hired!</h3>
               <p className="text-sm text-white/60 mt-0.5">
-                The buyer has accepted your offer. The project will proceed to checkout and payment.
+                The job poster picked your proposal. They will message you in chat to get started.
               </p>
             </div>
           </div>
@@ -974,7 +920,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
               <IoAlertCircle className="text-red-400 text-2xl" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-red-400">Offer Not Selected</h3>
+              <h3 className="text-base font-bold text-red-400">Proposal Not Selected</h3>
               <p className="text-sm text-white/60 mt-0.5">
                 The buyer chose a different vendor for this project.
               </p>
@@ -993,7 +939,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
             <div>
               <h3 className="text-base font-bold text-blue-400">You've Been Shortlisted!</h3>
               <p className="text-sm text-white/60 mt-0.5">
-                The buyer is reviewing your offer alongside other top candidates.
+                The job poster is reviewing your proposal alongside others.
               </p>
             </div>
           </div>
@@ -1003,7 +949,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
       {/* Offer details card */}
       <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-white">Your Submitted Offer</h3>
+          <h3 className="text-base font-bold text-white">Your Proposal</h3>
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${BID_STATUS_COLORS[bid.status] ?? "bg-white/10 text-white/60"}`}>
             {bid.status}
           </span>
@@ -1012,7 +958,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white/5 rounded-xl p-3">
-            <p className="text-white/40 text-xs mb-1">Bid Amount</p>
+            <p className="text-white/40 text-xs mb-1">Your Price</p>
             <div className="flex items-center gap-1.5">
               <FaDollarSign className="text-emerald-500 text-sm" />
               <span className="text-lg font-bold text-emerald-400">${bid.bid_amount}</span>
@@ -1067,7 +1013,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
             className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
           >
             <IoTrash className="text-sm" />
-            {deleting ? "Withdrawing..." : "Withdraw Offer"}
+            {deleting ? "Withdrawing..." : "Withdraw Proposal"}
           </button>
         )}
       </div>
@@ -1118,24 +1064,23 @@ export default function BidRequestDetail() {
   });
 
   const [milestones, setMilestones] = useState([]);
-  const [attachments, setAttachments] = useState([]);
 
   useEffect(() => {
     if (!token) { navigate("/signin"); return; }
     setLoading(true);
     Promise.all([
-      getOpenRequestDetail(token, requestId),
-      getMySubmittedBids(token),
+      getJobDetail(token, requestId),
+      getMyProposals(token),
     ])
-      .then(([reqRes, bidsRes]) => {
+      .then(([reqRes, proposalsRes]) => {
         setRequest(reqRes.data);
-        const myBids = bidsRes.data?.results ?? bidsRes.data ?? [];
-        const found = Array.isArray(myBids)
-          ? myBids.find((b) => String(b.request) === String(requestId) || String(b.request_id) === String(requestId))
+        const mine = proposalsRes.data?.results ?? proposalsRes.data ?? [];
+        const found = Array.isArray(mine)
+          ? mine.find((p) => String(p.request) === String(requestId))
           : null;
-        setMyBid(found || null);
+        setMyBid(found ? toOfferView(found) : null);
       })
-      .catch(() => {})
+      .catch(() => setRequest(null))
       .finally(() => setLoading(false));
   }, [token, requestId, navigate]);
 
@@ -1166,7 +1111,7 @@ export default function BidRequestDetail() {
     }
 
     if (!offerData.amount) {
-      toast.error("Please fill in your bid amount in the Price & Payment step.");
+      toast.error("Please fill in your price in the Price & Payment step.");
       setCurrentStep(2);
       return;
     }
@@ -1189,29 +1134,25 @@ export default function BidRequestDetail() {
           .map((m, i) => `${i + 1}. ${m.title}${m.amount ? ` ($${m.amount})` : ""}`)
           .join("\n")}`,
     ].filter(Boolean);
-    const proposal = proposalParts.join("").trim() || "Offer submitted via PinkSurfing Marketplace";
+    const proposal = proposalParts.join("").trim() || "Proposal sent via PinkSurfing GigHub";
 
     try {
       setSubmitting(true);
-      const payload = {
+      await createJobProposal(token, {
         request_id: requestId,
-        bid_amount: offerData.amount,
-        delivery_time_days: offerData.deliveryDays,
-        proposal,
-      };
-      
-      console.log("Sending offer payload:", payload);
-      
-      await createBidOffer(
-        token,
-        payload,
-        Array.isArray(attachments) ? attachments.slice(0, 4) : []
-      );
+        amount: offerData.amount,
+        delivery_days: offerData.deliveryDays,
+        cover_letter: proposal,
+      });
       setIsConfirmed(true);
-      toast.success("Offer sent successfully!");
+      toast.success("Proposal sent! The job poster will see it in My Jobs.");
     } catch (err) {
-      console.error("Failed to send offer:", err);
-      toast.error(err?.response?.data?.detail ?? "Failed to send offer. Please try again.");
+      const data = err?.response?.data;
+      const msg =
+        data?.detail ||
+        (data && typeof data === "object" ? Object.values(data).flat().join(" ") : null) ||
+        "Failed to send proposal. Please try again.";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -1219,14 +1160,14 @@ export default function BidRequestDetail() {
 
   const handleDeleteBid = async () => {
     if (!myBid) return;
-    if (!confirm("Withdraw your offer? This cannot be undone.")) return;
+    if (!confirm("Withdraw your proposal? This cannot be undone.")) return;
     try {
       setDeleting(true);
-      await withdrawBidOffer(token, myBid.id);
-      toast.success("Offer withdrawn.");
+      await withdrawProposal(token, myBid.id);
+      toast.success("Proposal withdrawn.");
       setMyBid(null);
     } catch {
-      toast.error("Failed to withdraw offer.");
+      toast.error("Failed to withdraw proposal.");
     } finally {
       setDeleting(false);
     }
@@ -1258,7 +1199,7 @@ export default function BidRequestDetail() {
           <div className="text-center">
             <IoAlertCircle className="text-5xl text-white/20 mx-auto mb-4" />
             <p className="text-white/60 mb-4">Request not found.</p>
-            <Link to="/bids/marketplace">
+            <Link to="/gigs/jobs">
               <button className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold hover:opacity-90 transition-all">
                 Back to Marketplace
               </button>
@@ -1276,7 +1217,7 @@ export default function BidRequestDetail() {
         <BidsNavBar />
         <div className="flex items-center justify-center px-4 pt-20">
           <div className="max-w-md w-full">
-            <ConfirmationStep onGoBack={() => navigate("/bids/marketplace")} />
+            <ConfirmationStep onGoBack={() => navigate("/gigs/jobs")} />
           </div>
         </div>
       </div>
@@ -1291,7 +1232,7 @@ export default function BidRequestDetail() {
         <div className="px-4 py-8">
           <div className="max-w-2xl mx-auto space-y-6">
             <Link
-              to="/bids/marketplace"
+              to="/gigs/jobs"
               className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-pink-400 transition-colors"
             >
               <IoArrowBack />
@@ -1331,27 +1272,6 @@ export default function BidRequestDetail() {
 
             <ExistingBidView bid={myBid} onWithdraw={handleDeleteBid} deleting={deleting} />
 
-            {request.bids?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
-                  All Bids ({request.bids.length})
-                </p>
-                {request.bids.map((bid) => (
-                  <div
-                    key={bid.id}
-                    className="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-xl text-sm"
-                  >
-                    <span className="text-white/70 truncate">{bid.vendor_store_name}</span>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="font-semibold text-emerald-400">${bid.bid_amount}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BID_STATUS_COLORS[bid.status] ?? "bg-white/10 text-white/60"}`}>
-                        {bid.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -1378,14 +1298,6 @@ export default function BidRequestDetail() {
         );
       case 6:
         return (
-          <AttachmentsStep
-            attachments={attachments}
-            onAdd={(files) => setAttachments((prev) => [...prev, ...files].slice(0, 4))}
-            onRemove={(i) => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
-          />
-        );
-      case 7:
-        return (
           <ReviewStep
             offerData={offerData}
             milestones={milestones}
@@ -1402,7 +1314,7 @@ export default function BidRequestDetail() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Back link */}
         <Link
-          to="/bids/marketplace"
+          to="/gigs/jobs"
           className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-pink-400 transition-colors mb-6"
         >
           <IoArrowBack />

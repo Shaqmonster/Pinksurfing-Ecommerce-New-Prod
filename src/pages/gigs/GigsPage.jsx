@@ -217,6 +217,20 @@ const GigsPage = () => {
           <p className="text-white/50 text-base max-w-xl mx-auto">
             Browse services from independent professionals. Compare packages, reviews and delivery times before you order.
           </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
+            <Link
+              to="/gigs/jobs"
+              className="px-4 py-2 rounded-xl border border-white/15 text-white/80 hover:text-white hover:border-pink-500/40 transition-all"
+            >
+              Find Jobs
+            </Link>
+            <Link
+              to="/gigs/jobs/post"
+              className="px-4 py-2 rounded-xl border border-white/15 text-white/80 hover:text-white hover:border-pink-500/40 transition-all"
+            >
+              Post a Job
+            </Link>
+          </div>
 
           {/* Search + filter row */}
           <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 max-w-2xl mx-auto">
@@ -342,6 +356,21 @@ const GigsPage = () => {
                   filters.category_slug === cat.slug ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white" : "bg-transparent border-white/10 text-white/60 hover:border-white/20"
                 }`}>{cat.name}</button>
             ))}
+          </div>
+        )}
+
+        {/* Job categories: gigs here, open job posts on the jobs board */}
+        {activeCategory && /jobs/i.test(activeCategory.name) && (
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-pink-500/20 bg-pink-500/5 px-4 py-3">
+            <p className="text-sm text-white/70">
+              Looking for open jobs in {activeCategory.name}? Posted jobs are on the jobs board.
+            </p>
+            <Link
+              to={`/gigs/jobs?category=${encodeURIComponent(activeCategory.slug)}`}
+              className="text-sm font-semibold text-pink-400 hover:text-pink-300"
+            >
+              See open jobs →
+            </Link>
           </div>
         )}
 

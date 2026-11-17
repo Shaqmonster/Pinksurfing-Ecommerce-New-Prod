@@ -15,10 +15,161 @@ import {
 } from "react-icons/io5";
 import { FaGavel } from "react-icons/fa";
 import { authContext } from "../context/authContext";
-import { getMyRequests, acceptBid, deleteRequest, addToCart } from "../api/buyerRequests";
+import {
+  getMyRequests,
+  acceptBid,
+  deleteRequest,
+  addToCart,
+  getJobProposals,
+  hireProposal,
+} from "../api/buyerRequests";
 import BidsNavBar from "../components/BidsNavBar";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { jobBudgetLabel } from "../constants/jobBudgets";
+import { formatMoney } from "../utils/formatMoney";
+
+// One page, two features:
+//   product: "My Bids" — things the buyer asked for; vendors' offers; accepting one adds it to the cart.
+//   job:     "My Jobs" — GigHub jobs; freelancers' proposals; hiring one opens a chat.
+const COPY = {
+  product: {
+    title: "My Bids",
+    subtitle: "Products you asked for, and the offers vendors sent.",
+    newLabel: "Request a Product",
+    newPath: "/request-product",
+    empty: "No product requests yet.",
+    emptyCta: "Request a product",
+    responses: ["offer", "offers"],
+    statLabel: "Offers Received",
+    loadError: "Failed to load your product requests.",
+    deleteConfirm: "Delete this product request? This cannot be undone.",
+  },
+  job: {
+    title: "My Jobs",
+    subtitle: "Jobs you posted in GigHub, and the proposals freelancers sent.",
+    newLabel: "Post a Job",
+    newPath: "/gigs/jobs/post",
+    empty: "No jobs posted yet.",
+    emptyCta: "Post your first job",
+    responses: ["proposal", "proposals"],
+    statLabel: "Proposals Received",
+    loadError: "Failed to load your jobs.",
+    deleteConfirm: "Delete this job? This cannot be undone.",
+  },
+};
+
+const responseCount = (req, type) =>
+  type === "job" ? req.proposal_count ?? 0 : req.bids?.length ?? 0;
+
+const PROPOSAL_STATUS_COLORS = {
+  PENDING: "bg-yellow-500/20 text-yellow-400",
+  SHORTLISTED: "bg-blue-500/20 text-blue-400",
+  HIRED: "bg-emerald-500/20 text-emerald-400",
+  REJECTED: "bg-red-500/20 text-red-400",
+};
+
+const JobProposals = ({ req, accessToken, onHired }) => {
+  const [proposals, setProposals] = useState(null);
+  const [hiring, setHiring] = useState(null);
+  const { openChatWithParticipantEmail } = useContext(authContext);
+
+  useEffect(() => {
+    let cancelled = false;
+    getJobProposals(accessToken, req.id)
+      .then((res) => {
+        if (!cancelled) setProposals(Array.isArray(res.data) ? res.data : res.data?.results ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setProposals([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, req.id, req.status]);
+
+  const handleHire = async (proposal) => {
+    if (!window.confirm(`Hire ${proposal.worker_name} for $${formatMoney(proposal.amount)}?`)) return;
+    try {
+      setHiring(proposal.id);
+      const res = await hireProposal(accessToken, req.id, proposal.id);
+      toast.success(`You hired ${proposal.worker_name}. Say hello in chat to get started.`);
+      const email = res.data?.proposal?.worker_email;
+      if (email && typeof openChatWithParticipantEmail === "function") {
+        openChatWithParticipantEmail(email);
+      }
+      onHired();
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to hire. Please try again.");
+    } finally {
+      setHiring(null);
+    }
+  };
+
+  if (proposals === null) {
+    return (
+      <div className="flex justify-center py-6">
+        <span className="w-6 h-6 border-2 border-white/20 border-t-pink-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (proposals.length === 0) {
+    return <p className="text-white/40 text-sm">No proposals yet.</p>;
+  }
+  const canHire = ["OPEN", "EVALUATING"].includes(req.status);
+  return proposals.map((p) => (
+    <div key={p.id} className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-white font-medium text-sm truncate">{p.worker_name}</p>
+          {Number(p.worker_rating) > 0 && (
+            <p className="text-white/40 text-xs">Rating {Number(p.worker_rating).toFixed(1)}</p>
+          )}
+        </div>
+        <span
+          className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+            PROPOSAL_STATUS_COLORS[p.status] || "bg-gray-500/20 text-gray-400"
+          }`}
+        >
+          {p.status}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="bg-white/5 rounded-lg p-2.5">
+          <p className="text-white/40 text-xs">Price</p>
+          <p className="text-emerald-400 font-bold text-sm sm:text-base">${formatMoney(p.amount)}</p>
+        </div>
+        <div className="bg-white/5 rounded-lg p-2.5">
+          <p className="text-white/40 text-xs">Delivery</p>
+          <p className="text-white font-semibold text-sm">{p.delivery_days} days</p>
+        </div>
+      </div>
+      <div className="bg-white/5 rounded-lg p-3">
+        <p className="text-white/40 text-xs mb-1">Proposal</p>
+        <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{p.cover_letter}</p>
+      </div>
+      {canHire && p.status === "PENDING" && (
+        <button
+          type="button"
+          onClick={() => handleHire(p)}
+          disabled={hiring === p.id}
+          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+        >
+          <IoCheckmarkCircle className="text-lg" />
+          {hiring === p.id ? "Hiring…" : "Hire"}
+        </button>
+      )}
+      {p.status === "HIRED" && p.worker_email && (
+        <button
+          type="button"
+          onClick={() => openChatWithParticipantEmail?.(p.worker_email)}
+          className="text-pink-400 hover:text-pink-300 text-sm font-medium"
+        >
+          Message {p.worker_name}
+        </button>
+      )}
+    </div>
+  ));
+};
 
 const STATUS_COLORS = {
   OPEN: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -43,8 +194,12 @@ const FILTER_TABS = [
   { key: "CLOSED", label: "Closed" },
 ];
 
-const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
+const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged, accepting }) => {
   const [expanded, setExpanded] = useState(false);
+  const copy = COPY[type];
+  const count = responseCount(req, type);
+  const word = count === 1 ? copy.responses[0] : copy.responses[1];
+  const jobLabel = req.job_subcategory || req.job_category;
   const statusColor = STATUS_COLORS[req.status] || STATUS_COLORS.OPEN;
   const images = [req.image1, req.image2, req.image3, req.image4].filter(Boolean);
 
@@ -64,9 +219,14 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
               >
                 {req.status}
               </span>
-              {req.category_name && (
+              {(type === "job" ? jobLabel : req.category_name) && (
                 <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
-                  {req.category_name}
+                  {type === "job" ? jobLabel : req.category_name}
+                </span>
+              )}
+              {type === "product" && req.quantity > 1 && (
+                <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                  Qty {req.quantity}
                 </span>
               )}
             </div>
@@ -78,7 +238,7 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
           <button
             onClick={() => onDelete(req.id)}
             className="shrink-0 p-2 rounded-lg hover:bg-red-500/20 text-white/30 hover:text-red-400 transition-colors"
-            title="Delete request"
+            title="Delete"
           >
             <IoTrashOutline className="text-lg" />
           </button>
@@ -87,7 +247,9 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
         {/* Meta row */}
         <div className="flex flex-wrap gap-3 sm:gap-4 mt-4 text-sm">
           <div className="flex items-center gap-1.5 text-white/60">
-            <span className="text-emerald-400 font-semibold">{jobBudgetLabel(req.budget)}</span>
+            <span className="text-emerald-400 font-semibold">
+              {type === "job" ? jobBudgetLabel(req.budget) : `$${formatMoney(req.budget)}`}
+            </span>
             <span className="text-white/30">budget</span>
           </div>
           {req.deadline && (
@@ -105,8 +267,7 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
           <div className="flex items-center gap-1.5 text-white/60">
             <FaGavel className="text-pink-400 text-xs shrink-0" />
             <span>
-              {req.bids?.length || 0}{" "}
-              {req.bids?.length === 1 ? "bid" : "bids"}
+              {count} {word}
             </span>
           </div>
         </div>
@@ -126,21 +287,20 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
         )}
 
         {/* Toggle bids */}
-        {req.bids?.length > 0 && (
+        {count > 0 && (
           <button
             onClick={() => setExpanded((v) => !v)}
             className="mt-4 flex items-center gap-2 text-pink-400 hover:text-pink-300 text-sm font-medium transition-colors"
           >
             {expanded ? <IoChevronUp /> : <IoChevronDown />}
-            {expanded ? "Hide" : "View"} {req.bids?.length}{" "}
-            {req.bids?.length === 1 ? "bid" : "bids"}
+            {expanded ? "Hide" : "View"} {count} {word}
           </button>
         )}
       </div>
 
       {/* Bids List */}
       <AnimatePresence>
-        {expanded && req.bids?.length > 0 && (
+        {expanded && count > 0 && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -150,9 +310,12 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
           >
             <div className="p-4 sm:p-6 space-y-4">
               <p className="text-white/40 text-xs uppercase tracking-wider font-semibold">
-                Vendor Bids
+                {type === "job" ? "Proposals" : "Vendor Offers"}
               </p>
-              {req.bids.map((bid) => (
+              {type === "job" ? (
+                <JobProposals req={req} accessToken={accessToken} onHired={onChanged} />
+              ) : (
+                req.bids.map((bid) => (
                 <BidRow
                   key={bid.id}
                   bid={bid}
@@ -161,7 +324,8 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
                   onAcceptBid={onAcceptBid}
                   accepting={accepting === bid.id}
                 />
-              ))}
+                ))
+              )}
             </div>
           </motion.div>
         )}
@@ -195,17 +359,24 @@ const BidRow = ({ bid, requestStatus, requestId, onAcceptBid, accepting }) => {
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div className="bg-white/5 rounded-lg p-2.5">
-          <p className="text-white/40 text-xs">Bid Amount</p>
-          <p className="text-emerald-400 font-bold text-sm sm:text-base">${bid.bid_amount}</p>
+          <p className="text-white/40 text-xs">Price</p>
+          <p className="text-emerald-400 font-bold text-sm sm:text-base">${formatMoney(bid.bid_amount)}</p>
+          <p className="text-white/40 text-[11px]">
+            {Number(bid.shipping_cost) > 0 ? `+ $${formatMoney(bid.shipping_cost)} shipping` : "Free shipping"}
+          </p>
         </div>
         <div className="bg-white/5 rounded-lg p-2.5">
           <p className="text-white/40 text-xs">Delivery</p>
           <p className="text-white font-semibold text-sm">{bid.delivery_time_days} days</p>
+          <p className="text-white/40 text-[11px] capitalize">
+            {bid.condition || "new"}
+            {bid.stock_available === false ? " · not in stock yet" : " · in stock"}
+          </p>
         </div>
       </div>
 
       <div className="bg-white/5 rounded-lg p-3">
-        <p className="text-white/40 text-xs mb-1">Proposal</p>
+        <p className="text-white/40 text-xs mb-1">Vendor note</p>
         <p className="text-white/80 text-sm leading-relaxed">{bid.proposal}</p>
       </div>
 
@@ -238,7 +409,7 @@ const BidRow = ({ bid, requestStatus, requestId, onAcceptBid, accepting }) => {
           ) : (
             <>
               <IoCheckmarkCircle className="text-lg" />
-              Accept This Bid
+              Accept and Add to Cart
             </>
           )}
         </motion.button>
@@ -247,14 +418,15 @@ const BidRow = ({ bid, requestStatus, requestId, onAcceptBid, accepting }) => {
       {bid.status === "ACCEPTED" && (
         <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium">
           <IoCheckmarkCircle className="text-lg shrink-0" />
-          Bid accepted — check your cart to checkout
+          Offer accepted. It&apos;s in your cart, ready to check out.
         </div>
       )}
     </div>
   );
 };
 
-const MyBidsPage = () => {
+const MyBidsPage = ({ type = "product" }) => {
+  const copy = COPY[type];
   const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
@@ -269,12 +441,12 @@ const MyBidsPage = () => {
     if (!accessToken) return;
     try {
       setLoading(true);
-      const res = await getMyRequests(accessToken);
+      const res = await getMyRequests(accessToken, type);
       const data = res.data?.results ?? res.data ?? [];
       setRequests(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("[MyBidsPage] Failed to load requests:", err);
-      toast.error("Failed to load your bid requests.");
+      toast.error(copy.loadError);
     } finally {
       setLoading(false);
     }
@@ -286,7 +458,7 @@ const MyBidsPage = () => {
       return;
     }
     fetchRequests();
-  }, [accessToken]);
+  }, [accessToken, type]);
 
   const handleAcceptBid = async (requestId, bidId) => {
     try {
@@ -296,7 +468,7 @@ const MyBidsPage = () => {
 
       await addToCart(accessToken, productId);
 
-      toast.success("Bid accepted and added to your cart!");
+      toast.success("Offer accepted and added to your cart!");
       fetchRequests();
     } catch (err) {
       toast.error(
@@ -308,7 +480,7 @@ const MyBidsPage = () => {
   };
 
   const handleDelete = async (requestId) => {
-    if (!window.confirm("Delete this bid request? This cannot be undone.")) return;
+    if (!window.confirm(copy.deleteConfirm)) return;
     try {
       await deleteRequest(accessToken, requestId);
       toast.success("Request deleted.");
@@ -330,7 +502,7 @@ const MyBidsPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
-      <BidsNavBar />
+      {type === "job" && <BidsNavBar />}
 
       {/* Background glow */}
       <div className="relative">
@@ -350,20 +522,20 @@ const MyBidsPage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <IoReceiptOutline className="text-pink-400 text-xl" />
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Job Requests</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white">{copy.title}</h1>
                 </div>
                 <p className="text-white/50 text-sm">
-                  Track your requests and review vendor bids.
+                  {copy.subtitle}
                 </p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => navigate("/create-bid")}
+                onClick={() => navigate(copy.newPath)}
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-pink-500/30 transition-all flex items-center gap-2"
               >
                 <FaGavel className="text-sm" />
-                New Request
+                {copy.newLabel}
               </motion.button>
             </div>
           </motion.div>
@@ -374,7 +546,7 @@ const MyBidsPage = () => {
               {[
                 { label: "Total Requests", value: requests.length, color: "text-white" },
                 { label: "Open", value: counts["OPEN"] || 0, color: "text-emerald-400" },
-                { label: "Bids Received", value: requests.reduce((sum, r) => sum + (r.bids?.length || 0), 0), color: "text-pink-400" },
+                { label: copy.statLabel, value: requests.reduce((sum, r) => sum + responseCount(r, type), 0), color: "text-pink-400" },
                 { label: "Awarded", value: counts["AWARDED"] || 0, color: "text-purple-400" },
               ].map(({ label, value, color }) => (
                 <div key={label} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 text-center">
@@ -428,15 +600,13 @@ const MyBidsPage = () => {
             >
               <FaGavel className="text-5xl text-white/10 mx-auto mb-4" />
               <p className="text-white/40 text-base">
-                {filter === "all"
-                  ? "No bid requests yet."
-                  : `No ${filter.toLowerCase()} requests.`}
+                {filter === "all" ? copy.empty : `No ${filter.toLowerCase()} ${type === "job" ? "jobs" : "requests"}.`}
               </p>
               <button
-                onClick={() => navigate("/create-bid")}
+                onClick={() => navigate(copy.newPath)}
                 className="mt-4 text-pink-400 hover:text-pink-300 text-sm underline underline-offset-4 transition-colors"
               >
-                Create your first request
+                {copy.emptyCta}
               </button>
             </motion.div>
           ) : (
@@ -445,6 +615,9 @@ const MyBidsPage = () => {
                 <RequestCard
                   key={req.id}
                   req={req}
+                  type={type}
+                  accessToken={accessToken}
+                  onChanged={fetchRequests}
                   onAcceptBid={handleAcceptBid}
                   onDelete={handleDelete}
                   accepting={accepting}

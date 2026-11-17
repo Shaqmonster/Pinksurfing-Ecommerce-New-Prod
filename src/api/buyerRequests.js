@@ -6,12 +6,28 @@ const authHeader = (token) => ({
   Authorization: `Bearer ${token}`,
 });
 
-// Create a new buyer request (multipart/form-data for images)
+// Create a request. requestType "product" = a buyer asking vendors for an item (bids);
+// "job" = freelance work posted in GigHub (proposals from gig workers).
 export const createBuyerRequest = async (
   token,
-  { title, description, budget, deadline, category, jobCategory, jobSubcategory, images }
+  {
+    requestType = "job",
+    title,
+    description,
+    budget,
+    deadline,
+    category,
+    jobCategory,
+    jobSubcategory,
+    jobCategorySlug,
+    quantity,
+    condition,
+    shipToZip,
+    images = [],
+  }
 ) => {
   const form = new FormData();
+  form.append("request_type", requestType);
   form.append("title", title);
   form.append("description", description);
   form.append("budget", budget);
@@ -19,6 +35,10 @@ export const createBuyerRequest = async (
   if (category) form.append("category", category);
   if (jobCategory) form.append("job_category", jobCategory);
   if (jobSubcategory) form.append("job_subcategory", jobSubcategory);
+  if (jobCategorySlug) form.append("job_category_slug", jobCategorySlug);
+  if (quantity) form.append("quantity", String(quantity));
+  if (condition) form.append("condition", condition);
+  if (shipToZip) form.append("ship_to_zip", shipToZip);
   images.forEach((img, i) => form.append(`image${i + 1}`, img));
 
   return axios.post(`${BASE_URL}/api/buyer_requests/customer/requests/`, form, {
@@ -26,10 +46,11 @@ export const createBuyerRequest = async (
   });
 };
 
-// Get the authenticated customer's own requests (includes nested bids)
-export const getMyRequests = async (token) => {
+// The signed-in user's own requests. type: "product" | "job" (omit for both).
+export const getMyRequests = async (token, type) => {
   return axios.get(`${BASE_URL}/api/buyer_requests/customer/requests/`, {
     headers: authHeader(token),
+    params: type ? { type } : undefined,
   });
 };
 
@@ -111,4 +132,54 @@ export const withdrawBidOffer = async (token, bidId) => {
   return axios.delete(`${BASE_URL}/api/buyer_requests/vendor/bids/${bidId}/`, {
     headers: authHeader(token),
   });
+};
+
+// ── GigHub jobs (freelance): gig workers send proposals, the poster hires one ──
+
+export const getOpenJobs = async (token, category) => {
+  return axios.get(`${BASE_URL}/api/buyer_requests/jobs/explore/`, {
+    headers: authHeader(token),
+    params: category ? { category } : undefined,
+  });
+};
+
+export const getJobDetail = async (token, id) => {
+  return axios.get(`${BASE_URL}/api/buyer_requests/jobs/explore/${id}/`, {
+    headers: authHeader(token),
+  });
+};
+
+export const createJobProposal = async (token, { request_id, amount, delivery_days, cover_letter }) => {
+  return axios.post(
+    `${BASE_URL}/api/buyer_requests/jobs/proposals/`,
+    { request_id, amount, delivery_days, cover_letter },
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
+};
+
+export const getMyProposals = async (token) => {
+  return axios.get(`${BASE_URL}/api/buyer_requests/jobs/proposals/`, {
+    headers: authHeader(token),
+  });
+};
+
+export const withdrawProposal = async (token, proposalId) => {
+  return axios.delete(`${BASE_URL}/api/buyer_requests/jobs/proposals/${proposalId}/`, {
+    headers: authHeader(token),
+  });
+};
+
+// Poster only: every proposal on one of their jobs.
+export const getJobProposals = async (token, requestId) => {
+  return axios.get(`${BASE_URL}/api/buyer_requests/customer/requests/${requestId}/proposals/`, {
+    headers: authHeader(token),
+  });
+};
+
+export const hireProposal = async (token, requestId, proposalId) => {
+  return axios.post(
+    `${BASE_URL}/api/buyer_requests/customer/requests/${requestId}/hire/`,
+    { proposal_id: proposalId },
+    { headers: { ...authHeader(token), "Content-Type": "application/json" } }
+  );
 };
