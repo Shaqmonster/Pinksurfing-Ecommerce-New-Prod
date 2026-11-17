@@ -11,6 +11,7 @@ import {
   createSquareGigCheckoutSession,
   setGigOrderEscrowId,
   gigUrl,
+  createConversationForGig,
 } from "../../api/gigs";
 import { useInAppWallet } from "../../context/inAppWalletContext";
 import { createServicesEscrowForGigOrder } from "../../lib/gighubEscrowFlow";
@@ -259,7 +260,7 @@ const CheckoutFlowModal = ({
 const GigDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, openChatWithParticipantEmail } = useContext(authContext);
+  const { user, openChatWithConversation, openChatWithParticipantEmail } = useContext(authContext);
   const accessToken = useAccessToken();
   const { wallet: inAppWallet } = useInAppWallet();
 
@@ -279,13 +280,28 @@ const GigDetailPage = () => {
   const [rateLoading, setRateLoading] = useState(false);
   const [rateError, setRateError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
-  const isOwner = user?.email === gig?.worker?.email;
+  // The API says whether the signed-in user owns this gig; the seller's email is
+  // never sent to anyone else.
+  const isOwner = Boolean(gig?.is_owner || gig?.worker?.is_me);
 
-  const sellerChatEmail =
-    gig?.worker?.email ||
-    gig?.worker?.customer?.email ||
-    gig?.worker?.vendor?.email ||
-    "";
+  const messageSeller = async () => {
+    if (!accessToken) {
+      toast.error("Please sign in to message this seller.");
+      navigate("/signin");
+      return;
+    }
+    try {
+      const res = await createConversationForGig(accessToken, gig.gig_id || gig.id);
+      openChatWithConversation(res.data);
+    } catch (err) {
+      // Older API without gig_id support: fall back to the email if it was sent.
+      if (gig?.worker?.email) {
+        openChatWithParticipantEmail(gig.worker.email);
+        return;
+      }
+      toast.error(err?.response?.data?.detail || "Couldn't open a chat with this seller.");
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -900,18 +916,7 @@ const GigDetailPage = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        if (!accessToken) {
-                          toast.error("Please sign in to message this seller.");
-                          navigate("/signin");
-                          return;
-                        }
-                        if (!sellerChatEmail) {
-                          toast.error("Seller contact is not available.");
-                          return;
-                        }
-                        openChatWithParticipantEmail(sellerChatEmail);
-                      }}
+                      onClick={messageSeller}
                       className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
                     >
                       <IoChatbubbleOutline className="text-base" />
@@ -1078,9 +1083,6 @@ const GigDetailPage = () => {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-semibold text-sm truncate">{workerName}</p>
-                    {gig.worker?.email && (
-                      <p className="text-white/30 text-xs truncate">{gig.worker.email}</p>
-                    )}
                   </div>
                 </div>
 
@@ -1114,18 +1116,7 @@ const GigDetailPage = () => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      if (!accessToken) {
-                        toast.error("Please sign in to message this seller.");
-                        navigate("/signin");
-                        return;
-                      }
-                      if (!sellerChatEmail) {
-                        toast.error("Seller contact is not available.");
-                        return;
-                      }
-                      openChatWithParticipantEmail(sellerChatEmail);
-                    }}
+                    onClick={messageSeller}
                     className="mt-4 w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 transition-all flex items-center justify-center gap-2"
                   >
                     <IoChatbubbleOutline className="text-base" />
