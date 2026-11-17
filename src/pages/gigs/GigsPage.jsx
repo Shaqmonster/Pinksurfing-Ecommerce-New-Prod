@@ -215,7 +215,7 @@ const GigsPage = () => {
             <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">freelance service</span>
           </h1>
           <p className="text-white/50 text-base max-w-xl mx-auto">
-            Browse thousands of services from verified professionals. Pay only when you're satisfied.
+            Browse services from independent professionals. Compare packages, reviews and delivery times before you order.
           </p>
 
           {/* Search + filter row */}

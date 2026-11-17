@@ -23,6 +23,7 @@ import { getOpenRequests } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
 import PageSEO from "../../components/PageSEO";
 import { useAccessToken } from "../../hooks/useAccessToken";
+import { jobBudgetLabel } from "../../constants/jobBudgets";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ const PreviewCard = ({ req }) => {
           </p>
 
           <div className="flex items-center justify-between pt-2 border-t border-white/5">
-            <span className="text-sm font-bold text-emerald-400">${req.budget}</span>
+            <span className="text-sm font-bold text-emerald-400">{jobBudgetLabel(req.budget)}</span>
             <div className="flex items-center gap-2 text-xs text-white/40">
               <span>{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
               <span>·</span>

@@ -16,7 +16,7 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 
 const PERKS = [
   { icon: <FaMoneyBillWave className="text-green-400" />, title: "Earn on Your Terms", desc: "Set your own prices and work schedule." },
-  { icon: <FaUsers className="text-blue-400" />, title: "Global Buyers", desc: "Reach thousands of customers on PinkSurfing." },
+  { icon: <FaUsers className="text-blue-400" />, title: "Global Buyers", desc: "Reach customers across PinkSurfing." },
   { icon: <FaStar className="text-yellow-400" />, title: "Build Your Reputation", desc: "Grow your rating with every completed order." },
 ];
 
@@ -97,7 +97,7 @@ const GigWorkerSetup = () => {
             </span>
           </h1>
           <p className="text-white/50 text-base max-w-lg mx-auto">
-            Create your gig worker profile and start offering services to thousands of buyers on PinkSurfing.
+            Create your gig worker profile and start offering services to buyers on PinkSurfing.
           </p>
         </motion.div>
 

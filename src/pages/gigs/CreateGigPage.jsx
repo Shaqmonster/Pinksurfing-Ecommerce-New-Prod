@@ -49,6 +49,7 @@ const CreateGigPage = () => {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [publishStage, setPublishStage] = useState("");
 
   // Step 1 — Details
   const [details, setDetails] = useState({
@@ -208,6 +209,7 @@ const CreateGigPage = () => {
       }));
 
       let finalGigId = editId;
+      setPublishStage(editId ? "Saving gig…" : "Publishing gig…");
 
       if (editId) {
         // Update existing gig using JSON (handles nested packages correctly)
@@ -226,12 +228,26 @@ const CreateGigPage = () => {
         }
       }
 
-      // Add NEW Media files sequentially
+      // Add NEW Media files sequentially. The gig already exists at this point, so an image
+      // failure must not be reported as "Failed to save gig".
+      let failedUploads = 0;
       for (let i = 0; i < mediaFiles.length; i++) {
-        await addGigMedia(accessToken, finalGigId, mediaFiles[i], i === 0 && !editId);
+        setPublishStage(`Uploading image ${i + 1} of ${mediaFiles.length}…`);
+        try {
+          await addGigMedia(accessToken, finalGigId, mediaFiles[i], i === 0 && !editId);
+        } catch {
+          failedUploads += 1;
+        }
       }
 
-      toast.success(editId ? "Gig updated successfully!" : "Gig published successfully!");
+      toast.success(
+        editId ? "Gig updated. It's live in GigHub." : "Gig published! It's now live in GigHub."
+      );
+      if (failedUploads > 0) {
+        toast.warn(
+          `${failedUploads} image${failedUploads === 1 ? "" : "s"} could not be uploaded. Edit the gig to try again.`
+        );
+      }
       navigate(`/gigs/${finalGigId}`);
     } catch (err) {
       const errData = err?.response?.data;
@@ -248,6 +264,7 @@ const CreateGigPage = () => {
       toast.error(msg);
     } finally {
       setSubmitting(false);
+      setPublishStage("");
     }
   };
 
@@ -646,7 +663,7 @@ const CreateGigPage = () => {
                   className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold text-sm shadow-lg hover:shadow-green-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? (
-                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Publishing…</>
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {publishStage || "Publishing…"}</>
                   ) : (
                     <>
                       <IoCheckmarkCircle className="text-base" />

@@ -18,6 +18,7 @@ import { authContext } from "../context/authContext";
 import { getMyRequests, acceptBid, deleteRequest, addToCart } from "../api/buyerRequests";
 import BidsNavBar from "../components/BidsNavBar";
 import { useAccessToken } from "../hooks/useAccessToken";
+import { jobBudgetLabel } from "../constants/jobBudgets";
 
 const STATUS_COLORS = {
   OPEN: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -86,7 +87,7 @@ const RequestCard = ({ req, onAcceptBid, onDelete, accepting }) => {
         {/* Meta row */}
         <div className="flex flex-wrap gap-3 sm:gap-4 mt-4 text-sm">
           <div className="flex items-center gap-1.5 text-white/60">
-            <span className="text-emerald-400 font-semibold">${req.budget}</span>
+            <span className="text-emerald-400 font-semibold">{jobBudgetLabel(req.budget)}</span>
             <span className="text-white/30">budget</span>
           </div>
           {req.deadline && (

@@ -1812,18 +1812,14 @@ const ProductDetailPage = () => {
                         </div>
                       </div>
 
-                      {/* Trust Badges */}
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { Icon: FaCheckCircle, label: "Secure" },
-                          { Icon: FaHandshake, label: "7 Day" },
-                          { Icon: FaTags, label: "Authentic" },
-                        ].map((badge) => (
-                          <div key={badge.label} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
-                            <badge.Icon className="text-base text-[var(--ps-purple-light)]" aria-hidden />
-                            <span className="text-[7px] font-black uppercase tracking-[0.1em] text-gray-400">{badge.label}</span>
-                          </div>
-                        ))}
+                      {/* Trust note. "7 Day" and "Authentic" badges were removed: no returns or
+                          authenticity policy backs them. Re-add with a link once one exists. */}
+                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
+                        <FaCheckCircle className="text-base text-[var(--ps-purple-light)] mt-0.5 flex-shrink-0" aria-hidden />
+                        <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold text-gray-700 dark:text-gray-200">Secure checkout by Square.</span>{" "}
+                          Your card details go to Square, never to PinkSurfing or the seller.
+                        </p>
                       </div>
                     </div>
                   </>

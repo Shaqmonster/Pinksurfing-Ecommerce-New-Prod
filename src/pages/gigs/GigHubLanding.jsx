@@ -316,8 +316,8 @@ const GigHubLanding = () => {
             transition={{ delay: 0.2 }}
             className="text-white/50 text-lg max-w-2xl mx-auto mb-10"
           >
-            Browse thousands of services from verified professionals. Get quality work
-            done faster with our secure marketplace.
+            Browse services from independent professionals. Compare packages and delivery
+            times, then pay securely through Square.
           </motion.p>
 
           {/* Search bar */}
@@ -581,7 +581,7 @@ const GigHubLanding = () => {
                 Start Selling Your Skills Today
               </h2>
               <p className="text-white/50 text-base max-w-xl mx-auto mb-8">
-                Join thousands of freelancers earning on PinkSurfing. Keep 95% of every sale.
+                Start earning on PinkSurfing. Keep 95% of every sale.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link

@@ -1,18 +1,17 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import { authContext } from "../context/authContext";
 
+// Tab index of ProfileCartPage in ProfilePage.jsx (keep in sync with ProfileItems.js).
+const PROFILE_CART_TAB = 2;
+
 /**
- * /cart used to show "Page not found": the cart is a drawer, not a page. Open the drawer
- * and land on the homepage (or sign-in for guests) so links and bookmarks to /cart work.
+ * /cart has no page of its own. Signed-in shoppers land on the full cart page (Profile > Cart)
+ * so the link does what it says; guests go to sign-in first.
  */
 export default function CartRoute() {
-  const { setIsCartOpen, authToken } = useContext(authContext);
+  const { authToken } = useContext(authContext);
 
-  useEffect(() => {
-    if (authToken) setIsCartOpen(true);
-  }, [authToken, setIsCartOpen]);
-
-  // The drawer only renders for signed-in shoppers (Header.jsx), so send guests to sign in.
-  return <Navigate to={authToken ? "/" : "/signin"} replace />;
+  if (!authToken) return <Navigate to="/signin" replace />;
+  return <Navigate to="/profile" replace state={{ fromTab: PROFILE_CART_TAB }} />;
 }

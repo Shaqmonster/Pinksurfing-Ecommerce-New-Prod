@@ -21,7 +21,6 @@ import {
 } from "react-icons/io5";
 import {
   FaTag,
-  FaDollarSign,
   FaCheck,
   FaShieldAlt,
   FaCheckCircle,
@@ -33,6 +32,7 @@ import { getOpenRequests } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
 import { JOB_CATEGORIES, requestCategoryText, requestCategoryLabel } from "../../constants/jobCategories";
 import { useAccessToken } from "../../hooks/useAccessToken";
+import { jobBudgetLabel } from "../../constants/jobBudgets";
 
 // ─── Filter Data (from bidding/src/components/marketplace/filterData.ts) ───────
 
@@ -537,8 +537,7 @@ const RequestCard = ({ request }) => {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1 text-sm font-bold text-emerald-400">
-                <FaDollarSign className="text-emerald-500 text-base" />
-                {request.budget}
+                {jobBudgetLabel(request.budget)}
               </span>
             </div>
             <div className="flex items-center gap-3">
