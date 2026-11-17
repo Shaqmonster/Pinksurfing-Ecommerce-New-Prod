@@ -19,7 +19,7 @@ import {
   FaTag,
   FaArrowRight,
 } from "react-icons/fa";
-import { getOpenRequests } from "../../api/buyerRequests";
+import { getOpenJobs } from "../../api/buyerRequests";
 import BidsNavBar from "../../components/BidsNavBar";
 import PageSEO from "../../components/PageSEO";
 import { useAccessToken } from "../../hooks/useAccessToken";
@@ -28,10 +28,10 @@ import { jobBudgetLabel } from "../../constants/jobBudgets";
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  { Icon: FaShieldAlt, label: "Escrow Protected", desc: "Funds held securely until work is complete" },
-  { Icon: FaBriefcase, label: "Multi-Industry", desc: "Construction, tech, creative, and more" },
-  { Icon: FaDollarSign, label: "Milestone Payments", desc: "Pay in stages as work progresses" },
-  { Icon: FaBolt, label: "Under 60 Seconds", desc: "Post a detailed job request in seconds" },
+  { Icon: FaShieldAlt, label: "Free to Post", desc: "Posting a job costs nothing" },
+  { Icon: FaBriefcase, label: "GigHub Categories", desc: "Same categories as GigHub gigs" },
+  { Icon: FaDollarSign, label: "Compare Proposals", desc: "See price and timeline side by side" },
+  { Icon: FaBolt, label: "Hire and Chat", desc: "Hire one freelancer and talk in chat" },
 ];
 
 const HOW_IT_WORKS = [
@@ -43,12 +43,12 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "Receive Competitive Proposals",
-    desc: "Qualified contractors and freelancers send structured offers directly to your request.",
+    desc: "Freelancers on GigHub send proposals with their price and timeline.",
   },
   {
     step: "03",
-    title: "Award the Best Offer",
-    desc: "Review proposals, compare prices and timelines, then accept the best fit for your project.",
+    title: "Hire the Best Fit",
+    desc: "Compare proposals in My Jobs, hire one freelancer, and start chatting.",
   },
 ];
 
@@ -76,10 +76,10 @@ function timeAgo(dateStr) {
 
 const PreviewCard = ({ req }) => {
   const images = [req.image1, req.image2, req.image3, req.image4].filter(Boolean);
-  const bidCount = req.bids?.length ?? 0;
+  const bidCount = req.proposal_count ?? 0;
 
   return (
-    <Link to={`/bids/requests/${req.id}`}>
+    <Link to={`/gigs/jobs/${req.id}`}>
       <motion.div
         whileHover={{ y: -2, borderColor: "rgba(236,72,153,0.3)" }}
         className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden h-full flex flex-col transition-all duration-200 cursor-pointer"
@@ -122,7 +122,7 @@ const PreviewCard = ({ req }) => {
           <div className="flex items-center justify-between pt-2 border-t border-white/5">
             <span className="text-sm font-bold text-emerald-400">{jobBudgetLabel(req.budget)}</span>
             <div className="flex items-center gap-2 text-xs text-white/40">
-              <span>{bidCount} bid{bidCount !== 1 ? "s" : ""}</span>
+              <span>{bidCount} proposal{bidCount !== 1 ? "s" : ""}</span>
               <span>·</span>
               <span>{timeAgo(req.created_at)}</span>
             </div>
@@ -145,7 +145,7 @@ export default function BidsLandingPage() {
   useEffect(() => {
     if (!accessToken) return;
     setLoadingRequests(true);
-    getOpenRequests(accessToken)
+    getOpenJobs(accessToken)
       .then((res) => {
         const data = res.data?.results ?? res.data ?? [];
         setRequests(Array.isArray(data) ? data.slice(0, 6) : []);
@@ -158,8 +158,8 @@ export default function BidsLandingPage() {
     <div className="min-h-screen bg-[var(--ps-bg)]">
       <PageSEO
         title="Jobs marketplace"
-        description="Post a job on PinkSurfing and get bids from vendors — compare offers and hire with confidence."
-        path="/bids"
+        description="Post a job in PinkSurfing GigHub, get proposals from freelancers, and hire the best fit."
+        path="/gigs/jobs/about"
       />
       <BidsNavBar />
 
@@ -205,8 +205,7 @@ export default function BidsLandingPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-base md:text-lg text-white/60 max-w-xl mx-auto mb-8 leading-relaxed"
           >
-            Create structured, escrow-protected bids in under 60 seconds.
-            Built for contractors, freelancers, and businesses.
+            Describe the work, set a budget, and let GigHub freelancers send you proposals.
           </motion.p>
 
           {/* CTAs */}
@@ -216,13 +215,13 @@ export default function BidsLandingPage() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-3 justify-center mb-14"
           >
-            <Link to="/create-bid">
+            <Link to="/gigs/jobs/post">
               <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-base hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 w-full sm:w-auto">
                 Post a Job Request
                 <IoArrowForward />
               </button>
             </Link>
-            <Link to="/bids/marketplace">
+            <Link to="/gigs/jobs">
               <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-white/20 text-white font-semibold text-base hover:bg-white/5 transition-all w-full sm:w-auto">
                 Browse Marketplace
                 <IoArrowForward />
@@ -278,7 +277,7 @@ export default function BidsLandingPage() {
               <p className="text-sm text-white/50 mt-1">Browse open job requests from verified buyers</p>
             </div>
             <Link
-              to="/bids/marketplace"
+              to="/gigs/jobs"
               className="flex items-center gap-1.5 text-sm text-pink-400 hover:text-pink-300 transition-colors font-medium"
             >
               View all
@@ -317,7 +316,7 @@ export default function BidsLandingPage() {
             <div className="text-center py-16 bg-white/5 border border-white/10 rounded-2xl">
               <FaGavel className="text-4xl text-white/15 mx-auto mb-4" />
               <p className="text-white/50 mb-4">No open requests yet.</p>
-              <Link to="/create-bid">
+              <Link to="/gigs/jobs/post">
                 <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm hover:opacity-90 transition-all">
                   Post the First Request
                 </button>
@@ -333,7 +332,7 @@ export default function BidsLandingPage() {
 
           {requests.length > 0 && (
             <div className="text-center mt-8">
-              <Link to="/bids/marketplace">
+              <Link to="/gigs/jobs">
                 <button className="flex items-center gap-2 px-7 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/5 transition-all mx-auto">
                   View All Requests
                   <IoArrowForward />
@@ -415,16 +414,16 @@ export default function BidsLandingPage() {
             Ready to Get Started?
           </h2>
           <p className="relative text-white/60 mb-8 text-sm leading-relaxed">
-            Join thousands of buyers and contractors already using the PinkSurfing Proposals Marketplace.
+            Post your first job in GigHub. It&apos;s free, and you only hire when a proposal fits.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center relative">
-            <Link to="/create-bid">
+            <Link to="/gigs/jobs/post">
               <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 w-full sm:w-auto">
                 Post a Job Request
                 <IoArrowForward />
               </button>
             </Link>
-            <Link to="/bids/marketplace">
+            <Link to="/gigs/jobs">
               <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/5 transition-all w-full sm:w-auto">
                 Browse Marketplace
                 <IoArrowForward />

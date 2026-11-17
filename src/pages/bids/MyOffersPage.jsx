@@ -13,7 +13,15 @@ import {
   IoImageOutline,
 } from "react-icons/io5";
 import { FaGavel, FaDollarSign } from "react-icons/fa";
-import { getMySubmittedBids, withdrawBidOffer } from "../../api/buyerRequests";
+import { getMyProposals, withdrawProposal } from "../../api/buyerRequests";
+
+// Job proposals in the shape this page already renders (amount / days / text).
+const toOfferView = (p) => ({
+  ...p,
+  bid_amount: p.amount,
+  delivery_time_days: p.delivery_days,
+  proposal: p.cover_letter,
+});
 import BidsNavBar from "../../components/BidsNavBar";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
@@ -26,9 +34,9 @@ const BID_STATUS_STYLES = {
     bg: "bg-blue-500/20 text-blue-400 border-blue-500/30",
     label: "Shortlisted",
   },
-  ACCEPTED: {
+  HIRED: {
     bg: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    label: "Accepted",
+    label: "Hired",
   },
   REJECTED: {
     bg: "bg-red-500/20 text-red-400 border-red-500/30",
@@ -40,7 +48,7 @@ const FILTER_TABS = [
   { key: "all", label: "All" },
   { key: "PENDING", label: "Pending" },
   { key: "SHORTLISTED", label: "Shortlisted" },
-  { key: "ACCEPTED", label: "Accepted" },
+  { key: "HIRED", label: "Hired" },
   { key: "REJECTED", label: "Rejected" },
 ];
 
@@ -90,7 +98,7 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
               onClick={() => onWithdraw(bid.id)}
               disabled={withdrawing}
               className="shrink-0 p-2 rounded-lg hover:bg-red-500/20 text-white/30 hover:text-red-400 transition-colors disabled:opacity-40"
-              title="Withdraw offer"
+              title="Withdraw proposal"
             >
               <IoTrashOutline className="text-lg" />
             </button>
@@ -165,7 +173,7 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
 
               {bid.request_id && (
                 <Link
-                  to={`/bids/requests/${bid.request_id || bid.request}`}
+                  to={`/gigs/jobs/${bid.request_id || bid.request}`}
                   className="inline-flex items-center gap-1.5 text-sm text-pink-400 hover:text-pink-300 font-medium transition-colors"
                 >
                   <IoStorefrontOutline />
@@ -193,12 +201,12 @@ export default function MyOffersPage() {
     if (!accessToken) return;
     try {
       setLoading(true);
-      const res = await getMySubmittedBids(accessToken);
+      const res = await getMyProposals(accessToken);
       const data = res.data?.results ?? res.data ?? [];
-      setBids(Array.isArray(data) ? data : []);
+      setBids(Array.isArray(data) ? data.map(toOfferView) : []);
     } catch (err) {
-      console.error("[MyOffersPage] Failed to load submitted bids:", err);
-      toast.error("Failed to load your offers.");
+      console.error("[MyOffersPage] Failed to load proposals:", err);
+      toast.error("Failed to load your proposals.");
     } finally {
       setLoading(false);
     }
@@ -213,14 +221,14 @@ export default function MyOffersPage() {
   }, [accessToken]);
 
   const handleWithdraw = async (bidId) => {
-    if (!window.confirm("Withdraw this offer? This cannot be undone.")) return;
+    if (!window.confirm("Withdraw this proposal? This cannot be undone.")) return;
     try {
       setWithdrawing(bidId);
-      await withdrawBidOffer(accessToken, bidId);
-      toast.success("Offer withdrawn.");
+      await withdrawProposal(accessToken, bidId);
+      toast.success("Proposal withdrawn.");
       setBids((prev) => prev.filter((b) => b.id !== bidId));
     } catch {
-      toast.error("Failed to withdraw offer.");
+      toast.error("Failed to withdraw proposal.");
     } finally {
       setWithdrawing(null);
     }
@@ -258,20 +266,20 @@ export default function MyOffersPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <IoPaperPlaneOutline className="text-pink-400 text-xl" />
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Offers</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Proposals</h1>
                 </div>
                 <p className="text-white/50 text-sm">
-                  Track proposals you've submitted on open requests.
+                  Track the proposals you've sent on GigHub jobs.
                 </p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => navigate("/bids/marketplace")}
+                onClick={() => navigate("/gigs/jobs")}
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-pink-500/30 transition-all flex items-center gap-2"
               >
                 <FaGavel className="text-sm" />
-                Browse Requests
+                Find Jobs
               </motion.button>
             </div>
           </motion.div>
@@ -320,14 +328,14 @@ export default function MyOffersPage() {
               <IoPaperPlaneOutline className="text-5xl text-white/10 mx-auto mb-4" />
               <p className="text-white/40 text-base">
                 {filter === "all"
-                  ? "You haven't submitted any offers yet."
-                  : `No ${filter.toLowerCase()} offers.`}
+                  ? "You haven't sent any proposals yet."
+                  : `No ${filter.toLowerCase()} proposals.`}
               </p>
               <button
-                onClick={() => navigate("/bids/marketplace")}
+                onClick={() => navigate("/gigs/jobs")}
                 className="mt-4 text-pink-400 hover:text-pink-300 text-sm underline underline-offset-4 transition-colors"
               >
-                Browse open requests
+                Browse open jobs
               </button>
             </motion.div>
           ) : (

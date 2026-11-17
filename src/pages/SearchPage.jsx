@@ -149,9 +149,9 @@ const SearchPage = () => {
         ) : query ? (
           <EmptyState
             title="No products found"
-            description={`We couldn't find anything matching "${query}". Try different keywords or browse the mall.`}
-            actionLabel="Return home"
-            actionHref="/"
+            description={`Can't find "${query}"? Request it and vendors will send you offers.`}
+            actionLabel={`Request "${query.length > 40 ? `${query.slice(0, 40)}…` : query}"`}
+            actionHref={`/request-product?q=${encodeURIComponent(query)}`}
             className="mt-8"
           />
         ) : (

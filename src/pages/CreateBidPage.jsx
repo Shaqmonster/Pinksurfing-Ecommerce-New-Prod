@@ -40,10 +40,10 @@ import {
   FaTag,
 } from "react-icons/fa";
 import { authContext } from "../context/authContext";
-import { createBuyerRequest, getCategories } from "../api/buyerRequests";
+import { createBuyerRequest } from "../api/buyerRequests";
 import BidsNavBar from "../components/BidsNavBar";
 import { useAccessToken } from "../hooks/useAccessToken";
-import { JOB_CATEGORIES, JOB_CATEGORY_NAMES } from "../constants/jobCategories";
+import { useJobCategories } from "../hooks/useJobCategories";
 import { BUDGET_OPTIONS } from "../constants/jobBudgets";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -81,13 +81,13 @@ const CATEGORY_ICONS = {
   "Government & Public Contracts": FaLandmark,
 };
 
-const CATEGORIES = JOB_CATEGORY_NAMES.map((name) => ({
-  id: name,
-  label: name,
-  Icon: CATEGORY_ICONS[name] || FaTag,
-}));
-
-const SUBCATEGORIES = JOB_CATEGORIES;
+// Jobs use the GigHub categories (see useJobCategories).
+const toCategoryOptions = (categories) =>
+  Object.keys(categories).map((name) => ({
+    id: name,
+    label: name,
+    Icon: CATEGORY_ICONS[name] || FaTag,
+  }));
 
 const TIMELINE_OPTIONS = [
   { value: "asap", label: "ASAP", days: 7 },
@@ -338,7 +338,7 @@ const StartStep = ({ onStartWith }) => {
           What do you need done?
         </h1>
         <p className="text-white/50">
-          Create a job request and receive bids from qualified vendors.
+          Post a job in GigHub and get proposals from freelancers.
         </p>
       </div>
 
@@ -365,9 +365,9 @@ const StartStep = ({ onStartWith }) => {
         <div className="flex items-start gap-3">
           <IoShieldCheckmark className="text-xl text-pink-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-white">Verified vendors only</p>
+            <p className="text-sm font-medium text-white">Free to post, you choose who to hire</p>
             <p className="text-xs text-white/50 mt-0.5">
-              Vendors pay to bid so you don&apos;t get spam. Only serious, qualified professionals respond.
+              Freelancers send proposals with a price and timeline. Compare them in My Jobs and hire one.
             </p>
           </div>
         </div>
@@ -397,7 +397,7 @@ const PhotosStep = ({ data, onUpdate }) => {
       <div>
         <h2 className="text-xl font-bold text-white">Upload Photos</h2>
         <p className="text-sm text-white/50 mt-1">
-          Photos help vendors give more accurate bids — upload 3–10
+          Photos help freelancers give more accurate quotes — upload 3–10
         </p>
       </div>
 
@@ -484,11 +484,14 @@ const PhotosStep = ({ data, onUpdate }) => {
   );
 };
 
-const CategoryStep = ({ data, onUpdate }) => (
+const CategoryStep = ({ data, onUpdate, categories }) => {
+  const CATEGORIES = toCategoryOptions(categories);
+  const SUBCATEGORIES = categories;
+  return (
   <div className="space-y-6">
     <div>
       <h2 className="text-xl font-bold text-white">Category</h2>
-      <p className="text-sm text-white/50 mt-1">What kind of job is it? Vendors filter by this.</p>
+      <p className="text-sm text-white/50 mt-1">What kind of job is it? These are the same categories as GigHub gigs.</p>
     </div>
 
     {/* Category grid */}
@@ -541,7 +544,8 @@ const CategoryStep = ({ data, onUpdate }) => (
       </div>
     )}
   </div>
-);
+  );
+};
 
 const LocationStep = ({ data, onUpdate }) => (
   <div className="space-y-6">
@@ -618,7 +622,7 @@ const ScopeAIStep = ({ data, onUpdate }) => {
       <div>
         <h2 className="text-xl font-bold text-white">Project scope</h2>
         <p className="text-sm text-white/50 mt-1">
-          Describe the work you need so vendors can quote accurately.
+          Describe the work you need so freelancers can quote accurately.
         </p>
       </div>
 
@@ -679,7 +683,7 @@ const BudgetStep = ({ data, onUpdate }) => (
   <div className="space-y-6">
     <div>
       <h2 className="text-xl font-bold text-white">Budget &amp; Preferences</h2>
-      <p className="text-sm text-white/50 mt-1">Help vendors understand your expectations</p>
+      <p className="text-sm text-white/50 mt-1">Help freelancers understand your expectations</p>
     </div>
 
     {/* Budget chips */}
@@ -729,7 +733,7 @@ const BudgetStep = ({ data, onUpdate }) => (
     <div className="bg-[#13131a] border border-white/10 rounded-xl p-4 space-y-4">
       <p className="text-sm font-semibold text-white">Vendor Preferences</p>
       {[
-        { field: "verifiedOnly", label: "Verified vendors only", desc: "Only verified businesses can bid" },
+        { field: "verifiedOnly", label: "Verified freelancers only", desc: "Only verified freelancers can send proposals" },
         { field: "licensedOnly", label: "Licensed required", desc: "Must hold valid trade license" },
         { field: "insuranceRequired", label: "Insurance required", desc: "Must carry liability insurance" },
         { field: "financingInterest", label: "Interested in financing", desc: "Open to payment plans" },
@@ -838,7 +842,7 @@ const RequestReviewStep = ({ data, onPublish, onUpdate, submitting, onEdit }) =>
           className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all"
         />
         <p className="text-xs text-white/30 mt-1">
-          This is what vendors see first. Leave blank to use the suggestion.
+          This is what freelancers see first. Leave blank to use the suggestion.
         </p>
       </div>
 
@@ -907,11 +911,11 @@ const RequestReviewStep = ({ data, onPublish, onUpdate, submitting, onEdit }) =>
             Publishing...
           </>
         ) : (
-          "Publish Request \u2014 Free"
+          "Post Job \u2014 Free"
         )}
       </motion.button>
       <p className="text-xs text-white/30 text-center">
-        Expect bids in 2–24 hours. You can edit anytime before a vendor is awarded.
+        Freelancers can send proposals right away. You pick who to hire from My Jobs.
       </p>
     </div>
   );
@@ -952,7 +956,6 @@ const CreateBidPage = () => {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [apiCategories, setApiCategories] = useState([]);
 
   const [requestData, setRequestData] = useState({
     startMethod: "",
@@ -976,20 +979,6 @@ const CreateBidPage = () => {
     title: "",
   });
 
-  useEffect(() => {
-    getCategories()
-      .then((res) => {
-        if (Array.isArray(res.data?.categories)) {
-          setApiCategories(res.data.categories);
-        } else {
-          console.error("[CreateBidPage:L997] getCategories response is not an array:", typeof res.data, res.data);
-          setApiCategories([]);
-        }
-      })
-      .catch((err) => {
-        console.error("[CreateBidPage:L1002] getCategories failed:", err);
-      });
-  }, []);
 
   const updateField = useCallback((field, value) => {
     setRequestData((prev) => ({ ...prev, [field]: value }));
@@ -1008,6 +997,7 @@ const CreateBidPage = () => {
 
   // Same token source as the rest of the app: auth context, then cookie, then localStorage.
   const accessToken = useAccessToken();
+  const jobCategories = useJobCategories();
 
   const handlePublish = async () => {
     if (submitting) return;
@@ -1045,38 +1035,30 @@ const CreateBidPage = () => {
       requestData.accessNotes && `Access Notes: ${requestData.accessNotes}`,
       requestData.isUrgent && "\n\u26A1 URGENT Request",
       requestData.needsPermits && "Permits required",
-      requestData.verifiedOnly && "Verified vendors only",
-      requestData.licensedOnly && "Licensed vendors only",
+      requestData.verifiedOnly && "Verified freelancers only",
+      requestData.licensedOnly && "Licensed professionals only",
       requestData.insuranceRequired && "Insurance required",
     ].filter(Boolean);
     const description = descParts.join("\n").trim() || title;
 
-    if (!Array.isArray(apiCategories)) {
-      console.error("[CreateBidPage:L1055] apiCategories is not an array:", typeof apiCategories, apiCategories);
-    }
-    const catMatch = Array.isArray(apiCategories)
-      ? apiCategories.find(
-          (c) => c.name?.toLowerCase() === (requestData.category || "").toLowerCase()
-        )
-      : undefined;
-    const category = catMatch?.id;
 
     const images = requestData.photos.slice(0, 4).map((p) => p.file);
 
     try {
       setSubmitting(true);
       await createBuyerRequest(accessToken, {
+        requestType: "job",
         title,
         jobCategory: requestData.category,
         jobSubcategory: requestData.subcategory,
+        jobCategorySlug: jobCategories.slugByName[requestData.category] || "",
         description,
         budget,
         deadline,
-        category,
         images,
       });
-      toast.success("Request published! Expect bids in 2\u201324 hours.");
-      navigate("/my-bids");
+      toast.success("Job posted! Freelancers can now send proposals.");
+      navigate("/gigs/jobs/mine");
     } catch (err) {
       console.error("[CreateBidPage] createBuyerRequest failed:", err?.response?.data || err);
       toast.error(extractApiError(err));
@@ -1090,7 +1072,13 @@ const CreateBidPage = () => {
       case 1:
         return <PhotosStep data={requestData} onUpdate={updateField} />;
       case 2:
-        return <CategoryStep data={requestData} onUpdate={updateField} />;
+        return (
+          <CategoryStep
+            data={requestData}
+            onUpdate={updateField}
+            categories={jobCategories.categories}
+          />
+        );
       case 3:
         return <LocationStep data={requestData} onUpdate={updateField} />;
       case 4:

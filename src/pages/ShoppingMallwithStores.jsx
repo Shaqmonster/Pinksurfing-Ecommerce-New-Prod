@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { authContext } from '../context/authContext';
@@ -72,6 +73,16 @@ export default function ShoppingMallwithStores() {
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 mt-2">
                         Browse all available stores
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                        Can&apos;t find what you need?{" "}
+                        <Link
+                            to="/request-product"
+                            className="font-semibold text-pink-600 dark:text-pink-400 hover:underline"
+                        >
+                            Request a product
+                        </Link>{" "}
+                        and vendors will send you offers.
                     </p>
                 </div>
 

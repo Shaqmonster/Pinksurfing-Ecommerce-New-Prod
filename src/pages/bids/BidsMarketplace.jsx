@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
 import {
@@ -28,9 +28,10 @@ import {
   FaGavel,
   FaMapMarkerAlt,
 } from "react-icons/fa";
-import { getOpenRequests } from "../../api/buyerRequests";
+import { getOpenJobs } from "../../api/buyerRequests";
+import { useJobCategories } from "../../hooks/useJobCategories";
 import BidsNavBar from "../../components/BidsNavBar";
-import { JOB_CATEGORIES, requestCategoryText, requestCategoryLabel } from "../../constants/jobCategories";
+import { requestCategoryText, requestCategoryLabel } from "../../constants/jobCategories";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { jobBudgetLabel } from "../../constants/jobBudgets";
 
@@ -44,7 +45,6 @@ const PROPOSAL_SOURCE_FILTERS = [
 ];
 
 // Shared with the job form so buyers and vendors use the same categories.
-const CATEGORY_FILTERS = JOB_CATEGORIES;
 
 const TIMELINE_FILTERS = [
   { value: "immediate", label: "Immediate" },
@@ -66,7 +66,7 @@ const CONTRACT_TYPE_FILTERS = [
 ];
 
 const BID_STATUS_FILTERS = [
-  { value: "open", label: "Open for bids" },
+  { value: "open", label: "Open for proposals" },
   { value: "closing-soon", label: "Closing soon" },
   { value: "under-review", label: "Under review" },
   { value: "awarded", label: "Awarded" },
@@ -109,16 +109,16 @@ const RISK_COMPLIANCE_FILTERS = [
 const VENDOR_ACTIVITY_FILTERS = [
   { value: "high-probability", label: "High probability of award" },
   { value: "high-budget", label: "High budget" },
-  { value: "few-bids", label: "Few competing bids" },
+  { value: "few-bids", label: "Few competing proposals" },
   { value: "buyer-verified", label: "Buyer verified" },
   { value: "repeat-buyer", label: "Repeat buyer" },
 ];
 
 const BID_COMPETITION_FILTERS = [
-  { value: "no-bids", label: "No bids yet" },
-  { value: "1-3", label: "1\u20133 bids" },
-  { value: "3-10", label: "3\u201310 bids" },
-  { value: "10+", label: "10+ bids" },
+  { value: "no-bids", label: "No proposals yet" },
+  { value: "1-3", label: "1\u20133 proposals" },
+  { value: "3-10", label: "3\u201310 proposals" },
+  { value: "10+", label: "10+ proposals" },
 ];
 
 const REQUEST_AGE_FILTERS = [
@@ -201,6 +201,7 @@ const ChipFilter = ({ options, selected, onToggle }) => (
 
 const CategoryFilter = ({ selected, onToggle }) => {
   const [expandedCat, setExpandedCat] = useState(null);
+  const { categories: CATEGORY_FILTERS } = useJobCategories();
   return (
     <div className="space-y-0.5">
       {Object.entries(CATEGORY_FILTERS).map(([cat, subs]) => (
@@ -465,7 +466,7 @@ const FilterSidebar = ({ filters, onFilterChange, locationFilters, onLocationCha
 
 const RequestCard = ({ request }) => {
   const images = [request.image1, request.image2, request.image3, request.image4].filter(Boolean);
-  const bidCount = request.bids?.length ?? 0;
+  const bidCount = request.proposal_count ?? 0;
   const isUrgent = request.description?.includes("URGENT") || request.description?.includes("urgent");
 
   return (
@@ -542,10 +543,10 @@ const RequestCard = ({ request }) => {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-white/40">
-                {bidCount} bid{bidCount !== 1 ? "s" : ""}
+                {bidCount} proposal{bidCount !== 1 ? "s" : ""}
               </span>
               <Link
-                to={`/bids/requests/${request.id}`}
+                to={`/gigs/jobs/${request.id}`}
                 className="flex items-center gap-1.5 min-h-[44px] px-4 py-2 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold"
               >
                 Send offer
@@ -610,6 +611,12 @@ export default function BidsMarketplace() {
     country: "", state: "", city: "", zipRadius: "", remoteAllowed: false, geolocation: false,
   });
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  // ?category=<gig category slug>, e.g. from the GigHub "Jobs Offered" category.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categorySlug = searchParams.get("category") || "";
+  const { slugByName } = useJobCategories();
+  const categorySlugName =
+    Object.keys(slugByName).find((name) => slugByName[name] === categorySlug) || categorySlug;
 
   // Redirect if not logged in
   useEffect(() => {
@@ -622,14 +629,14 @@ export default function BidsMarketplace() {
     if (!accessToken) return;
     setLoading(true);
     setError(false);
-    getOpenRequests(accessToken)
+    getOpenJobs(accessToken, categorySlug)
       .then((res) => {
         const data = res.data?.results ?? res.data ?? [];
         setRequests(Array.isArray(data) ? data : []);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [accessToken]);
+  }, [accessToken, categorySlug]);
 
   const handleFilterChange = useCallback((group, values) => {
     setFilters((prev) => ({ ...prev, [group]: values }));
@@ -709,7 +716,7 @@ export default function BidsMarketplace() {
     } else if (sortBy === "budget-low") {
       list = list.sort((a, b) => parseFloat(a.budget) - parseFloat(b.budget));
     } else if (sortBy === "fewest-bids") {
-      list = list.sort((a, b) => (a.bids?.length ?? 0) - (b.bids?.length ?? 0));
+      list = list.sort((a, b) => (a.proposal_count ?? 0) - (b.proposal_count ?? 0));
     } else if (sortBy === "urgent") {
       list = list.sort((a, b) => {
         const aUrgent = a.description?.includes("URGENT") ? 1 : 0;
@@ -744,19 +751,29 @@ export default function BidsMarketplace() {
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-white">
-              Proposals{" "}
+              Find{" "}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Marketplace
+                Jobs
               </span>
             </h1>
             <p className="text-sm text-white/50 mt-1">
-              Publish a Request. Receive Competitive Proposals.
+              Freelance work posted in GigHub. Send a proposal; the poster picks who to hire.
             </p>
+            {categorySlug && (
+              <button
+                type="button"
+                onClick={() => setSearchParams({})}
+                className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-pink-500/15 text-pink-300 border border-pink-500/30"
+              >
+                {categorySlugName} <span aria-hidden="true">×</span>
+                <span className="sr-only">Clear category</span>
+              </button>
+            )}
           </div>
-          <Link to="/create-bid" className="flex-shrink-0">
+          <Link to="/gigs/jobs/post" className="flex-shrink-0">
             <button className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold hover:opacity-90 transition-all shadow-md shadow-pink-500/20 whitespace-nowrap">
               <IoAdd className="text-base" />
-              <span className="hidden sm:inline">Publish a Request</span>
+              <span className="hidden sm:inline">Post a Job</span>
               <span className="sm:hidden">Post</span>
             </button>
           </Link>
@@ -794,7 +811,7 @@ export default function BidsMarketplace() {
               <option value="newest" className="bg-[#13131a]">Newest First</option>
               <option value="budget-high" className="bg-[#13131a]">Highest Budget</option>
               <option value="budget-low" className="bg-[#13131a]">Lowest Budget</option>
-              <option value="fewest-bids" className="bg-[#13131a]">Fewest Bids</option>
+              <option value="fewest-bids" className="bg-[#13131a]">Fewest Proposals</option>
               <option value="urgent" className="bg-[#13131a]">Urgent First</option>
             </select>
           </div>
@@ -871,10 +888,10 @@ export default function BidsMarketplace() {
                       </>
                     ) : (
                       <>
-                        <p className="text-white/70 mb-1">No open job requests yet.</p>
-                        <p className="text-white/40 text-sm mb-4">Be the first: post what you need and get bids from vendors.</p>
+                        <p className="text-white/70 mb-1">No open jobs{categorySlug ? " in this category" : ""} yet.</p>
+                        <p className="text-white/40 text-sm mb-4">Be the first: post the work you need and get proposals from freelancers.</p>
                         <Link
-                          to="/create-bid"
+                          to="/gigs/jobs/post"
                           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold"
                         >
                           Post a job

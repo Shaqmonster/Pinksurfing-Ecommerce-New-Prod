@@ -393,6 +393,12 @@ export default function StoreProducts() {
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                     {filteredProducts.length} products
                   </p>
+                  <Link
+                    to="/request-product"
+                    className="text-xs font-medium text-pink-600 dark:text-pink-400 hover:underline"
+                  >
+                    Don&apos;t see it? Request a product
+                  </Link>
                 </div>
               </div>
 

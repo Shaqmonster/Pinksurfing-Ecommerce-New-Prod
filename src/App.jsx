@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Route, Routes, useLocation, Navigate } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate, useParams } from "react-router-dom";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
@@ -47,6 +47,8 @@ import BidsLandingPage from "./pages/bids/BidsLandingPage";
 import BidsMarketplace from "./pages/bids/BidsMarketplace";
 import BidRequestDetail from "./pages/bids/BidRequestDetail";
 import MyOffersPage from "./pages/bids/MyOffersPage";
+import RequestProductPage from "./pages/requests/RequestProductPage";
+
 import GigsPage from "./pages/gigs/GigsPage";
 import GigDetailPage from "./pages/gigs/GigDetailPage";
 import CreateGigPage from "./pages/gigs/CreateGigPage";
@@ -67,6 +69,12 @@ import OffMarketDealDetail from "./pages/OffMarketDealDetail";
 import DealUnlockReturn from "./pages/DealUnlockReturn";
 import MyUnlocks from "./pages/MyUnlocks";
 import DealSupplySubmit from "./pages/DealSupplySubmit";
+
+// /bids/requests/:id moved to /gigs/jobs/:id.
+function LegacyJobRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/gigs/jobs/${id}`} replace />;
+}
 
 function App() {
   const {
@@ -159,13 +167,22 @@ function App() {
           }
         />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/create-bid" element={<CreateBidPage />} />
-        <Route path="/my-bids" element={<MyBidsPage />} />
-        {/* Bids Marketplace */}
-        <Route path="/bids" element={<BidsLandingPage />} />
-        <Route path="/bids/marketplace" element={<BidsMarketplace />} />
-        <Route path="/bids/requests/:id" element={<BidRequestDetail />} />
-        <Route path="/bids/my-offers" element={<MyOffersPage />} />
+        {/* Bids: product requests (buyer asks for an item, vendors send offers) */}
+        <Route path="/request-product" element={<RequestProductPage />} />
+        <Route path="/my-bids" element={<MyBidsPage type="product" />} />
+        {/* Jobs: freelance work inside GigHub (freelancers send proposals, poster hires) */}
+        <Route path="/gigs/jobs" element={<BidsMarketplace />} />
+        <Route path="/gigs/jobs/about" element={<BidsLandingPage />} />
+        <Route path="/gigs/jobs/post" element={<CreateBidPage />} />
+        <Route path="/gigs/jobs/mine" element={<MyBidsPage type="job" />} />
+        <Route path="/gigs/jobs/proposals" element={<MyOffersPage />} />
+        <Route path="/gigs/jobs/:id" element={<BidRequestDetail />} />
+        {/* Old job URLs */}
+        <Route path="/create-bid" element={<Navigate to="/gigs/jobs/post" replace />} />
+        <Route path="/bids" element={<Navigate to="/gigs/jobs/about" replace />} />
+        <Route path="/bids/marketplace" element={<Navigate to="/gigs/jobs" replace />} />
+        <Route path="/bids/requests/:id" element={<LegacyJobRedirect />} />
+        <Route path="/bids/my-offers" element={<Navigate to="/gigs/jobs/proposals" replace />} />
         {/* GigHub integrated routes */}
         <Route path="/gighub" element={<GigHubLanding />} />
         <Route path="/gighub/dashboard" element={<GigHubDashboard />} />
