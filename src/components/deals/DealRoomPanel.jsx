@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { toast } from "react-toastify";
 import { transitionDealRoom, updateEscrowChecklist } from "../../api/offMarketDeals";
+import { getConversation } from "../../api/gigs";
+import { authContext } from "../../context/authContext";
 
 const CSS = `
 .deal-room{background:#141418;border:1.5px solid #2a2a33;border-radius:8px;padding:20px;margin-top:20px;}
@@ -13,31 +16,73 @@ const CSS = `
 .escrow-list{list-style:none;padding:0;margin:0;}
 .escrow-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #2a2a33;font-size:13px;}
 .escrow-item input{width:16px;height:16px;}
+.deal-room-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.deal-room-head h3{margin:0;}
+.deal-room-chat{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:#9747ff;color:#fff;}
+.deal-room-chat:disabled{opacity:.6;cursor:default;}
+.deal-room-btn.danger{border-color:#3a2226;color:#f87171;}
+.deal-room-btn.danger:hover{border-color:#f87171;color:#f87171;}
+.deal-room-note{font-size:12px;color:#8a8a9c;margin:-8px 0 16px;}
 `;
 
-const NEXT_STATES = {
-  unlocked: [{ state: "in_deal_room", label: "Enter Deal Room" }],
-  in_deal_room: [{ state: "under_contract", label: "Mark Under Contract" }],
-  under_contract: [{ state: "in_escrow", label: "Open Escrow" }],
-  in_escrow: [{ state: "closed", label: "Mark Closed" }],
+const STATE_LABELS = {
+  in_deal_room: "Enter Deal Room",
+  under_contract: "Mark Under Contract",
+  in_escrow: "Open Escrow",
+  closed: "Mark Closed",
+  cancelled: "Cancel deal",
+};
+
+// Used only if the API is older and doesn't send allowed_next_states.
+const LEGACY_NEXT = {
+  unlocked: ["in_deal_room"],
+  in_deal_room: ["under_contract"],
+  under_contract: ["in_escrow"],
+  in_escrow: ["closed"],
 };
 
 export default function DealRoomPanel({ room, token, onUpdate }) {
   const [busy, setBusy] = useState(false);
+  const [opening, setOpening] = useState(false);
+  const { openChatWithConversation } = useContext(authContext);
 
   if (!room) return null;
 
-  const transitions = NEXT_STATES[room.state] || [];
+  const isSeller = room.role === "seller";
+  const nextStates = Array.isArray(room.allowed_next_states)
+    ? room.allowed_next_states
+    : LEGACY_NEXT[room.state] || [];
+  // Forward steps first, "Cancel deal" last.
+  const transitions = [...nextStates].sort(
+    (a, b) => (a === "cancelled") - (b === "cancelled")
+  );
+  const otherName = isSeller ? room.buyer_name || "the buyer" : room.seller_name || "the seller";
 
   const handleTransition = async (newState) => {
+    if (newState === "cancelled" && !window.confirm("Cancel this deal? This can't be undone.")) {
+      return;
+    }
     setBusy(true);
     try {
       const updated = await transitionDealRoom(room.id, { new_state: newState }, token);
       onUpdate(updated);
     } catch (e) {
-      console.error(e);
+      toast.error(e?.response?.data?.detail || "Couldn't update the deal room.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const openChat = async () => {
+    if (!room.conversation_id) return;
+    setOpening(true);
+    try {
+      const res = await getConversation(token, room.conversation_id);
+      openChatWithConversation(res.data);
+    } catch (e) {
+      toast.error("Couldn't open the chat. Please try again.");
+    } finally {
+      setOpening(false);
     }
   };
 
@@ -60,22 +105,36 @@ export default function DealRoomPanel({ room, token, onUpdate }) {
     <>
       <style>{CSS}</style>
       <section className="deal-room">
-        <h3>Deal Room</h3>
+        <div className="deal-room-head">
+          <h3>Deal Room</h3>
+          {room.conversation_id && (
+            <button type="button" className="deal-room-chat" onClick={openChat} disabled={opening}>
+              {opening ? "Opening…" : `Message ${otherName}`}
+            </button>
+          )}
+        </div>
         <span className="deal-state">{room.state.replace(/_/g, " ")}</span>
 
-        <div className="deal-room-actions">
-          {transitions.map((t) => (
-            <button
-              key={t.state}
-              type="button"
-              className="deal-room-btn"
-              disabled={busy}
-              onClick={() => handleTransition(t.state)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        {transitions.length > 0 && (
+          <div className="deal-room-actions">
+            {transitions.map((state) => (
+              <button
+                key={state}
+                type="button"
+                className={`deal-room-btn${state === "cancelled" ? " danger" : ""}`}
+                disabled={busy}
+                onClick={() => handleTransition(state)}
+              >
+                {STATE_LABELS[state] || state.replace(/_/g, " ")}
+              </button>
+            ))}
+          </div>
+        )}
+        {!isSeller && room.role && room.state !== "closed" && room.state !== "cancelled" && (
+          <p className="deal-room-note">
+            The seller records contract, escrow and closing as the deal moves forward.
+          </p>
+        )}
 
         {room.escrow_checklist?.length > 0 && (
           <>

@@ -237,7 +237,12 @@ export default function OffMarketDealDetail() {
                 {slotsText(display)}
               </div>
 
-              {!isUnlocked ? (
+              {display.is_owner ? (
+                <p className="deal-locked-note">
+                  This is your listing. Buyers who unlock it appear in your vendor portal under
+                  Signed NDAs &amp; Leads.
+                </p>
+              ) : !isUnlocked ? (
                 <>
                   <button
                     type="button"
@@ -256,11 +261,17 @@ export default function OffMarketDealDetail() {
                 </>
               ) : (
                 <>
-                  <button type="button" className="deal-side-cta" onClick={() => room && null}>
-                    Deal Unlocked ✓
+                  <button
+                    type="button"
+                    className="deal-side-cta"
+                    onClick={() =>
+                      document.querySelector(".deal-room")?.scrollIntoView({ behavior: "smooth" })
+                    }
+                  >
+                    Go to deal room ✓
                   </button>
                   <p className="deal-locked-note">
-                    Use the deal room below to negotiate and track escrow.
+                    Message the seller and track escrow in the deal room below.
                   </p>
                 </>
               )}
