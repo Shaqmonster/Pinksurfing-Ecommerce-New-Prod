@@ -300,9 +300,9 @@ const JobOverviewStep = ({ request, onContinue }) => {
         <div className="flex items-start gap-3">
           <IoAlertCircle className="text-pink-400 text-lg flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-white">Pay-to-bid notice</p>
+            <p className="text-sm font-medium text-white">Free to send</p>
             <p className="text-xs text-white/50 mt-0.5">
-              A small bid fee may apply to reach verified buyers. You&apos;ll only be charged upon submission.
+              Sending a proposal is free. You&apos;re paid through the order once you&apos;re hired.
             </p>
           </div>
         </div>

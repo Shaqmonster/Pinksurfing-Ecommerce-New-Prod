@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import DealRoomPanel from "../components/deals/DealRoomPanel";
 import UnlockDealModal from "../components/deals/UnlockDealModal";
+import { unlockFeePolicy } from "../components/deals/unlockPolicy";
 import { slotsText } from "../components/deals/DealCard";
 import {
   fetchDealDetail,
@@ -255,8 +256,8 @@ export default function OffMarketDealDetail() {
                       : `Unlock from ${formatMoney(display.unlock_fee)}`}
                   </button>
                   <p className="deal-locked-note">
-                    Full address, photos, comps, and deal room unlock after payment. Fee credited
-                    at close.
+                    Full address, photos, comps and the deal room unlock after payment.{" "}
+                    {unlockFeePolicy(display)}
                   </p>
                 </>
               ) : (

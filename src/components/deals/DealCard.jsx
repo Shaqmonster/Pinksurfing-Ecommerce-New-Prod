@@ -1,4 +1,5 @@
 import React from "react";
+import { unlockFeePolicy } from "./unlockPolicy";
 import { Link } from "react-router-dom";
 import { formatMoney } from "../../api/offMarketDeals";
 
@@ -167,8 +168,8 @@ export default function DealCard({ deal }) {
             </Link>
             {!deal.is_unlocked && !deal.is_slots_full && (
               <p className="deal-cta-note">
-                One-time fee. Reveals the address, photos, documents and deal room.
-                {deal.unlock_fee_credited_at_close ? " Credited back if you close this deal." : ""}
+                One-time fee. Reveals the address, photos, documents and deal room.{" "}
+                {unlockFeePolicy(deal)}
               </p>
             )}
           </div>

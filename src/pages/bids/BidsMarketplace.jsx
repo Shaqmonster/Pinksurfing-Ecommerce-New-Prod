@@ -121,53 +121,97 @@ const ChipFilter = ({ options, selected, onToggle }) => (
   </div>
 );
 
-const CategoryFilter = ({ selected, onToggle }) => {
+const TOP_CATEGORIES = 6;
+
+/**
+ * Category filter built from the open jobs on the page (retest P2.10): only categories
+ * that have jobs are listed, busiest first, with counts; the top few show by default.
+ */
+const CategoryFilter = ({ selected, onToggle, jobs = [] }) => {
   const [expandedCat, setExpandedCat] = useState(null);
+  const [showAll, setShowAll] = useState(false);
   const { categories: CATEGORY_FILTERS } = useJobCategories();
+
+  const catCounts = {};
+  const subCounts = {};
+  jobs.forEach((j) => {
+    if (j.job_category) catCounts[j.job_category] = (catCounts[j.job_category] || 0) + 1;
+    if (j.job_subcategory) subCounts[j.job_subcategory] = (subCounts[j.job_subcategory] || 0) + 1;
+  });
+
+  const withJobs = Object.entries(CATEGORY_FILTERS)
+    .map(([cat, subs]) => ({ cat, subs, count: catCounts[cat] || 0 }))
+    .filter(({ subs, count }) => count > 0 || subs.some((sub) => selected.includes(sub)))
+    .sort((a, b) => b.count - a.count || a.cat.localeCompare(b.cat));
+
+  if (withJobs.length === 0) {
+    return <p className="text-[11px] text-white/40 px-2 py-1.5">No categories with open jobs yet.</p>;
+  }
+
+  const visible = showAll ? withJobs : withJobs.slice(0, TOP_CATEGORIES);
+
   return (
     <div className="space-y-0.5">
-      {Object.entries(CATEGORY_FILTERS).map(([cat, subs]) => (
-        <div key={cat}>
-          <button
-            type="button"
-            onClick={() => setExpandedCat(expandedCat === cat ? null : cat)}
-            className="flex items-center justify-between w-full text-[11px] text-white/70 hover:text-white transition-colors py-1.5 px-2 rounded-md hover:bg-white/5"
-          >
-            <span className="font-medium text-left">{cat}</span>
-            <IoChevronDown
-              className={`text-xs transition-transform flex-shrink-0 ml-1 ${expandedCat === cat ? "rotate-180" : ""}`}
-            />
-          </button>
-          {expandedCat === cat && (
-            <div className="ml-2 pl-2 border-l border-white/10 flex flex-wrap gap-1 py-1.5">
-              {subs.map((sub) => {
-                const active = selected.includes(sub);
-                return (
-                  <button
-                    key={sub}
-                    type="button"
-                    onClick={() => onToggle(sub)}
-                    className={`px-2 py-0.5 rounded text-[10px] transition-all ${
-                      active
-                        ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
-                        : "bg-white/5 text-white/40 hover:text-white/70"
-                    }`}
-                  >
-                    {sub}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      ))}
+      {visible.map(({ cat, subs, count }) => {
+        const subsWithJobs = subs.filter((sub) => subCounts[sub] || selected.includes(sub));
+        const subList = subsWithJobs.length > 0 ? subsWithJobs : subs;
+        return (
+          <div key={cat}>
+            <button
+              type="button"
+              onClick={() => setExpandedCat(expandedCat === cat ? null : cat)}
+              aria-expanded={expandedCat === cat}
+              className="flex items-center justify-between w-full text-[11px] text-white/70 hover:text-white transition-colors py-1.5 px-2 rounded-md hover:bg-white/5"
+            >
+              <span className="font-medium text-left">{cat}</span>
+              <span className="flex items-center gap-1 flex-shrink-0 ml-1">
+                <span className="text-white/40">{count}</span>
+                <IoChevronDown
+                  className={`text-xs transition-transform ${expandedCat === cat ? "rotate-180" : ""}`}
+                />
+              </span>
+            </button>
+            {expandedCat === cat && (
+              <div className="ml-2 pl-2 border-l border-white/10 flex flex-wrap gap-1 py-1.5">
+                {subList.map((sub) => {
+                  const active = selected.includes(sub);
+                  return (
+                    <button
+                      key={sub}
+                      type="button"
+                      onClick={() => onToggle(sub)}
+                      className={`px-2 py-0.5 rounded text-[10px] transition-all ${
+                        active
+                          ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
+                          : "bg-white/5 text-white/40 hover:text-white/70"
+                      }`}
+                    >
+                      {sub}
+                      {subCounts[sub] ? ` (${subCounts[sub]})` : ""}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {withJobs.length > TOP_CATEGORIES && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="text-[11px] text-pink-400 hover:text-pink-300 px-2 py-1.5"
+        >
+          {showAll ? "Show fewer" : `Show all ${withJobs.length}`}
+        </button>
+      )}
     </div>
   );
 };
 
 // ─── FilterSidebar ─────────────────────────────────────────────────────────────
 
-const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount }) => {
+const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount, jobs }) => {
   const toggle = (group, value) => {
     const current = filters[group] || [];
     const next = current.includes(value)
@@ -197,6 +241,7 @@ const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount }) => 
         <CategoryFilter
           selected={filters.category || []}
           onToggle={(v) => toggle("category", v)}
+          jobs={jobs}
         />
       </FilterSection>
 
@@ -314,7 +359,7 @@ const RequestCard = ({ request }) => {
                 to={`/gigs/jobs/${request.id}`}
                 className="flex items-center gap-1.5 min-h-[44px] px-4 py-2 rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white text-sm font-semibold"
               >
-                Send offer
+                Send a proposal
                 <IoArrowForward className="text-sm" aria-hidden="true" />
               </Link>
             </div>
@@ -477,6 +522,7 @@ export default function BidsMarketplace() {
     onFilterChange: handleFilterChange,
     onClearAll: clearAll,
     activeCount: activeFilterCount,
+    jobs: requests,
   };
 
   return (
