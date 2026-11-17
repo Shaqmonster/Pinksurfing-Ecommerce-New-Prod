@@ -8,6 +8,7 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 import { useAcceptOffer } from "../../hooks/useAcceptOffer";
 import { formatMoney } from "../../utils/formatMoney";
 import { conditionLabel } from "../../utils/requestLabels";
+import { formatDay } from "../../utils/formatDate";
 
 const STATUS_TEXT = {
   OPEN: "Open: vendors can send offers",
@@ -122,7 +123,7 @@ export default function RequestDetailPage() {
             {req.deadline && (
               <Fact
                 label="Needed by"
-                value={new Date(req.deadline).toLocaleDateString("en-US", { dateStyle: "medium" })}
+                value={formatDay(req.deadline, { dateStyle: "medium" })}
               />
             )}
           </div>

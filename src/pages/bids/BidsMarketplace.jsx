@@ -33,6 +33,7 @@ import BidsNavBar from "../../components/BidsNavBar";
 import { requestCategoryText, requestCategoryLabel } from "../../constants/jobCategories";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { jobBudgetLabel } from "../../constants/jobBudgets";
+import { formatDay } from "../../utils/formatDate";
 
 // ─── Filter Data ───────────────────────────────────────────────────────────────
 // Only filters backed by real job fields. (The old sidebar had ~14 groups, most of which
@@ -319,7 +320,7 @@ const RequestCard = ({ request }) => {
                 {request.deadline && (
                   <span className="flex items-center gap-1 text-xs text-white/50">
                     <IoCalendarOutline className="text-sm" />
-                    Due {new Date(request.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    Due {formatDay(request.deadline, { month: "short", day: "numeric" })}
                   </span>
                 )}
                 <span className="flex items-center gap-1 text-xs text-white/40">
