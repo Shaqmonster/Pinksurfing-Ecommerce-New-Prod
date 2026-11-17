@@ -24,11 +24,13 @@ const Footer = () => {
       },
     },
     { name: "Orders", link: accessToken ? "/profile" : "/signin" },
+    { name: "My Bids", link: accessToken ? "/my-bids" : "/signin" },
     { name: "Contact", link: "/contact" },
   ];
 
   const exploreLinks = [
     { name: "Shopping mall", link: "/shoppingMall" },
+    { name: "Request a product", link: "/request-product" },
     { name: "GigHub", link: "/gighub" },
     { name: "Deals", link: "/deals" },
     { name: "Jobs", link: "/gigs/jobs" },

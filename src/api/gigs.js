@@ -220,6 +220,11 @@ export const createConversation = (token, participantEmail) =>
     { headers: { ...authHeader(token), "Content-Type": "application/json" } }
   );
 
+export const getConversation = (token, conversationId) =>
+  axios.get(`${BASE_URL}/api/chat/conversations/${conversationId}/`, {
+    headers: authHeader(token),
+  });
+
 // Start (or reopen) a chat with a gig's seller. The server looks the seller up from the
 // gig, so the seller's email never has to reach the browser.
 export const createConversationForGig = (token, gigId) =>

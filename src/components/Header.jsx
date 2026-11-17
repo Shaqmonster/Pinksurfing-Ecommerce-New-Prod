@@ -16,6 +16,12 @@ import {
   IoLogOutOutline,
   IoPersonOutline,
   IoChevronDown,
+  IoBagHandleOutline,
+  IoMegaphoneOutline,
+  IoKeyOutline,
+  IoBriefcaseOutline,
+  IoSparklesOutline,
+  IoListOutline,
 } from "react-icons/io5";
 
 import Cart from "./Cart";
@@ -33,8 +39,14 @@ import { useAccessToken } from "../hooks/useAccessToken";
 const enableAuthWallet = import.meta.env.VITE_ENABLE_AUTH_WALLET === "true";
 const BRAND_LOGO = "/brand/logo.jpeg?v=2";
 
-/** Primary destinations live on the homepage & footer — navbar stays search + account. */
-const NAV_ITEMS = [];
+/** Main sections. Desktop shows icon + label; the mobile menu lists them in full. */
+const NAV_ITEMS = [
+  { to: "/shopByCategory", label: "Shop", Icon: IoBagHandleOutline },
+  { to: "/request-product", label: "Request a product", Icon: IoMegaphoneOutline },
+  { to: "/deals", label: "Deals", Icon: IoKeyOutline },
+  { to: "/gigs/jobs", label: "Jobs", Icon: IoBriefcaseOutline },
+  { to: "/gighub", label: "GigHub", Icon: IoSparklesOutline },
+];
 
 const Header = () => {
   const accessToken = useAccessToken();
@@ -254,19 +266,19 @@ const Header = () => {
 
           <nav className="hidden lg:flex items-center gap-1 ml-auto" aria-label="Primary">
             {NAV_ITEMS.map(({ to, label, Icon }) => (
-              <IconTip
+              <Link
                 key={to}
-                as={Link}
                 to={to}
-                label={label}
-                className={
+                aria-current={isActive(to) ? "page" : undefined}
+                className={`inline-flex items-center gap-1.5 min-h-[40px] px-2.5 rounded-xl text-sm font-medium whitespace-nowrap border border-transparent transition-colors ${
                   isActive(to)
                     ? "text-[var(--ps-purple-light)] bg-[var(--ps-surf)] border-[var(--ps-brd)]"
-                    : ""
-                }
+                    : "text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)]"
+                }`}
               >
-                <Icon className="text-lg" aria-hidden="true" />
-              </IconTip>
+                <Icon className="text-base" aria-hidden="true" />
+                {label}
+              </Link>
             ))}
           </nav>
 
@@ -349,6 +361,24 @@ const Header = () => {
                         >
                           <IoPersonOutline aria-hidden="true" />
                           View profile
+                        </Link>
+                        <Link
+                          role="menuitem"
+                          to="/my-bids"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                        >
+                          <IoListOutline aria-hidden="true" />
+                          My Bids
+                        </Link>
+                        <Link
+                          role="menuitem"
+                          to="/gigs/jobs/mine"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                        >
+                          <IoBriefcaseOutline aria-hidden="true" />
+                          My Jobs
                         </Link>
                         <button
                           type="button"
