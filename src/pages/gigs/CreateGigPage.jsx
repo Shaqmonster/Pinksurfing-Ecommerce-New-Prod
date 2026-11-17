@@ -196,8 +196,10 @@ const CreateGigPage = () => {
         description: details.description.trim(),
         status: details.status,
       };
-      if (details.category) gigDetails.category = Number(details.category);
-      if (details.subcategory) gigDetails.subcategory = Number(details.subcategory);
+      // Category IDs are UUIDs: send them as-is. (Number(uuid) is NaN, which dropped the category
+      // from every gig published through this form.)
+      if (details.category) gigDetails.category = String(details.category);
+      if (details.subcategory) gigDetails.subcategory = String(details.subcategory);
 
       const activePkgs = packages.filter((p) => p.enabled).map((p) => ({
         tier: p.tier,

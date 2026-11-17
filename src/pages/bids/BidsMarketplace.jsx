@@ -16,7 +16,6 @@ import {
   IoChevronUp,
   IoFilterSharp,
   IoAdd,
-  IoNavigateCircleOutline,
   IoRefresh,
 } from "react-icons/io5";
 import {
@@ -35,113 +34,36 @@ import { requestCategoryText, requestCategoryLabel } from "../../constants/jobCa
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { jobBudgetLabel } from "../../constants/jobBudgets";
 
-// ─── Filter Data (from bidding/src/components/marketplace/filterData.ts) ───────
+// ─── Filter Data ───────────────────────────────────────────────────────────────
+// Only filters backed by real job fields. (The old sidebar had ~14 groups, most of which
+// filtered nothing: location, escrow, compliance, complexity and so on aren't stored on jobs.)
 
-const PROPOSAL_SOURCE_FILTERS = [
-  { value: "personal", label: "Personal" },
-  { value: "business", label: "Business" },
-  { value: "enterprise", label: "Enterprise" },
-  { value: "public", label: "Public (Gov / Municipal)" },
+// Budget ranges match the ones on the job form (BUDGET_OPTIONS).
+const BUDGET_FILTERS = [
+  { value: "under1k", label: "Under $1K", min: 1.01, max: 999.99 },
+  { value: "1k-5k", label: "$1K – $5K", min: 1000, max: 4999.99 },
+  { value: "5k-15k", label: "$5K – $15K", min: 5000, max: 14999.99 },
+  { value: "15k-50k", label: "$15K – $50K", min: 15000, max: 49999.99 },
+  { value: "50k-100k", label: "$50K – $100K", min: 50000, max: 99999.99 },
+  { value: "100k+", label: "$100K+", min: 100000, max: Infinity },
+  { value: "unsure", label: "Not sure", min: -Infinity, max: 1 },
 ];
 
-// Shared with the job form so buyers and vendors use the same categories.
-
-const TIMELINE_FILTERS = [
-  { value: "immediate", label: "Immediate" },
-  { value: "1-week", label: "Within 1 week" },
-  { value: "1-month", label: "Within 1 month" },
-  { value: "3-months", label: "Within 3 months" },
-  { value: "flexible", label: "Flexible" },
-  { value: "long-term", label: "Long-term contract" },
+const PROPOSAL_COUNT_FILTERS = [
+  { value: "0", label: "No proposals yet", min: 0, max: 0 },
+  { value: "1-3", label: "1–3 proposals", min: 1, max: 3 },
+  { value: "4-10", label: "4–10 proposals", min: 4, max: 10 },
+  { value: "10+", label: "More than 10", min: 11, max: Infinity },
 ];
 
-const CONTRACT_TYPE_FILTERS = [
-  { value: "one-time", label: "One-time project" },
-  { value: "recurring", label: "Recurring service" },
-  { value: "retainer", label: "Retainer" },
-  { value: "contract-employment", label: "Contract employment" },
-  { value: "equipment-purchase", label: "Equipment purchase" },
-  { value: "lease-rental", label: "Lease / rental" },
-  { value: "government-solicitation", label: "Government solicitation" },
+const DAY_MS = 24 * 60 * 60 * 1000;
+const POSTED_FILTERS = [
+  { value: "today", label: "Last 24 hours", maxAgeMs: DAY_MS },
+  { value: "this-week", label: "Last 7 days", maxAgeMs: 7 * DAY_MS },
+  { value: "this-month", label: "Last 30 days", maxAgeMs: 30 * DAY_MS },
 ];
 
-const BID_STATUS_FILTERS = [
-  { value: "open", label: "Open for proposals" },
-  { value: "closing-soon", label: "Closing soon" },
-  { value: "under-review", label: "Under review" },
-  { value: "awarded", label: "Awarded" },
-  { value: "archived", label: "Archived" },
-];
-
-const VENDOR_REQUIREMENT_FILTERS = [
-  { value: "licensed", label: "Licensed" },
-  { value: "insured", label: "Insured" },
-  { value: "bonded", label: "Bonded" },
-  { value: "verified-business", label: "Verified business" },
-  { value: "min-experience", label: "Min. years of experience" },
-  { value: "minority-owned", label: "Minority-owned business" },
-  { value: "local-preference", label: "Local vendor preference" },
-];
-
-const ESCROW_PAYMENT_FILTERS = [
-  { value: "escrow-required", label: "Escrow required" },
-  { value: "escrow-optional", label: "Escrow optional" },
-  { value: "milestone", label: "Milestone payments" },
-  { value: "net-terms", label: "Net payment terms" },
-  { value: "financing", label: "Financing available" },
-];
-
-const COMPLEXITY_FILTERS = [
-  { value: "simple", label: "Simple" },
-  { value: "moderate", label: "Moderate" },
-  { value: "complex", label: "Complex" },
-  { value: "enterprise-scale", label: "Enterprise-scale" },
-];
-
-const RISK_COMPLIANCE_FILTERS = [
-  { value: "nda", label: "NDA required" },
-  { value: "compliance-cert", label: "Compliance certification" },
-  { value: "security-clearance", label: "Security clearance" },
-  { value: "environmental", label: "Environmental compliance" },
-  { value: "regulatory", label: "Regulatory approval" },
-];
-
-const VENDOR_ACTIVITY_FILTERS = [
-  { value: "high-probability", label: "High probability of award" },
-  { value: "high-budget", label: "High budget" },
-  { value: "few-bids", label: "Few competing proposals" },
-  { value: "buyer-verified", label: "Buyer verified" },
-  { value: "repeat-buyer", label: "Repeat buyer" },
-];
-
-const BID_COMPETITION_FILTERS = [
-  { value: "no-bids", label: "No proposals yet" },
-  { value: "1-3", label: "1\u20133 proposals" },
-  { value: "3-10", label: "3\u201310 proposals" },
-  { value: "10+", label: "10+ proposals" },
-];
-
-const REQUEST_AGE_FILTERS = [
-  { value: "today", label: "Posted today" },
-  { value: "this-week", label: "Posted this week" },
-  { value: "this-month", label: "Posted this month" },
-];
-
-const COUNTRIES = [
-  "United States", "Canada", "United Kingdom", "Australia",
-  "Germany", "France", "Mexico", "India", "Brazil", "Japan",
-];
-
-const US_STATES = [
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
-  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
-  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
-  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
-  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
-  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
-  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
-  "Wisconsin", "Wyoming",
-];
+const inRange = (n, o) => Number.isFinite(n) && n >= o.min && n <= o.max;
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -245,7 +167,7 @@ const CategoryFilter = ({ selected, onToggle }) => {
 
 // ─── FilterSidebar ─────────────────────────────────────────────────────────────
 
-const FilterSidebar = ({ filters, onFilterChange, locationFilters, onLocationChange, onClearAll, activeCount }) => {
+const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount }) => {
   const toggle = (group, value) => {
     const current = filters[group] || [];
     const next = current.includes(value)
@@ -271,39 +193,6 @@ const FilterSidebar = ({ filters, onFilterChange, locationFilters, onLocationCha
         )}
       </div>
 
-      {/* Geolocation toggle */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 mb-4">
-        <div className="flex items-center gap-2">
-          <IoNavigateCircleOutline className="text-pink-400 text-base" />
-          <span className="text-xs font-medium text-white/70">Use my location</span>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={locationFilters.geolocation}
-          onClick={() => onLocationChange("geolocation", !locationFilters.geolocation)}
-          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-            locationFilters.geolocation ? "bg-pink-500" : "bg-white/20"
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-              locationFilters.geolocation ? "translate-x-4" : "translate-x-0.5"
-            }`}
-          />
-        </button>
-      </div>
-
-      {/* Proposal Source */}
-      <FilterSection title="Proposal Source">
-        <ChipFilter
-          options={PROPOSAL_SOURCE_FILTERS}
-          selected={filters.source || []}
-          onToggle={(v) => toggle("source", v)}
-        />
-      </FilterSection>
-
-      {/* Category */}
       <FilterSection title="Category" defaultOpen>
         <CategoryFilter
           selected={filters.category || []}
@@ -311,151 +200,27 @@ const FilterSidebar = ({ filters, onFilterChange, locationFilters, onLocationCha
         />
       </FilterSection>
 
-      {/* Location */}
-      <FilterSection title="Location">
-        <div className="space-y-2">
-          <select
-            value={locationFilters.country}
-            onChange={(e) => onLocationChange("country", e.target.value)}
-            className="w-full h-8 px-2 text-xs bg-white/5 border border-white/10 rounded-lg text-white/70 outline-none focus:border-pink-500/50"
-          >
-            <option value="" className="bg-[#1a1a24]">Country</option>
-            {COUNTRIES.map((c) => (
-              <option key={c} value={c} className="bg-[#1a1a24]">{c}</option>
-            ))}
-          </select>
-          <select
-            value={locationFilters.state}
-            onChange={(e) => onLocationChange("state", e.target.value)}
-            className="w-full h-8 px-2 text-xs bg-white/5 border border-white/10 rounded-lg text-white/70 outline-none focus:border-pink-500/50"
-          >
-            <option value="" className="bg-[#1a1a24]">State / Province</option>
-            {US_STATES.map((s) => (
-              <option key={s} value={s} className="bg-[#1a1a24]">{s}</option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder="City"
-            value={locationFilters.city}
-            onChange={(e) => onLocationChange("city", e.target.value)}
-            className="w-full h-8 px-3 text-xs bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 outline-none focus:border-pink-500/50"
-          />
-          <input
-            type="text"
-            placeholder="Zip code radius (miles)"
-            value={locationFilters.zipRadius}
-            onChange={(e) => onLocationChange("zipRadius", e.target.value)}
-            className="w-full h-8 px-3 text-xs bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 outline-none focus:border-pink-500/50"
-          />
-          <label className="flex items-center gap-2 text-xs text-white/50 cursor-pointer">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={locationFilters.remoteAllowed}
-              onClick={() => onLocationChange("remoteAllowed", !locationFilters.remoteAllowed)}
-              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors flex-shrink-0 ${
-                locationFilters.remoteAllowed ? "bg-pink-500" : "bg-white/20"
-              }`}
-            >
-              <span
-                className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform ${
-                  locationFilters.remoteAllowed ? "translate-x-3.5" : "translate-x-0.5"
-                }`}
-              />
-            </button>
-            Remote allowed
-          </label>
-        </div>
-      </FilterSection>
-
-      {/* Timeline */}
-      <FilterSection title="Timeline / Urgency">
+      <FilterSection title="Budget" defaultOpen>
         <ChipFilter
-          options={TIMELINE_FILTERS}
-          selected={filters.timeline || []}
-          onToggle={(v) => toggle("timeline", v)}
+          options={BUDGET_FILTERS}
+          selected={filters.budget || []}
+          onToggle={(v) => toggle("budget", v)}
         />
       </FilterSection>
 
-      {/* Contract Type */}
-      <FilterSection title="Contract Type">
+      <FilterSection title="Proposals so far">
         <ChipFilter
-          options={CONTRACT_TYPE_FILTERS}
-          selected={filters.contractType || []}
-          onToggle={(v) => toggle("contractType", v)}
+          options={PROPOSAL_COUNT_FILTERS}
+          selected={filters.proposals || []}
+          onToggle={(v) => toggle("proposals", v)}
         />
       </FilterSection>
 
-      {/* Bid Status */}
-      <FilterSection title="Bid Status">
+      <FilterSection title="Posted">
         <ChipFilter
-          options={BID_STATUS_FILTERS}
-          selected={filters.bidStatus || []}
-          onToggle={(v) => toggle("bidStatus", v)}
-        />
-      </FilterSection>
-
-      {/* Vendor Requirements */}
-      <FilterSection title="Vendor Requirements">
-        <ChipFilter
-          options={VENDOR_REQUIREMENT_FILTERS}
-          selected={filters.vendorRequirements || []}
-          onToggle={(v) => toggle("vendorRequirements", v)}
-        />
-      </FilterSection>
-
-      {/* Escrow / Payment */}
-      <FilterSection title="Escrow / Payment">
-        <ChipFilter
-          options={ESCROW_PAYMENT_FILTERS}
-          selected={filters.escrowPayment || []}
-          onToggle={(v) => toggle("escrowPayment", v)}
-        />
-      </FilterSection>
-
-      {/* Complexity */}
-      <FilterSection title="Complexity (AI Generated)">
-        <ChipFilter
-          options={COMPLEXITY_FILTERS}
-          selected={filters.complexity || []}
-          onToggle={(v) => toggle("complexity", v)}
-        />
-      </FilterSection>
-
-      {/* Risk / Compliance */}
-      <FilterSection title="Risk / Compliance">
-        <ChipFilter
-          options={RISK_COMPLIANCE_FILTERS}
-          selected={filters.riskCompliance || []}
-          onToggle={(v) => toggle("riskCompliance", v)}
-        />
-      </FilterSection>
-
-      {/* Vendor Activity */}
-      <FilterSection title="Vendor Activity">
-        <ChipFilter
-          options={VENDOR_ACTIVITY_FILTERS}
-          selected={filters.vendorActivity || []}
-          onToggle={(v) => toggle("vendorActivity", v)}
-        />
-      </FilterSection>
-
-      {/* Bid Competition */}
-      <FilterSection title="Bid Competition">
-        <ChipFilter
-          options={BID_COMPETITION_FILTERS}
-          selected={filters.bidCompetition || []}
-          onToggle={(v) => toggle("bidCompetition", v)}
-        />
-      </FilterSection>
-
-      {/* Request Age */}
-      <FilterSection title="Request Age">
-        <ChipFilter
-          options={REQUEST_AGE_FILTERS}
-          selected={filters.requestAge || []}
-          onToggle={(v) => toggle("requestAge", v)}
+          options={POSTED_FILTERS}
+          selected={filters.posted || []}
+          onToggle={(v) => toggle("posted", v)}
         />
       </FilterSection>
     </div>
@@ -607,9 +372,6 @@ export default function BidsMarketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [filters, setFilters] = useState({});
-  const [locationFilters, setLocationFilters] = useState({
-    country: "", state: "", city: "", zipRadius: "", remoteAllowed: false, geolocation: false,
-  });
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   // ?category=<gig category slug>, e.g. from the GigHub "Jobs Offered" category.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -642,24 +404,14 @@ export default function BidsMarketplace() {
     setFilters((prev) => ({ ...prev, [group]: values }));
   }, []);
 
-  const handleLocationChange = useCallback((key, value) => {
-    setLocationFilters((prev) => ({ ...prev, [key]: value }));
-  }, []);
-
   const clearAll = useCallback(() => {
     setFilters({});
-    setLocationFilters({ country: "", state: "", city: "", zipRadius: "", remoteAllowed: false, geolocation: false });
   }, []);
 
-  const activeFilterCount = useMemo(() => {
-    let count = Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
-    if (locationFilters.country) count++;
-    if (locationFilters.state) count++;
-    if (locationFilters.city) count++;
-    if (locationFilters.zipRadius) count++;
-    if (locationFilters.remoteAllowed) count++;
-    return count;
-  }, [filters, locationFilters]);
+  const activeFilterCount = useMemo(
+    () => Object.values(filters).reduce((sum, arr) => sum + arr.length, 0),
+    [filters]
+  );
 
   const filtered = useMemo(() => {
     let list = [...requests];
@@ -684,28 +436,20 @@ export default function BidsMarketplace() {
       });
     }
 
-    const timelineSelected = filters.timeline || [];
-    if (timelineSelected.length > 0) {
-      list = list.filter((r) => {
-        const t = String(r.timeline || r.duration || "").toLowerCase();
-        return timelineSelected.some((v) => t.includes(String(v).toLowerCase()));
-      });
+    const budgetSelected = BUDGET_FILTERS.filter((o) => (filters.budget || []).includes(o.value));
+    if (budgetSelected.length > 0) {
+      list = list.filter((r) => budgetSelected.some((o) => inRange(Number(r.budget), o)));
     }
 
-    const statusSelected = filters.bidStatus || [];
-    if (statusSelected.length > 0) {
-      list = list.filter((r) => {
-        const status = String(r.status || r.bid_status || "open").toLowerCase();
-        return statusSelected.some((v) => status.includes(String(v).toLowerCase()));
-      });
+    const proposalSelected = PROPOSAL_COUNT_FILTERS.filter((o) => (filters.proposals || []).includes(o.value));
+    if (proposalSelected.length > 0) {
+      list = list.filter((r) => proposalSelected.some((o) => inRange(Number(r.proposal_count ?? 0), o)));
     }
 
-    const contractSelected = filters.contractType || [];
-    if (contractSelected.length > 0) {
-      list = list.filter((r) => {
-        const ct = String(r.contract_type || r.contractType || "").toLowerCase();
-        return contractSelected.some((v) => ct.includes(String(v).toLowerCase()));
-      });
+    const postedSelected = POSTED_FILTERS.filter((o) => (filters.posted || []).includes(o.value));
+    if (postedSelected.length > 0) {
+      const maxAge = Math.max(...postedSelected.map((o) => o.maxAgeMs));
+      list = list.filter((r) => Date.now() - new Date(r.created_at).getTime() <= maxAge);
     }
 
     // Sort
@@ -731,8 +475,6 @@ export default function BidsMarketplace() {
   const filterSidebarProps = {
     filters,
     onFilterChange: handleFilterChange,
-    locationFilters,
-    onLocationChange: handleLocationChange,
     onClearAll: clearAll,
     activeCount: activeFilterCount,
   };

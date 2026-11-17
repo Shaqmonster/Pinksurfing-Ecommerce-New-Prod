@@ -112,3 +112,27 @@ export function formatMoney(n) {
   if (num >= 1_000) return `$${Math.round(num / 1000)}K`;
   return `$${num.toLocaleString()}`;
 }
+
+// Deal alerts: the signed-in buyer is emailed when a matching deal goes live.
+export async function fetchDealAlert(token) {
+  const { data } = await axios.get(`${SERVER}/api/off-market-deals/alerts/`, {
+    headers: authHeaders(token),
+  });
+  return data;
+}
+
+export async function saveDealAlert(token, { property_class = "", state = "", max_price = "" }) {
+  const { data } = await axios.post(
+    `${SERVER}/api/off-market-deals/alerts/`,
+    { property_class, state, max_price: max_price === "" ? null : max_price },
+    { headers: authHeaders(token) }
+  );
+  return data;
+}
+
+export async function turnOffDealAlert(token) {
+  const { data } = await axios.delete(`${SERVER}/api/off-market-deals/alerts/`, {
+    headers: authHeaders(token),
+  });
+  return data;
+}

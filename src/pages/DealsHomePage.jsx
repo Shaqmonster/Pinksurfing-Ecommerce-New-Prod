@@ -5,6 +5,7 @@ import DealCard from "../components/deals/DealCard";
 import DealFilterBar from "../components/deals/DealFilterBar";
 import DealKpiBar from "../components/deals/DealKpiBar";
 import DealProcessStrip from "../components/deals/DealProcessStrip";
+import DealAlertSignup from "../components/deals/DealAlertSignup";
 import { fetchDealStats, fetchDealTags, fetchDeals } from "../api/offMarketDeals";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { VENDOR_PORTAL_BASE } from "../utils/envUrls";
@@ -76,7 +77,7 @@ export default function DealsHomePage() {
   const moreDealsPrompt = (
     <div className="deals-more">
       <strong>More deals are on the way</strong>
-      New off-market deals go live as sellers list them, so check back soon. Have a deal to sell?{" "}
+      New off-market deals go live as sellers list them. Set up an alert below to hear about them first. Have a deal to sell?{" "}
       <a href={VENDOR_PORTAL_BASE} target="_blank" rel="noreferrer">
         List it on PinkSurfing
       </a>
@@ -157,6 +158,8 @@ export default function DealsHomePage() {
               {!hasFilters && deals.length < 6 && moreDealsPrompt}
             </>
           )}
+
+          <DealAlertSignup token={token} />
         </div>
       </div>
     </>
