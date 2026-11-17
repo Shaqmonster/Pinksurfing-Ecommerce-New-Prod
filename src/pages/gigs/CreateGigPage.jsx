@@ -12,6 +12,7 @@ import {
   getGig,
   getGigCategories,
   getGigSubcategories,
+  gigUrl,
 } from "../../api/gigs";
 import {
   IoImageOutline,
@@ -187,7 +188,7 @@ const CreateGigPage = () => {
   };
 
   // Step 3 — publish: send everything in a single API call
-  const handlePublish = async () => {
+  const handlePublish = async ({ skipMedia = false } = {}) => {
     try {
       setSubmitting(true);
 
@@ -211,20 +212,27 @@ const CreateGigPage = () => {
       }));
 
       let finalGigId = editId;
+      let savedGig = null;
       setPublishStage(editId ? "Saving gig…" : "Publishing gig…");
 
       if (editId) {
         // Update existing gig using JSON (handles nested packages correctly)
-        await updateGigJson(accessToken, editId, {
+        const res = await updateGigJson(accessToken, editId, {
           ...gigDetails,
           packages: activePkgs,
         });
+        savedGig = res?.data || null;
       } else {
         // Create basic gig
         const res = await createGig(accessToken, gigDetails);
-        finalGigId = res.data.id;
+        savedGig = res?.data || null;
+        finalGigId = savedGig?.id;
+        if (!finalGigId) {
+          throw new Error("The gig was not created. Please try again.");
+        }
 
         // Add Packages sequentially for creation
+        setPublishStage("Saving packages…");
         for (const p of activePkgs) {
           await addGigPackage(accessToken, finalGigId, p);
         }
@@ -233,10 +241,11 @@ const CreateGigPage = () => {
       // Add NEW Media files sequentially. The gig already exists at this point, so an image
       // failure must not be reported as "Failed to save gig".
       let failedUploads = 0;
-      for (let i = 0; i < mediaFiles.length; i++) {
-        setPublishStage(`Uploading image ${i + 1} of ${mediaFiles.length}…`);
+      const uploads = skipMedia ? [] : mediaFiles;
+      for (let i = 0; i < uploads.length; i++) {
+        setPublishStage(`Uploading image ${i + 1} of ${uploads.length}…`);
         try {
-          await addGigMedia(accessToken, finalGigId, mediaFiles[i], i === 0 && !editId);
+          await addGigMedia(accessToken, finalGigId, uploads[i], i === 0 && !editId);
         } catch {
           failedUploads += 1;
         }
@@ -250,7 +259,7 @@ const CreateGigPage = () => {
           `${failedUploads} image${failedUploads === 1 ? "" : "s"} could not be uploaded. Edit the gig to try again.`
         );
       }
-      navigate(`/gigs/${finalGigId}`);
+      navigate(gigUrl({ ...(savedGig || {}), id: finalGigId, title: savedGig?.title || gigDetails.title }));
     } catch (err) {
       const errData = err?.response?.data;
       const code = errData?.code || errData?.errors?.[0]?.code;
@@ -259,9 +268,12 @@ const CreateGigPage = () => {
         navigate("/identity/verify?returnUrl=/gigs/create");
         return;
       }
+      const timedOut = err?.code === "ECONNABORTED";
       const msg =
+        (timedOut && "Publishing is taking too long. Check My Gigs before trying again.") ||
         errData?.detail ||
-        (typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
+        (errData && typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
+        err?.message ||
         "Failed to save gig.";
       toast.error(msg);
     } finally {
@@ -660,7 +672,7 @@ const CreateGigPage = () => {
                 <motion.button
                   whileHover={{ scale: submitting ? 1 : 1.02 }}
                   whileTap={{ scale: submitting ? 1 : 0.98 }}
-                  onClick={handlePublish}
+                  onClick={() => handlePublish()}
                   disabled={submitting}
                   className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold text-sm shadow-lg hover:shadow-green-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
@@ -676,7 +688,7 @@ const CreateGigPage = () => {
               </div>
 
               <button
-                onClick={handlePublish}
+                onClick={() => handlePublish({ skipMedia: true })}
                 disabled={submitting}
                 className="w-full text-center text-white/30 text-xs hover:text-white/50 transition-colors"
               >

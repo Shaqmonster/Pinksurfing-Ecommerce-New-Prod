@@ -78,8 +78,13 @@ const NoImagePlaceholder = ({ product }) => {
 
 const ProductCard = ({ product, isCard }) => {
   const navigate = useNavigate();
-  const [averageRating, setAverageRating] = useState(0);
-  const [allRatings, setAllRatings] = useState([]);
+  // Product lists now include rating_avg / rating_count, so a card only fetches ratings
+  // itself when an older endpoint didn't send them (retest N2.6: N cards = N requests).
+  const listHasRatings = typeof product?.rating_count === "number";
+  const [averageRating, setAverageRating] = useState(
+    listHasRatings ? Number(product.rating_avg) || 0 : 0
+  );
+  const [ratingCount, setRatingCount] = useState(listHasRatings ? product.rating_count : 0);
   const { currency } = useContext(authContext);
   const {
     setCartProducts,
@@ -281,7 +286,7 @@ const ProductCard = ({ product, isCard }) => {
         );
 
         const ratingsReviews = response.data.ratings_reviews;
-        setAllRatings(ratingsReviews);
+        setRatingCount(ratingsReviews.length);
         if (ratingsReviews.length > 0) {
           const totalRating = ratingsReviews.reduce(
             (sum, review) => sum + review.rating,
@@ -295,8 +300,13 @@ const ProductCard = ({ product, isCard }) => {
         console.error("Error fetching ratings:", error);
       }
     };
+    if (listHasRatings) {
+      setAverageRating(Number(product.rating_avg) || 0);
+      setRatingCount(product.rating_count);
+      return;
+    }
     getProductRatings(product.id);
-  }, [product.id]);
+  }, [product.id, listHasRatings, product?.rating_avg, product?.rating_count]);
 
   const { slug: routeCategorySlug } = useParams();
   const categorySlug = product?.category?.slug || routeCategorySlug || "";
@@ -487,11 +497,11 @@ const ProductCard = ({ product, isCard }) => {
         {/* Identity meta */}
         {!isListing ? (
           <div className="flex items-center gap-1.5 mb-1 min-h-[16px] text-[11px]">
-            {allRatings.length > 0 ? (
+            {ratingCount > 0 ? (
               <>
                 <Stars stars={averageRating} />
                 <span className="leading-none text-[var(--ps-dim)]">
-                  ({allRatings.length})
+                  ({ratingCount})
                 </span>
               </>
             ) : (

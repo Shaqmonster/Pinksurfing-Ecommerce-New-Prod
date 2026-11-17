@@ -88,25 +88,26 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const establishSession = useCallback(
-    async (access, refresh) => {
+    async (access, refresh, { waitForProfile = true } = {}) => {
       if (!access) {
         clearSession();
         return false;
       }
 
-      if (profileLoadRef.current) return profileLoadRef.current;
+      persistAuthSession(access, refresh);
+      syncReactAuthCookies(access, refresh, setCookie);
+      setRuntimeAuthToken(access);
+      setAuthToken(access);
 
-      profileLoadRef.current = (async () => {
-        persistAuthSession(access, refresh);
-        syncReactAuthCookies(access, refresh, setCookie);
-        setRuntimeAuthToken(access);
-        setAuthToken(access);
-        await hydrateUser(access);
-        profileLoadRef.current = null;
-        return true;
-      })();
-
-      return profileLoadRef.current;
+      if (!profileLoadRef.current) {
+        profileLoadRef.current = hydrateUser(access).finally(() => {
+          profileLoadRef.current = null;
+        });
+      }
+      // Sign-in flows wait for the profile; app start doesn't (retest N2.5): pages render as
+      // soon as the token is known and `user` fills in when the profile arrives.
+      if (waitForProfile) await profileLoadRef.current;
+      return true;
     },
     [clearSession, hydrateUser, setCookie]
   );
@@ -211,7 +212,7 @@ export const AuthProvider = ({ children }) => {
         const session = await ensureSession();
         if (cancelled) return;
         if (session?.access) {
-          await establishSession(session.access, session.refresh);
+          await establishSession(session.access, session.refresh, { waitForProfile: false });
         }
       } catch (error) {
         console.error("Auth bootstrap failed:", error);
