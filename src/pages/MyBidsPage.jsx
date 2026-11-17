@@ -345,7 +345,6 @@ const BidRow = ({ bid, requestStatus, requestId, onAcceptBid, accepting }) => {
           <IoStorefrontOutline className="text-purple-400 text-lg shrink-0" />
           <div className="min-w-0">
             <p className="text-white font-medium text-sm truncate">{bid.vendor_store_name}</p>
-            <p className="text-white/40 text-xs truncate">{bid.vendor_email}</p>
           </div>
         </div>
         <span
