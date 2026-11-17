@@ -27,6 +27,7 @@ import BidsNavBar from "../components/BidsNavBar";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { jobBudgetLabel } from "../constants/jobBudgets";
 import { formatMoney } from "../utils/formatMoney";
+import { formatDay } from "../utils/formatDate";
 
 // One page, two features:
 //   product: "My Bids" — things the buyer asked for; vendors' offers; accepting one adds it to the cart.
@@ -268,11 +269,7 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
             <div className="flex items-center gap-1.5 text-white/60">
               <IoTimeOutline className="shrink-0" />
               <span>
-                {new Date(req.deadline).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                {formatDay(req.deadline, { month: "short", day: "numeric", year: "numeric" })}
               </span>
             </div>
           )}

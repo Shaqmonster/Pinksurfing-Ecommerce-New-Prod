@@ -42,6 +42,7 @@ import { toast } from "react-toastify";
 import BidsNavBar from "../../components/BidsNavBar";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { jobBudgetLabel } from "../../constants/jobBudgets";
+import { formatDay } from "../../utils/formatDate";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -217,7 +218,7 @@ const JobSidebar = ({ request }) => {
           <div className="flex items-center gap-1.5 text-white/60">
             <IoCalendarOutline className="text-pink-400 flex-shrink-0" />
             <span className="text-xs truncate">
-              {new Date(request.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              {formatDay(request.deadline, { month: "short", day: "numeric" })}
             </span>
           </div>
         )}
@@ -266,7 +267,7 @@ const JobOverviewStep = ({ request, onContinue }) => {
             { Icon: FaTag, text: request.category_name || "General" },
             { Icon: FaDollarSign, text: jobBudgetLabel(request.budget), cls: "text-emerald-400" },
             ...(request.deadline
-              ? [{ Icon: IoCalendarOutline, text: `Due ${new Date(request.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` }]
+              ? [{ Icon: IoCalendarOutline, text: `Due ${formatDay(request.deadline, { month: "short", day: "numeric" })}` }]
               : []),
           ].map(({ Icon, text, cls }) => (
             <div key={text} className="flex items-center gap-2 text-sm text-white/60">
@@ -1280,7 +1281,7 @@ export default function BidRequestDetail() {
                 {request.deadline && (
                   <div className="flex items-center gap-1.5 text-white/60">
                     <IoCalendarOutline className="text-pink-400 text-sm" />
-                    <span>{new Date(request.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                    <span>{formatDay(request.deadline, { month: "short", day: "numeric", year: "numeric" })}</span>
                   </div>
                 )}
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${

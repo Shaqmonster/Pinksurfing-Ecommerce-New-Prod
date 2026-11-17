@@ -13,6 +13,7 @@ import {
   initiateDealUnlock,
 } from "../api/offMarketDeals";
 import { useAccessToken } from "../hooks/useAccessToken";
+import { formatDay } from "../utils/formatDate";
 
 const CSS = `
 .deal-detail-page{min-height:100vh;background:#0d0d10;color:#f0f0f4;font-family:'DM Sans',sans-serif;padding:28px 32px 80px;}
@@ -225,7 +226,7 @@ export default function OffMarketDealDetail() {
               </div>
               <div style={{ fontSize: 16, fontWeight: 700, marginTop: 4 }}>
                 {display.deadline_at
-                  ? new Date(display.deadline_at).toLocaleDateString()
+                  ? formatDay(display.deadline_at)
                   : "—"}
               </div>
               {display.days_left != null && (
