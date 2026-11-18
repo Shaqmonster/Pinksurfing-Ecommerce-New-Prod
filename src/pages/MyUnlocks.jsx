@@ -233,10 +233,21 @@ export default function MyUnlocks() {
                 <h2>Unlocked deals</h2>
                 {paid.length === 0 ? (
                   <div className="mu-empty">
-                    <p>No unlocked deals yet.</p>
-                    <p style={{ marginTop: 8 }}>
-                      Browse <Link to="/deals">off-market deals</Link> to unlock your first listing.
-                    </p>
+                    {ended.length > 0 || pending.length > 0 ? (
+                      <>
+                        <p>No active unlocks right now.</p>
+                        <p style={{ marginTop: 8 }}>
+                          Browse <Link to="/deals">off-market deals</Link> to unlock another listing.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p>No unlocked deals yet.</p>
+                        <p style={{ marginTop: 8 }}>
+                          Browse <Link to="/deals">off-market deals</Link> to unlock your first listing.
+                        </p>
+                      </>
+                    )}
                   </div>
                 ) : (
                   paid.map((item) => <UnlockCard key={item.unlock_id} item={item} />)

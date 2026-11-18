@@ -1,5 +1,5 @@
 import { cleanBlurb } from "../utils/cleanBlurb";
-import { Fragment, useContext, useMemo, useState } from "react";
+import { Fragment, useContext, useLayoutEffect, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
@@ -64,6 +64,12 @@ export default function Cart() {
       setLoading(false);
     }
   };
+
+  // Mark the cart as loading before the drawer first paints, so "Your cart is empty" never flashes
+  // in the moment between opening it and the request starting.
+  useLayoutEffect(() => {
+    if (isCartOpen && accessToken) setLoading(true);
+  }, [isCartOpen, accessToken]);
 
   useEffect(() => {
     if (!isCartOpen || !accessToken) return;
