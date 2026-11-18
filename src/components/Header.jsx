@@ -349,9 +349,14 @@ const Header = () => {
                       <>
                         <div className="px-3 py-2.5 border-b border-[var(--ps-brd)]">
                           <p className="text-xs text-[var(--ps-dim)]">Signed in</p>
-                          <p className="text-sm font-medium text-white truncate">
-                            {getCustomerDisplayName(user)}
-                          </p>
+                          {user ? (
+                            <p className="text-sm font-medium text-white truncate">
+                              {getCustomerDisplayName(user)}
+                            </p>
+                          ) : (
+                            // Signed in but the profile is still loading: a placeholder, not the word "Account".
+                            <div className="ps-skeleton mt-1 h-4 w-28 rounded" aria-label="Loading your name" />
+                          )}
                         </div>
                         <Link
                           role="menuitem"
