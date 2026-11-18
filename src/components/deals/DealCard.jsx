@@ -1,3 +1,4 @@
+import { formatDay } from "../../utils/formatDate";
 import React from "react";
 import { unlockFeePolicy } from "./unlockPolicy";
 import DealImage from "./DealImage";
@@ -64,9 +65,8 @@ export function slotsText(deal) {
 function deadlineText(deal) {
   if (deal.days_left == null) return null;
   const label = DEADLINE_LABELS[deal.deadline_type] || "Deadline";
-  const when = deal.deadline_at
-    ? new Date(deal.deadline_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-    : null;
+  // UTC, like the deal page, so the card and the page always show the same day.
+  const when = deal.deadline_at ? formatDay(deal.deadline_at, { month: "short", day: "numeric", year: "numeric" }) : null;
   if (deal.days_left === 0) return `${label} today`;
   const rel = `${label} in ${deal.days_left} day${deal.days_left === 1 ? "" : "s"}`;
   return when ? `${rel} · ${when}` : rel;

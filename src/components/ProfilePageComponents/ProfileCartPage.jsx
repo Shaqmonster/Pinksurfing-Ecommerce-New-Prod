@@ -1,3 +1,4 @@
+import { cleanBlurb } from "../../utils/cleanBlurb";
 import { Fragment, useContext, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -227,9 +228,11 @@ export default function ProfileCartPage() {
                                                                 )}
                                                             </p>
                                                         </div>
-                                                        <p className="mt-3 text-sm text-white/40 leading-relaxed max-w-xl">
-                                                            {htmlToText(product.product.short_description)}
-                                                        </p>
+                                                        {cleanBlurb(htmlToText(product.product.short_description)) && (
+                                                            <p className="mt-3 text-sm text-white/40 leading-relaxed max-w-xl">
+                                                                {cleanBlurb(htmlToText(product.product.short_description))}
+                                                            </p>
+                                                        )}
                                                         {isCartItemOutOfStock(product) && (
                                                             <p className="mt-2 text-xs font-bold text-red-400 uppercase tracking-widest">
                                                                 Out of stock — remove to checkout

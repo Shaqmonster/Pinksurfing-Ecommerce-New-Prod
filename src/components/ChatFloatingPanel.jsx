@@ -50,6 +50,8 @@ const ChatFloatingPanel = ({
   const [messageInput, setMessageInput] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
+  // True when the last list load failed, so a failure never looks like "No conversations yet".
+  const [listError, setListError] = useState(false);
   const [loadingThread, setLoadingThread] = useState(false);
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -128,8 +130,10 @@ const ChatFloatingPanel = ({
       try {
         const res = await getConversations(token);
         setConversations(Array.isArray(res.data) ? res.data : res.data.results || []);
+        setListError(false);
       } catch (err) {
         console.error("Failed to fetch conversations", err);
+        setListError(true);
       } finally {
         if (!silent) setLoadingList(false);
       }
@@ -634,10 +638,25 @@ const ChatFloatingPanel = ({
                     );
                   })
                 ) : (
+                  listError ? (
+                    <div className="flex flex-col items-center justify-center gap-3 py-16">
+                      <p className="text-sm font-medium text-center px-6 text-white/70">
+                        Couldn&apos;t load your conversations.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => fetchConversations(false)}
+                        className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-semibold"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  ) : (
                   <div className="flex flex-col items-center justify-center opacity-40 gap-3 py-16">
                     <IoChatbubbleOutline className="text-4xl" />
                     <p className="text-sm font-medium text-center px-6">No conversations yet</p>
                   </div>
+                  )
                 )}
               </div>
             ) : (
@@ -691,6 +710,11 @@ const ChatFloatingPanel = ({
                   </div>
                 )}
 
+                {activeConv?.deal_room_state === "cancelled" ? (
+                  <p className="p-4 border-t border-white/5 text-center text-xs text-white/50 shrink-0">
+                    This deal was cancelled. You can read the history but not send new messages.
+                  </p>
+                ) : (
                 <form
                   onSubmit={handleSend}
                   className="p-4 border-t border-white/5 bg-white/[0.02] shrink-0"
@@ -727,6 +751,7 @@ const ChatFloatingPanel = ({
                     </button>
                   </div>
                 </form>
+                )}
               </div>
             )}
           </div>

@@ -1,3 +1,4 @@
+import { cleanBlurb } from "../utils/cleanBlurb";
 import { Fragment, useContext, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -225,9 +226,11 @@ export default function Wishlist() {
                                   <h3 className="text-sm font-medium text-white line-clamp-2 hover:text-[var(--ps-purple-light)]">
                                     {product.name}
                                   </h3>
-                                  <p className="text-xs text-[var(--ps-muted)] line-clamp-1 mt-0.5">
-                                    {htmlToText(product.short_description)}
-                                  </p>
+                                  {cleanBlurb(htmlToText(product.short_description)) && (
+                                    <p className="text-xs text-[var(--ps-muted)] line-clamp-1 mt-0.5">
+                                      {cleanBlurb(htmlToText(product.short_description))}
+                                    </p>
+                                  )}
                                 </Link>
                                 <p className="text-sm font-semibold text-white">
                                   {currency}
