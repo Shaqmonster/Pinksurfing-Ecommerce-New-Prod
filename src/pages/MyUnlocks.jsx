@@ -30,6 +30,12 @@ const PAGE_CSS = `
 .mu-pill.in_deal_room{background:rgba(151, 71, 255,.12);color:#9747ff;}
 .mu-pill.closed{background:rgba(148,163,184,.15);color:#94a3b8;}
 .mu-pill.pending_payment{background:rgba(251,191,36,.12);color:#fbbf24;}
+.mu-pill.refunded{background:rgba(56,189,248,.14);color:#38bdf8;}
+.mu-pill.cancelled{background:rgba(248,113,113,.14);color:#f87171;}
+.mu-note{font-size:12px;color:#b0b0c0;margin:2px 0 0;}
+.mu-tabs{display:flex;gap:8px;margin:0 0 20px;flex-wrap:wrap;}
+.mu-tab{font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid #2a2a33;background:transparent;color:#b0b0c0;cursor:pointer;}
+.mu-tab[aria-selected="true"]{background:#9747ff;border-color:#9747ff;color:#fff;}
 .mu-cta{font-size:13px;font-weight:700;padding:8px 14px;border-radius:6px;background:#9747ff;color:#fff;text-decoration:none;}
 .mu-cta:hover{background:#d4246f;color:#fff;}
 .mu-empty{text-align:center;padding:60px 20px;color:#66667a;}
@@ -44,6 +50,13 @@ const STATUS_LABEL = {
   in_deal_room: "In deal room",
   closed: "Closed",
   pending_payment: "Incomplete",
+  refunded: "Refunded",
+  cancelled: "Cancelled",
+};
+
+const ENDED_NOTE = {
+  refunded: "The deal was cancelled and your unlock fee was refunded. It can take 5 to 10 business days to show.",
+  cancelled: "This deal room was cancelled.",
 };
 
 function UnlockCard({ item }) {
@@ -85,6 +98,7 @@ function UnlockCard({ item }) {
             </span>
           )}
         </div>
+        {ENDED_NOTE[status] && <p className="mu-note">{ENDED_NOTE[status]}</p>}
         <div className="mu-row">
           <span className={`mu-pill ${status}`}>{STATUS_LABEL[status] || status}</span>
           <Link className="mu-cta" to={`/deals/${slug}`}>
@@ -100,6 +114,8 @@ export default function MyUnlocks() {
   const token = useAccessToken();
   const [paid, setPaid] = useState([]);
   const [pending, setPending] = useState([]);
+  const [ended, setEnded] = useState([]);
+  const [tab, setTab] = useState("all"); // all | active | ended
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -111,12 +127,16 @@ export default function MyUnlocks() {
     setLoading(true);
     setError(null);
     try {
-      const [paidRes, pendingRes] = await Promise.all([
+      const [paidRes, pendingRes, endedRes] = await Promise.all([
         fetchMyUnlocks(token, "paid"),
         fetchMyUnlocks(token, "pending"),
+        // Cancelled / refunded unlocks (older API versions ignore this and return the paid list).
+        fetchMyUnlocks(token, "ended").catch(() => ({ results: [] })),
       ]);
       setPaid(paidRes.results || []);
       setPending(pendingRes.results || []);
+      const paidIds = new Set((paidRes.results || []).map((i) => i.unlock_id));
+      setEnded((endedRes.results || []).filter((i) => !paidIds.has(i.unlock_id)));
     } catch {
       setError("Could not load your unlocks. Please try again.");
     } finally {
@@ -173,7 +193,26 @@ export default function MyUnlocks() {
             <div className="mu-error">{error}</div>
           ) : (
             <>
-              {pending.length > 0 && (
+              <div className="mu-tabs" role="tablist" aria-label="Filter unlocks">
+                {[
+                  ["all", "All"],
+                  ["active", "Active"],
+                  ["ended", "Cancelled & refunded"],
+                ].map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === id}
+                    className="mu-tab"
+                    onClick={() => setTab(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {tab !== "ended" && pending.length > 0 && (
                 <section className="mu-section">
                   <h2>Incomplete</h2>
                   {pending.map((item) => (
@@ -182,6 +221,7 @@ export default function MyUnlocks() {
                 </section>
               )}
 
+              {tab !== "ended" && (
               <section className="mu-section">
                 <h2>Unlocked deals</h2>
                 {paid.length === 0 ? (
@@ -195,6 +235,20 @@ export default function MyUnlocks() {
                   paid.map((item) => <UnlockCard key={item.unlock_id} item={item} />)
                 )}
               </section>
+              )}
+
+              {tab !== "active" && (ended.length > 0 || tab === "ended") && (
+                <section className="mu-section">
+                  <h2>Cancelled &amp; refunded</h2>
+                  {ended.length === 0 ? (
+                    <div className="mu-empty">
+                      <p>No cancelled or refunded deals.</p>
+                    </div>
+                  ) : (
+                    ended.map((item) => <UnlockCard key={item.unlock_id} item={item} />)
+                  )}
+                </section>
+              )}
             </>
           )}
         </div>

@@ -204,8 +204,10 @@ const CreateGigPage = () => {
 
       const activePkgs = packages.filter((p) => p.enabled).map((p) => ({
         tier: p.tier,
-        title: p.title || undefined,
-        description: p.description,
+        title: p.title?.trim() || undefined,
+        // The package description is optional on the form; the API rejects an empty string, so fall
+        // back to the tier name rather than failing the whole publish.
+        description: p.description?.trim() || `${String(p.tier || "").charAt(0).toUpperCase()}${String(p.tier || "").slice(1)} package`,
         price: p.price,
         delivery_days: Number(p.delivery_days),
         revisions: Number(p.revisions),
@@ -272,7 +274,9 @@ const CreateGigPage = () => {
       const msg =
         (timedOut && "Publishing is taking too long. Check My Gigs before trying again.") ||
         errData?.detail ||
-        (errData && typeof errData === "object" ? Object.values(errData).flat().join(" ") : null) ||
+        (errData && typeof errData === "object"
+          ? Array.from(new Set(Object.values(errData).flat().map(String))).join(" ")
+          : null) ||
         err?.message ||
         "Failed to save gig.";
       toast.error(msg);
@@ -520,7 +524,7 @@ const CreateGigPage = () => {
                             e.target.style.height = 'auto';
                             e.target.style.height = e.target.scrollHeight + 'px';
                           }}
-                          placeholder="Describe what's included in this package…"
+                          placeholder="Describe what's included in this package (optional)…"
                           rows={2}
                           className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all overflow-hidden resize-none min-h-[60px]"
                         />

@@ -56,7 +56,7 @@ import {
   submitVisitDispute,
   createVisitPaymentLink,
 } from "../api/propertyVisits";
-import { createConversation } from "../api/gigs";
+import { createConversationForProduct } from "../api/gigs";
 
 /** API returns `/media/...` paths; resolve against API origin when SPA is on another host. */
 function resolveProductMediaUrl(url) {
@@ -160,10 +160,27 @@ const ProductDetailPage = () => {
     [cartProducts, product?.id]
   );
 
-  const isOwner =
-    !!user?.email &&
-    !!product?.vendor?.email &&
-    user.email.trim().toLowerCase() === product.vendor.email.trim().toLowerCase();
+  // The API no longer sends the seller's email; it tells a signed-in viewer whether they own the listing.
+  const isOwner = product?.viewer_is_owner === true;
+
+  // The public product fetch is anonymous; ask again with the sign-in so the API can say whether this
+  // viewer owns the listing (it adds `viewer_is_owner` to the detail only).
+  useEffect(() => {
+    if (!accessToken || !product?.id) return undefined;
+    let cancelled = false;
+    axios
+      .get(`${import.meta.env.VITE_SERVER_URL}/api/product/product/${encodeURIComponent(product.id)}/`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      .then((res) => {
+        if (cancelled || !res.data?.Products?.viewer_is_owner) return;
+        setProduct((prev) => (prev?.id === product.id ? { ...prev, viewer_is_owner: true } : prev));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, product?.id]);
   const isDealClosed = product?.deal_active_until && new Date(product.deal_active_until) < new Date();
 
   // ── CATEGORY DETECTION ──
@@ -290,15 +307,14 @@ const ProductDetailPage = () => {
       return;
     }
 
-    const agentEmail = product?.vendor?.email;
-    if (!agentEmail) {
+    if (!product?.id) {
       toast.error("Agent contact isn't available right now.", { position: "top-right" });
       return;
     }
 
     try {
       setContactingAgent(true);
-      const res = await createConversation(accessToken, agentEmail);
+      const res = await createConversationForProduct(accessToken, product.id);
       const conversation = res?.data;
       if (conversation?.id && typeof openChatWithConversation === "function") {
         openChatWithConversation(conversation);

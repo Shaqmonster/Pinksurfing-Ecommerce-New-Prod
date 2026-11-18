@@ -48,6 +48,7 @@ export default function RequestProductPage() {
     quantity: "1",
     condition: "any",
     shipToZip: "",
+    deadline: "",
   });
 
   useEffect(() => {
@@ -91,6 +92,7 @@ export default function RequestProductPage() {
         quantity,
         condition: form.condition,
         shipToZip: form.shipToZip.trim(),
+        deadline: form.deadline || undefined,
         images: photos,
       });
       toast.success("Request posted! Vendors can now send you offers.");
@@ -212,6 +214,20 @@ export default function RequestProductPage() {
               onChange={set("shipToZip")}
               maxLength={20}
               autoComplete="postal-code"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="rp-deadline" className={label}>
+              Needed by <span className="text-white/40 font-normal">(optional)</span>
+            </label>
+            <input
+              id="rp-deadline"
+              type="date"
+              className={field}
+              value={form.deadline}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={set("deadline")}
             />
           </div>
 

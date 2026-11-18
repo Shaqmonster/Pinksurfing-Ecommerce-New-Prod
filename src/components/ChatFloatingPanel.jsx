@@ -94,6 +94,9 @@ const ChatFloatingPanel = ({
     });
   }, []);
 
+  // The store or person's name when the API provides it, else the raw username.
+  const displayName = (p) => p?.display_name || p?.username || "";
+
   const otherUser = useCallback(
     (conv) => conv?.participants?.find((p) => (p.email || "").toLowerCase() !== myEmail),
     [myEmail]
@@ -501,7 +504,7 @@ const ChatFloatingPanel = ({
   const filtered = conversations.filter((conv) => {
     if (!searchQuery) return true;
     const other = otherUser(conv);
-    return other?.username?.toLowerCase().includes(searchQuery.toLowerCase());
+    return displayName(other).toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const presence = presenceLabel(otherUserStatus);
@@ -528,12 +531,15 @@ const ChatFloatingPanel = ({
                   <IoChevronBackOutline className="text-xl text-gray-400" />
                 </button>
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-bold shrink-0">
-                  {otherUser(activeConv)?.username?.[0]?.toUpperCase() || "?"}
+                  {displayName(otherUser(activeConv))?.[0]?.toUpperCase() || "?"}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-white truncate">
-                    {otherUser(activeConv)?.username || "Chat"}
+                    {displayName(otherUser(activeConv)) || "Chat"}
                   </p>
+                  {activeConv?.context_label && (
+                    <p className="text-[10px] text-pink-300 truncate">{activeConv.context_label}</p>
+                  )}
                   <p
                     className={`text-[10px] font-medium flex items-center gap-1 truncate ${
                       presence.online ? "text-green-400" : "text-gray-500"
@@ -605,11 +611,11 @@ const ChatFloatingPanel = ({
                         className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.04] transition-all text-left"
                       >
                         <div className="w-11 h-11 rounded-2xl bg-white/[0.06] flex items-center justify-center text-white font-bold shrink-0">
-                          {other?.username?.[0]?.toUpperCase() || "?"}
+                          {displayName(other)?.[0]?.toUpperCase() || "?"}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-bold text-white truncate">{other?.username}</p>
+                            <p className="text-sm font-bold text-white truncate">{displayName(other)}</p>
                             {unread > 0 && (
                               <span className="bg-purple-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
                                 {unread > 9 ? "9+" : unread}
@@ -617,6 +623,9 @@ const ChatFloatingPanel = ({
                             )}
                           </div>
                           <p className="text-[10px] text-gray-500 truncate">{p.text}</p>
+                          {conv.context_label && (
+                            <p className="text-[10px] text-pink-300 truncate">{conv.context_label}</p>
+                          )}
                           <p className="text-xs text-gray-500 truncate mt-0.5">
                             {conv.last_message?.content || "Start a conversation"}
                           </p>

@@ -267,10 +267,20 @@ export default function OffMarketDealDetail() {
               {display.is_owner ? (
                 <p className="deal-locked-note">
                   This is your listing. Buyers who unlock it appear in your vendor portal under
-                  Signed NDAs &amp; Leads.
+                  NDAs &amp; Leads.
                 </p>
               ) : !isUnlocked ? (
                 <>
+                  {display.my_unlock_status && (
+                    <p className="deal-locked-note" role="status" style={{ color: "#f0f0f4" }}>
+                      {display.my_unlock_status === "refunded"
+                        ? "You unlocked this deal earlier. It was cancelled and your unlock fee was refunded."
+                        : "You unlocked this deal earlier, but its deal room was cancelled."}{" "}
+                      <a href="/my-unlocks" style={{ color: "#9747ff" }}>
+                        See My Unlocks
+                      </a>
+                    </p>
+                  )}
                   <button
                     type="button"
                     className="deal-side-cta"

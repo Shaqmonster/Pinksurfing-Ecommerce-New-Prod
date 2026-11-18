@@ -13,7 +13,7 @@ const CSS = `
 .deal-card-badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;}
 .deal-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
 .deal-badge.verified{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
-.deal-badge.unverified{background:rgba(255,255,255,.06);color:#a0a0b0;border:1px solid #2a2a33;}
+.deal-badge.unverified{background:rgba(14,15,19,.88);color:#e5e7eb;border:1px solid #6b7280}
 .deal-badge.sale{background:rgba(151, 71, 255,.12);color:#9747ff;border:1px solid rgba(151, 71, 255,.28);}
 .deal-card-body{padding:16px;flex:1;display:flex;flex-direction:column;gap:10px;}
 .deal-card-type{font-size:10px;color:#66667a;text-transform:uppercase;font-weight:700;letter-spacing:.06em;}
@@ -64,8 +64,12 @@ export function slotsText(deal) {
 function deadlineText(deal) {
   if (deal.days_left == null) return null;
   const label = DEADLINE_LABELS[deal.deadline_type] || "Deadline";
+  const when = deal.deadline_at
+    ? new Date(deal.deadline_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+    : null;
   if (deal.days_left === 0) return `${label} today`;
-  return `${label} in ${deal.days_left} day${deal.days_left === 1 ? "" : "s"}`;
+  const rel = `${label} in ${deal.days_left} day${deal.days_left === 1 ? "" : "s"}`;
+  return when ? `${rel} · ${when}` : rel;
 }
 
 export default function DealCard({ deal }) {

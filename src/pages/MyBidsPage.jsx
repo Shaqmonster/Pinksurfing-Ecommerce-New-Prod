@@ -238,13 +238,12 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
               )}
             </div>
             <h3 className="text-white font-semibold text-base sm:text-lg truncate">
-              {type === "product" ? (
-                <Link to={`/my-bids/${req.id}`} className="hover:text-pink-300 transition-colors">
-                  {req.title}
-                </Link>
-              ) : (
-                req.title
-              )}
+              <Link
+                to={type === "product" ? `/my-bids/${req.id}` : `/gigs/jobs/${req.id}`}
+                className="hover:text-pink-300 transition-colors"
+              >
+                {req.title}
+              </Link>
             </h3>
             <p className="text-white/50 text-sm mt-1 line-clamp-2">{req.description}</p>
           </div>
