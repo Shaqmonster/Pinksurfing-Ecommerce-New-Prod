@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
@@ -142,7 +142,25 @@ const Home = () => {
   };
 
   // Handle My Store click
-  const handleMyStoreClick = () => {
+  const [sellMenuOpen, setSellMenuOpen] = useState(false);
+  const sellMenuRef = useRef(null);
+  useEffect(() => {
+    if (!sellMenuOpen) return undefined;
+    const close = (e) => {
+      if (sellMenuRef.current && !sellMenuRef.current.contains(e.target)) setSellMenuOpen(false);
+    };
+    const onKey = (e) => e.key === "Escape" && setSellMenuOpen(false);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [sellMenuOpen]);
+
+  // choice: "portal" opens the vendor portal (sellers) or the sign-up dialog (everyone else);
+  // "become" always opens the seller sign-up dialog.
+  const handleMyStoreClick = (choice = "portal") => {
     // Check if user is logged in
     if (!accessToken) {
       toast.info("Please sign in to access your store");
@@ -168,10 +186,14 @@ const Home = () => {
       return;
     }
 
-    if (isVendor) {
-      // Same tab: a new-tab window.open can be silently blocked, which looked like
-      // "Sell does nothing".
-      window.location.assign("https://vendors.pinksurfing.com");
+    if (isVendor && choice !== "become") {
+      // Opened from a menu click (a user gesture), so a new tab is not blocked; fall back to this tab.
+      const opened = window.open("https://vendors.pinksurfing.com", "_blank", "noopener");
+      if (!opened) window.location.assign("https://vendors.pinksurfing.com");
+    } else if (isVendor) {
+      toast.info("You already have a seller account. Opening the vendor portal.");
+      const opened = window.open("https://vendors.pinksurfing.com", "_blank", "noopener");
+      if (!opened) window.location.assign("https://vendors.pinksurfing.com");
     } else {
       // Show vendor registration dialog
       setIsVendorDialogOpen(true);
@@ -445,13 +467,46 @@ const Home = () => {
               >
                 Jobs
               </Link>
-              <button
-                type="button"
-                onClick={handleMyStoreClick}
-                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
-              >
-                Sell
-              </button>
+              <div className="relative" ref={sellMenuRef}>
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={sellMenuOpen}
+                  onClick={() => setSellMenuOpen((o) => !o)}
+                  className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
+                >
+                  Sell
+                </button>
+                {sellMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute left-0 top-full z-30 mt-2 w-52 rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf,#14141a)] p-1.5 shadow-xl"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setSellMenuOpen(false);
+                        handleMyStoreClick("portal");
+                      }}
+                      className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-white hover:bg-white/10"
+                    >
+                      Open vendor portal
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setSellMenuOpen(false);
+                        handleMyStoreClick("become");
+                      }}
+                      className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-white hover:bg-white/10"
+                    >
+                      Become a seller
+                    </button>
+                  </div>
+                )}
+              </div>
               <Link
                 to="/gighub"
                 className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"

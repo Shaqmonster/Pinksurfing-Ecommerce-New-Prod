@@ -1232,15 +1232,22 @@ export default function BidRequestDetail() {
         <BidsNavBar />
         <div className="flex items-center justify-center px-4 pt-20">
           <div className="max-w-md w-full text-center bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h2 className="text-white text-lg font-bold">This is your job</h2>
-            <p className="text-white/50 text-sm mt-2">
+            <h2 className="text-white text-lg font-bold">{request.title || "This is your job"}</h2>
+            <p className="text-white/40 text-xs mt-1">
+              Your job{request.status ? ` · ${request.status}` : ""}
+              {request.deadline ? ` · Needed by ${formatDay(request.deadline)}` : ""}
+            </p>
+            {request.description && (
+              <p className="text-white/70 text-sm mt-3 whitespace-pre-line text-left">{request.description}</p>
+            )}
+            <p className="text-white/50 text-sm mt-3">
               You can't send a proposal on your own job. Proposals from freelancers show up in My Jobs.
             </p>
             <Link
               to="/gigs/jobs/mine"
               className="inline-flex items-center justify-center mt-5 min-h-[44px] px-5 rounded-xl bg-purple-600 text-white text-sm font-semibold"
             >
-              Go to My Jobs
+              See proposals in My Jobs
             </Link>
           </div>
         </div>

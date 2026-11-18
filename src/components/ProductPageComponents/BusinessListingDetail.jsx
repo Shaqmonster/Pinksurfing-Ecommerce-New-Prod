@@ -392,11 +392,8 @@ const BusinessListingDetail = ({
   // Inline error shown inside the modal so it is always visible
   const [ndaError, setNdaError] = useState("");
 
-  const isListingOwner = useMemo(() => {
-    const ue = user?.email?.trim().toLowerCase();
-    const ve = product?.vendor?.email?.trim().toLowerCase();
-    return Boolean(ue && ve && ue === ve);
-  }, [user?.email, product?.vendor?.email]);
+  // Set by ProductDetailPage from the API's `viewer_is_owner` (the seller's email is no longer public).
+  const isListingOwner = product?.viewer_is_owner === true;
 
   const financialsUnlocked = ndaSigned || isListingOwner;
 

@@ -133,14 +133,35 @@ const CategoryFilter = ({ selected, onToggle, jobs = [] }) => {
   const [showAll, setShowAll] = useState(false);
   const { categories: CATEGORY_FILTERS } = useJobCategories();
 
+  // Jobs carry their own category names; match them to the known list ignoring case/spacing, and
+  // keep any category that has jobs even when it isn't in the list (so a filter is never empty
+  // while jobs exist).
+  const norm = (v) => String(v || "").trim().toLowerCase();
+  const knownByNorm = {};
+  Object.keys(CATEGORY_FILTERS).forEach((cat) => {
+    knownByNorm[norm(cat)] = cat;
+  });
   const catCounts = {};
   const subCounts = {};
+  const extraSubs = {};
   jobs.forEach((j) => {
-    if (j.job_category) catCounts[j.job_category] = (catCounts[j.job_category] || 0) + 1;
+    if (j.job_category) {
+      const key = knownByNorm[norm(j.job_category)] || j.job_category;
+      catCounts[key] = (catCounts[key] || 0) + 1;
+      if (!CATEGORY_FILTERS[key] && j.job_subcategory) {
+        extraSubs[key] = Array.from(new Set([...(extraSubs[key] || []), j.job_subcategory]));
+      }
+    }
     if (j.job_subcategory) subCounts[j.job_subcategory] = (subCounts[j.job_subcategory] || 0) + 1;
   });
 
-  const withJobs = Object.entries(CATEGORY_FILTERS)
+  const withJobs = [
+    ...Object.entries(CATEGORY_FILTERS),
+    ...Object.entries(extraSubs).filter(([cat]) => !CATEGORY_FILTERS[cat]),
+    ...Object.keys(catCounts)
+      .filter((cat) => !CATEGORY_FILTERS[cat] && !extraSubs[cat])
+      .map((cat) => [cat, []]),
+  ]
     .map(([cat, subs]) => ({ cat, subs, count: catCounts[cat] || 0 }))
     .filter(({ subs, count }) => count > 0 || subs.some((sub) => selected.includes(sub)))
     .sort((a, b) => b.count - a.count || a.cat.localeCompare(b.cat));

@@ -302,9 +302,14 @@ export default function Cart() {
                                     </p>
                                   </div>
 
-                                  <p className="line-clamp-1 text-xs text-[var(--ps-muted)]">
-                                    {htmlToText(product.product?.short_description ?? "")}
-                                  </p>
+                                  {(() => {
+                                    const blurb = String(
+                                      htmlToText(product.product?.short_description ?? "") ?? ""
+                                    ).trim();
+                                    return blurb && !["null", "undefined"].includes(blurb.toLowerCase()) ? (
+                                      <p className="line-clamp-1 text-xs text-[var(--ps-muted)]">{blurb}</p>
+                                    ) : null;
+                                  })()}
 
                                   {isCartItemOutOfStock(product) && (
                                     <p className="text-xs font-medium text-red-400">
