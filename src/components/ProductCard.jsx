@@ -285,7 +285,9 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   // Same aliases and "$80,000"-style parsing as the business detail page.
-  const bizRevenue = parseMoney(getAttr(...REVENUE_ATTR_ALIASES));
+  const rawBizRevenue = parseMoney(getAttr(...REVENUE_ATTR_ALIASES));
+  // Revenue can't be negative; treat a bad stored value as "not listed" instead of showing "$-3.00".
+  const bizRevenue = rawBizRevenue !== null && rawBizRevenue < 0 ? null : rawBizRevenue;
   const bizEbitda = parseMoney(getAttr(...EBITDA_ATTR_ALIASES));
 
   const formatSpec = (value) => {

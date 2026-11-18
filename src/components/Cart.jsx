@@ -1,3 +1,4 @@
+import { cleanBlurb } from "../utils/cleanBlurb";
 import { Fragment, useContext, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -306,7 +307,7 @@ export default function Cart() {
                                     const blurb = String(
                                       htmlToText(product.product?.short_description ?? "") ?? ""
                                     ).trim();
-                                    return blurb && !["null", "undefined"].includes(blurb.toLowerCase()) ? (
+                                    return cleanBlurb(blurb) ? (
                                       <p className="line-clamp-1 text-xs text-[var(--ps-muted)]">{blurb}</p>
                                     ) : null;
                                   })()}

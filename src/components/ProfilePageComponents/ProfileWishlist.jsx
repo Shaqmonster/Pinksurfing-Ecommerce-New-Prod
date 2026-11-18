@@ -1,3 +1,4 @@
+import { cleanBlurb } from "../../utils/cleanBlurb";
 import { Fragment, useContext } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -187,9 +188,11 @@ export default function ProfileWishlist() {
                                                         <XMarkIcon className="w-5 h-5" />
                                                     </button>
                                                 </div>
-                                                <p className="mt-2 text-sm text-white/30 line-clamp-2 leading-relaxed">
-                                                    {htmlToText(product.short_description)}
-                                                </p>
+                                                {cleanBlurb(htmlToText(product.short_description)) && (
+                                                    <p className="mt-2 text-sm text-white/30 line-clamp-2 leading-relaxed">
+                                                        {cleanBlurb(htmlToText(product.short_description))}
+                                                    </p>
+                                                )}
                                             </div>
 
                                             <div className="mt-4 flex items-center justify-between">
