@@ -58,6 +58,8 @@ export default function OffMarketDealDetail() {
     try {
       const teaser = await fetchDealDetail(slug, token);
       setDeal(teaser);
+      // Show the deal as soon as the basics arrive; the unlocked details and the deal room fill in after.
+      setLoading(false);
       if (teaser.is_unlocked || searchParams.get("deal_unlocked") === "1") {
         if (token) {
           const unlocked = await fetchDealFull(slug, token);
@@ -110,8 +112,13 @@ export default function OffMarketDealDetail() {
 
   if (loading) {
     return (
-      <div className="deal-detail-page">
-        <div className="deal-detail-inner">Loading…</div>
+      <div className="deal-detail-page" aria-busy="true">
+        <div className="deal-detail-inner">
+          <div style={{ height: 28, width: "40%", borderRadius: 8, background: "rgba(255,255,255,.06)", marginBottom: 16 }} />
+          <div style={{ height: 260, borderRadius: 16, background: "rgba(255,255,255,.05)", marginBottom: 16 }} />
+          <div style={{ height: 16, width: "70%", borderRadius: 6, background: "rgba(255,255,255,.05)", marginBottom: 10 }} />
+          <div style={{ height: 16, width: "55%", borderRadius: 6, background: "rgba(255,255,255,.05)" }} />
+        </div>
       </div>
     );
   }

@@ -52,6 +52,8 @@ const ChatFloatingPanel = ({
   const [loadingList, setLoadingList] = useState(false);
   // True when the last list load failed, so a failure never looks like "No conversations yet".
   const [listError, setListError] = useState(false);
+  // False until the first load has finished (success or failure): until then show placeholders, not "No conversations yet".
+  const [listLoaded, setListLoaded] = useState(false);
   const [loadingThread, setLoadingThread] = useState(false);
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,6 +73,22 @@ const ChatFloatingPanel = ({
   const prevAccessTokenRef = useRef(accessToken);
   const wsTokenRef = useRef(null);
   const myEmail = (user?.email || getEmailFromToken(accessToken) || "").toLowerCase();
+  const myEmailRef = useRef(myEmail);
+  myEmailRef.current = myEmail;
+
+  // Show the last list from this tab straight away while the fresh one loads.
+  useEffect(() => {
+    if (!myEmail) return;
+    try {
+      const raw = sessionStorage.getItem(`ps-conv-cache:${myEmail}`);
+      const cachedList = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(cachedList) && cachedList.length) {
+        setConversations((prev) => (prev.length ? prev : cachedList));
+      }
+    } catch {
+      /* ignore a bad cache */
+    }
+  }, [myEmail]);
 
   messagesRef.current = messages;
   activeConvRef.current = activeConv;
@@ -125,17 +143,27 @@ const ChatFloatingPanel = ({
   const fetchConversations = useCallback(
     async (silent = false) => {
       const token = await resolveChatToken();
-      if (!token) return;
+      if (!token) {
+        setListLoaded(true);
+        return;
+      }
       if (!silent) setLoadingList(true);
       try {
         const res = await getConversations(token);
-        setConversations(Array.isArray(res.data) ? res.data : res.data.results || []);
+        const list = Array.isArray(res.data) ? res.data : res.data.results || [];
+        setConversations(list);
         setListError(false);
+        try {
+          sessionStorage.setItem(`ps-conv-cache:${myEmailRef.current}`, JSON.stringify(list.slice(0, 40)));
+        } catch {
+          /* storage unavailable */
+        }
       } catch (err) {
         console.error("Failed to fetch conversations", err);
         setListError(true);
       } finally {
         if (!silent) setLoadingList(false);
+        setListLoaded(true);
       }
     },
     [resolveChatToken]
@@ -595,9 +623,17 @@ const ChatFloatingPanel = ({
                     className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-500/30"
                   />
                 </div>
-                {loadingList && filtered.length === 0 ? (
-                  <div className="flex justify-center py-12">
-                    <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                {(loadingList || !listLoaded) && filtered.length === 0 ? (
+                  <div className="space-y-2 p-3" aria-busy="true" aria-label="Loading conversations">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-2xl">
+                        <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 w-1/3 rounded bg-white/5 animate-pulse" />
+                          <div className="h-3 w-2/3 rounded bg-white/5 animate-pulse" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : filtered.length > 0 ? (
                   filtered.map((conv) => {

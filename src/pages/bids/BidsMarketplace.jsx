@@ -128,7 +128,7 @@ const TOP_CATEGORIES = 6;
  * Category filter built from the open jobs on the page (retest P2.10): only categories
  * that have jobs are listed, busiest first, with counts; the top few show by default.
  */
-const CategoryFilter = ({ selected, onToggle, jobs = [] }) => {
+const CategoryFilter = ({ selected, onToggle, jobs = [], loading = false }) => {
   const [expandedCat, setExpandedCat] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const { categories: CATEGORY_FILTERS } = useJobCategories();
@@ -165,6 +165,17 @@ const CategoryFilter = ({ selected, onToggle, jobs = [] }) => {
     .map(([cat, subs]) => ({ cat, subs, count: catCounts[cat] || 0 }))
     .filter(({ subs, count }) => count > 0 || subs.some((sub) => selected.includes(sub)))
     .sort((a, b) => b.count - a.count || a.cat.localeCompare(b.cat));
+
+  if (withJobs.length === 0 && loading) {
+    // Jobs are still on their way: placeholders, never "no categories".
+    return (
+      <div className="space-y-1.5 px-1 py-1" aria-busy="true" aria-label="Loading categories">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-6 rounded-md bg-white/5 animate-pulse" />
+        ))}
+      </div>
+    );
+  }
 
   if (withJobs.length === 0) {
     return <p className="text-[11px] text-white/40 px-2 py-1.5">No categories with open jobs yet.</p>;
@@ -233,7 +244,7 @@ const CategoryFilter = ({ selected, onToggle, jobs = [] }) => {
 
 // ─── FilterSidebar ─────────────────────────────────────────────────────────────
 
-const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount, jobs }) => {
+const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount, jobs, loading }) => {
   const toggle = (group, value) => {
     const current = filters[group] || [];
     const next = current.includes(value)
@@ -264,6 +275,7 @@ const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount, jobs 
           selected={filters.category || []}
           onToggle={(v) => toggle("category", v)}
           jobs={jobs}
+          loading={loading}
         />
       </FilterSection>
 
@@ -545,6 +557,7 @@ export default function BidsMarketplace() {
     onClearAll: clearAll,
     activeCount: activeFilterCount,
     jobs: requests,
+    loading,
   };
 
   return (

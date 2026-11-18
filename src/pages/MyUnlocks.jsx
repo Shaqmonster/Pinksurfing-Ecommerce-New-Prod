@@ -188,7 +188,14 @@ export default function MyUnlocks() {
           </header>
 
           {loading ? (
-            <div className="mu-loading">Loading unlocks…</div>
+            <div className="mu-loading" aria-busy="true" aria-label="Loading unlocks" style={{ padding: 0 }}>
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  style={{ height: 112, borderRadius: 12, background: "rgba(255,255,255,.05)", marginBottom: 12 }}
+                />
+              ))}
+            </div>
           ) : error ? (
             <div className="mu-error">{error}</div>
           ) : (

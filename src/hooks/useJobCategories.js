@@ -7,7 +7,21 @@ const FALLBACK = {
   slugByName: {},
 };
 
-let cached = null;
+const STORE_KEY = "ps-job-categories-v1";
+
+function readStored() {
+  try {
+    const raw = sessionStorage.getItem(STORE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed?.categories ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+// Paint the last known list at once (this tab), then refresh it from the server.
+let cached = typeof window !== "undefined" ? readStored() : null;
+let refreshed = false;
 
 /**
  * Jobs use the same categories as GigHub gigs (/api/gigs/categories/), so a job and a gig in
@@ -18,7 +32,7 @@ export function useJobCategories() {
   const [state, setState] = useState(cached || FALLBACK);
 
   useEffect(() => {
-    if (cached) return undefined;
+    if (refreshed) return undefined;
     let cancelled = false;
     getGigCategories()
       .then((res) => {
@@ -34,6 +48,12 @@ export function useJobCategories() {
           slugByName[c.name] = c.slug;
         });
         cached = { categories, slugByName };
+        refreshed = true;
+        try {
+          sessionStorage.setItem(STORE_KEY, JSON.stringify(cached));
+        } catch {
+          /* storage unavailable */
+        }
         if (!cancelled) setState(cached);
       })
       .catch(() => {});
