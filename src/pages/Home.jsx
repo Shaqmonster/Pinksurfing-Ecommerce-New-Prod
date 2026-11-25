@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
+import WelcomeNote from "../components/WelcomeNote";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
@@ -429,6 +430,7 @@ const Home = () => {
 
         {/* Hero Section - Main Categories */}
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 pt-6 pb-8">
+          <WelcomeNote firstName={user?.first_name} />
           <div className="text-center mb-8 max-w-3xl mx-auto">
             <div className="flex justify-center mb-4">
               <img src="/brand/logo.jpeg?v=2" alt="" className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)]" />

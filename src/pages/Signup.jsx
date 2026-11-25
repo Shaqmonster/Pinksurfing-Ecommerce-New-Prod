@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
+import { markWelcomePending } from "../components/WelcomeNote";
 import { Link, useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { dataContext } from "../context/dataContext";
@@ -288,6 +289,7 @@ const Signup = () => {
       });
 
       if (createResult.success) {
+        markWelcomePending();
         notify.success("Your account is ready. Sign in to continue.");
         navigate("/signin");
       } else {
