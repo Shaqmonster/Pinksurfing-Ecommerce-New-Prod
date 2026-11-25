@@ -76,7 +76,7 @@ const Category = () => {
                   />
                   <p>{category?.name}</p>
                 </Menu.Button>
-                <Menu.Items className="grid grid-cols-3 flex-col py-3 px-6 z-50 min-w-fit w-max-full bg-[#2d1e5f] dark:border-2 dark:border-purple-300 absolute top-12">
+                <Menu.Items className="grid grid-cols-3 flex-col py-3 px-6 z-50 min-w-fit w-max-full bg-ps-action-soft dark:border-2 dark:border-purple-300 absolute top-12">
                   {subCategories
                     .filter((i) => {
                       return i.category.name === activeTab;

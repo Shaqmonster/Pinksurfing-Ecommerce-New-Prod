@@ -3,23 +3,23 @@ import { Link, useParams } from "react-router-dom";
 import { fetchSupplySubmitMeta, submitSupplyDeal } from "../api/offMarketDeals";
 
 const PAGE_CSS = `
-.ds-page{min-height:100vh;background:#0d0d10;color:#f0f0f4;font-family:'DM Sans',sans-serif;padding:24px 16px 80px;}
+.ds-page{min-height:100vh;background:var(--ps-color-bg);color:var(--ps-color-text);font-family:'DM Sans',sans-serif;padding:24px 16px 80px;}
 .ds-inner{max-width:640px;margin:0 auto;}
 .ds-hero{margin-bottom:24px;}
 .ds-hero h1{font-size:26px;font-weight:800;margin-bottom:8px;}
-.ds-hero h1 span{color:#9747ff;}
-.ds-hero p{color:#66667a;font-size:14px;line-height:1.55;}
-.ds-form{background:#141418;border:1.5px solid #2a2a33;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px;}
-.ds-label{font-size:12px;font-weight:700;color:#b0b0c0;display:block;margin-bottom:4px;}
-.ds-input,.ds-select,.ds-textarea{width:100%;background:#1c1c22;border:1px solid #2a2a33;border-radius:6px;padding:10px 12px;color:#f0f0f4;font-size:14px;box-sizing:border-box;}
+.ds-hero h1 span{color:var(--ps-color-action-text);}
+.ds-hero p{color:var(--ps-color-text-meta);font-size:14px;line-height:1.55;}
+.ds-form{background:var(--ps-color-surface);border:1.5px solid var(--ps-color-border);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px;}
+.ds-label{font-size:12px;font-weight:700;color:var(--ps-color-text-secondary);display:block;margin-bottom:4px;}
+.ds-input,.ds-select,.ds-textarea{width:100%;background:var(--ps-color-surface-sunken);border:1px solid var(--ps-color-border);border-radius:6px;padding:10px 12px;color:var(--ps-color-text);font-size:14px;box-sizing:border-box;}
 .ds-textarea{min-height:90px;resize:vertical;}
 .ds-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.ds-btn{margin-top:8px;padding:12px;border:none;border-radius:8px;background:#9747ff;color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
+.ds-btn{margin-top:8px;padding:12px;border:none;border-radius:8px;background:var(--ps-primary);color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
 .ds-btn:disabled{opacity:.5;cursor:not-allowed;}
 .ds-msg{padding:12px;border-radius:8px;font-size:13px;}
-.ds-msg.err{background:rgba(248,113,113,.12);color:#f87171;}
-.ds-msg.ok{background:rgba(52,211,153,.12);color:#34d399;}
-.ds-loading{text-align:center;padding:40px;color:#66667a;}
+.ds-msg.err{background:rgba(248,113,113,.12);color:var(--ps-color-danger);}
+.ds-msg.ok{background:rgba(52,211,153,.12);color:var(--ps-color-success);}
+.ds-loading{text-align:center;padding:40px;color:var(--ps-color-text-meta);}
 @media(max-width:560px){.ds-row{grid-template-columns:1fr}}
 `;
 
@@ -114,7 +114,7 @@ export default function DealSupplySubmit() {
               Submitted — host will review. You&apos;ll hear from the listing host if approved.
             </div>
             <p style={{ marginTop: 16 }}>
-              <Link to="/deals" style={{ color: "#9747ff" }}>
+              <Link to="/deals" style={{ color: "var(--ps-color-action-text)" }}>
                 Browse live deals
               </Link>
             </p>

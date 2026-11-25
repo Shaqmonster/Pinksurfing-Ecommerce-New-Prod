@@ -103,7 +103,7 @@ const SubCategories = () => {
                         }}
                       >
                         <div className="w-full sm:w-[150px] flex flex-col items-center gap-1">
-                          <div className="w-[130px] sm:w-full h-[120px] flex items-center justify-center rounded-md overflow-hidden bg-[#2d1e5f]">
+                          <div className="w-[130px] sm:w-full h-[120px] flex items-center justify-center rounded-md overflow-hidden bg-ps-action-soft">
                             <img
                               src={item.image || ""}
                               className={`${item.extraclass} w-[50%] object-contain rounded-md`}

@@ -26,7 +26,6 @@ const ProfileUserWallet = () => {
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
   const { address } = useInAppWallet();
-  const { isDarkMode } = useContext(authContext);
 
   // Legacy/Manual Deposit States
   const [walletAddress, setWalletAddress] = useState("");
@@ -67,7 +66,7 @@ const ProfileUserWallet = () => {
   }, [accessToken, asset]);
 
   return (
-    <div className="min-h-screen bg-[#0E0F13] text-gray-100 py-8 px-4 font-sen">
+    <div className="min-h-screen bg-ps-bg text-ps-fg2 py-8 px-4 font-sen">
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header */}
@@ -76,25 +75,25 @@ const ProfileUserWallet = () => {
             onClick={() => navigate("/")}
             className="cursor-pointer w-8 h-8 text-purple-400 hover:text-purple-300 transition-colors"
           />
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">MY WALLET</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">MY WALLET</h2>
         </div>
 
         {/* New Modular Cards */}
         <InAppWalletBalanceCard />
         
         {/* Manual Inbound Protocol (Merged from dev) */}
-        <div className="bg-[#13131a] border border-white/5 p-8 rounded-3xl shadow-2xl relative overflow-hidden group">
-          <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-8 border-b border-white/5 pb-4">
+        <div className="bg-ps-surface border border-ink/5 p-8 rounded-3xl shadow-2xl relative overflow-hidden group">
+          <h3 className="text-xl font-black text-ink uppercase tracking-tighter mb-8 border-b border-ink/5 pb-4">
             Manual Deposit Protocol
           </h3>
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Asset</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-ink/30">Asset</label>
                 <select
                   onChange={(e) => setAsset(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-3 px-4 text-white outline-none focus:border-purple-500/40"
+                  className="w-full bg-ink/[0.03] border border-ink/5 rounded-xl py-3 px-4 text-ink outline-none focus:border-purple-500/40"
                 >
                   <option value="eth">ETH (Ethereum)</option>
                   <option value="btc">BTC (Bitcoin)</option>
@@ -104,17 +103,17 @@ const ProfileUserWallet = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Receiving Address</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-ink/30">Receiving Address</label>
                 <div className="relative">
                   <input
                     type="text"
                     readOnly
                     value={walletAddress}
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-xl py-3 px-4 text-sm text-gray-400"
+                    className="w-full bg-ink/[0.03] border border-ink/5 rounded-xl py-3 px-4 text-sm text-ps-meta"
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(walletAddress)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-ink/40 hover:text-ink"
                   >
                     <ShareIcon className="w-4 h-4" />
                   </button>
@@ -127,7 +126,7 @@ const ProfileUserWallet = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={connectWallet}
-                className="flex-1 py-4 bg-transparent border border-white/10 hover:border-white/30 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all"
+                className="flex-1 py-4 bg-transparent border border-ink/10 hover:border-ink/30 text-ink font-bold rounded-xl flex items-center justify-center gap-3 transition-all"
               >
                 <WalletIcon className="w-5 h-5 text-purple-400" />
                 Connect Web3
@@ -138,7 +137,7 @@ const ProfileUserWallet = () => {
 
         <WalletTxHistoryCard address={address} title="Recent Transactions" />
 
-        <div className="rounded-xl border border-gray-700 bg-[#13131a] p-4 text-sm text-gray-300">
+        <div className="rounded-xl border border-ps-border bg-ps-surface p-4 text-sm text-ps-fg2">
           <p>
             Need to setup your wallet? Go to{" "}
             <Link className="text-purple-300 hover:text-purple-200 underline" to="/gighub">

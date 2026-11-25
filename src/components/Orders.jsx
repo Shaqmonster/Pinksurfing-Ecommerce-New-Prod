@@ -256,7 +256,7 @@ export default function Orders() {
                               order.order_status !== "CANCELED" ? (
                                 <>
                                   <button
-                                    className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                    className="bg-ps-action-soft text-ink font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
                                     onClick={() => {
                                       if (order.order_status === "DELIVERED") {
                                         setSingleOrderProduct(order.product);
@@ -303,7 +303,7 @@ export default function Orders() {
                                           setIsRatingFormOpen(true);
                                           console.log(isRatingFormOpen)
                                         }}
-                                        className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                        className="bg-ps-action-soft text-ink font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
                                       >
                                         Rate Product
                                       </button>
@@ -319,7 +319,7 @@ export default function Orders() {
                                       setIsProfileOpen(false);
                                     }
                                     }
-                                    className="bg-[#2d1e5f] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                    className="bg-ps-action-soft text-ink font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
                                   >
                                     Buy Again
                                     <ArrowRightIcon className="inline-block w-4" />
@@ -330,7 +330,7 @@ export default function Orders() {
                                         `/product/productDetail/${order.product.slug}?productId=${order.product.id}`
                                       );
                                     }}
-                                    className="bg-[#39247d] text-white font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
+                                    className="bg-ps-action-soft text-ink font-medium text-sm sm:text-[16px] py-2 px-12 rounded-md mb-2 w-full max-w-[300px]"
                                   >
                                     View Product
                                     <ArrowRightIcon className="inline-block w-4" />

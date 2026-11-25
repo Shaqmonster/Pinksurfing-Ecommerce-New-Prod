@@ -10,7 +10,7 @@ const GigOrderSuccess = () => {
   const [count, setCount] = useState(5);
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden flex items-center justify-center px-4">
+    <div className="bg-ps-bg min-h-screen relative overflow-hidden flex items-center justify-center px-4">
       {/* Orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-green-600/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
@@ -32,16 +32,16 @@ const GigOrderSuccess = () => {
           </motion.div>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Payment Successful!</h1>
-        <p className="text-white/50 text-base mb-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-ink mb-3">Payment Successful!</h1>
+        <p className="text-ink/50 text-base mb-2">
           Your gig order has been placed. The seller will begin working once you submit your requirements.
         </p>
         {sessionId && (
-          <p className="text-white/25 text-xs mb-8 font-mono">Session: {sessionId.slice(0, 20)}…</p>
+          <p className="text-ink/25 text-xs mb-8 font-mono">Session: {sessionId.slice(0, 20)}…</p>
         )}
 
         {/* Steps */}
-        <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5 mb-6 text-left space-y-0">
+        <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5 mb-6 text-left space-y-0">
           {[
             { step: "1", label: "Payment confirmed", done: true },
             { step: "2", label: "Submit your requirements to start the order", done: false },
@@ -53,13 +53,13 @@ const GigOrderSuccess = () => {
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                   item.done
                     ? "bg-green-500/20 border border-green-500/40 text-green-400"
-                    : "bg-white/5 border border-white/10 text-white/30"
+                    : "bg-ink/5 border border-ink/10 text-ink/30"
                 }`}>
                   {item.done ? <IoCheckmarkCircle className="text-sm" /> : item.step}
                 </div>
-                <p className={`text-sm ${item.done ? "text-white/70" : "text-white/40"}`}>{item.label}</p>
+                <p className={`text-sm ${item.done ? "text-ink/70" : "text-ink/40"}`}>{item.label}</p>
               </div>
-              {i < 3 && <div className="border-t border-white/5" />}
+              {i < 3 && <div className="border-t border-ink/5" />}
             </React.Fragment>
           ))}
         </div>
@@ -74,7 +74,7 @@ const GigOrderSuccess = () => {
           </Link>
           <Link
             to="/gigs"
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#13131a] border border-white/10 text-white/60 font-semibold text-sm hover:border-white/20 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-ps-surface border border-ink/10 text-ink/60 font-semibold text-sm hover:border-ink/20 transition-all"
           >
             <FaBriefcase className="text-sm" />
             Browse More Gigs

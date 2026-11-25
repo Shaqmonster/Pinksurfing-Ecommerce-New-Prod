@@ -125,7 +125,7 @@ const DiditVerificationGate = ({
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
         <div className="w-10 h-10 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-        <p className="text-sm text-gray-400">Checking verification status…</p>
+        <p className="text-sm text-ps-meta">Checking verification status…</p>
       </div>
     );
   }
@@ -136,8 +136,8 @@ const DiditVerificationGate = ({
 
   return (
     <div className="max-w-lg mx-auto text-center px-6 py-12">
-      <h2 className="text-xl font-bold text-white mb-2">{title}</h2>
-      <p className="text-sm text-gray-400 mb-6">{description}</p>
+      <h2 className="text-xl font-bold text-ink mb-2">{title}</h2>
+      <p className="text-sm text-ps-meta mb-6">{description}</p>
       <p className="text-xs text-gray-500 mb-6 capitalize">
         Status: {String(status).replace(/_/g, " ")}
       </p>

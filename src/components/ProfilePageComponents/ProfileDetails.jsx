@@ -10,6 +10,7 @@ import { getJoinedYear } from "../../utils/userDisplay";
 import { storeUrl, STOREFRONT_BASE } from "../../utils/envUrls";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import MediaImage from "../ui/MediaImage";
+import ThemeToggle from "../ThemeToggle";
 
 export default function ProfileDetails() {
   const accessToken = useAccessToken();
@@ -182,7 +183,7 @@ export default function ProfileDetails() {
   return (
     <div className="w-full max-w-3xl mx-auto space-y-6 pb-16 relative">
       {isLoading && (
-        <div className="absolute inset-0 z-10 rounded-2xl bg-[var(--ps-bg)]/50 backdrop-blur-[1px]" aria-busy="true" />
+        <div className="absolute inset-0 z-10 rounded-2xl bg-[color-mix(in_srgb,var(--ps-bg)_50%,transparent)] backdrop-blur-[1px]" aria-busy="true" />
       )}
 
       <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
@@ -196,7 +197,7 @@ export default function ProfileDetails() {
           skeletonClassName="h-24 w-24 rounded-full shrink-0 border border-[var(--ps-brd)]"
         />
         <div className="flex-1 text-center sm:text-left space-y-2 min-w-0">
-          <h2 className="text-2xl font-semibold text-white tracking-tight truncate">
+          <h2 className="text-2xl font-semibold text-ink tracking-tight truncate">
             {first_name || "Your"} {last_name || "profile"}
           </h2>
           <p className="text-sm text-[var(--ps-muted)] truncate">{profile.email}</p>
@@ -206,7 +207,7 @@ export default function ProfileDetails() {
                 ? `Joined ${getJoinedYear(profile.date_registered)}`
                 : "Member"}
             </span>
-            <span className="inline-flex items-center min-h-[32px] px-3 rounded-lg border border-[var(--ps-primary)]/30 bg-[var(--ps-primary)]/10 text-xs text-[var(--ps-purple-light)]">
+            <span className="inline-flex items-center min-h-[32px] px-3 rounded-lg border border-[color-mix(in_srgb,var(--ps-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--ps-primary)_10%,transparent)] text-xs text-[var(--ps-purple-light)]">
               {is_vendor ? "Vendor" : "Customer"}
             </span>
           </div>
@@ -219,7 +220,7 @@ export default function ProfileDetails() {
             <label className="block space-y-1.5">
               <span className="text-xs font-medium text-[var(--ps-muted)]">First name</span>
               <input
-                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-white outline-none focus:border-[var(--ps-primary)]/50 focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
+                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-ink outline-none focus:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
                 name="first_name"
                 type="text"
                 placeholder="First name"
@@ -232,7 +233,7 @@ export default function ProfileDetails() {
             <label className="block space-y-1.5">
               <span className="text-xs font-medium text-[var(--ps-muted)]">Last name</span>
               <input
-                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-white outline-none focus:border-[var(--ps-primary)]/50 focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
+                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-ink outline-none focus:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
                 name="last_name"
                 type="text"
                 placeholder="Last name"
@@ -245,7 +246,7 @@ export default function ProfileDetails() {
             <label className="block space-y-1.5 sm:col-span-2">
               <span className="text-xs font-medium text-[var(--ps-muted)]">Phone</span>
               <input
-                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-white outline-none focus:border-[var(--ps-primary)]/50 focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
+                className="w-full min-h-[48px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-4 text-ink outline-none focus:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
                 name="customer_phone"
                 type="text"
                 placeholder="Phone number"
@@ -263,14 +264,14 @@ export default function ProfileDetails() {
                     href={storeUrl(profile.vendor.slug)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 text-sm text-[var(--ps-purple-light)] truncate hover:text-white"
+                    className="flex-1 text-sm text-[var(--ps-purple-light)] truncate hover:text-ink"
                   >
                     {STOREFRONT_BASE.replace("https://", "")}/store/{profile.vendor.slug}
                   </a>
                   <button
                     type="button"
                     onClick={handleCopyStoreLink}
-                    className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-[var(--ps-muted)] hover:text-white"
+                    className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-[var(--ps-muted)] hover:text-ink"
                     aria-label="Copy store link"
                   >
                     {copied ? <FaCheck className="text-green-400" /> : <FaCopy />}
@@ -294,17 +295,30 @@ export default function ProfileDetails() {
         </form>
       </div>
 
+      <section
+        aria-labelledby="appearance-heading"
+        className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div>
+          <h3 id="appearance-heading" className="text-base font-semibold text-ps-fg">Appearance</h3>
+          <p className="text-sm text-[var(--ps-muted)] mt-1">
+            System follows your device&apos;s light or dark setting.
+          </p>
+        </div>
+        <ThemeToggle className="sm:w-72" />
+      </section>
+
       {!profile.is_vendor && (
         <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-base font-semibold text-white">Sell on PinkSurfing</h3>
+            <h3 className="text-base font-semibold text-ink">Sell on PinkSurfing</h3>
             <p className="text-sm text-[var(--ps-muted)] mt-1">
               Open a store and reach buyers across the marketplace.
             </p>
           </div>
           <button
             type="button"
-            className="min-h-[44px] px-5 rounded-[14px] border border-[var(--ps-brd)] text-sm font-medium text-white hover:border-[var(--ps-primary)]/50"
+            className="min-h-[44px] px-5 rounded-[14px] border border-[var(--ps-brd)] text-sm font-medium text-ink hover:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)]"
             onClick={() => {}}
           >
             Apply

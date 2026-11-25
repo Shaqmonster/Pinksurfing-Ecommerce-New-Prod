@@ -43,7 +43,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
     return (
       <div className="space-y-6">
         {paragraphs.map((para, idx) => (
-          <p key={idx} className="text-justify text-[15px] sm:text-[16px] leading-[1.8] text-gray-800 dark:text-white dark:[&_*]:!text-white font-medium tracking-wide">
+          <p key={idx} className="text-justify text-[15px] sm:text-[16px] leading-[1.8] text-gray-800 dark:text-white dark:[&_*]:!text-ink font-medium tracking-wide">
             {para}
           </p>
         ))}
@@ -75,9 +75,9 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
           </div>
         </button>
 
-        <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isDetailsExpanded ? 'max-h-[5000px] opacity-100 text-white' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div className={`px-8 pb-8 transition-all duration-500 ease-in-out ${isDetailsExpanded ? 'max-h-[5000px] opacity-100 text-ink' : 'max-h-0 opacity-0 overflow-hidden'}`}>
           <div className="pt-6 border-t border-gray-100 dark:border-white/5
-            text-sm sm:text-base leading-relaxed text-gray-800 dark:text-white dark:[&_*]:!text-white whitespace-pre-line
+            text-sm sm:text-base leading-relaxed text-gray-800 dark:text-white dark:[&_*]:!text-ink whitespace-pre-line
             [&_p]:mb-4
             [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4

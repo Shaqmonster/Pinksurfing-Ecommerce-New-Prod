@@ -67,7 +67,7 @@ const MessageContent = ({ content, mine }) => {
       {parts.map((p, i) =>
         urlRe.test(p) ? (
           <a key={i} href={p} target="_blank" rel="noopener noreferrer"
-            className={`underline decoration-1 underline-offset-2 break-all ${mine ? "text-white/90 hover:text-white" : "text-purple-400 hover:text-purple-300"}`}
+            className={`underline decoration-1 underline-offset-2 break-all ${mine ? "text-ink/90 hover:text-ink" : "text-purple-400 hover:text-purple-300"}`}
           >{p}</a>
         ) : (
           <span key={i}>{p}</span>
@@ -116,11 +116,11 @@ const ConversationItem = ({ conv, isActive, myEmail, onClick }) => {
         className={`flex items-center gap-3.5 mx-3 px-3 py-[13px] rounded-2xl transition-all duration-200 ${
           isActive
             ? "bg-purple-500/[0.1] shadow-sm shadow-purple-500/[0.05]"
-            : "hover:bg-white/[0.025]"
+            : "hover:bg-ink/[0.025]"
         }`}
       >
         <div
-          className="w-[44px] h-[44px] rounded-[14px] flex items-center justify-center text-white font-semibold text-[16px] uppercase flex-shrink-0"
+          className="w-[44px] h-[44px] rounded-[14px] flex items-center justify-center text-ink font-semibold text-[16px] uppercase flex-shrink-0"
           style={{
             background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`,
             boxShadow: `0 4px 12px -2px ${colors[0]}33`,
@@ -132,16 +132,16 @@ const ConversationItem = ({ conv, isActive, myEmail, onClick }) => {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-[2px]">
-            <p className={`text-[14px] truncate tracking-[-0.01em] ${isActive ? "text-white font-semibold" : "text-white/80 font-medium"}`}>
+            <p className={`text-[14px] truncate tracking-[-0.01em] ${isActive ? "text-ink font-semibold" : "text-ink/80 font-medium"}`}>
               {other?.username || "Unknown"}
             </p>
-            <span className="text-[11px] flex-shrink-0 ml-2 text-white/25 font-medium tabular-nums">
+            <span className="text-[11px] flex-shrink-0 ml-2 text-ink/25 font-medium tabular-nums">
               {last ? timeAgo(last.created_at) : ""}
             </span>
           </div>
           <div className="flex items-center gap-2">
-          <p className={`text-[12.5px] truncate leading-snug flex-1 ${unread ? "text-white/70 font-medium" : "text-white/30"}`}>
-            {last?.sender?.email === myEmail && <span className="text-white/20">You: </span>}
+          <p className={`text-[12.5px] truncate leading-snug flex-1 ${unread ? "text-ink/70 font-medium" : "text-ink/30"}`}>
+            {last?.sender?.email === myEmail && <span className="text-ink/20">You: </span>}
             {last?.content || (last?.attachments?.length ? "📎 Attachment" : "No messages yet")}
           </p>
           {unread > 0 && (
@@ -391,22 +391,22 @@ const GigMessages = () => {
      RENDER — Apple-inspired, full-width, premium dark UI
      ════════════════════════════════════════════════════════════════ */
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-[#09090f]">
+    <div className="flex h-[calc(100vh-64px)] bg-ps-bg">
 
       {/* ════════════ SIDEBAR ════════════ */}
-      <aside className={`${showMobileList ? "flex" : "hidden"} md:flex flex-col w-full md:w-[320px] lg:w-[360px] bg-[#0e0e15] flex-shrink-0 border-r border-white/[0.04]`}>
+      <aside className={`${showMobileList ? "flex" : "hidden"} md:flex flex-col w-full md:w-[320px] lg:w-[360px] bg-ps-bg flex-shrink-0 border-r border-ink/[0.04]`}>
 
         {/* Sidebar header */}
         <div className="px-5 pt-6 pb-4 flex-shrink-0">
-          <h1 className="text-white text-[24px] font-bold tracking-[-0.03em] mb-5">Messages</h1>
+          <h1 className="text-ink text-[24px] font-bold tracking-[-0.03em] mb-5">Messages</h1>
           <div className="relative">
-            <IoSearchOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 text-[14px]" />
+            <IoSearchOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/20 text-[14px]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search"
-              className="w-full pl-10 pr-4 py-[10px] bg-white/[0.04] rounded-xl text-white/90 placeholder-white/20 text-[13px] outline-none border border-transparent focus:border-purple-500/20 focus:bg-white/[0.06] transition-all duration-300"
+              className="w-full pl-10 pr-4 py-[10px] bg-ink/[0.04] rounded-xl text-ink/90 placeholder-ink/20 text-[13px] outline-none border border-transparent focus:border-purple-500/20 focus:bg-ink/[0.06] transition-all duration-300"
             />
           </div>
         </div>
@@ -417,21 +417,21 @@ const GigMessages = () => {
             <div className="px-3 space-y-1">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex items-center gap-3.5 px-3 py-[13px]">
-                  <div className="w-[44px] h-[44px] rounded-[14px] bg-white/[0.03] animate-pulse flex-shrink-0" />
+                  <div className="w-[44px] h-[44px] rounded-[14px] bg-ink/[0.03] animate-pulse flex-shrink-0" />
                   <div className="flex-1 space-y-2.5">
-                    <div className="h-3 bg-white/[0.03] rounded-lg animate-pulse w-3/5" />
-                    <div className="h-2.5 bg-white/[0.03] rounded-lg animate-pulse w-4/5" />
+                    <div className="h-3 bg-ink/[0.03] rounded-lg animate-pulse w-3/5" />
+                    <div className="h-2.5 bg-ink/[0.03] rounded-lg animate-pulse w-4/5" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredConvs.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full px-10 pb-20">
-              <div className="w-16 h-16 rounded-[20px] bg-white/[0.03] flex items-center justify-center mb-4">
-                <IoChatbubbleOutline className="text-[28px] text-white/10" />
+              <div className="w-16 h-16 rounded-[20px] bg-ink/[0.03] flex items-center justify-center mb-4">
+                <IoChatbubbleOutline className="text-[28px] text-ink/10" />
               </div>
-              <p className="text-white/30 text-[13px] font-medium text-center mb-1">No conversations</p>
-              <p className="text-white/15 text-[12px] text-center leading-relaxed">
+              <p className="text-ink/30 text-[13px] font-medium text-center mb-1">No conversations</p>
+              <p className="text-ink/15 text-[12px] text-center leading-relaxed">
                 Visit a gig and tap &ldquo;Message Seller&rdquo;
               </p>
             </div>
@@ -444,16 +444,16 @@ const GigMessages = () => {
       </aside>
 
       {/* ════════════ CHAT AREA ════════════ */}
-      <main className={`${showMobileList ? "hidden" : "flex"} md:flex flex-col flex-1 bg-[#09090f] overflow-hidden`}>
+      <main className={`${showMobileList ? "hidden" : "flex"} md:flex flex-col flex-1 bg-ps-bg overflow-hidden`}>
         {!activeConv ? (
           /* ── Empty state ── */
           <div className="flex-1 flex items-center justify-center flex-col gap-5">
-            <div className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-purple-500/[0.06] to-pink-500/[0.03] flex items-center justify-center border border-white/[0.03]">
+            <div className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-purple-500/[0.06] to-pink-500/[0.03] flex items-center justify-center border border-ink/[0.03]">
               <IoChatbubbleOutline className="text-[34px] text-purple-500/25" />
             </div>
             <div className="text-center">
-              <p className="text-white/50 text-[16px] font-semibold tracking-[-0.01em] mb-1.5">Your Messages</p>
-              <p className="text-white/20 text-[13px] max-w-[260px] leading-relaxed">
+              <p className="text-ink/50 text-[16px] font-semibold tracking-[-0.01em] mb-1.5">Your Messages</p>
+              <p className="text-ink/20 text-[13px] max-w-[260px] leading-relaxed">
                 Select a conversation to start messaging
               </p>
             </div>
@@ -461,16 +461,16 @@ const GigMessages = () => {
         ) : (
           <>
             {/* ── Chat header ── */}
-            <header className="flex items-center gap-3.5 px-5 py-3 bg-[#0e0e15]/90 backdrop-blur-2xl border-b border-white/[0.04] flex-shrink-0">
+            <header className="flex items-center gap-3.5 px-5 py-3 bg-ps-bg/90 backdrop-blur-2xl border-b border-ink/[0.04] flex-shrink-0">
               <button
                 onClick={() => { setShowMobileList(true); setActiveConv(null); if (wsRef.current) { wsRef.current.close(); wsRef.current = null; } }}
-                className="md:hidden p-1.5 -ml-1 rounded-xl hover:bg-white/[0.04] text-white/40 transition-colors"
+                className="md:hidden p-1.5 -ml-1 rounded-xl hover:bg-ink/[0.04] text-ink/40 transition-colors"
               >
                 <IoChevronBackOutline className="text-[18px]" />
               </button>
 
               <div
-                className="w-9 h-9 rounded-[11px] flex items-center justify-center text-white font-semibold text-[14px] uppercase flex-shrink-0"
+                className="w-9 h-9 rounded-[11px] flex items-center justify-center text-ink font-semibold text-[14px] uppercase flex-shrink-0"
                 style={{
                   background: `linear-gradient(135deg, ${otherColors[0]}, ${otherColors[1]})`,
                   boxShadow: `0 3px 10px -2px ${otherColors[0]}33`,
@@ -480,10 +480,10 @@ const GigMessages = () => {
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-[15px] tracking-[-0.01em] truncate">
+                <p className="text-ink font-semibold text-[15px] tracking-[-0.01em] truncate">
                   {otherUser?.username || "Unknown"}
                 </p>
-                <p className="text-[11px] text-white/30 flex items-center gap-1.5">
+                <p className="text-[11px] text-ink/30 flex items-center gap-1.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${wsConnected ? "bg-green-400" : "bg-amber-400 animate-pulse"}`} />
                   {wsConnected ? "Live" : "Syncing…"}
                 </p>
@@ -495,22 +495,22 @@ const GigMessages = () => {
               ref={messageContainerRef}
               onScroll={handleScroll}
               className="flex-1 overflow-y-auto"
-              style={{ background: "#0b0b12" }}
+              style={{ background: "var(--ps-color-bg)" }}
             >
               <div className="px-5 sm:px-8 lg:px-14 xl:px-20 py-5 space-y-[2px]">
                 {loadingMsgs ? (
                   <div className="flex items-center justify-center py-28">
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-7 h-7 border-2 border-purple-500/20 border-t-purple-400 rounded-full animate-spin" />
-                      <p className="text-white/15 text-[11px] font-semibold tracking-[0.1em] uppercase">Loading</p>
+                      <p className="text-ink/15 text-[11px] font-semibold tracking-[0.1em] uppercase">Loading</p>
                     </div>
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-28">
-                    <div className="bg-white/[0.02] border border-white/[0.03] rounded-2xl px-8 py-5 text-center max-w-[300px]">
-                      <p className="text-white/30 text-[13px] leading-relaxed">
+                    <div className="bg-ink/[0.02] border border-ink/[0.03] rounded-2xl px-8 py-5 text-center max-w-[300px]">
+                      <p className="text-ink/30 text-[13px] leading-relaxed">
                         Start your conversation with{" "}
-                        <span className="font-semibold text-white/50">{otherUser?.username}</span>
+                        <span className="font-semibold text-ink/50">{otherUser?.username}</span>
                       </p>
                     </div>
                   </div>
@@ -536,7 +536,7 @@ const GigMessages = () => {
                           {/* Date banner */}
                           {showDate && (
                             <div className="flex justify-center py-6">
-                              <span className="text-white/15 text-[11px] font-semibold tracking-[0.06em] uppercase select-none">
+                              <span className="text-ink/15 text-[11px] font-semibold tracking-[0.06em] uppercase select-none">
                                 {dateBanner(msg.created_at)}
                               </span>
                             </div>
@@ -551,7 +551,7 @@ const GigMessages = () => {
                               className={`relative max-w-[72%] sm:max-w-[62%] lg:max-w-[52%] xl:max-w-[45%] px-[14px] py-[10px] ${
                                 mine
                                   ? "bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] text-white"
-                                  : "bg-[#16161f] text-white/[0.85] border border-white/[0.04]"
+                                  : "bg-ps-surface text-ink/[0.85] border border-ink/[0.04]"
                               }`}
                               style={{
                                 borderRadius: radius,
@@ -569,7 +569,7 @@ const GigMessages = () => {
                               {msg.content && (
                                 <div className="text-[14px] leading-[1.55] tracking-[-0.006em]">
                                   <MessageContent content={msg.content} mine={mine} />
-                                  <span className={`inline-block float-right ml-4 mt-[2px] text-[10px] tabular-nums font-medium ${mine ? "text-white/35" : "text-white/15"}`}>
+                                  <span className={`inline-block float-right ml-4 mt-[2px] text-[10px] tabular-nums font-medium ${mine ? "text-ink/35" : "text-ink/15"}`}>
                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                   </span>
                                 </div>
@@ -583,7 +583,7 @@ const GigMessages = () => {
                                     return (
                                     <a key={i} href={att.file} target="_blank" rel="noopener noreferrer" download
                                       className={`flex items-center gap-2.5 text-[12px] rounded-xl px-3.5 py-2.5 transition-all duration-200 font-medium ${
-                                        mine ? "bg-white/[0.1] hover:bg-white/[0.15] text-white/80" : "bg-white/[0.03] hover:bg-white/[0.05] text-white/40 border border-white/[0.04]"
+                                        mine ? "bg-ink/[0.1] hover:bg-ink/[0.15] text-ink/80" : "bg-ink/[0.03] hover:bg-ink/[0.05] text-ink/40 border border-ink/[0.04]"
                                       }`}
                                     >
                                       <AttachmentIcon name={fname} />
@@ -611,7 +611,7 @@ const GigMessages = () => {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
                     onClick={scrollToBottom}
-                    className="sticky bottom-4 float-right mr-5 w-9 h-9 rounded-full bg-[#16161f]/90 backdrop-blur-xl border border-white/[0.05] shadow-xl shadow-black/30 flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-[#1e1e2c] transition-all duration-200 z-30"
+                    className="sticky bottom-4 float-right mr-5 w-9 h-9 rounded-full bg-ps-surface/90 backdrop-blur-xl border border-ink/[0.05] shadow-xl shadow-black/30 flex items-center justify-center text-ink/40 hover:text-ink/70 hover:bg-ps-sunken transition-all duration-200 z-30"
                   >
                     <IoChevronDown className="text-[16px]" />
                   </motion.button>
@@ -623,14 +623,14 @@ const GigMessages = () => {
             <AnimatePresence>
               {attachments.length > 0 && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                  className="bg-[#0e0e15] border-t border-white/[0.03] px-5 overflow-hidden"
+                  className="bg-ps-bg border-t border-ink/[0.03] px-5 overflow-hidden"
                 >
                   <div className="flex gap-2.5 py-3 overflow-x-auto">
                     {attachments.map((f, i) => (
-                      <div key={i} className="relative flex-shrink-0 bg-white/[0.03] border border-white/[0.04] rounded-xl px-3.5 py-2.5 flex items-center gap-2 group">
-                        <IoAttachOutline className="text-white/20 text-[13px]" />
-                        <span className="text-white/40 text-[12px] max-w-[100px] truncate font-medium">{f.name}</span>
-                        <button onClick={() => removeAttachment(i)} className="ml-0.5 text-white/15 hover:text-red-400 transition-colors">
+                      <div key={i} className="relative flex-shrink-0 bg-ink/[0.03] border border-ink/[0.04] rounded-xl px-3.5 py-2.5 flex items-center gap-2 group">
+                        <IoAttachOutline className="text-ink/20 text-[13px]" />
+                        <span className="text-ink/40 text-[12px] max-w-[100px] truncate font-medium">{f.name}</span>
+                        <button onClick={() => removeAttachment(i)} className="ml-0.5 text-ink/15 hover:text-red-400 transition-colors">
                           <IoCloseOutline className="text-[13px]" />
                         </button>
                       </div>
@@ -641,9 +641,9 @@ const GigMessages = () => {
             </AnimatePresence>
 
             {/* ── Input bar ── */}
-            <form onSubmit={handleSend} className="flex items-end gap-3 px-5 py-3.5 bg-[#0e0e15]/90 backdrop-blur-2xl border-t border-white/[0.04] flex-shrink-0">
+            <form onSubmit={handleSend} className="flex items-end gap-3 px-5 py-3.5 bg-ps-bg/90 backdrop-blur-2xl border-t border-ink/[0.04] flex-shrink-0">
               <button type="button" onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-xl text-white/20 hover:text-white/40 hover:bg-white/[0.03] transition-all flex-shrink-0 mb-[2px]"
+                className="p-2 rounded-xl text-ink/20 hover:text-ink/40 hover:bg-ink/[0.03] transition-all flex-shrink-0 mb-[2px]"
               >
                 <IoAttachOutline className="text-[19px] rotate-45" />
               </button>
@@ -661,7 +661,7 @@ const GigMessages = () => {
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(e); } }}
                   placeholder="Message"
                   rows={1}
-                  className="w-full bg-white/[0.04] rounded-2xl pl-4 pr-4 py-3 text-white/90 text-[14px] placeholder-white/15 outline-none resize-none border border-white/[0.03] focus:border-purple-500/20 focus:bg-white/[0.06] transition-all duration-300"
+                  className="w-full bg-ink/[0.04] rounded-2xl pl-4 pr-4 py-3 text-ink/90 text-[14px] placeholder-ink/15 outline-none resize-none border border-ink/[0.03] focus:border-purple-500/20 focus:bg-ink/[0.06] transition-all duration-300"
                   style={{ minHeight: "44px", maxHeight: "120px" }}
                 />
               </div>
@@ -671,7 +671,7 @@ const GigMessages = () => {
                 className="p-2.5 rounded-[14px] bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] text-white disabled:opacity-15 disabled:cursor-not-allowed flex-shrink-0 shadow-md shadow-purple-600/15 hover:shadow-purple-600/25 transition-all duration-200 mb-[2px]"
               >
                 {sending ? (
-                  <span className="w-[18px] h-[18px] border-2 border-white/30 border-t-white rounded-full animate-spin block" />
+                  <span className="w-[18px] h-[18px] border-2 border-ink/30 border-t-ink rounded-full animate-spin block" />
                 ) : (
                   <IoSendSharp className="text-[17px]" />
                 )}

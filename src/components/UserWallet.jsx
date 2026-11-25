@@ -13,7 +13,7 @@ import { useAccessToken } from "../hooks/useAccessToken";
 
 const UserOnSiteWallet = () => {
   const accessToken = useAccessToken();
-  const { isUserWalletOpen, isDarkMode, setIsUserWalletOpen } =
+  const { isUserWalletOpen, setIsUserWalletOpen } =
     useContext(authContext);
 
   const [cookies, removeCookie] = useCookies([]);
@@ -88,7 +88,7 @@ const UserOnSiteWallet = () => {
         />
         USER WALLET
       </h2>
-      <div className="mx-auto md:max-w-[35%] bg-gray-800 text-white p-10 rounded-lg">
+      <div className="mx-auto md:max-w-[35%] bg-ps-surface text-ink p-10 rounded-lg">
         <h1 className="text-2xl font-semibold mb-8 flex justify-center">
           Bring Funds into wallet
         </h1>
@@ -105,7 +105,7 @@ const UserOnSiteWallet = () => {
             id="deposit-asset"
             name="deposit-asset"
             onChange={(e) => setAsset(e.target.value)}
-            className="bg-gray-700 text-white w-full p-2 rounded"
+            className="bg-ps-sunken text-ink w-full p-2 rounded"
           >
             <option value="eth">ETH</option>
             <option value="btc">BTC</option>
@@ -125,7 +125,7 @@ const UserOnSiteWallet = () => {
             type="text"
             id="deposit-address"
             name="deposit-address"
-            className="bg-gray-700 text-white w-full p-2 rounded"
+            className="bg-ps-sunken text-ink w-full p-2 rounded"
             value={walletAddress}
           />
         </div>
@@ -140,7 +140,7 @@ const UserOnSiteWallet = () => {
             type="text"
             id="wallet-address"
             name="wallet-address"
-            className="bg-gray-700 text-white w-full p-2 rounded"
+            className="bg-ps-sunken text-ink w-full p-2 rounded"
             value={walletAddress}
           />
         </div> */}
@@ -155,7 +155,7 @@ const UserOnSiteWallet = () => {
             type="number" // Change input type to "number"
             id="deposit-amount"
             name="deposit-amount"
-            className="bg-gray-600 text-white w-full p-2 rounded"
+            className="bg-gray-600 text-ink w-full p-2 rounded"
             step="0.01" // Allow decimal values
             // value={""}
           />

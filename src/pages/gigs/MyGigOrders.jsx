@@ -79,10 +79,10 @@ const RequirementsModal = ({ order, onClose, onSubmit }) => {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#13131a] border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+        className="bg-ps-surface border border-ink/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
       >
-        <h3 className="text-white font-bold text-lg mb-1">Submit Order Requirements</h3>
-        <p className="text-white/40 text-sm mb-5">
+        <h3 className="text-ink font-bold text-lg mb-1">Submit Order Requirements</h3>
+        <p className="text-ink/40 text-sm mb-5">
           Answer the seller's questions to start your order.
         </p>
 
@@ -90,7 +90,7 @@ const RequirementsModal = ({ order, onClose, onSubmit }) => {
           <div className="space-y-4">
             {requirements.map((req, i) => (
               <div key={i} className="space-y-1.5">
-                <label className="text-white/70 text-sm font-medium">
+                <label className="text-ink/70 text-sm font-medium">
                   {req.question || req}
                   {req.is_mandatory && <span className="text-pink-400 ml-1">*</span>}
                 </label>
@@ -99,15 +99,15 @@ const RequirementsModal = ({ order, onClose, onSubmit }) => {
                   onChange={(e) => updateAnswer(req.question || req, e.target.value)}
                   rows={3}
                   placeholder="Your answer…"
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
+                  className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
                 />
               </div>
             ))}
           </div>
         ) : (
           <div className="py-4 text-center">
-            <IoDocumentTextOutline className="text-4xl text-white/20 mx-auto mb-2" />
-            <p className="text-white/40 text-sm">
+            <IoDocumentTextOutline className="text-4xl text-ink/20 mx-auto mb-2" />
+            <p className="text-ink/40 text-sm">
               No specific questions from the seller. Click submit to start the order.
             </p>
           </div>
@@ -116,7 +116,7 @@ const RequirementsModal = ({ order, onClose, onSubmit }) => {
         <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/20 transition-all"
+            className="flex-1 py-3 rounded-xl border border-ink/10 text-ink/60 text-sm font-semibold hover:border-ink/20 transition-all"
           >
             Cancel
           </button>
@@ -192,7 +192,7 @@ const MyGigOrders = () => {
   ];
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden py-8 px-4">
+    <div className="bg-ps-bg min-h-screen relative overflow-hidden py-8 px-4">
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 max-w-4xl mx-auto">
@@ -203,16 +203,16 @@ const MyGigOrders = () => {
           className="flex items-center justify-between mb-8"
         >
           <div>
-            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1 mb-2">
+            <div className="inline-flex items-center gap-2 bg-ink/5 border border-ink/10 rounded-full px-3 py-1 mb-2">
               <FaBriefcase className="text-pink-400 text-xs" />
-              <span className="text-white/60 text-xs font-medium">Gig Orders</span>
+              <span className="text-ink/60 text-xs font-medium">Gig Orders</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">My Gig Orders</h1>
-            <p className="text-white/40 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""} total</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink">My Gig Orders</h1>
+            <p className="text-ink/40 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""} total</p>
           </div>
           <Link
             to="/gigs"
-            className="px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/60 text-sm hover:border-white/20 transition-all"
+            className="px-4 py-2 bg-ps-surface border border-ink/10 rounded-xl text-ink/60 text-sm hover:border-ink/20 transition-all"
           >
             Browse Gigs
           </Link>
@@ -227,7 +227,7 @@ const MyGigOrders = () => {
               className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
                 filter === f.key
                   ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white"
-                  : "bg-transparent border-white/10 text-white/50 hover:border-white/20"
+                  : "bg-transparent border-ink/10 text-ink/50 hover:border-ink/20"
               }`}
             >
               {f.label}
@@ -244,13 +244,13 @@ const MyGigOrders = () => {
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-[#13131a] rounded-2xl p-5 animate-pulse">
+              <div key={i} className="bg-ps-surface rounded-2xl p-5 animate-pulse">
                 <div className="flex gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-white/5 flex-shrink-0" />
+                  <div className="w-16 h-16 rounded-xl bg-ink/5 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-white/5 rounded-full w-1/2" />
-                    <div className="h-3 bg-white/5 rounded-full w-1/3" />
-                    <div className="h-6 bg-white/5 rounded-lg w-24 mt-3" />
+                    <div className="h-4 bg-ink/5 rounded-full w-1/2" />
+                    <div className="h-3 bg-ink/5 rounded-full w-1/3" />
+                    <div className="h-6 bg-ink/5 rounded-lg w-24 mt-3" />
                   </div>
                 </div>
               </div>
@@ -262,8 +262,8 @@ const MyGigOrders = () => {
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <FaBriefcase className="text-5xl text-white/10 mx-auto mb-4" />
-            <p className="text-white/40 text-lg">No orders found</p>
+            <FaBriefcase className="text-5xl text-ink/10 mx-auto mb-4" />
+            <p className="text-ink/40 text-lg">No orders found</p>
             {filter !== "all" ? (
               <button
                 onClick={() => setFilter("all")}
@@ -286,22 +286,22 @@ const MyGigOrders = () => {
                   key={order.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#13131a] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all"
+                  className="bg-ps-surface border border-ink/5 rounded-2xl p-5 hover:border-ink/10 transition-all"
                 >
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* Gig image placeholder */}
-                    <div className="w-full sm:w-20 h-20 rounded-xl bg-[#1a1a24] flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      <FaBriefcase className="text-white/15 text-2xl" />
+                    <div className="w-full sm:w-20 h-20 rounded-xl bg-ps-sunken flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <FaBriefcase className="text-ink/15 text-2xl" />
                     </div>
 
                     <div className="flex-1 min-w-0">
                       {/* Order header */}
                       <div className="flex flex-wrap items-start gap-2 mb-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-semibold text-sm leading-snug line-clamp-1">
+                          <p className="text-ink font-semibold text-sm leading-snug line-clamp-1">
                             {order.gig?.title || `Gig Order #${order.id}`}
                           </p>
-                          <p className="text-white/40 text-xs mt-0.5">Order #{order.id}</p>
+                          <p className="text-ink/40 text-xs mt-0.5">Order #{order.id}</p>
                         </div>
                         <span className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${statusCfg.color}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
@@ -310,7 +310,7 @@ const MyGigOrders = () => {
                       </div>
 
                       {/* Order meta */}
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/40 text-xs mb-3">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-ink/40 text-xs mb-3">
                         {order.package && (
                           <span className="capitalize">{order.package.tier} package</span>
                         )}
@@ -318,7 +318,7 @@ const MyGigOrders = () => {
                           <IoTimeOutline className="text-sm" />
                           {new Date(order.created_at).toLocaleDateString()}
                         </span>
-                        <span className="font-semibold text-white/60">
+                        <span className="font-semibold text-ink/60">
                           ${parseFloat(order.total_price || 0).toFixed(2)}
                         </span>
                       </div>
@@ -355,7 +355,7 @@ const MyGigOrders = () => {
                         {order.gig?.id && (
                           <Link
                             to={gigUrl(order.gig)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 text-xs font-semibold hover:bg-white/10 transition-all"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink/5 border border-ink/10 text-ink/50 text-xs font-semibold hover:bg-ink/10 transition-all"
                           >
                             View Gig
                           </Link>
@@ -366,15 +366,15 @@ const MyGigOrders = () => {
 
                   {/* Price breakdown (expanded for pending orders) */}
                   {order.status === "pending_requirements" && (
-                    <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="mt-4 pt-4 border-t border-ink/5 grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {[
                         { label: "Gig Price", value: `$${parseFloat(order.gig_price || 0).toFixed(2)}` },
                         { label: "Buyer Fee (5%)", value: `$${parseFloat(order.buyer_fee || 0).toFixed(2)}` },
                         { label: "Total Paid", value: `$${parseFloat(order.total_price || 0).toFixed(2)}` },
                       ].map((item) => (
                         <div key={item.label} className="text-center">
-                          <p className="text-white/30 text-[10px] uppercase tracking-wide">{item.label}</p>
-                          <p className="text-white font-semibold text-sm">{item.value}</p>
+                          <p className="text-ink/30 text-[10px] uppercase tracking-wide">{item.label}</p>
+                          <p className="text-ink font-semibold text-sm">{item.value}</p>
                         </div>
                       ))}
                     </div>

@@ -37,7 +37,6 @@ export const DataProvider = ({ children }) => {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-      theme: "light",
     });
   }
   const handleSuccess = (msg) => {
@@ -50,7 +49,6 @@ export const DataProvider = ({ children }) => {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-      theme: "light",
     });
   }
 

@@ -24,17 +24,17 @@ const OrderDetails = () => {
             </div>
 
             {/* Order Info Card */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-6">
+            <div className="bg-ps-surface border border-ps-border rounded-lg p-4 mb-6">
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-xl font-bold">#96459761</h2>
-                        <p className="text-sm text-gray-400">4 Products • Order Placed on 17 Jun, 2021 at 7:30 PM</p>
+                        <p className="text-sm text-ps-meta">4 Products • Order Placed on 17 Jun, 2021 at 7:30 PM</p>
                     </div>
                     <div className="text-right">
                         <p className="text-2xl font-bold text-blue-400">$1199.00</p>
                     </div>
                 </div>
-                <p className="text-sm text-gray-400 mb-4">Order exported on 29 Jun, 2021</p>
+                <p className="text-sm text-ps-meta mb-4">Order exported on 29 Jun, 2021</p>
 
                 {/* Order Progress */}
                 <div className="relative pt-4 pb-8">
@@ -43,36 +43,36 @@ const OrderDetails = () => {
                     </div>
                     <div className="flex justify-between">
                         <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mb-2">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mb-2 text-white">
+                                <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <span className="text-xs text-gray-400">Order Placed</span>
+                            <span className="text-xs text-ps-meta">Order Placed</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center mb-2">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center mb-2 text-white">
+                                <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <span className="text-xs text-gray-400">Packaging</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center mb-2">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <span className="text-xs text-gray-400">On the Road</span>
+                            <span className="text-xs text-ps-meta">Packaging</span>
                         </div>
                         <div className="flex flex-col items-center">
                             <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center mb-2">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <span className="text-xs text-gray-400">Delivered</span>
+                            <span className="text-xs text-ps-meta">On the Road</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center mb-2">
+                                <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span className="text-xs text-ps-meta">Delivered</span>
                         </div>
                     </div>
                 </div>
@@ -159,9 +159,9 @@ const OrderDetails = () => {
             {/* Product List */}
             <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-4">Product (02)</h2>
-                <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+                <div className="bg-ps-surface border border-ps-border rounded-lg overflow-hidden">
                     <table className="w-full">
-                        <thead className="bg-gray-900">
+                        <thead className="bg-ps-surface">
                             <tr>
                                 <th className="py-3 px-4 text-left text-sm font-semibold">PRODUCTS</th>
                                 <th className="py-3 px-4 text-left text-sm font-semibold">PRICE</th>
@@ -170,13 +170,13 @@ const OrderDetails = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr className="border-b border-gray-700">
+                            <tr className="border-b border-ps-border">
                                 <td className="py-4 px-4">
                                     <div className="flex items-center">
                                         <img src="/api/placeholder/60/60" alt="Product" className="w-12 h-12 object-cover rounded mr-4" />
                                         <div>
                                             <p className="font-medium">Google Pixel 6 Pro - 5G Android Phone - Unlocked Smartphone with Advanced Pixel Camera</p>
-                                            <p className="text-gray-400 text-sm">ELECTRONICS</p>
+                                            <p className="text-ps-meta text-sm">ELECTRONICS</p>
                                         </div>
                                     </div>
                                 </td>
@@ -190,7 +190,7 @@ const OrderDetails = () => {
                                         <img src="/api/placeholder/60/60" alt="Product" className="w-12 h-12 object-cover rounded mr-4" />
                                         <div>
                                             <p className="font-medium">PZOZ Eco Clear for Google Pixel 6 Pro - Crystal Clear Phone Case with Soft Mode</p>
-                                            <p className="text-gray-400 text-sm">ACCESSORIES</p>
+                                            <p className="text-ps-meta text-sm">ACCESSORIES</p>
                                         </div>
                                     </div>
                                 </td>
@@ -205,37 +205,37 @@ const OrderDetails = () => {
 
             {/* Billing and Shipping */}
             <div className="grid grid-cols-3 gap-6">
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                <div className="bg-ps-surface border border-ps-border rounded-lg p-4">
                     <h2 className="text-lg font-semibold mb-4">Billing Address</h2>
                     <div className="mb-4">
                         <p className="font-medium">Kevin Gilbert</p>
-                        <p className="text-sm text-gray-400">House #14, Street #14, Sector A, Road #07, Dhaka-1216, House #14, Street #14, Sector A, Road #07, Dhaka-1216, Bangladesh</p>
+                        <p className="text-sm text-ps-meta">House #14, Street #14, Sector A, Road #07, Dhaka-1216, House #14, Street #14, Sector A, Road #07, Dhaka-1216, Bangladesh</p>
                     </div>
                     <div className="mb-4">
-                        <p className="text-sm font-medium">Phone Number: <span className="text-gray-400">+880-1956-1918</span></p>
+                        <p className="text-sm font-medium">Phone Number: <span className="text-ps-meta">+880-1956-1918</span></p>
                     </div>
                     <div>
-                        <p className="text-sm font-medium">Email: <span className="text-gray-400">kevin.g@gmail.com</span></p>
+                        <p className="text-sm font-medium">Email: <span className="text-ps-meta">kevin.g@gmail.com</span></p>
                     </div>
                 </div>
 
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                <div className="bg-ps-surface border border-ps-border rounded-lg p-4">
                     <h2 className="text-lg font-semibold mb-4">Shipping Address</h2>
                     <div className="mb-4">
                         <p className="font-medium">Kevin Gilbert</p>
-                        <p className="text-sm text-gray-400">House #14, Street #14, Sector A, Road #07, Dhaka-1216, House #14, Street #14, Sector A, Road #07, Dhaka-1216, Bangladesh</p>
+                        <p className="text-sm text-ps-meta">House #14, Street #14, Sector A, Road #07, Dhaka-1216, House #14, Street #14, Sector A, Road #07, Dhaka-1216, Bangladesh</p>
                     </div>
                     <div className="mb-4">
-                        <p className="text-sm font-medium">Phone Number: <span className="text-gray-400">+880-1956-1918</span></p>
+                        <p className="text-sm font-medium">Phone Number: <span className="text-ps-meta">+880-1956-1918</span></p>
                     </div>
                     <div>
-                        <p className="text-sm font-medium">Email: <span className="text-gray-400">kevin.g@gmail.com</span></p>
+                        <p className="text-sm font-medium">Email: <span className="text-ps-meta">kevin.g@gmail.com</span></p>
                     </div>
                 </div>
 
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                <div className="bg-ps-surface border border-ps-border rounded-lg p-4">
                     <h2 className="text-lg font-semibold mb-4">Order Notes</h2>
-                    <p className="text-sm text-gray-400">Dolor sit, amet consectetur adipisicing elit. Hic, quae necessi tatibus! Aliquam erat voluptae. Adipisci qui molestiae. Aliquam erat volutpat.</p>
+                    <p className="text-sm text-ps-meta">Dolor sit, amet consectetur adipisicing elit. Hic, quae necessi tatibus! Aliquam erat voluptae. Adipisci qui molestiae. Aliquam erat volutpat.</p>
                 </div>
             </div>
         </div>

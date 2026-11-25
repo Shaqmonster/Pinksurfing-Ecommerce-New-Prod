@@ -33,7 +33,7 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 import { authContext } from "../../context/authContext";
 
 const CSS = `
-  .biz-root{--pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.12);--pink-mid:rgba(240,49,138,.10);--pink-border:rgba(240,49,138,.28);--bg:#0d0d10;--surface:#141418;--surface-2:#1c1c22;--surface-3:#232329;--border:#2a2a33;--border-2:#36363f;--text:#f0f0f4;--text-2:#b0b0c0;--text-3:#66667a;--green:#34d399;--green-bg:rgba(52,211,153,.10);--green-border:rgba(52,211,153,.22);--amber:#fbbf24;--amber-bg:rgba(251,191,36,.10);--amber-border:rgba(251,191,36,.22);--blue:#60a5fa;--blue-bg:rgba(96,165,250,.10);--blue-border:rgba(96,165,250,.22);--red:#f87171;--red-bg:rgba(248,113,113,.10);--red-border:rgba(248,113,113,.22);--indigo:#a78bfa;--indigo-bg:rgba(167,139,250,.10);--indigo-border:rgba(167,139,250,.22);}
+  .biz-root{--pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.12);--pink-mid:rgba(240,49,138,.10);--pink-border:rgba(240,49,138,.28);--bg:var(--ps-color-bg);--surface:var(--ps-color-surface);--surface-2:var(--ps-color-surface-sunken);--surface-3:var(--ps-color-surface-sunken);--border:var(--ps-color-border);--border-2:var(--ps-color-border);--text:var(--ps-color-text);--text-2:var(--ps-color-text-secondary);--text-3:var(--ps-color-text-meta);--green:var(--ps-color-success);--green-bg:rgba(52,211,153,.10);--green-border:rgba(52,211,153,.22);--amber:var(--ps-color-warning);--amber-bg:rgba(251,191,36,.10);--amber-border:rgba(251,191,36,.22);--blue:var(--ps-color-info);--blue-bg:rgba(96,165,250,.10);--blue-border:rgba(96,165,250,.22);--red:var(--ps-color-danger);--red-bg:rgba(248,113,113,.10);--red-border:rgba(248,113,113,.22);--indigo:var(--ps-color-action-text);--indigo-bg:rgba(167,139,250,.10);--indigo-border:rgba(167,139,250,.22);}
   .biz-root{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
   .biz-page{max-width:1200px;margin:0 auto;padding:28px 24px 80px;}
   .biz-grid{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start;}
@@ -186,7 +186,7 @@ const CSS = `
 
 
   /* lightbox */
-  .b-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:700;display:flex;align-items:center;justify-content:center;}
+  .b-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:700;display:flex;align-items:center;justify-content:center;/* theme-ok: on photo scrim */}
   .b-lightbox-img{max-width:90vw;max-height:88vh;object-fit:contain;border-radius:6px;display:block;}
   .b-lightbox-close{position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:.7;line-height:1;}
   .b-lightbox-close:hover{opacity:1;}
@@ -222,81 +222,81 @@ const CSS = `
   .b-btn-nda-side:hover{filter:brightness(0.88);}
   /* NDA modal — variables redeclared here so they resolve outside .biz-root (position:fixed) */
   .b-modal-overlay{
-    --surface:#141418;--surface-2:#1c1c22;--surface-3:#232329;
-    --border:#2a2a33;--border-2:#3a3a46;
-    --text:#f0f0f4;--text-2:#b0b0c0;--text-3:#66667a;
+    --surface:var(--ps-color-surface);--surface-2:var(--ps-color-surface-sunken);--surface-3:var(--ps-color-surface-sunken);
+    --border:var(--ps-color-border);--border-2:var(--ps-color-border);
+    --text:var(--ps-color-text);--text-2:var(--ps-color-text-secondary);--text-3:var(--ps-color-text-meta);
     --pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.10);
     position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;
     display:flex;align-items:center;justify-content:center;padding:20px;
     backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
     font-family:'DM Sans',sans-serif;
-  }
+  /* theme-ok: on photo scrim */}
   .b-modal-box{
-    background:#141418;border:1px solid #2a2a33;border-radius:14px;
+    background:var(--ps-color-surface);border:1px solid var(--ps-color-border);border-radius:14px;
     max-width:600px;width:100%;max-height:92vh;overflow-y:auto;
     box-shadow:0 24px 80px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.05);
   }
   .b-modal-header{
-    padding:20px 24px 18px;border-bottom:1px solid #2a2a33;
+    padding:20px 24px 18px;border-bottom:1px solid var(--ps-color-border);
     display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-    position:sticky;top:0;background:#141418;z-index:1;border-radius:14px 14px 0 0;
+    position:sticky;top:0;background:var(--ps-color-surface);z-index:1;border-radius:14px 14px 0 0;
   }
   .b-modal-header-text{flex:1;}
-  .b-modal-title{font-size:16px;font-weight:700;color:#f0f0f4;margin-bottom:4px;letter-spacing:-.01em;}
-  .b-modal-subtitle{font-size:12px;color:#66667a;line-height:1.5;}
+  .b-modal-title{font-size:16px;font-weight:700;color:var(--ps-color-text);margin-bottom:4px;letter-spacing:-.01em;}
+  .b-modal-subtitle{font-size:12px;color:var(--ps-color-text-meta);line-height:1.5;}
   .b-modal-close{
-    background:none;border:none;font-size:16px;cursor:pointer;color:#66667a;
+    background:none;border:none;font-size:16px;cursor:pointer;color:var(--ps-color-text-meta);
     width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;
     justify-content:center;border-radius:6px;transition:all .14s;margin-top:1px;
   }
-  .b-modal-close:hover{background:#1c1c22;color:#f0f0f4;}
+  .b-modal-close:hover{background:var(--ps-color-surface-sunken);color:var(--ps-color-text);}
   .b-modal-body{padding:20px 24px;}
   .b-modal-foot{
-    padding:14px 24px 20px;border-top:1px solid #2a2a33;
+    padding:14px 24px 20px;border-top:1px solid var(--ps-color-border);
     display:flex;justify-content:flex-end;gap:10px;
-    background:#141418;border-radius:0 0 14px 14px;position:sticky;bottom:0;
+    background:var(--ps-color-surface);border-radius:0 0 14px 14px;position:sticky;bottom:0;
   }
   .b-nda-doc-text{
-    background:#0d0d10;border:1px solid #2a2a33;border-radius:8px;
-    padding:14px 16px;font-size:12px;line-height:1.85;color:#b0b0c0;
+    background:var(--ps-color-bg);border:1px solid var(--ps-color-border);border-radius:8px;
+    padding:14px 16px;font-size:12px;line-height:1.85;color:var(--ps-color-text-secondary);
     max-height:160px;overflow-y:auto;margin-bottom:18px;font-family:Georgia,serif;
   }
   .b-nda-doc-text h4{
     font-size:11px;font-weight:700;text-align:center;margin-bottom:10px;
-    color:#f0f0f4;font-family:Georgia,serif;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ps-color-text);font-family:Georgia,serif;letter-spacing:.08em;text-transform:uppercase;
   }
   .b-nda-doc-text h5{font-size:10px;font-weight:700;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.07em;color:#d0d0e0;}
   .b-nda-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
   @media(max-width:520px){.b-nda-fields-grid{grid-template-columns:1fr;}}
   .b-sig-field{
-    width:100%;background:#0d0d10;border:2px solid #2a2a33;color:#f0318a;
+    width:100%;background:var(--ps-color-bg);border:2px solid var(--ps-color-border);color:#f0318a;
     border-radius:8px;padding:14px 16px;font-size:22px;font-style:italic;
     text-align:center;outline:none;font-family:Georgia,'Times New Roman',serif;
     transition:border-color .15s,box-shadow .15s;box-sizing:border-box;
   }
   .b-sig-field:focus{border-color:#f0318a;box-shadow:0 0 0 3px rgba(240,49,138,.12);}
   .b-sig-field::placeholder{color:#36363f;font-size:16px;}
-  .b-sig-hint{font-size:11px;color:#66667a;margin-top:6px;line-height:1.4;}
+  .b-sig-hint{font-size:11px;color:var(--ps-color-text-meta);margin-top:6px;line-height:1.4;}
   /* Override form inputs inside modal so box-sizing is correct */
   .b-modal-box .b-form-input,.b-modal-box .b-form-select{box-sizing:border-box;margin-bottom:0;}
   .b-agree-check{
-    display:flex;align-items:flex-start;gap:10px;background:#1c1c22;
-    border:1.5px solid #2a2a33;border-radius:8px;padding:13px 14px;margin-bottom:4px;
+    display:flex;align-items:flex-start;gap:10px;background:var(--ps-color-surface-sunken);
+    border:1.5px solid var(--ps-color-border);border-radius:8px;padding:13px 14px;margin-bottom:4px;
   }
   .b-agree-check input{width:15px;height:15px;margin-top:1px;accent-color:#f0318a;flex-shrink:0;cursor:pointer;}
-  .b-agree-check label{font-size:12px;color:#b0b0c0;cursor:pointer;line-height:1.55;}
+  .b-agree-check label{font-size:12px;color:var(--ps-color-text-secondary);cursor:pointer;line-height:1.55;}
   .b-btn-sign{
     background:#f0318a;color:#fff;border:none;padding:11px 28px;border-radius:8px;
     font-size:14px;font-weight:700;cursor:pointer;transition:background .15s,transform .1s;
     letter-spacing:-.01em;white-space:nowrap;
   }
   .b-btn-sign:hover{background:#d4246f;transform:translateY(-1px);}
-  .b-btn-sign:disabled{background:#232329;color:#66667a;cursor:not-allowed;transform:none;}
+  .b-btn-sign:disabled{background:var(--ps-color-surface-sunken);color:var(--ps-color-text-meta);cursor:not-allowed;transform:none;}
   .b-btn-cancel{
-    background:none;border:1.5px solid #2a2a33;color:#b0b0c0;padding:11px 20px;
+    background:none;border:1.5px solid var(--ps-color-border);color:var(--ps-color-text-secondary);padding:11px 20px;
     border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;
   }
-  .b-btn-cancel:hover{border-color:#3a3a46;color:#f0f0f4;}
+  .b-btn-cancel:hover{border-color:#3a3a46;color:var(--ps-color-text);}
   /* doc rows */
   .b-doc-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:6px;transition:border-color .15s;}
   .b-doc-row:hover{border-color:var(--border-2);}
@@ -1048,15 +1048,15 @@ const BusinessListingDetail = ({
                         <a href="/my-ndas" style={{ color: "var(--green)", fontWeight: 700 }}>My Business Financials →</a>
                       </div>
                     ) : ndaStatus === "pending_vendor" ? (
-                      <div style={{ marginTop: 16, padding: 14, background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)", borderRadius: 6, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>
-                        ⏳ <strong>Processing</strong> — Your payment is confirmed. Documents will unlock shortly. <a href="/my-ndas" style={{ color: "#fbbf24", fontWeight: 700 }}>Track status →</a>
+                      <div style={{ marginTop: 16, padding: 14, background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)", borderRadius: 6, fontSize: 12, color: "var(--ps-color-warning)", lineHeight: 1.6 }}>
+                        ⏳ <strong>Processing</strong> — Your payment is confirmed. Documents will unlock shortly. <a href="/my-ndas" style={{ color: "var(--ps-color-warning)", fontWeight: 700 }}>Track status →</a>
                       </div>
                     ) : ndaStatus === "disputed" ? (
-                      <div style={{ marginTop: 16, padding: 14, background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)", borderRadius: 6, fontSize: 12, color: "#f87171", lineHeight: 1.6 }}>
-                        ⚠️ <strong>Dispute recorded</strong> — Follow progress in <a href="/my-ndas" style={{ color: "#f87171", fontWeight: 700 }}>My Business Financials</a>.
+                      <div style={{ marginTop: 16, padding: 14, background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)", borderRadius: 6, fontSize: 12, color: "var(--ps-color-danger)", lineHeight: 1.6 }}>
+                        ⚠️ <strong>Dispute recorded</strong> — Follow progress in <a href="/my-ndas" style={{ color: "var(--ps-color-danger)", fontWeight: 700 }}>My Business Financials</a>.
                       </div>
                     ) : ndaStatus === "pending_payment" ? (
-                      <div style={{ marginTop: 16, padding: 14, background: "rgba(59,130,246,.08)", border: "1.5px solid rgba(59,130,246,.35)", borderRadius: 6, fontSize: 12, color: "#60a5fa", lineHeight: 1.6 }}>
+                      <div style={{ marginTop: 16, padding: 14, background: "rgba(59,130,246,.08)", border: "1.5px solid rgba(59,130,246,.35)", borderRadius: 6, fontSize: 12, color: "var(--ps-color-info)", lineHeight: 1.6 }}>
                         💳 <strong>Payment pending</strong> — Finish checkout to submit your NDA. You can close this page and return after paying.
                       </div>
                     ) : (
@@ -1651,24 +1651,24 @@ const BusinessListingDetail = ({
                   </div>
                 ) : ndaStatus === "pending_vendor" ? (
                   <div className="b-nda-side-card" style={{ background: "rgba(251,191,36,.08)", border: "1.5px solid rgba(251,191,36,.3)" }}>
-                    <h4 style={{ color: "#fbbf24" }}>⏳ Awaiting Seller Review</h4>
-                    <p style={{ color: "#fbbf24" }}>Your payment is confirmed. Unlocked financials will appear shortly.</p>
+                    <h4 style={{ color: "var(--ps-color-warning)" }}>⏳ Awaiting Seller Review</h4>
+                    <p style={{ color: "var(--ps-color-warning)" }}>Your payment is confirmed. Unlocked financials will appear shortly.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#b45309", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                       Track in My Business Financials →
                     </a>
                   </div>
                 ) : ndaStatus === "disputed" ? (
                   <div className="b-nda-side-card" style={{ background: "rgba(248,113,113,.08)", border: "1.5px solid rgba(248,113,113,.35)" }}>
-                    <h4 style={{ color: "#f87171" }}>⚠️ Dispute in progress</h4>
-                    <p style={{ color: "#f87171" }}>This NDA is under dispute. Track updates in My Business Financials.</p>
+                    <h4 style={{ color: "var(--ps-color-danger)" }}>⚠️ Dispute in progress</h4>
+                    <p style={{ color: "var(--ps-color-danger)" }}>This NDA is under dispute. Track updates in My Business Financials.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#b91c1c", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                       Open My Business Financials →
                     </a>
                   </div>
                 ) : ndaStatus === "pending_payment" ? (
                   <div className="b-nda-side-card" style={{ background: "rgba(59,130,246,.08)", border: "1.5px solid rgba(59,130,246,.35)" }}>
-                    <h4 style={{ color: "#60a5fa" }}>💳 Complete payment</h4>
-                    <p style={{ color: "#60a5fa" }}>Finish the $1 checkout (check your other browser tab) to submit your NDA.</p>
+                    <h4 style={{ color: "var(--ps-color-info)" }}>💳 Complete payment</h4>
+                    <p style={{ color: "var(--ps-color-info)" }}>Finish the $1 checkout (check your other browser tab) to submit your NDA.</p>
                     <a href="/my-ndas" className="b-btn-nda-side" style={{ textDecoration: "none", background: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                       My Business Financials — retry link →
                     </a>
@@ -1912,7 +1912,7 @@ const BusinessListingDetail = ({
                 background: "rgba(220,38,38,0.12)",
                 border: "1px solid rgba(220,38,38,0.35)",
                 borderRadius: 8,
-                color: "#f87171",
+                color: "var(--ps-color-danger)",
                 fontSize: 13,
                 fontWeight: 500,
                 lineHeight: 1.5,

@@ -28,7 +28,7 @@ export default function useCategoryProducts() {
     const { slug, subSlug } = useParams();
     const [cookies] = useCookies([]);
     const { products } = useContext(dataContext);
-    const { currency, isDarkMode } = useContext(authContext);
+    const { currency } = useContext(authContext);
 
     const navigate = useNavigate();
     const categorySlug = slug;
@@ -502,7 +502,6 @@ export default function useCategoryProducts() {
 
     return {
         // Context values
-        isDarkMode,
         currency,
 
         // State

@@ -8,7 +8,7 @@ import { categoryShowsPriceRange, formatSubcategoryLabel } from "./priceRangeUti
 
 function SectionIcon({ children }) {
     return (
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--ps-primary)] to-[var(--ps-purple-dark)] shadow-[0_6px_16px_-6px_rgba(151,71,255,0.55)]">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--ps-primary)] to-[var(--ps-purple-dark)] shadow-[0_6px_16px_-6px_rgba(151,71,255,0.55)] text-white">
             {children}
         </div>
     );
@@ -93,7 +93,7 @@ export default function CategorySidebar({
                 <div className="glass-card rounded-xl border border-[var(--ps-brd)] p-4">
                     <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
                         <SectionIcon>
-                            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <svg className="h-4 w-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                             </svg>
                         </SectionIcon>
@@ -113,7 +113,7 @@ export default function CategorySidebar({
                                         className={`group flex min-h-[44px] w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors duration-ps-normal ${
                                             isActive
                                                 ? "bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white shadow-md"
-                                                : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-white"
+                                                : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-ink"
                                         }`}
                                     >
                                         <span className="capitalize leading-snug">
@@ -153,7 +153,7 @@ export default function CategorySidebar({
                 <div className="glass-card rounded-xl border border-[var(--ps-brd)] p-4">
                     <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
                         <SectionIcon>
-                            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <svg className="h-4 w-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -169,7 +169,7 @@ export default function CategorySidebar({
                             {({ open }) => (
                                 <>
                                     <Disclosure.Button
-                                        className={`flex min-h-[44px] w-full items-center justify-between rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-3 py-2 text-sm font-medium text-white outline-none transition-colors duration-ps-normal hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--ps-cyan)_40%,transparent)] ${
+                                        className={`flex min-h-[44px] w-full items-center justify-between rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-3 py-2 text-sm font-medium text-ink outline-none transition-colors duration-ps-normal hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--ps-cyan)_40%,transparent)] ${
                                             open ? "border-[color-mix(in_srgb,var(--ps-primary)_45%,transparent)]" : ""
                                         }`}
                                     >
@@ -200,7 +200,7 @@ export default function CategorySidebar({
                                                     className={`w-full min-h-[44px] rounded-xl px-3 py-2 text-left text-sm transition-colors duration-ps-normal ${
                                                         isActive
                                                             ? "bg-[var(--ps-primary)] text-white"
-                                                            : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-white"
+                                                            : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:bg-[var(--ps-card2)] hover:text-ink"
                                                     }`}
                                                 >
                                                     {option}

@@ -131,7 +131,7 @@ export default function Filter() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
+              <div className="fixed inset-0 bg-ps-bg bg-opacity-25" />
             </Transition.Child>
 
             <div className="fixed inset-0 z-40 flex">
@@ -151,7 +151,7 @@ export default function Filter() {
                     </h2>
                     <button
                       type="button"
-                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-gray-400"
+                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-ps-meta"
                       onClick={() => setMobileFiltersOpen(false)}
                     >
                       <span className="sr-only">Close menu</span>
@@ -184,7 +184,7 @@ export default function Filter() {
                         {({ open }) => (
                           <>
                             <h3 className="-mx-2 -my-3 flow-root">
-                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black px-2 py-3 text-gray-400 hover:text-gray-500">
+                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black px-2 py-3 text-ps-meta hover:text-gray-500">
                                 <span className="font-medium text-gray-900">
                                   {section.name}
                                 </span>
@@ -251,7 +251,7 @@ export default function Filter() {
                   <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                     Sort
                     <ChevronDownIcon
-                      className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+                      className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-ps-meta group-hover:text-gray-500"
                       aria-hidden="true"
                     />
                   </Menu.Button>
@@ -293,7 +293,7 @@ export default function Filter() {
 
               <button
                 type="button"
-                className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
+                className="-m-2 ml-4 p-2 text-ps-meta hover:text-gray-500 sm:ml-6 lg:hidden"
                 onClick={() => setMobileFiltersOpen(true)}
               >
                 <span className="sr-only">Filters</span>
@@ -321,7 +321,7 @@ export default function Filter() {
                     {({ open }) => (
                       <>
                         <h3 className="-my-3 flow-root">
-                          <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                          <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                             <span className="font-medium text-gray-900">
                               {section.name}
                             </span>

@@ -35,53 +35,53 @@ export default function WalletTxHistoryCard({
   if (!SHOW_CRYPTO_WALLET) return null;
 
   return (
-    <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
+    <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">{title}</p>
+        <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider">{title}</p>
         <button
           onClick={() => {
             refresh();
             refreshEscrow();
           }}
           disabled={loading || escrowLoading}
-          className="px-2 py-1 rounded-md border border-white/10 text-[11px] text-white/60 hover:bg-white/5 disabled:opacity-50"
+          className="px-2 py-1 rounded-md border border-ink/10 text-[11px] text-ink/60 hover:bg-ink/5 disabled:opacity-50"
         >
           {loading || escrowLoading ? "Scanning..." : "Rescan"}
         </button>
       </div>
       {range ? (
-        <p className="text-[11px] text-white/35 mb-2">Blocks #{range.from} - #{range.to}</p>
+        <p className="text-[11px] text-ink/35 mb-2">Blocks #{range.from} - #{range.to}</p>
       ) : null}
       {error ? <p className="text-amber-400 text-xs mb-2">{error}</p> : null}
       {escrowError ? <p className="text-amber-400 text-xs mb-2">{escrowError}</p> : null}
       {escrowRows.length > 0 && (
         <div className="mb-3">
-          <p className="text-[11px] text-white/45 mb-1">Escrow release/queue events</p>
+          <p className="text-[11px] text-ink/45 mb-1">Escrow release/queue events</p>
           <div className="space-y-1.5 max-h-40 overflow-auto pr-1">
             {escrowRows.map((r, i) => (
-              <div key={`${r.hash}-${i}`} className="rounded-md border border-white/10 bg-white/[0.02] p-2">
+              <div key={`${r.hash}-${i}`} className="rounded-md border border-ink/10 bg-ink/[0.02] p-2">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-emerald-300">{r.title}</span>
-                  <span className="text-white/70">{r.valueLabel}</span>
+                  <span className="text-ink/70">{r.valueLabel}</span>
                 </div>
-                <p className="text-[10px] text-white/45">Block #{r.blockNumber}</p>
+                <p className="text-[10px] text-ink/45">Block #{r.blockNumber}</p>
               </div>
             ))}
           </div>
         </div>
       )}
       {!address ? (
-        <p className="text-white/40 text-sm">No wallet address connected.</p>
+        <p className="text-ink/40 text-sm">No wallet address connected.</p>
       ) : orderScoped ? (
-        <p className="text-white/40 text-sm">
+        <p className="text-ink/40 text-sm">
           This view is scoped to current order escrow events.
         </p>
       ) : rows.length === 0 ? (
-        <p className="text-white/40 text-sm">{loading ? "Loading..." : "No recent signed transactions found."}</p>
+        <p className="text-ink/40 text-sm">{loading ? "Loading..." : "No recent signed transactions found."}</p>
       ) : (
         <div className="space-y-2 max-h-72 overflow-auto pr-1">
           {rows.map((r) => (
-            <div key={r.hash} className="rounded-lg border border-white/10 bg-white/[0.02] p-2">
+            <div key={r.hash} className="rounded-lg border border-ink/10 bg-ink/[0.02] p-2">
               <div className="flex items-center justify-between text-xs">
                 <span
                   className={`px-2 py-0.5 rounded ${
@@ -90,19 +90,19 @@ export default function WalletTxHistoryCard({
                 >
                   {r.direction === "incoming" ? "Incoming" : r.kind === "contract" ? "Contract" : "Outgoing"}
                 </span>
-                <span className="text-white/70">{r.valueLabel}</span>
+                <span className="text-ink/70">{r.valueLabel}</span>
               </div>
-              <p className="text-[11px] text-white/45 mt-1">Block #{r.blockNumber}</p>
+              <p className="text-[11px] text-ink/45 mt-1">Block #{r.blockNumber}</p>
               {r.direction === "incoming" ? (
-                <p className="text-[11px] text-white/45">
+                <p className="text-[11px] text-ink/45">
                   From: <span className="font-mono">{shortAddr(r.from || "")}</span>
                 </p>
               ) : r.to ? (
-                <p className="text-[11px] text-white/45">
+                <p className="text-[11px] text-ink/45">
                   To: <span className="font-mono">{shortAddr(r.to)}</span>
                 </p>
               ) : null}
-              <p className="text-[11px] text-white/55 font-mono mt-1">{shortHash(r.hash)}</p>
+              <p className="text-[11px] text-ink/55 font-mono mt-1">{shortHash(r.hash)}</p>
             </div>
           ))}
         </div>

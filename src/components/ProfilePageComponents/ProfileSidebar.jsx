@@ -75,7 +75,7 @@ export function Sidebar() {
         <div ref={sidebarRef} className="relative z-10">
             {/* Mobile: Quick Access Icons Bar */}
             <div className="hidden max-md:block mb-3">
-                <div className="flex items-center justify-between gap-2 p-2 bg-[#0E0F13] rounded-xl border border-gray-700/50">
+                <div className="flex items-center justify-between gap-2 p-2 bg-ps-bg rounded-xl border border-ps-border/50">
                     {sidebarNavItems.slice(0, 5).map((item, index) => (
                         <button
                             key={item.label}
@@ -83,7 +83,7 @@ export function Sidebar() {
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-[60px] ${
                                 activeIndex === index 
                                     ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30' 
-                                    : 'hover:bg-white/10'
+                                    : 'hover:bg-ink/10'
                             }`}
                         >
                             <img
@@ -92,7 +92,7 @@ export function Sidebar() {
                                 className="object-contain w-5 h-5"
                             />
                             <span className={`text-[10px] mt-1 truncate max-w-[50px] ${
-                                activeIndex === index ? 'text-white font-semibold' : 'text-gray-400'
+                                activeIndex === index ? 'text-ink font-semibold' : 'text-ps-meta'
                             }`}>
                                 {item.label.split(' ')[0]}
                             </span>
@@ -102,16 +102,16 @@ export function Sidebar() {
                     <button
                         onClick={toggleSidebar}
                         className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-[60px] ${
-                            isOpen ? 'bg-white/20' : 'hover:bg-white/10'
+                            isOpen ? 'bg-ink/20' : 'hover:bg-ink/10'
                         }`}
                     >
                         <div className="relative">
-                            <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-ps-fg2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                             <span className="absolute -top-1 -right-1 w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>
                         </div>
-                        <span className="text-[10px] mt-1 text-gray-400">More</span>
+                        <span className="text-[10px] mt-1 text-ps-meta">More</span>
                     </button>
                 </div>
             </div>
@@ -123,10 +123,10 @@ export function Sidebar() {
                     ${isOpen ? 'max-h-[500px] opacity-100 mb-4' : 'max-h-0 opacity-0'}
                 `}
             >
-                <div className="bg-[#0E0F13] rounded-xl border border-purple-500/30 shadow-2xl shadow-purple-500/10 overflow-hidden">
-                    <div className="px-4 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-white/10">
-                        <h3 className="text-sm font-semibold text-white">All Menu Options</h3>
-                        <p className="text-xs text-gray-400">Manage your account</p>
+                <div className="bg-ps-bg rounded-xl border border-purple-500/30 shadow-2xl shadow-purple-500/10 overflow-hidden">
+                    <div className="px-4 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-ink/10">
+                        <h3 className="text-sm font-semibold text-ink">All Menu Options</h3>
+                        <p className="text-xs text-ps-meta">Manage your account</p>
                     </div>
                     <div className="py-2">
                         {sidebarNavItems.map((item, index) => (
@@ -144,10 +144,10 @@ export function Sidebar() {
 
             {/* Desktop: Full Sidebar */}
             <div className="max-md:hidden">
-                <div className="bg-white/[0.03] backdrop-blur-2xl rounded-[2rem] border border-white/5 shadow-2xl overflow-hidden min-w-[240px] w-[300px]">
+                <div className="bg-ink/[0.03] backdrop-blur-2xl rounded-[2rem] border border-ink/5 shadow-2xl overflow-hidden min-w-[240px] w-[300px]">
                     {/* Sidebar Header */}
-                    <div className="px-10 py-12 border-b border-white/5">
-                        <h3 className="text-2xl font-black text-white tracking-tighter uppercase leading-tight">Account</h3>
+                    <div className="px-10 py-12 border-b border-ink/5">
+                        <h3 className="text-2xl font-black text-ink tracking-tighter uppercase leading-tight">Account</h3>
                         <p className="text-[10px] text-purple-400/80 mt-1.5 font-bold uppercase tracking-[0.25em]">Secure Dashboard</p>
                     </div>
                     

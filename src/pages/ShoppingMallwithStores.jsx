@@ -6,7 +6,6 @@ import SearchForm from '../components/Search';
 import StoreCard from '../components/StoreCard';
 
 export default function ShoppingMallwithStores() {
-    const { isDarkMode } = useContext(authContext);
     const [stores, setStores] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -33,7 +32,7 @@ export default function ShoppingMallwithStores() {
     }, []);
 
     return (
-        <div className={`min-h-screen ${isDarkMode ? "bg-[#0E0F13]" : "bg-white"}`}>
+        <div className={`min-h-screen bg-ps-bg`}>
             {/* <SearchForm /> */}
 
             {/* Background SVG */}

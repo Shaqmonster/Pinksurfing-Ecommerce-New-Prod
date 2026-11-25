@@ -23,9 +23,9 @@ const StoreCard = ({ store }) => {
             fill
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-[1]" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 z-[2]">
-            <h3 className="text-base font-semibold text-white line-clamp-1">
+          <div className="on-media absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-[1]" />
+          <div className="on-media absolute bottom-0 left-0 right-0 p-4 z-[2]">
+            <h3 className="text-base font-semibold text-ink line-clamp-1">
               {store.store_name}
             </h3>
             <span className="mt-1 inline-flex items-center gap-1 text-sm text-[var(--ps-purple-light)]">

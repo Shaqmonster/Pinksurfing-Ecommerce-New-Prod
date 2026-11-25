@@ -112,7 +112,7 @@ export default function CancelDialog({
                     </button>
                     <button
                       type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent  px-4 py-2 text-base font-medium text-black hover:text-white dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700
+                      className="inline-flex items-center justify-center rounded-md border border-transparent  px-4 py-2 text-base font-medium text-black hover:text-ink dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700
  focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       onClick={closeModal}
                     >

@@ -47,10 +47,10 @@ const Footer = () => {
               <img
                 src={BRAND_LOGO}
                 alt="PinkSurfing"
-                className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)] group-hover:ring-white/25 transition-all"
+                className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)] group-hover:ring-ink/25 transition-all"
               />
               <div>
-                <span className="block text-lg font-semibold text-white tracking-tight">PinkSurfing</span>
+                <span className="block text-lg font-semibold text-ink tracking-tight">PinkSurfing</span>
                 <span className="block text-xs text-[var(--ps-dim)]">Marketplace</span>
               </div>
             </Link>
@@ -69,7 +69,7 @@ const Footer = () => {
                   key={item.label}
                   href="/"
                   aria-label={item.label}
-                  className="inline-flex items-center justify-center min-h-[40px] min-w-[40px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] hover:border-[var(--ps-primary)]/40 transition-colors"
+                  className="inline-flex items-center justify-center min-h-[40px] min-w-[40px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)] transition-colors"
                 >
                   <img className="h-4 w-4 opacity-80" src={item.icon} alt="" />
                 </a>
@@ -78,7 +78,7 @@ const Footer = () => {
           </div>
 
           <div className="lg:col-span-2">
-            <h2 className="text-sm font-semibold text-white mb-4">Account</h2>
+            <h2 className="text-sm font-semibold text-ink mb-4">Account</h2>
             <ul className="space-y-2.5 text-sm">
               {accountLinks.map((item) => (
                 <li key={item.name}>
@@ -86,12 +86,12 @@ const Footer = () => {
                     <button
                       type="button"
                       onClick={item.action}
-                      className="hover:text-white transition-colors"
+                      className="hover:text-ink transition-colors"
                     >
                       {item.name}
                     </button>
                   ) : (
-                    <Link to={item.link} className="hover:text-white transition-colors">
+                    <Link to={item.link} className="hover:text-ink transition-colors">
                       {item.name}
                     </Link>
                   )}
@@ -101,11 +101,11 @@ const Footer = () => {
           </div>
 
           <div className="lg:col-span-3">
-            <h2 className="text-sm font-semibold text-white mb-4">Explore</h2>
+            <h2 className="text-sm font-semibold text-ink mb-4">Explore</h2>
             <ul className="space-y-2.5 text-sm">
               {exploreLinks.map((item) => (
                 <li key={item.name}>
-                  <Link to={item.link} className="hover:text-white transition-colors">
+                  <Link to={item.link} className="hover:text-ink transition-colors">
                     {item.name}
                   </Link>
                 </li>
@@ -114,7 +114,7 @@ const Footer = () => {
           </div>
 
           <div className="lg:col-span-3">
-            <h2 className="text-sm font-semibold text-white mb-4">Get the app</h2>
+            <h2 className="text-sm font-semibold text-ink mb-4">Get the app</h2>
             <div className="flex flex-col gap-2.5 max-w-xs">
               <a
                 href="/"
@@ -125,7 +125,7 @@ const Footer = () => {
               </a>
               <a
                 href="/"
-                className="inline-flex items-center gap-3 min-h-[48px] px-4 rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-white text-sm font-medium"
+                className="inline-flex items-center gap-3 min-h-[48px] px-4 rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-ink text-sm font-medium"
               >
                 <FaAppStore aria-hidden="true" />
                 App Store
@@ -140,7 +140,7 @@ const Footer = () => {
             <span className="text-[var(--ps-purple-light)]">Pinksurfing LLC</span>. All rights reserved.
           </p>
           {!user?.is_vendor && (
-            <Link to="/contact" className="hover:text-white transition-colors">
+            <Link to="/contact" className="hover:text-ink transition-colors">
               Contact
             </Link>
           )}

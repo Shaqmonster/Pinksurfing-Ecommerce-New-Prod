@@ -74,22 +74,22 @@ export default function InAppWalletBalanceCard({ compact = false }) {
   const wrapperClass = useMemo(
     () =>
       compact
-        ? "bg-[#13131a] border border-white/5 rounded-2xl p-4"
-        : "bg-[#13131a] border border-white/5 rounded-2xl p-5",
+        ? "bg-ps-surface border border-ink/5 rounded-2xl p-4"
+        : "bg-ps-surface border border-ink/5 rounded-2xl p-5",
     [compact]
   );
 
   return (
     <div className={wrapperClass}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">In-App Wallet</p>
+        <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider">In-App Wallet</p>
         <button
           onClick={() => {
             refresh();
             refreshTx();
           }}
           disabled={!canLoad || loading}
-          className="p-1.5 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/5 transition-all disabled:opacity-40"
+          className="p-1.5 rounded-lg text-ink/40 hover:text-ink/70 hover:bg-ink/5 transition-all disabled:opacity-40"
           title="Refresh wallet balance"
         >
           <IoRefreshOutline className={`text-sm ${loading ? "animate-spin" : ""}`} />
@@ -97,29 +97,29 @@ export default function InAppWalletBalanceCard({ compact = false }) {
       </div>
 
       {!canLoad ? (
-        <div className="text-white/40 text-sm">
+        <div className="text-ink/40 text-sm">
           Wallet not connected yet. Go to <span className="font-mono">/gighub</span> and create/import it.
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-white/60 text-xs">
+          <div className="flex items-center gap-2 text-ink/60 text-xs">
             <IoWalletOutline className="text-sm text-purple-400" />
             <span className="font-mono break-all" title={address}>
               {address}
             </span>
             <button
               onClick={copyAddress}
-              className="ml-auto p-1 rounded text-white/40 hover:text-white/75 hover:bg-white/5 transition-all"
+              className="ml-auto p-1 rounded text-ink/40 hover:text-ink/75 hover:bg-ink/5 transition-all"
               title="Copy wallet address"
             >
               {copied ? <IoCheckmarkDoneOutline className="text-emerald-300" /> : <IoCopyOutline />}
             </button>
           </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-ink/10 bg-ink/[0.02] p-2.5">
             <div>
-              <p className="text-white/35 text-[11px] mb-1">Receive to this wallet</p>
-              <p className="text-white/50 text-[10px]">Scan QR or copy address</p>
+              <p className="text-ink/35 text-[11px] mb-1">Receive to this wallet</p>
+              <p className="text-ink/50 text-[10px]">Scan QR or copy address</p>
             </div>
             <div className="bg-white p-1.5 rounded-lg">
               <QRCode value={address} size={compact ? 58 : 72} level="M" includeMargin={false} />
@@ -128,35 +128,35 @@ export default function InAppWalletBalanceCard({ compact = false }) {
 
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-white/35 text-xs">Wallet Balance</p>
-              <p className="text-white font-bold text-xl">{ethBalance} ETH</p>
+              <p className="text-ink/35 text-xs">Wallet Balance</p>
+              <p className="text-ink font-bold text-xl">{ethBalance} ETH</p>
             </div>
             <div className="text-right">
-              <p className="text-white/35 text-xs">Escrow Pending (withdrawable)</p>
-              <p className="text-white/80 font-semibold text-sm">{pendingEscrow} ETH</p>
+              <p className="text-ink/35 text-xs">Escrow Pending (withdrawable)</p>
+              <p className="text-ink/80 font-semibold text-sm">{pendingEscrow} ETH</p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-2.5">
+          <div className="rounded-xl border border-ink/10 bg-ink/[0.02] p-2.5">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-white/45 text-[11px]">Recent wallet transactions</p>
+              <p className="text-ink/45 text-[11px]">Recent wallet transactions</p>
               <button
                 onClick={refreshTx}
                 disabled={txLoading}
-                className="text-[11px] px-2 py-0.5 rounded border border-white/10 text-white/55 hover:bg-white/5 disabled:opacity-50"
+                className="text-[11px] px-2 py-0.5 rounded border border-ink/10 text-ink/55 hover:bg-ink/5 disabled:opacity-50"
               >
                 {txLoading ? "Refreshing..." : "Refresh"}
               </button>
             </div>
             {rows.length === 0 ? (
-              <p className="text-white/35 text-xs">{txLoading ? "Scanning recent blocks..." : "No recent transactions."}</p>
+              <p className="text-ink/35 text-xs">{txLoading ? "Scanning recent blocks..." : "No recent transactions."}</p>
             ) : (
               <div className="space-y-1.5 max-h-28 overflow-auto pr-1">
                 {rows.map((r) => (
-                  <div key={r.hash} className="flex items-center justify-between text-[11px] border border-white/10 rounded-md p-1.5">
-                    <span className="text-white/70">{r.direction === "incoming" ? "Incoming" : "Outgoing"}</span>
-                    <span className="text-white/60">{r.valueLabel}</span>
-                    <span className="text-white/35 font-mono">{shortHash(r.hash)}</span>
+                  <div key={r.hash} className="flex items-center justify-between text-[11px] border border-ink/10 rounded-md p-1.5">
+                    <span className="text-ink/70">{r.direction === "incoming" ? "Incoming" : "Outgoing"}</span>
+                    <span className="text-ink/60">{r.valueLabel}</span>
+                    <span className="text-ink/35 font-mono">{shortHash(r.hash)}</span>
                   </div>
                 ))}
               </div>

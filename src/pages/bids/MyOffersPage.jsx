@@ -72,7 +72,7 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden"
+      className="bg-ink/5 backdrop-blur-md border border-ink/10 rounded-2xl overflow-hidden"
     >
       <div className="p-5 sm:p-6">
         {/* Top row: status + actions */}
@@ -85,10 +85,10 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
                 {status.label}
               </span>
               {bid.created_at && (
-                <span className="text-xs text-white/30">{timeAgo(bid.created_at)}</span>
+                <span className="text-xs text-ink/30">{timeAgo(bid.created_at)}</span>
               )}
             </div>
-            <h3 className="text-white font-semibold text-base sm:text-lg truncate">
+            <h3 className="text-ink font-semibold text-base sm:text-lg truncate">
               {bid.request_title || `Request #${bid.request_id || bid.request}`}
             </h3>
           </div>
@@ -97,7 +97,7 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
             <button
               onClick={() => onWithdraw(bid.id)}
               disabled={withdrawing}
-              className="shrink-0 p-2 rounded-lg hover:bg-red-500/20 text-white/30 hover:text-red-400 transition-colors disabled:opacity-40"
+              className="shrink-0 p-2 rounded-lg hover:bg-red-500/20 text-ink/30 hover:text-red-400 transition-colors disabled:opacity-40"
               title="Withdraw proposal"
             >
               <IoTrashOutline className="text-lg" />
@@ -111,12 +111,12 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
             <FaDollarSign className="text-emerald-400 text-xs" />
             <span className="text-emerald-400 font-semibold">${bid.bid_amount}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-white/60">
+          <div className="flex items-center gap-1.5 text-ink/60">
             <IoTimeOutline />
             <span>{bid.delivery_time_days} days delivery</span>
           </div>
           {images.length > 0 && (
-            <div className="flex items-center gap-1.5 text-white/60">
+            <div className="flex items-center gap-1.5 text-ink/60">
               <IoImageOutline />
               <span>{images.length} attachment{images.length !== 1 ? "s" : ""}</span>
             </div>
@@ -141,21 +141,21 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="border-t border-white/10 overflow-hidden"
+            className="border-t border-ink/10 overflow-hidden"
           >
             <div className="p-5 sm:p-6 space-y-4">
-              <div className="bg-white/5 rounded-xl p-4">
-                <p className="text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">
+              <div className="bg-ink/5 rounded-xl p-4">
+                <p className="text-ink/40 text-xs uppercase tracking-wider font-semibold mb-2">
                   Your Proposal
                 </p>
-                <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">
+                <p className="text-ink/80 text-sm leading-relaxed whitespace-pre-line">
                   {bid.proposal || "No proposal text."}
                 </p>
               </div>
 
               {images.length > 0 && (
                 <div>
-                  <p className="text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-ink/40 text-xs uppercase tracking-wider font-semibold mb-2">
                     Attachments
                   </p>
                   <div className="flex gap-2 flex-wrap">
@@ -164,7 +164,7 @@ const OfferCard = ({ bid, onWithdraw, withdrawing }) => {
                         key={i}
                         src={img}
                         alt={`offer-img-${i}`}
-                        className="w-16 h-16 rounded-lg object-cover border border-white/10"
+                        className="w-16 h-16 rounded-lg object-cover border border-ink/10"
                       />
                     ))}
                   </div>
@@ -245,7 +245,7 @@ export default function MyOffersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-ps-bg">
       <BidsNavBar />
 
       {/* Background glow */}
@@ -266,9 +266,9 @@ export default function MyOffersPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <IoPaperPlaneOutline className="text-pink-400 text-xl" />
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Proposals</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-ink">My Proposals</h1>
                 </div>
-                <p className="text-white/50 text-sm">
+                <p className="text-ink/50 text-sm">
                   Track the proposals you've sent on GigHub jobs.
                 </p>
               </div>
@@ -296,14 +296,14 @@ export default function MyOffersPage() {
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
                     active
                       ? "bg-gradient-to-r from-purple-600/20 to-pink-500/20 text-pink-400 border border-pink-500/30"
-                      : "text-white/50 hover:text-white hover:bg-white/5 border border-white/10"
+                      : "text-ink/50 hover:text-ink hover:bg-ink/5 border border-ink/10"
                   }`}
                 >
                   {label}
                   {count > 0 && (
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                        active ? "bg-pink-500/30 text-pink-300" : "bg-white/10 text-white/40"
+                        active ? "bg-pink-500/30 text-pink-300" : "bg-ink/10 text-ink/40"
                       }`}
                     >
                       {count}
@@ -317,16 +317,16 @@ export default function MyOffersPage() {
           {/* Content */}
           {loading ? (
             <div className="flex justify-center py-20">
-              <span className="w-8 h-8 border-2 border-white/20 border-t-pink-400 rounded-full animate-spin" />
+              <span className="w-8 h-8 border-2 border-ink/20 border-t-pink-400 rounded-full animate-spin" />
             </div>
           ) : filtered.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl"
+              className="text-center py-20 bg-ink/5 border border-ink/10 rounded-2xl"
             >
-              <IoPaperPlaneOutline className="text-5xl text-white/10 mx-auto mb-4" />
-              <p className="text-white/40 text-base">
+              <IoPaperPlaneOutline className="text-5xl text-ink/10 mx-auto mb-4" />
+              <p className="text-ink/40 text-base">
                 {filter === "all"
                   ? "You haven't sent any proposals yet."
                   : `No ${filter.toLowerCase()} proposals.`}

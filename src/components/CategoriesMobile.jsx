@@ -15,7 +15,7 @@ export default function CategoriesMobile() {
   const [openCategory, setOpenCategory] = useState(null);
   const navigate = useNavigate();
   const { searchProducts } = useContext(dataContext);
-  const { setShopHeading, isDarkMode } = useContext(authContext);
+  const { setShopHeading } = useContext(authContext);
 
   useEffect(() => {
     const GetCategories = async () => {
@@ -90,7 +90,7 @@ export default function CategoriesMobile() {
     <Transition.Root show={isMobileCategoryOpen} as={Fragment}>
       <Dialog
         as="div"
-        className={`relative ${isDarkMode && "dark"} top-0 left-0 z-50`}
+        className={`relative top-0 left-0 z-50`}
         onClose={closeDialog}
       >
         <Transition.Child

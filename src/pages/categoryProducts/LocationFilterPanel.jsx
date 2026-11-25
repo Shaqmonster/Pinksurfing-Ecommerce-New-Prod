@@ -32,14 +32,14 @@ export default function LocationFilterPanel({
         ? "text-xs font-medium text-[var(--ps-muted)]"
         : "text-xs font-medium text-gray-500 dark:text-[var(--ps-muted)]";
     const inputCls = isMobile
-        ? "w-full min-h-[44px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-3 text-sm text-white placeholder:text-[var(--ps-dim)] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
+        ? "w-full min-h-[44px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] px-3 text-sm text-ink placeholder:text-[var(--ps-dim)] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]"
         : "w-full min-h-[44px] rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-colors focus:border-purple-400 focus:ring-2 focus:ring-purple-500/25 dark:border-[var(--ps-brd)] dark:bg-[var(--ps-surf)] dark:text-white dark:placeholder:text-[var(--ps-dim)] dark:focus:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] dark:focus:ring-[color-mix(in_srgb,var(--ps-primary)_25%,transparent)]";
 
     return (
         <div className={cardClass}>
             <h3 className="mb-2 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--ps-primary)] to-[var(--ps-purple-dark)] shadow-[0_6px_16px_-6px_rgba(151,71,255,0.55)]">
-                    <MapPinIcon className="h-4 w-4 text-white" aria-hidden />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--ps-primary)] to-[var(--ps-purple-dark)] shadow-[0_6px_16px_-6px_rgba(151,71,255,0.55)] text-white">
+                    <MapPinIcon className="h-4 w-4 text-ink" aria-hidden />
                 </div>
                 Location
             </h3>
@@ -66,7 +66,7 @@ export default function LocationFilterPanel({
                 disabled={locationApplying}
                 className={`mb-3 flex min-h-[44px] w-full items-center gap-2 rounded-xl border px-3 text-left text-sm font-semibold transition-colors disabled:opacity-50 ${
                     isMobile
-                        ? "border-[var(--ps-brd)] bg-[var(--ps-surf)] text-white hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)]"
+                        ? "border-[var(--ps-brd)] bg-[var(--ps-surf)] text-ink hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)]"
                         : "border-gray-200 bg-white text-gray-900 hover:border-purple-300 dark:border-[var(--ps-brd)] dark:bg-[var(--ps-surf)] dark:text-white dark:hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)]"
                 }`}
             >
@@ -147,7 +147,7 @@ export default function LocationFilterPanel({
                         disabled={locationApplying}
                         className={`min-h-[44px] rounded-xl border px-4 text-sm font-medium disabled:opacity-50 ${
                             isMobile
-                                ? "border-[var(--ps-brd)] bg-[var(--ps-surf)] text-white hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)]"
+                                ? "border-[var(--ps-brd)] bg-[var(--ps-surf)] text-ink hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)]"
                                 : "border-gray-200 bg-gray-100 text-gray-800 hover:border-purple-300 dark:border-[var(--ps-brd)] dark:bg-[var(--ps-surf)] dark:text-white dark:hover:border-[color-mix(in_srgb,var(--ps-primary)_40%,transparent)]"
                         }`}
                     >

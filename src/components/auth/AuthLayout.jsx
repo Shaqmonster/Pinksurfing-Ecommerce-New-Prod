@@ -32,7 +32,7 @@ const AuthLayout = ({
 
   return (
     <div className="min-h-screen flex bg-[#f8f9fc]">
-      <div className="hidden lg:flex lg:w-[46%] xl:w-[50%] relative overflow-hidden bg-[#0f0f14] text-white">
+      <div className="hidden lg:flex lg:w-[46%] xl:w-[50%] relative overflow-hidden bg-ps-bg text-ink">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-purple-600/25 blur-3xl" />
           <div className="absolute top-1/3 -right-20 h-80 w-80 rounded-full bg-pink-500/20 blur-3xl" />
@@ -56,7 +56,7 @@ const AuthLayout = ({
             <img
               src="/logo.jpg"
               alt="PinkSurfing"
-              className="h-11 w-11 rounded-xl object-cover ring-2 ring-white/10"
+              className="h-11 w-11 rounded-xl object-cover ring-2 ring-ink/10"
             />
             <span className="text-xl font-bold tracking-tight">PinkSurfing</span>
           </button>
@@ -68,7 +68,7 @@ const AuthLayout = ({
             <h2 className="text-3xl xl:text-4xl font-bold leading-tight mb-4">
               Shop, sell &amp; hire — all in one place
             </h2>
-            <p className="text-white/60 text-base leading-relaxed">
+            <p className="text-ink/60 text-base leading-relaxed">
               Join thousands of buyers and sellers on a platform built for speed,
               trust, and growth.
             </p>
@@ -77,12 +77,12 @@ const AuthLayout = ({
           <ul className="space-y-4 max-w-md">
             {features.map(({ icon: Icon, title: featureTitle, description }) => (
               <li key={featureTitle} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-pink-300">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink/10 text-pink-300">
                   <Icon className="h-4 w-4" />
                 </span>
                 <div>
                   <p className="font-semibold text-sm">{featureTitle}</p>
-                  <p className="text-sm text-white/50">{description}</p>
+                  <p className="text-sm text-ink/50">{description}</p>
                 </div>
               </li>
             ))}
@@ -132,7 +132,7 @@ const AuthLayout = ({
             )}
           </div>
 
-          <p className="mt-6 text-center text-xs text-slate-400">
+          <p className="mt-6 text-center text-xs text-ps-meta">
             © {new Date().getFullYear()} PinkSurfing. All rights reserved.
           </p>
         </motion.div>

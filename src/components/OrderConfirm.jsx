@@ -40,7 +40,7 @@ const OrderConfirm = () => {
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-white mb-2">
+        <h1 className="text-3xl font-bold text-ink mb-2">
           {vendorId ? "Vendor payment successful" : "Payment successful"}
         </h1>
         <p className="text-[var(--ps-muted)] text-base mb-6 leading-relaxed">
@@ -56,7 +56,7 @@ const OrderConfirm = () => {
                 <p className="text-xs font-medium text-[var(--ps-dim)] mb-1.5">
                   Order reference
                 </p>
-                <p className="text-sm font-mono font-semibold text-white break-all">
+                <p className="text-sm font-mono font-semibold text-ink break-all">
                   {orderId}
                 </p>
               </div>
@@ -66,7 +66,7 @@ const OrderConfirm = () => {
                 <p className="text-xs font-medium text-[var(--ps-dim)] mb-1.5">
                   Vendor reference
                 </p>
-                <p className="text-sm font-mono font-semibold text-white break-all">
+                <p className="text-sm font-mono font-semibold text-ink break-all">
                   {vendorId}
                 </p>
               </div>
@@ -82,7 +82,7 @@ const OrderConfirm = () => {
         </Link>
         <Link
           to="/"
-          className="inline-flex w-full items-center justify-center min-h-[44px] rounded-[14px] border border-[var(--ps-brd)] px-6 py-3.5 text-base font-medium text-[var(--ps-muted)] hover:text-white mb-4"
+          className="inline-flex w-full items-center justify-center min-h-[44px] rounded-[14px] border border-[var(--ps-brd)] px-6 py-3.5 text-base font-medium text-[var(--ps-muted)] hover:text-ink mb-4"
         >
           Return home
         </Link>

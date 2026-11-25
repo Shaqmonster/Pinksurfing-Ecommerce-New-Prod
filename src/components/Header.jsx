@@ -31,6 +31,7 @@ import VendorDetailsForm from "./VendorDetailsForm";
 import ProfilePopup from "./ProfilePopup";
 import ChatFloatingPanel from "./ChatFloatingPanel";
 import IconTip from "./ui/IconTip";
+import ThemeToggle from "./ThemeToggle";
 import { getCustomerDisplayName } from "../utils/userDisplay";
 import { getConversations } from "../api/gigs";
 import { sumUnreadCount, resolveChatAccessToken } from "../utils/chatHelpers";
@@ -232,8 +233,8 @@ const Header = () => {
         />
       )}
 
-      <header className="sticky top-0 z-40 bg-[var(--ps-bg)]/95 backdrop-blur-xl border-b border-[var(--ps-brd)]">
-        <div className="max-w-[1400px] mx-auto flex items-center gap-3 px-4 sm:px-6 py-2.5 text-white">
+      <header className="sticky top-0 z-40 bg-[color-mix(in_srgb,var(--ps-bg)_95%,transparent)] backdrop-blur-xl border-b border-[var(--ps-brd)]">
+        <div className="max-w-[1400px] mx-auto flex items-center gap-3 px-4 sm:px-6 py-2.5 text-ink">
           <Link to="/" className="flex-shrink-0" aria-label="PinkSurfing home">
             <img
               src={BRAND_LOGO}
@@ -260,7 +261,7 @@ const Header = () => {
               placeholder="Search…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full min-h-[44px] pl-10 pr-3 rounded-xl bg-[var(--ps-surf)] border border-[var(--ps-brd)] text-sm text-white placeholder-[var(--ps-dim)] outline-none focus:border-[var(--ps-cyan)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-cyan)_28%,transparent)]"
+              className="w-full min-h-[44px] pl-10 pr-3 rounded-xl bg-[var(--ps-surf)] border border-[var(--ps-brd)] text-sm text-ink placeholder-[var(--ps-dim)] outline-none focus:border-[var(--ps-cyan)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ps-cyan)_28%,transparent)]"
             />
           </form>
 
@@ -273,7 +274,7 @@ const Header = () => {
                 className={`inline-flex items-center gap-1.5 min-h-[40px] px-2.5 rounded-xl text-sm font-medium whitespace-nowrap border border-transparent transition-colors ${
                   isActive(to)
                     ? "text-[var(--ps-purple-light)] bg-[var(--ps-surf)] border-[var(--ps-brd)]"
-                    : "text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)]"
+                    : "text-[var(--ps-muted)] hover:text-ink hover:bg-[var(--ps-surf)]"
                 }`}
               >
                 <Icon className="text-base" aria-hidden="true" />
@@ -303,7 +304,7 @@ const Header = () => {
                 <span className="relative inline-flex">
                   <IoChatbubbleOutline className="text-xl" aria-hidden="true" />
                   {chatUnread > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--ps-red)] text-[10px] font-bold flex items-center justify-center">
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--ps-red)] text-[10px] font-bold flex items-center justify-center text-white">
                       {chatUnread > 9 ? "9+" : chatUnread}
                     </span>
                   )}
@@ -318,7 +319,7 @@ const Header = () => {
                 aria-expanded={profileOpen}
                 aria-label="Account menu"
                 onClick={() => setProfileOpen((o) => !o)}
-                className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-2 rounded-xl text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)] border border-transparent hover:border-[var(--ps-brd)] transition-colors"
+                className="inline-flex items-center gap-1 min-h-[44px] min-w-[44px] px-2 rounded-xl text-[var(--ps-muted)] hover:text-ink hover:bg-[var(--ps-surf)] border border-transparent hover:border-[var(--ps-brd)] transition-colors"
               >
                 {authToken && user?.customer_profile_picture ? (
                   <img
@@ -350,7 +351,7 @@ const Header = () => {
                         <div className="px-3 py-2.5 border-b border-[var(--ps-brd)]">
                           <p className="text-xs text-[var(--ps-dim)]">Signed in</p>
                           {user ? (
-                            <p className="text-sm font-medium text-white truncate">
+                            <p className="text-sm font-medium text-ink truncate">
                               {getCustomerDisplayName(user)}
                             </p>
                           ) : (
@@ -362,7 +363,7 @@ const Header = () => {
                           role="menuitem"
                           to="/profile"
                           onClick={() => setProfileOpen(false)}
-                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-ink hover:bg-[var(--ps-surf)]"
                         >
                           <IoPersonOutline aria-hidden="true" />
                           View profile
@@ -371,7 +372,7 @@ const Header = () => {
                           role="menuitem"
                           to="/my-bids"
                           onClick={() => setProfileOpen(false)}
-                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-ink hover:bg-[var(--ps-surf)]"
                         >
                           <IoListOutline aria-hidden="true" />
                           My Bids
@@ -380,7 +381,7 @@ const Header = () => {
                           role="menuitem"
                           to="/gigs/jobs/mine"
                           onClick={() => setProfileOpen(false)}
-                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-ink hover:bg-[var(--ps-surf)]"
                         >
                           <IoBriefcaseOutline aria-hidden="true" />
                           My Jobs
@@ -389,7 +390,7 @@ const Header = () => {
                           type="button"
                           role="menuitem"
                           onClick={openWishlist}
-                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)] text-left"
+                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-ink hover:bg-[var(--ps-surf)] text-left"
                         >
                           <FaHeart aria-hidden="true" />
                           Wishlist
@@ -398,7 +399,7 @@ const Header = () => {
                           type="button"
                           role="menuitem"
                           onClick={openCart}
-                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)] text-left"
+                          className="w-full flex items-center gap-3 min-h-[44px] px-3 text-sm text-ink hover:bg-[var(--ps-surf)] text-left"
                         >
                           <IoCart aria-hidden="true" />
                           Cart
@@ -408,6 +409,10 @@ const Header = () => {
                             </span>
                           )}
                         </button>
+                        <div className="px-3 py-2.5 border-t border-[var(--ps-brd)]">
+                          <p className="text-xs text-[var(--ps-dim)] mb-1.5">Theme</p>
+                          <ThemeToggle compact />
+                        </div>
                         <button
                           type="button"
                           role="menuitem"
@@ -427,7 +432,7 @@ const Header = () => {
                           role="menuitem"
                           to="/signin"
                           onClick={() => setProfileOpen(false)}
-                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)]"
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-ink hover:bg-[var(--ps-surf)]"
                         >
                           <IoPersonOutline aria-hidden="true" />
                           Sign in
@@ -436,7 +441,7 @@ const Header = () => {
                           role="menuitem"
                           to="/signup"
                           onClick={() => setProfileOpen(false)}
-                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-white hover:bg-[var(--ps-surf)] border-t border-[var(--ps-brd)]"
+                          className="flex items-center gap-3 min-h-[44px] px-3 text-sm text-ink hover:bg-[var(--ps-surf)] border-t border-[var(--ps-brd)]"
                         >
                           Sign up
                         </Link>
@@ -458,6 +463,10 @@ const Header = () => {
                           <IoCart aria-hidden="true" />
                           Cart
                         </button>
+                        <div className="px-3 py-2.5 border-t border-[var(--ps-brd)]">
+                          <p className="text-xs text-[var(--ps-dim)] mb-1.5">Theme</p>
+                          <ThemeToggle compact />
+                        </div>
                       </>
                     )}
                   </motion.div>
@@ -501,7 +510,7 @@ const Header = () => {
                   key={to}
                   to={to}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-white hover:bg-[var(--ps-surf)]"
+                  className="flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-ink hover:bg-[var(--ps-surf)]"
                 >
                   <Icon className="text-lg text-[var(--ps-purple-light)]" aria-hidden="true" />
                   <span className="text-base font-medium">{label}</span>
@@ -514,13 +523,17 @@ const Header = () => {
                     setIsMobileMenuOpen(false);
                     openChatInbox();
                   }}
-                  className="flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-white hover:bg-[var(--ps-surf)] text-left"
+                  className="flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-ink hover:bg-[var(--ps-surf)] text-left"
                 >
                   <IoChatbubbleOutline className="text-lg text-[var(--ps-purple-light)]" aria-hidden="true" />
                   <span className="text-base font-medium">Messages</span>
                 </button>
               )}
               <div className="mt-auto pt-4 border-t border-[var(--ps-brd)] space-y-2">
+                <div className="px-1 pb-2">
+                  <p className="text-xs text-[var(--ps-dim)] mb-1.5">Theme</p>
+                  <ThemeToggle />
+                </div>
                 {authToken ? (
                   <>
                     <Link
@@ -539,7 +552,7 @@ const Header = () => {
                         setIsMobileMenuOpen(false);
                         openWishlist();
                       }}
-                      className="w-full flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-white"
+                      className="w-full flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-ink"
                     >
                       <FaHeart aria-hidden="true" />
                       Wishlist
@@ -550,7 +563,7 @@ const Header = () => {
                         setIsMobileMenuOpen(false);
                         openCart();
                       }}
-                      className="w-full flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-white"
+                      className="w-full flex items-center gap-3 min-h-[48px] px-3 rounded-xl text-ink"
                     >
                       <IoCart aria-hidden="true" />
                       Cart
@@ -572,7 +585,7 @@ const Header = () => {
                     <Link
                       to="/signin"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center justify-center min-h-[48px] rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] font-semibold"
+                      className="flex items-center justify-center min-h-[48px] rounded-[14px] bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] font-semibold text-white"
                     >
                       Sign in
                     </Link>
@@ -612,7 +625,7 @@ const Header = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 autoFocus
-                className="w-full min-h-[48px] px-4 pr-24 rounded-xl bg-[var(--ps-surf)] border border-[var(--ps-brd)] text-white outline-none focus:ring-2 focus:ring-[var(--ps-cyan)]"
+                className="w-full min-h-[48px] px-4 pr-24 rounded-xl bg-[var(--ps-surf)] border border-[var(--ps-brd)] text-ink outline-none focus:ring-2 focus:ring-[var(--ps-cyan)]"
               />
               <button
                 type="submit"

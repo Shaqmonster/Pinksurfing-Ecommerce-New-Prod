@@ -37,7 +37,7 @@ const MessageContent = ({ content, mine }) => {
       {parts.map((p, i) =>
         urlRe.test(p) ? (
           <a key={i} href={p} target="_blank" rel="noopener noreferrer"
-            className={`underline decoration-1 underline-offset-2 break-all ${mine ? "text-white/90 hover:text-white" : "text-purple-400 hover:text-purple-300"}`}
+            className={`underline decoration-1 underline-offset-2 break-all ${mine ? "text-ink/90 hover:text-ink" : "text-purple-400 hover:text-purple-300"}`}
           >{p}</a>
         ) : (
           <span key={i}>{p}</span>
@@ -221,12 +221,12 @@ const GigSellerChatModal = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.97 }}
             transition={{ type: "spring", damping: 28, stiffness: 380 }}
-            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full sm:w-[400px] h-[80vh] sm:h-[580px] bg-[#0b0b12] border border-white/[0.05] sm:rounded-2xl rounded-t-2xl shadow-2xl shadow-black/50 z-[101] flex flex-col overflow-hidden"
+            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full sm:w-[400px] h-[80vh] sm:h-[580px] bg-ps-bg border border-ink/[0.05] sm:rounded-2xl rounded-t-2xl shadow-2xl shadow-black/50 z-[101] flex flex-col overflow-hidden"
           >
             {/* ── Header ── */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-[#0e0e15]/90 backdrop-blur-2xl border-b border-white/[0.04] flex-shrink-0">
+            <div className="flex items-center gap-3 px-4 py-3 bg-ps-bg/90 backdrop-blur-2xl border-b border-ink/[0.04] flex-shrink-0">
               <div
-                className="w-9 h-9 rounded-[11px] flex items-center justify-center text-white font-semibold text-[14px] uppercase flex-shrink-0"
+                className="w-9 h-9 rounded-[11px] flex items-center justify-center text-ink font-semibold text-[14px] uppercase flex-shrink-0"
                 style={{
                   background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`,
                   boxShadow: `0 3px 10px -2px ${colors[0]}33`,
@@ -235,11 +235,11 @@ const GigSellerChatModal = ({
                 {sellerName?.[0] || "?"}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-[14.5px] tracking-[-0.01em] truncate">{sellerName}</p>
+                <p className="text-ink font-semibold text-[14.5px] tracking-[-0.01em] truncate">{sellerName}</p>
               </div>
               <button
                 onClick={handleClose}
-                className="p-1.5 rounded-xl hover:bg-white/[0.04] text-white/30 hover:text-white/60 transition-all"
+                className="p-1.5 rounded-xl hover:bg-ink/[0.04] text-ink/30 hover:text-ink/60 transition-all"
               >
                 <IoCloseOutline className="text-[20px]" />
               </button>
@@ -249,22 +249,22 @@ const GigSellerChatModal = ({
             <div
               ref={messageContainerRef}
               className="flex-1 overflow-y-auto"
-              style={{ background: "#0b0b12" }}
+              style={{ background: "var(--ps-color-bg)" }}
             >
               <div className="px-4 py-4 space-y-[2px]">
                 {loadingInit ? (
                   <div className="flex items-center justify-center py-20">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-6 h-6 border-2 border-purple-500/20 border-t-purple-400 rounded-full animate-spin" />
-                      <p className="text-white/15 text-[10px] font-semibold tracking-[0.1em] uppercase">Loading</p>
+                      <p className="text-ink/15 text-[10px] font-semibold tracking-[0.1em] uppercase">Loading</p>
                     </div>
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16">
-                    <div className="bg-white/[0.02] border border-white/[0.03] rounded-2xl px-6 py-4 text-center max-w-[260px]">
-                      <p className="text-white/30 text-[13px] leading-relaxed">
+                    <div className="bg-ink/[0.02] border border-ink/[0.03] rounded-2xl px-6 py-4 text-center max-w-[260px]">
+                      <p className="text-ink/30 text-[13px] leading-relaxed">
                         Start a conversation with{" "}
-                        <span className="font-semibold text-white/50">{sellerName}</span>
+                        <span className="font-semibold text-ink/50">{sellerName}</span>
                       </p>
                     </div>
                   </div>
@@ -288,7 +288,7 @@ const GigSellerChatModal = ({
                         <React.Fragment key={msg.id}>
                           {showDate && (
                             <div className="flex justify-center py-5">
-                              <span className="text-white/15 text-[10px] font-semibold tracking-[0.06em] uppercase select-none">
+                              <span className="text-ink/15 text-[10px] font-semibold tracking-[0.06em] uppercase select-none">
                                 {dateBanner(msg.created_at)}
                               </span>
                             </div>
@@ -302,7 +302,7 @@ const GigSellerChatModal = ({
                               className={`relative max-w-[82%] px-3.5 py-[9px] ${
                                 mine
                                   ? "bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] text-white"
-                                  : "bg-[#16161f] text-white/[0.85] border border-white/[0.04]"
+                                  : "bg-ps-surface text-ink/[0.85] border border-ink/[0.04]"
                               }`}
                               style={{
                                 borderRadius: radius,
@@ -312,7 +312,7 @@ const GigSellerChatModal = ({
                               {msg.content && (
                                 <div className="text-[13.5px] leading-[1.5] tracking-[-0.006em]">
                                   <MessageContent content={msg.content} mine={mine} />
-                                  <span className={`inline-block float-right ml-3 mt-[2px] text-[9.5px] tabular-nums font-medium ${mine ? "text-white/35" : "text-white/15"}`}>
+                                  <span className={`inline-block float-right ml-3 mt-[2px] text-[9.5px] tabular-nums font-medium ${mine ? "text-ink/35" : "text-ink/15"}`}>
                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                   </span>
                                 </div>
@@ -323,7 +323,7 @@ const GigSellerChatModal = ({
                                   {msg.attachments.map((att, i) => (
                                     <a key={i} href={att.file} target="_blank" rel="noopener noreferrer"
                                       className={`flex items-center gap-2 text-[11px] rounded-lg px-3 py-2 transition-all duration-200 font-medium ${
-                                        mine ? "bg-white/[0.1] hover:bg-white/[0.15] text-white/80" : "bg-white/[0.03] hover:bg-white/[0.05] text-white/40 border border-white/[0.04]"
+                                        mine ? "bg-ink/[0.1] hover:bg-ink/[0.15] text-ink/80" : "bg-ink/[0.03] hover:bg-ink/[0.05] text-ink/40 border border-ink/[0.04]"
                                       }`}
                                     >
                                       <IoImageOutline className="text-[14px] flex-shrink-0" />
@@ -347,14 +347,14 @@ const GigSellerChatModal = ({
             <AnimatePresence>
               {attachments.length > 0 && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                  className="bg-[#0e0e15] border-t border-white/[0.03] px-4 overflow-hidden"
+                  className="bg-ps-bg border-t border-ink/[0.03] px-4 overflow-hidden"
                 >
                   <div className="flex gap-2 py-2.5 overflow-x-auto">
                     {attachments.map((f, i) => (
-                      <div key={i} className="relative flex-shrink-0 bg-white/[0.03] border border-white/[0.04] rounded-xl px-3 py-2 flex items-center gap-2">
-                        <IoAttachOutline className="text-white/20 text-[12px]" />
-                        <span className="text-white/40 text-[11px] max-w-[70px] truncate font-medium">{f.name}</span>
-                        <button onClick={() => removeAttachment(i)} className="ml-0.5 text-white/15 hover:text-red-400 transition-colors">
+                      <div key={i} className="relative flex-shrink-0 bg-ink/[0.03] border border-ink/[0.04] rounded-xl px-3 py-2 flex items-center gap-2">
+                        <IoAttachOutline className="text-ink/20 text-[12px]" />
+                        <span className="text-ink/40 text-[11px] max-w-[70px] truncate font-medium">{f.name}</span>
+                        <button onClick={() => removeAttachment(i)} className="ml-0.5 text-ink/15 hover:text-red-400 transition-colors">
                           <IoCloseOutline className="text-[12px]" />
                         </button>
                       </div>
@@ -365,9 +365,9 @@ const GigSellerChatModal = ({
             </AnimatePresence>
 
             {/* ── Input ── */}
-            <form onSubmit={handleSend} className="flex items-end gap-2.5 px-3.5 py-3 bg-[#0e0e15]/90 backdrop-blur-2xl border-t border-white/[0.04] flex-shrink-0">
+            <form onSubmit={handleSend} className="flex items-end gap-2.5 px-3.5 py-3 bg-ps-bg/90 backdrop-blur-2xl border-t border-ink/[0.04] flex-shrink-0">
               <button type="button" onClick={() => fileInputRef.current?.click()}
-                className="p-1.5 rounded-xl text-white/20 hover:text-white/40 hover:bg-white/[0.03] transition-all flex-shrink-0 mb-[1px]"
+                className="p-1.5 rounded-xl text-ink/20 hover:text-ink/40 hover:bg-ink/[0.03] transition-all flex-shrink-0 mb-[1px]"
               >
                 <IoAttachOutline className="text-[17px] rotate-45" />
               </button>
@@ -384,7 +384,7 @@ const GigSellerChatModal = ({
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(e); } }}
                 placeholder="Message"
                 rows={1}
-                className="flex-1 bg-white/[0.04] rounded-2xl px-3.5 py-2.5 text-white/90 text-[13.5px] placeholder-white/15 outline-none resize-none border border-white/[0.03] focus:border-purple-500/20 focus:bg-white/[0.06] transition-all duration-300"
+                className="flex-1 bg-ink/[0.04] rounded-2xl px-3.5 py-2.5 text-ink/90 text-[13.5px] placeholder-ink/15 outline-none resize-none border border-ink/[0.03] focus:border-purple-500/20 focus:bg-ink/[0.06] transition-all duration-300"
                 style={{ minHeight: "40px", maxHeight: "100px" }}
               />
 
@@ -393,7 +393,7 @@ const GigSellerChatModal = ({
                 className="p-2 rounded-[12px] bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] text-white disabled:opacity-15 disabled:cursor-not-allowed flex-shrink-0 shadow-md shadow-purple-600/15 transition-all duration-200 mb-[1px]"
               >
                 {sending ? (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin block" />
+                  <span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin block" />
                 ) : (
                   <IoSendSharp className="text-[15px]" />
                 )}

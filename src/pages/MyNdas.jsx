@@ -119,17 +119,17 @@ export default function MyNdas() {
   const styles = {
     page: {
       minHeight: "100vh",
-      background: "#0d0d12",
-      color: "#e8e8ee",
+      background: "var(--ps-color-bg)",
+      color: "var(--ps-color-text)",
       padding: "32px 16px 80px",
       fontFamily: "'Inter', sans-serif",
     },
     container: { maxWidth: 860, margin: "0 auto" },
-    heading: { fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 6 },
-    sub: { fontSize: 14, color: "#8888a0", marginBottom: 32 },
+    heading: { fontSize: 28, fontWeight: 700, color: "var(--ps-color-text)", marginBottom: 6 },
+    sub: { fontSize: 14, color: "var(--ps-color-text-meta)", marginBottom: 32 },
     card: {
-      background: "#17171f",
-      border: "1px solid #2a2a38",
+      background: "var(--ps-color-surface)",
+      border: "1px solid var(--ps-color-border)",
       borderRadius: 16,
       padding: 24,
       marginBottom: 20,
@@ -141,31 +141,31 @@ export default function MyNdas() {
       borderRadius: 9999,
       fontSize: 11,
       fontWeight: 600,
-      background: STATUS_COLOR[s]?.bg || "#1e1e2e",
-      color: STATUS_COLOR[s]?.text || "#aaa",
-      border: `1px solid ${STATUS_COLOR[s]?.border || "#333"}`,
+      background: STATUS_COLOR[s]?.bg || "var(--ps-color-surface-sunken)",
+      color: STATUS_COLOR[s]?.text || "var(--ps-color-text-secondary)",
+      border: `1px solid ${STATUS_COLOR[s]?.border || "var(--ps-color-border)"}`,
       marginBottom: 8,
     }),
     listingName: {
       fontSize: 19,
       fontWeight: 700,
-      color: "#fff",
+      color: "var(--ps-color-text)",
       marginBottom: 8,
     },
-    meta: { fontSize: 13, color: "#8888a0", marginBottom: 3 },
-    divider: { borderTop: "1px solid #2a2a38", margin: "16px 0" },
+    meta: { fontSize: 13, color: "var(--ps-color-text-meta)", marginBottom: 3 },
+    divider: { borderTop: "1px solid var(--ps-color-border)", margin: "16px 0" },
     docRow: {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      background: "#1e1e2e",
-      border: "1px solid #2a2a38",
+      background: "var(--ps-color-surface-sunken)",
+      border: "1px solid var(--ps-color-border)",
       borderRadius: 10,
       padding: "10px 14px",
       marginBottom: 8,
     },
-    docName: { fontSize: 14, fontWeight: 600, color: "#fff" },
-    docMeta: { fontSize: 11, color: "#666", marginTop: 2 },
+    docName: { fontSize: 14, fontWeight: 600, color: "var(--ps-color-text)" },
+    docMeta: { fontSize: 11, color: "var(--ps-color-text-meta)", marginTop: 2 },
     viewBtn: {
       fontSize: 12,
       color: "#e040a8",
@@ -181,17 +181,17 @@ export default function MyNdas() {
       fontSize: 13,
       fontWeight: 600,
       cursor: "pointer",
-      border: variant === "outline" ? "1px solid #2a2a38" : "none",
+      border: variant === "outline" ? "1px solid var(--ps-color-border)" : "none",
       background:
         variant === "danger"
           ? "#7f1d1d"
           : variant === "primary"
           ? "linear-gradient(135deg,#e040a8,#9b59b6)"
           : "transparent",
-      color: variant === "outline" ? "#aaa" : "#fff",
+      color: variant === "outline" ? "var(--ps-color-text-secondary)" : "#fff",
     }),
     disputeBox: {
-      background: "#1e1e2e",
+      background: "var(--ps-color-surface-sunken)",
       border: "1px solid #fdba74",
       borderRadius: 12,
       padding: 16,
@@ -199,10 +199,10 @@ export default function MyNdas() {
     },
     textarea: {
       width: "100%",
-      background: "#0d0d12",
-      border: "1px solid #2a2a38",
+      background: "var(--ps-color-bg)",
+      border: "1px solid var(--ps-color-border)",
       borderRadius: 8,
-      color: "#fff",
+      color: "var(--ps-color-text)",
       fontSize: 13,
       padding: "10px 12px",
       resize: "vertical",
@@ -236,28 +236,28 @@ export default function MyNdas() {
         <p style={styles.sub}>{BUYER_FINANCIALS_PAGE_SUB}</p>
 
         {error && (
-          <div style={{ color: "#f87171", marginBottom: 20, fontSize: 14 }}>
+          <div style={{ color: "var(--ps-color-danger)", marginBottom: 20, fontSize: 14 }}>
             {error}
           </div>
         )}
 
         {loading ? (
-          <p style={{ color: "#8888a0" }}>Loading…</p>
+          <p style={{ color: "var(--ps-color-text-meta)" }}>Loading…</p>
         ) : ndas.length === 0 ? (
           <div
             style={{
-              background: "#17171f",
-              border: "1px solid #2a2a38",
+              background: "var(--ps-color-surface)",
+              border: "1px solid var(--ps-color-border)",
               borderRadius: 16,
               padding: 40,
               textAlign: "center",
             }}
           >
             <p style={{ fontSize: 32 }}>📄</p>
-            <p style={{ color: "#ccc", fontWeight: 600, marginTop: 8 }}>
+            <p style={{ color: "var(--ps-color-text-secondary)", fontWeight: 600, marginTop: 8 }}>
               No business financials requests yet
             </p>
-            <p style={{ color: "#8888a0", fontSize: 13, marginTop: 4 }}>
+            <p style={{ color: "var(--ps-color-text-meta)", fontSize: 13, marginTop: 4 }}>
               When you sign an NDA and unlock financials for a business listing, it will appear here with your signed agreement and documents.
             </p>
           </div>
@@ -286,17 +286,17 @@ export default function MyNdas() {
                   <div style={styles.meta}>Accepted by seller: {fmt(nda.vendor_accepted_at)}</div>
                 )}
                 {nda.rejection_reason && (
-                  <div style={{ ...styles.meta, color: "#f87171" }}>
+                  <div style={{ ...styles.meta, color: "var(--ps-color-danger)" }}>
                     Rejection reason: {nda.rejection_reason}
                   </div>
                 )}
                 {nda.refunded_at && (
-                  <div style={{ ...styles.meta, color: "#86efac" }}>
+                  <div style={{ ...styles.meta, color: "var(--ps-color-success)" }}>
                     Refunded: {fmt(nda.refunded_at)}
                   </div>
                 )}
                 {nda.dispute_reason && (
-                  <div style={{ ...styles.meta, color: "#fdba74" }}>
+                  <div style={{ ...styles.meta, color: "var(--ps-color-warning)" }}>
                     Dispute raised: {nda.dispute_reason}
                   </div>
                 )}
@@ -315,7 +315,7 @@ export default function MyNdas() {
                 {isAccepted && allDocs.length > 0 && (
                   <>
                     <div style={styles.divider} />
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#ccc", marginBottom: 10 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ps-color-text-secondary)", marginBottom: 10 }}>
                       Unlocked Financial Documents
                     </p>
                     {allDocs.map((doc) => (
@@ -343,7 +343,7 @@ export default function MyNdas() {
                 {isAccepted && allDocs.length === 0 && (
                   <>
                     <div style={styles.divider} />
-                    <p style={{ fontSize: 13, color: "#8888a0" }}>
+                    <p style={{ fontSize: 13, color: "var(--ps-color-text-meta)" }}>
                       Your NDA is on file but the seller has not uploaded financial
                       files for this listing yet. You can raise a dispute for a refund
                       if documents are not provided.
@@ -364,10 +364,10 @@ export default function MyNdas() {
                 {/* Dispute form */}
                 {disputeOpen === nda.id && (
                   <div style={styles.disputeBox}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#fdba74", marginBottom: 4 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ps-color-warning)", marginBottom: 4 }}>
                       Raise a Dispute
                     </p>
-                    <p style={{ fontSize: 12, color: "#8888a0" }}>
+                    <p style={{ fontSize: 12, color: "var(--ps-color-text-meta)" }}>
                       Explain why you are raising a dispute. Our team will review and may issue a refund.
                     </p>
                     <textarea
@@ -377,7 +377,7 @@ export default function MyNdas() {
                       onChange={(e) => setDisputeReason(e.target.value)}
                     />
                     {disputeErr && (
-                      <p style={{ fontSize: 12, color: "#f87171", marginTop: 4 }}>{disputeErr}</p>
+                      <p style={{ fontSize: 12, color: "var(--ps-color-danger)", marginTop: 4 }}>{disputeErr}</p>
                     )}
                     <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                       <button
@@ -400,8 +400,8 @@ export default function MyNdas() {
                 {/* Already disputed */}
                 {isDisputed && (
                   <div style={{ ...styles.disputeBox, borderColor: "#fdba74", marginTop: 12 }}>
-                    <p style={{ fontSize: 13, color: "#fdba74", fontWeight: 600 }}>Dispute Raised</p>
-                    <p style={{ fontSize: 12, color: "#8888a0", marginTop: 4 }}>
+                    <p style={{ fontSize: 13, color: "var(--ps-color-warning)", fontWeight: 600 }}>Dispute Raised</p>
+                    <p style={{ fontSize: 12, color: "var(--ps-color-text-meta)", marginTop: 4 }}>
                       Our team is reviewing your dispute. You will be notified by email.
                     </p>
                   </div>

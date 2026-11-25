@@ -138,16 +138,16 @@ const RequirementsModal = ({ order, onClose, onSubmit, submitting }) => {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#13131a] border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+        className="bg-ps-surface border border-ink/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
       >
-        <h3 className="text-white font-bold text-lg mb-1">Submit Requirements</h3>
-        <p className="text-white/40 text-sm mb-5">Answer the seller's questions to kick off your order.</p>
+        <h3 className="text-ink font-bold text-lg mb-1">Submit Requirements</h3>
+        <p className="text-ink/40 text-sm mb-5">Answer the seller's questions to kick off your order.</p>
 
         {requirements.length > 0 ? (
           <div className="space-y-4">
             {requirements.map((req, i) => (
               <div key={i} className="space-y-1.5">
-                <label className="text-white/70 text-sm font-medium">
+                <label className="text-ink/70 text-sm font-medium">
                   {req.question}
                   {req.is_mandatory && <span className="text-pink-400 ml-1">*</span>}
                 </label>
@@ -156,22 +156,22 @@ const RequirementsModal = ({ order, onClose, onSubmit, submitting }) => {
                   onChange={(e) => updateAnswer(req.question, e.target.value)}
                   rows={3}
                   placeholder="Your answer…"
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
+                  className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
                 />
               </div>
             ))}
           </div>
         ) : (
           <div className="py-4 text-center">
-            <IoDocumentTextOutline className="text-4xl text-white/20 mx-auto mb-2" />
-            <p className="text-white/40 text-sm">No questions from the seller. Click submit to begin.</p>
+            <IoDocumentTextOutline className="text-4xl text-ink/20 mx-auto mb-2" />
+            <p className="text-ink/40 text-sm">No questions from the seller. Click submit to begin.</p>
           </div>
         )}
 
         <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/20 transition-all"
+            className="flex-1 py-3 rounded-xl border border-ink/10 text-ink/60 text-sm font-semibold hover:border-ink/20 transition-all"
           >
             Cancel
           </button>
@@ -183,7 +183,7 @@ const RequirementsModal = ({ order, onClose, onSubmit, submitting }) => {
             className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {submitting ? (
-              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Submitting…</>
+              <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />Submitting…</>
             ) : (
               "Submit & Start Order"
             )}
@@ -217,39 +217,39 @@ const DeliveryModal = ({ onClose, onSubmit, submitting }) => {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#13131a] border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+        className="bg-ps-surface border border-ink/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
       >
-        <h3 className="text-white font-bold text-lg mb-1">Submit Delivery</h3>
-        <p className="text-white/40 text-sm mb-5">Upload your work and add a message to the buyer.</p>
+        <h3 className="text-ink font-bold text-lg mb-1">Submit Delivery</h3>
+        <p className="text-ink/40 text-sm mb-5">Upload your work and add a message to the buyer.</p>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-white/70 text-sm font-medium">Message to Buyer</label>
+            <label className="text-ink/70 text-sm font-medium">Message to Buyer</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={4}
               placeholder="Describe what you've delivered and any instructions…"
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
+              className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all resize-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-white/70 text-sm font-medium">
-              Delivery Files <span className="text-white/30 text-xs font-normal">(optional, up to 10)</span>
+            <label className="text-ink/70 text-sm font-medium">
+              Delivery Files <span className="text-ink/30 text-xs font-normal">(optional, up to 10)</span>
             </label>
-            <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-white/10 cursor-pointer hover:border-purple-500/40 hover:bg-white/2 transition-all">
-              <IoCloudUploadOutline className="text-2xl text-white/30" />
+            <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-ink/10 cursor-pointer hover:border-purple-500/40 hover:bg-ink/2 transition-all">
+              <IoCloudUploadOutline className="text-2xl text-ink/30" />
               <div>
-                <p className="text-white/60 text-sm">Click to upload files</p>
-                <p className="text-white/30 text-xs">{files.length} file{files.length !== 1 ? "s" : ""} selected</p>
+                <p className="text-ink/60 text-sm">Click to upload files</p>
+                <p className="text-ink/30 text-xs">{files.length} file{files.length !== 1 ? "s" : ""} selected</p>
               </div>
               <input type="file" multiple className="hidden" onChange={handleFiles} />
             </label>
             {files.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {files.map((f, i) => (
-                  <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-white/60 text-xs">
+                  <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-ink/5 border border-ink/10 rounded-lg text-ink/60 text-xs">
                     <IoAttachOutline />
                     <span className="max-w-[120px] truncate">{f.name}</span>
                     <button onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))} className="text-red-400 ml-1">×</button>
@@ -261,7 +261,7 @@ const DeliveryModal = ({ onClose, onSubmit, submitting }) => {
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/20 transition-all">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-ink/10 text-ink/60 text-sm font-semibold hover:border-ink/20 transition-all">
             Cancel
           </button>
           <motion.button
@@ -272,7 +272,7 @@ const DeliveryModal = ({ onClose, onSubmit, submitting }) => {
             className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {submitting ? (
-              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Submitting…</>
+              <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />Submitting…</>
             ) : (
               <><IoCloudUploadOutline className="text-base" /> Submit Delivery</>
             )}
@@ -300,26 +300,26 @@ const DisputeModal = ({ onClose, onSubmit, submitting }) => {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#13131a] border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+        className="bg-ps-surface border border-ink/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
       >
-        <h3 className="text-white font-bold text-lg mb-1 text-red-400">Raise a Dispute</h3>
-        <p className="text-white/40 text-sm mb-5">Please detail your complaint. This will be sent directly to admin for review.</p>
+        <h3 className="text-ink font-bold text-lg mb-1 text-red-400">Raise a Dispute</h3>
+        <p className="text-ink/40 text-sm mb-5">Please detail your complaint. This will be sent directly to admin for review.</p>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-white/70 text-sm font-medium">Reason for Dispute</label>
+            <label className="text-ink/70 text-sm font-medium">Reason for Dispute</label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={5}
               placeholder="Explain what is wrong with the delivery..."
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-red-400 transition-all resize-none"
+              className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink placeholder-ink/30 text-sm outline-none focus:border-red-400 transition-all resize-none"
             />
           </div>
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/20 transition-all">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-ink/10 text-ink/60 text-sm font-semibold hover:border-ink/20 transition-all">
             Cancel
           </button>
           <motion.button
@@ -731,7 +731,7 @@ const GigOrderDetail = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#0a0a0f] min-h-screen flex items-center justify-center">
+      <div className="bg-ps-bg min-h-screen flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
       </div>
     );
@@ -744,37 +744,37 @@ const GigOrderDetail = () => {
   const images = order.gig?.media_files?.filter((m) => m.media_type === "image") || [];
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
+    <div className="bg-ps-bg min-h-screen relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/8 rounded-full blur-[130px] pointer-events-none" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-white/40 text-sm mb-6">
-          <Link to="/gighub/dashboard" className="hover:text-white/70 transition-colors">Dashboard</Link>
+        <div className="flex items-center gap-2 text-ink/40 text-sm mb-6">
+          <Link to="/gighub/dashboard" className="hover:text-ink/70 transition-colors">Dashboard</Link>
           <span>/</span>
-          <Link to="/gigs/orders" className="hover:text-white/70 transition-colors">Orders</Link>
+          <Link to="/gigs/orders" className="hover:text-ink/70 transition-colors">Orders</Link>
           <span>/</span>
-          <span className="text-white/70">Order #{order.id}</span>
+          <span className="text-ink/70">Order #{order.id}</span>
         </div>
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-8">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white mb-1">{order.gig?.title || `Order #${order.id}`}</h1>
+            <h1 className="text-2xl font-bold text-ink mb-1">{order.gig?.title || `Order #${order.id}`}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full border ${statusCfg.color}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
                 {statusCfg.label}
               </span>
-              <span className="text-white/30 text-xs">Order #{order.id}</span>
-              <span className="text-white/30 text-xs">
+              <span className="text-ink/30 text-xs">Order #{order.id}</span>
+              <span className="text-ink/30 text-xs">
                 {new Date(order.created_at).toLocaleDateString([], { year: "numeric", month: "long", day: "numeric" })}
               </span>
             </div>
           </div>
           <button
             onClick={handleOpenChat}
-            className="flex items-center gap-2 px-4 py-2 bg-[#13131a] border border-white/10 rounded-xl text-white/60 text-sm hover:border-white/20 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-ps-surface border border-ink/10 rounded-xl text-ink/60 text-sm hover:border-ink/20 transition-all"
           >
             <IoChatbubbleOutline />
             {isBuyer ? "Chat with Seller" : "Chat with Buyer"}
@@ -783,8 +783,8 @@ const GigOrderDetail = () => {
 
         {/* Progress Timeline */}
         {order.status !== "cancelled" && (
-          <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5 mb-6">
-            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-4">Order Progress</p>
+          <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5 mb-6">
+            <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-4">Order Progress</p>
             <div className="flex items-center">
               {STATUS_STEPS.map((step, i) => (
                 <React.Fragment key={step.key}>
@@ -795,17 +795,17 @@ const GigOrderDetail = () => {
                           ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white"
                           : i === currentStepIdx
                           ? "border-purple-500 text-white bg-purple-500/20"
-                          : "border-white/10 text-white/20"
+                          : "border-ink/10 text-ink/20"
                       }`}
                     >
                       {i < currentStepIdx ? <IoCheckmarkCircle className="text-base" /> : step.icon}
                     </div>
-                    <span className={`text-[10px] mt-1.5 whitespace-nowrap ${i === currentStepIdx ? "text-white/70" : "text-white/25"}`}>
+                    <span className={`text-[10px] mt-1.5 whitespace-nowrap ${i === currentStepIdx ? "text-ink/70" : "text-ink/25"}`}>
                       {step.label}
                     </span>
                   </div>
                   {i < STATUS_STEPS.length - 1 && (
-                    <div className={`flex-1 h-px mx-2 mb-4 transition-all ${i < currentStepIdx ? "bg-purple-500/60" : "bg-white/10"}`} />
+                    <div className={`flex-1 h-px mx-2 mb-4 transition-all ${i < currentStepIdx ? "bg-purple-500/60" : "bg-ink/10"}`} />
                   )}
                 </React.Fragment>
               ))}
@@ -817,24 +817,24 @@ const GigOrderDetail = () => {
           {/* ── LEFT COL ── */}
           <div className="lg:col-span-2 space-y-5">
             {/* Gig info */}
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Gig Details</p>
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5">
+              <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">Gig Details</p>
               {images[0] && (
                 <img src={images[0].file} alt={order.gig?.title} className="w-full h-48 object-cover rounded-xl mb-4" />
               )}
-              <h3 className="text-white font-semibold text-base mb-2">{order.gig?.title}</h3>
+              <h3 className="text-ink font-semibold text-base mb-2">{order.gig?.title}</h3>
               {order.gig?.description && (
-                <p className="text-white/40 text-sm leading-relaxed line-clamp-3">{order.gig.description}</p>
+                <p className="text-ink/40 text-sm leading-relaxed line-clamp-3">{order.gig.description}</p>
               )}
               {order.package && (
                 <div className="mt-3 flex flex-wrap gap-3 text-xs">
-                  <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/60 capitalize">
+                  <span className="px-2.5 py-1 rounded-full bg-ink/5 border border-ink/10 text-ink/60 capitalize">
                     {order.package.tier} Package
                   </span>
-                  <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/60 flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-full bg-ink/5 border border-ink/10 text-ink/60 flex items-center gap-1">
                     <IoTimeOutline /> {order.package.delivery_days}d delivery
                   </span>
-                  <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/60 flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-full bg-ink/5 border border-ink/10 text-ink/60 flex items-center gap-1">
                     <IoRefreshOutline /> {order.package.revisions} revisions
                   </span>
                 </div>
@@ -843,13 +843,13 @@ const GigOrderDetail = () => {
 
             {/* Requirements submitted */}
             {order.answers?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
-                <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Submitted Requirements</p>
+              <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5">
+                <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">Submitted Requirements</p>
                 <div className="space-y-3">
                   {order.answers.map((ans, i) => (
                     <div key={i} className="space-y-1">
-                      <p className="text-white/60 text-sm font-medium">{ans.requirement_question}</p>
-                      <p className="text-white/40 text-sm bg-white/3 rounded-xl p-3">{ans.answer}</p>
+                      <p className="text-ink/60 text-sm font-medium">{ans.requirement_question}</p>
+                      <p className="text-ink/40 text-sm bg-ink/3 rounded-xl p-3">{ans.answer}</p>
                     </div>
                   ))}
                 </div>
@@ -858,19 +858,19 @@ const GigOrderDetail = () => {
 
             {/* Deliveries */}
             {order.deliveries?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
-                <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Deliveries</p>
+              <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5">
+                <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">Deliveries</p>
                 <div className="space-y-4">
                   {order.deliveries.map((delivery, i) => (
-                    <div key={i} className="bg-white/3 border border-white/5 rounded-xl p-4">
+                    <div key={i} className="bg-ink/3 border border-ink/5 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-white/50 text-xs">Delivery #{i + 1}</span>
-                        <span className="text-white/30 text-xs">
+                        <span className="text-ink/50 text-xs">Delivery #{i + 1}</span>
+                        <span className="text-ink/30 text-xs">
                           {new Date(delivery.delivered_at).toLocaleString()}
                         </span>
                       </div>
                       {delivery.message && (
-                        <p className="text-white/70 text-sm leading-relaxed mb-3">{delivery.message}</p>
+                        <p className="text-ink/70 text-sm leading-relaxed mb-3">{delivery.message}</p>
                       )}
                       {delivery.files?.length > 0 && (
                         <div className="flex flex-wrap gap-2">
@@ -880,7 +880,7 @@ const GigOrderDetail = () => {
                               href={f.file}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white/60 text-xs hover:bg-white/10 transition-all"
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-ink/5 border border-ink/10 rounded-lg text-ink/60 text-xs hover:bg-ink/10 transition-all"
                             >
                               <IoAttachOutline /> File {fi + 1}
                             </a>
@@ -894,8 +894,8 @@ const GigOrderDetail = () => {
             )}
 
             {/* Services Workspace (frontend-test style) */}
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Services Workspace</p>
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5">
+              <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">Services Workspace</p>
               {isRequirementsPending ? (
                 <div className="space-y-2">
                   <p className="text-yellow-300/90 text-sm">
@@ -904,7 +904,7 @@ const GigOrderDetail = () => {
                 </div>
               ) : !escrowId ? (
                 <div className="space-y-2">
-                  <p className="text-white/45 text-sm">
+                  <p className="text-ink/45 text-sm">
                     No escrow linked for this order yet. Create it now (recommended) or add a reference manually on the right.
                   </p>
                   <button
@@ -942,9 +942,9 @@ const GigOrderDetail = () => {
                       for this account to see accurate receive/withdraw state.
                     </div>
                   )}
-                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-                    <h4 className="text-white/80 text-sm font-semibold mb-2">Progress checklist</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-white/60">
+                  <div className="rounded-xl border border-ink/10 bg-ink/[0.02] p-3">
+                    <h4 className="text-ink/80 text-sm font-semibold mb-2">Progress checklist</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-ink/60">
                       <span>Milestones done: {String(escrowState[6])} / {String(escrowState[5])}</span>
                       <span>Deposit released: {escrowState[7] ? "Yes" : "No"}</span>
                       <span>Halfway released: {escrowState[8] ? "Yes" : "No"}</span>
@@ -958,9 +958,9 @@ const GigOrderDetail = () => {
                       <span>Synced: {lastEscrowSyncAt || "just now"}</span>
                     </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-                    <h4 className="text-white/80 text-sm font-semibold mb-2">Projected payout model (with 4% platform fee)</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-white/60">
+                  <div className="rounded-xl border border-ink/10 bg-ink/[0.02] p-3">
+                    <h4 className="text-ink/80 text-sm font-semibold mb-2">Projected payout model (with 4% platform fee)</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-ink/60">
                       <span>Deposit gross: {Number(ethers.formatEther(depositGrossWei)).toFixed(4)} ETH</span>
                       <span>Seller net deposit: {Number(ethers.formatEther(sellerDepositNetWei)).toFixed(4)} ETH</span>
                       <span>Halfway gross: {Number(ethers.formatEther(halfwayGrossWei)).toFixed(4)} ETH</span>
@@ -972,7 +972,7 @@ const GigOrderDetail = () => {
                       <span>Platform cut (deposit+halfway+completion): {Number(ethers.formatEther(platformDepositWei + platformHalfwayWei + platformCompletionWei)).toFixed(4)} ETH</span>
                       <span>Platform cut (final current): {Number(ethers.formatEther(platformFinalHappyWei)).toFixed(4)} ETH</span>
                     </div>
-                    <p className="text-[11px] text-white/40 mt-2">
+                    <p className="text-[11px] text-ink/40 mt-2">
                       Gross = released by escrow step, Seller net = after protocol fee. Released amounts may stay under pending withdrawals
                       until the participant runs withdraw.
                     </p>
@@ -980,26 +980,26 @@ const GigOrderDetail = () => {
 
                   {showBuyerControls && (
                     <div className="space-y-2">
-                      <h4 className="text-white/80 text-sm font-semibold">Client actions</h4>
-                      <p className="text-[11px] text-white/45">
+                      <h4 className="text-ink/80 text-sm font-semibold">Client actions</h4>
+                      <p className="text-[11px] text-ink/45">
                         Simple flow: release kickoff payment → freelancer marks milestones → submit midway review → release
                         completion → submit final review.
                       </p>
                       <button disabled={chainBusy || !gates?.releaseDeposit?.enabled} onClick={() => runServices("releaseDeposit")} className="w-full px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs disabled:opacity-50">
                         Release kickoff payment to freelancer
                       </button>
-                      <p className="text-[11px] text-white/45">{gateBody("releaseDeposit", "First slice so they can start.")}</p>
+                      <p className="text-[11px] text-ink/45">{gateBody("releaseDeposit", "First slice so they can start.")}</p>
 
                       <ServiceReviewMatrix id="midway-main" title="Midway review (1-7 each)" values={midwayScores} onChange={setMidwayScores} disabled={chainBusy || !gates?.submitMidwayReview?.enabled} />
                       <button disabled={chainBusy || !gates?.submitMidwayReview?.enabled} onClick={() => runServices("submitMidwayReview", [midwayScores.respect, midwayScores.comm, midwayScores.timeliness, midwayScores.quality])} className="w-full px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs disabled:opacity-50">
                         Submit midway review on-chain
                       </button>
-                      <p className="text-[11px] text-white/45">{gateBody("submitMidwayReview", "After half the milestones are done.")}</p>
+                      <p className="text-[11px] text-ink/45">{gateBody("submitMidwayReview", "After half the milestones are done.")}</p>
 
                       <button disabled={chainBusy || !gates?.releaseCompletion?.enabled} onClick={() => runServices("releaseCompletion")} className="w-full px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs disabled:opacity-50">
                         Release completion payment
                       </button>
-                      <p className="text-[11px] text-white/45">{gateBody("releaseCompletion", "After all milestones are marked done.")}</p>
+                      <p className="text-[11px] text-ink/45">{gateBody("releaseCompletion", "After all milestones are marked done.")}</p>
 
                       <ServiceReviewMatrix
                         id="final-happy-main"
@@ -1023,7 +1023,7 @@ const GigOrderDetail = () => {
                           ? "Submit final review (0 ETH - dispute path)"
                           : "Submit final review + satisfaction payment"}
                       </button>
-                      <p className="text-[11px] text-white/45">
+                      <p className="text-[11px] text-ink/45">
                         {gateBody(
                           "submitFinalReview",
                           finalHappyOverall <= 2
@@ -1031,7 +1031,7 @@ const GigOrderDetail = () => {
                             : `Sends ${Number(ethers.formatEther(finalHappyValueWei)).toFixed(4)} ETH with final review.`
                         )}
                       </p>
-                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2 text-[11px] text-white/55">
+                      <div className="rounded-lg border border-ink/10 bg-ink/[0.02] p-2 text-[11px] text-ink/55">
                         <p>
                           Final satisfaction score uses weighted percentages:
                           Respect 10% + Communication 5% + Timeliness 30% + Quality 55%.
@@ -1051,11 +1051,11 @@ const GigOrderDetail = () => {
                           satisfactionReleased={Boolean(escrowState?.[10])}
                         />
                       )}
-                      <div className="flex items-center gap-2 text-[11px] text-white/45">
+                      <div className="flex items-center gap-2 text-[11px] text-ink/45">
                         <button
                           type="button"
                           title={finalReviewInfoText}
-                          className="w-4 h-4 rounded-full border border-white/20 text-white/70 flex items-center justify-center text-[10px]"
+                          className="w-4 h-4 rounded-full border border-ink/20 text-ink/70 flex items-center justify-center text-[10px]"
                         >
                           i
                         </button>
@@ -1065,13 +1065,13 @@ const GigOrderDetail = () => {
                       <button
                         disabled={chainBusy}
                         onClick={runWithdraw}
-                        className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs disabled:opacity-50"
+                        className="w-full px-3 py-2 rounded-lg bg-ink/5 border border-ink/10 text-ink/70 text-xs disabled:opacity-50"
                       >
                         Move money to my wallet (client)
                       </button>
 
-                      <details className="rounded-lg border border-white/10 bg-white/[0.02] p-2">
-                        <summary className="text-xs text-white/70 cursor-pointer">Edge cases & testing</summary>
+                      <details className="rounded-lg border border-ink/10 bg-ink/[0.02] p-2">
+                        <summary className="text-xs text-ink/70 cursor-pointer">Edge cases & testing</summary>
                         <div className="space-y-2 mt-2">
                           <ServiceReviewMatrix
                             id="final-unhappy-main"
@@ -1104,7 +1104,7 @@ const GigOrderDetail = () => {
                             <input
                               value={disputeEth}
                               onChange={(e) => setDisputeEth(e.target.value)}
-                              className="bg-[#1a1a24] border border-white/10 rounded-lg px-2 py-1.5 text-white text-[11px]"
+                              className="bg-ps-sunken border border-ink/10 rounded-lg px-2 py-1.5 text-ink text-[11px]"
                               placeholder="Dispute ETH"
                             />
                             <button
@@ -1115,7 +1115,7 @@ const GigOrderDetail = () => {
                               Open Dispute
                             </button>
                           </div>
-                          <p className="text-[11px] text-white/45">{gateBody("openDispute", "Client only; unhappy path.")}</p>
+                          <p className="text-[11px] text-ink/45">{gateBody("openDispute", "Client only; unhappy path.")}</p>
                           <button
                             disabled={chainBusy || !gates?.cancelExpiredEscrow?.enabled}
                             onClick={() => runServices("cancelExpiredEscrow")}
@@ -1123,7 +1123,7 @@ const GigOrderDetail = () => {
                           >
                             Cancel if job expired
                           </button>
-                          <p className="text-[11px] text-white/45">{gateBody("cancelExpiredEscrow", "Use after deadlines/grace.")}</p>
+                          <p className="text-[11px] text-ink/45">{gateBody("cancelExpiredEscrow", "Use after deadlines/grace.")}</p>
                         </div>
                       </details>
                     </div>
@@ -1131,8 +1131,8 @@ const GigOrderDetail = () => {
 
                   {showSellerControls && (
                     <div className="space-y-2">
-                      <h4 className="text-white/80 text-sm font-semibold">Freelancer actions</h4>
-                      <p className="text-[11px] text-white/45">
+                      <h4 className="text-ink/80 text-sm font-semibold">Freelancer actions</h4>
+                      <p className="text-[11px] text-ink/45">
                         Milestones unlock step-by-step. If blocked, read the line below each button for what to do next.
                       </p>
                       {escrowState?.[12] && sellerFinalBreakdown && (
@@ -1149,12 +1149,12 @@ const GigOrderDetail = () => {
                         </div>
                       )}
                       {!escrowState?.[12] && escrowAmountWei > 0n && (
-                        <p className="text-[11px] text-white/45 rounded-lg border border-white/10 bg-white/[0.02] p-2">
+                        <p className="text-[11px] text-ink/45 rounded-lg border border-ink/10 bg-ink/[0.02] p-2">
                           When the client submits the final review, a step-by-step breakdown appears here (30% slice, timeliness deduction if any,
                           4% platform fee on gross, your net credit).
                         </p>
                       )}
-                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2 text-[11px] text-white/55">
+                      <div className="rounded-lg border border-ink/10 bg-ink/[0.02] p-2 text-[11px] text-ink/55">
                         <p>
                           Final satisfaction scoring (buyer review) weights are: Respect 10% + Communication 5% + Timeliness 30% + Quality 55%.
                         </p>
@@ -1172,14 +1172,14 @@ const GigOrderDetail = () => {
                             <button disabled={chainBusy || !gates?.[key]?.enabled} onClick={() => runServices("completeMilestone", [i])} className="w-full px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs disabled:opacity-50">
                               Mark milestone {i + 1} as done
                             </button>
-                            <p className="text-[11px] text-white/45 mt-1">{gateBody(key, `Complete slice ${i + 1} in order.`)}</p>
+                            <p className="text-[11px] text-ink/45 mt-1">{gateBody(key, `Complete slice ${i + 1} in order.`)}</p>
                           </div>
                         );
                       })}
                       <button
                         disabled={chainBusy}
                         onClick={runWithdraw}
-                        className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs disabled:opacity-50"
+                        className="w-full px-3 py-2 rounded-lg bg-ink/5 border border-ink/10 text-ink/70 text-xs disabled:opacity-50"
                       >
                         Move earnings to my wallet
                       </button>
@@ -1205,8 +1205,8 @@ const GigOrderDetail = () => {
             </div>
 
             {/* Action buttons */}
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-4">Actions</p>
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5">
+              <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-4">Actions</p>
               <div className="flex flex-wrap gap-3">
                 {/* BUYER: submit requirements */}
                 {isBuyer && order.status === "pending_requirements" && (
@@ -1310,14 +1310,14 @@ const GigOrderDetail = () => {
               orderScoped
               title={isBuyer ? "Buyer Wallet Transactions" : "Seller Wallet Transactions"}
             />
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Services Escrow (On-chain)</p>
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
+              <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">Services Escrow (On-chain)</p>
               <div className="space-y-2">
                 <input
                   value={escrowId}
                   onChange={(e) => setEscrowId(e.target.value.trim())}
                   placeholder="0x... escrowId (bytes32)"
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs outline-none focus:border-purple-400"
+                  className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-3 py-2.5 text-ink text-xs outline-none focus:border-purple-400"
                 />
                 <div className="flex gap-2">
                   <button
@@ -1328,21 +1328,21 @@ const GigOrderDetail = () => {
                         toast.success("Escrow id linked to order.");
                       }
                     }}
-                    className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs hover:bg-white/10"
+                    className="flex-1 px-3 py-2 rounded-lg bg-ink/5 border border-ink/10 text-ink/70 text-xs hover:bg-ink/10"
                   >
                     Save Link
                   </button>
                   <button
                     onClick={refreshEscrow}
-                    className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 text-xs hover:bg-white/10"
+                    className="px-3 py-2 rounded-lg bg-ink/5 border border-ink/10 text-ink/70 text-xs hover:bg-ink/10"
                   >
                     Refresh
                   </button>
                 </div>
                 {escrowState && (
-                  <div className="pt-2 border-t border-white/5">
-                    <p className="text-[11px] text-white/45 mb-1">Progress checklist</p>
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-white/55">
+                  <div className="pt-2 border-t border-ink/5">
+                    <p className="text-[11px] text-ink/45 mb-1">Progress checklist</p>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-ink/55">
                       <span>Milestones done: {Number(escrowState[6])}/{Number(escrowState[5])}</span>
                       <span>Released to seller: {Number(ethers.formatEther(escrowState[4])).toFixed(4)} ETH</span>
                       <span>Deposit released: {escrowState[7] ? "Yes" : "No"}</span>
@@ -1356,25 +1356,25 @@ const GigOrderDetail = () => {
                     </div>
                   </div>
                 )}
-                <p className="text-[11px] text-white/45 border-t border-white/5 pt-2">
+                <p className="text-[11px] text-ink/45 border-t border-ink/5 pt-2">
                   Contract actions are shown only in the main <strong>Services Workspace</strong> panel on the left.
                 </p>
               </div>
             </div>
 
             {/* Price breakdown */}
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Price Breakdown</p>
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
+              <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">Price Breakdown</p>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-white/60">
+                <div className="flex justify-between text-ink/60">
                   <span>Gig Price</span>
                   <span>${parseFloat(order.gig_price || 0).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-white/40 text-xs">
+                <div className="flex justify-between text-ink/40 text-xs">
                   <span>Marketplace Fee (5%)</span>
                   <span>${parseFloat(order.buyer_fee || 0).toFixed(2)}</span>
                 </div>
-                <div className="border-t border-white/5 pt-2 flex justify-between text-white font-bold">
+                <div className="border-t border-ink/5 pt-2 flex justify-between text-ink font-bold">
                   <span>Total Paid</span>
                   <span>${parseFloat(order.total_price || 0).toFixed(2)}</span>
                 </div>
@@ -1382,8 +1382,8 @@ const GigOrderDetail = () => {
             </div>
 
             {/* Seller info */}
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
+              <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">
                 {isBuyer ? "Seller" : "Buyer"}
               </p>
               <div className="flex items-center gap-3">
@@ -1395,13 +1395,13 @@ const GigOrderDetail = () => {
                   </div>
                 )}
                 <div>
-                  <p className="text-white font-semibold text-sm">
+                  <p className="text-ink font-semibold text-sm">
                     {isBuyer ? order.seller_username : order.buyer_username}
                   </p>
                   {isBuyer && order.gig?.worker?.rating && (
                     <div className="flex items-center gap-1 mt-0.5">
                       <IoStarSharp className="text-yellow-400 text-xs" />
-                      <span className="text-white/50 text-xs">{order.gig.worker.rating}</span>
+                      <span className="text-ink/50 text-xs">{order.gig.worker.rating}</span>
                     </div>
                   )}
                 </div>
@@ -1410,9 +1410,9 @@ const GigOrderDetail = () => {
 
             {/* Delivery info */}
             {order.expected_delivery_date && (
-              <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-                <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Delivery Info</p>
-                <div className="flex items-center gap-2 text-white/60 text-sm">
+              <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
+                <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-2">Delivery Info</p>
+                <div className="flex items-center gap-2 text-ink/60 text-sm">
                   <IoTimeOutline className="text-purple-400 text-base" />
                   <span>Due: {new Date(order.expected_delivery_date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span>
                 </div>
@@ -1420,14 +1420,14 @@ const GigOrderDetail = () => {
             )}
 
             {/* Trust indicators */}
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
               <div className="space-y-2">
                 {[
                   { icon: <IoShieldCheckmarkOutline className="text-green-400" />, text: "Secure payment via Square" },
                   { icon: <IoCheckmarkCircle className="text-blue-400" />, text: "Money-back guarantee" },
                   { icon: <IoAlertCircleOutline className="text-yellow-400" />, text: "Dispute resolution available" },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-white/40 text-xs">
+                  <div key={i} className="flex items-center gap-2 text-ink/40 text-xs">
                     {item.icon}
                     {item.text}
                   </div>
@@ -1439,7 +1439,7 @@ const GigOrderDetail = () => {
             {order.gig?.id && (
               <Link
                 to={gigUrl(order.gig)}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm hover:bg-white/10 transition-all"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-ink/5 border border-ink/10 text-ink/60 text-sm hover:bg-ink/10 transition-all"
               >
                 <FaBriefcase /> View Gig
               </Link>

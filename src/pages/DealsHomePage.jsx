@@ -11,21 +11,21 @@ import { useAccessToken } from "../hooks/useAccessToken";
 import { VENDOR_PORTAL_BASE } from "../utils/envUrls";
 
 const PAGE_CSS = `
-.deals-page{min-height:100vh;background:var(--ps-bg,#0e0f13);color:#f0f0f4;font-family:var(--ps-font-sans),'Plus Jakarta Sans',sans-serif;padding:24px 16px 80px;}
+.deals-page{min-height:100vh;background:var(--ps-bg,var(--ps-color-bg));color:var(--ps-color-text);font-family:var(--ps-font-sans),'Plus Jakarta Sans',sans-serif;padding:24px 16px 80px;}
 .deals-inner{max-width:1280px;margin:0 auto;}
 .deals-hero{margin-bottom:28px;}
 .deals-hero h1{font-size:32px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px;}
-.deals-hero h1 span{color:#9747ff;}
-.deals-hero p{color:#66667a;font-size:15px;max-width:640px;line-height:1.55;}
+.deals-hero h1 span{color:var(--ps-color-action-text);}
+.deals-hero p{color:var(--ps-color-text-meta);font-size:15px;max-width:640px;line-height:1.55;}
 .deals-nav{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
-.deals-nav a{font-size:13px;font-weight:600;color:#b0b0c0;text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid #2a2a33;}
-.deals-nav a.active,.deals-nav a:hover{color:#9747ff;border-color:rgba(151, 71, 255,.35);}
+.deals-nav a{font-size:13px;font-weight:600;color:var(--ps-color-text-secondary);text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid var(--ps-color-border);}
+.deals-nav a.active,.deals-nav a:hover{color:var(--ps-color-action-text);border-color:rgba(151, 71, 255,.35);}
 .deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
-.deals-empty{text-align:center;padding:60px 20px;color:#66667a;}
-.deals-loading{text-align:center;padding:40px;color:#66667a;}
-.deals-more{margin-top:20px;border:1.5px dashed #2a2a33;border-radius:10px;padding:20px;text-align:center;color:#b0b0c0;}
-.deals-more strong{display:block;color:#f0f0f4;font-size:15px;margin-bottom:6px;}
-.deals-more a{color:#9747ff;font-weight:700;text-decoration:none;}
+.deals-empty{text-align:center;padding:60px 20px;color:var(--ps-color-text-meta);}
+.deals-loading{text-align:center;padding:40px;color:var(--ps-color-text-meta);}
+.deals-more{margin-top:20px;border:1.5px dashed var(--ps-color-border);border-radius:10px;padding:20px;text-align:center;color:var(--ps-color-text-secondary);}
+.deals-more strong{display:block;color:var(--ps-color-text);font-size:15px;margin-bottom:6px;}
+.deals-more a{color:var(--ps-color-action-text);font-weight:700;text-decoration:none;}
 `;
 
 export default function DealsHomePage() {
@@ -140,7 +140,7 @@ export default function DealsHomePage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  style={{ color: "#9747ff", background: "none", border: "none", cursor: "pointer", marginTop: 10 }}
+                  style={{ color: "var(--ps-color-action-text)", background: "none", border: "none", cursor: "pointer", marginTop: 10 }}
                 >
                   Clear filters
                 </button>

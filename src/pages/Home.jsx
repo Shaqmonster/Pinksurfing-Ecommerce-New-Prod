@@ -48,7 +48,7 @@ const Home = () => {
   const accessToken = useAccessToken();
   const navigate = useNavigate();
   const [cookies] = useCookies([]);
-  const { setCategory, isDarkMode, user, currency } = useContext(authContext);
+  const { setCategory, user, currency } = useContext(authContext);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [discountedProducts, setDiscountedProducts] = useState([]);
   const [stores, setStores] = useState([]);
@@ -448,7 +448,7 @@ const Home = () => {
             <div className="flex justify-center mb-4">
               <img src="/brand/logo.jpeg?v=2" alt="" className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)]" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-ink tracking-tight">
               PinkSurfing
             </h1>
             <p className="text-[var(--ps-muted)] text-sm sm:text-base max-w-2xl mx-auto">
@@ -457,13 +457,13 @@ const Home = () => {
             <div className="mt-5 flex flex-wrap justify-center items-center gap-2">
               <Link
                 to="/request-product"
-                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-ink"
               >
                 Request a product
               </Link>
               <Link
                 to="/gigs/jobs"
-                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-ink"
               >
                 Jobs
               </Link>
@@ -473,7 +473,7 @@ const Home = () => {
                   aria-haspopup="menu"
                   aria-expanded={sellMenuOpen}
                   onClick={() => setSellMenuOpen((o) => !o)}
-                  className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
+                  className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-ink"
                 >
                   Sell
                 </button>
@@ -489,7 +489,7 @@ const Home = () => {
                         setSellMenuOpen(false);
                         handleMyStoreClick("portal");
                       }}
-                      className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-white hover:bg-white/10"
+                      className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-ink hover:bg-ink/10"
                     >
                       Open vendor portal
                     </button>
@@ -500,7 +500,7 @@ const Home = () => {
                         setSellMenuOpen(false);
                         handleMyStoreClick("become");
                       }}
-                      className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-white hover:bg-white/10"
+                      className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-ink hover:bg-ink/10"
                     >
                       Become a seller
                     </button>
@@ -509,13 +509,13 @@ const Home = () => {
               </div>
               <Link
                 to="/gighub"
-                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-ink"
               >
                 Gigs
               </Link>
               <Link
                 to="/deals"
-                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-white"
+                className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-[14px] border border-[var(--ps-brd)] text-[var(--ps-muted)] text-sm font-medium hover:text-ink"
               >
                 Deals
               </Link>
@@ -546,16 +546,16 @@ const Home = () => {
                           loading="eager"
                           decoding="async"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
+                        <div className="on-media absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
                         {item.coming_soon && (
-                          <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-                            <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white tracking-wide">
+                          <div className="on-media absolute inset-0 z-[15] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+                            <span className="px-3 py-1.5 rounded-lg bg-ink/10 border border-ink/20 text-xs font-bold text-ink tracking-wide">
                               Coming soon
                             </span>
                           </div>
                         )}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-                          <h3 className="text-white text-2xl font-bold mb-2">{item.name}</h3>
+                        <div className="on-media absolute bottom-0 left-0 right-0 p-6 z-20">
+                          <h3 className="text-ink text-2xl font-bold mb-2">{item.name}</h3>
                           {!item.coming_soon && (
                             <div className="flex items-center text-purple-300">
                               <span className="text-sm font-semibold">Explore Now</span>
@@ -580,7 +580,7 @@ const Home = () => {
                   onClick={() => setCategoryCarouselIndex(index)}
                   className={`transition-all duration-300 rounded-full ${categoryCarouselIndex === index
                     ? "w-8 h-3 bg-gradient-to-r from-purple-500 to-pink-500"
-                    : "w-3 h-3 bg-white/30 hover:bg-white/50"
+                    : "w-3 h-3 bg-ink/30 hover:bg-ink/50"
                     }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -590,19 +590,19 @@ const Home = () => {
             {/* Navigation Arrows */}
             <button
               onClick={() => setCategoryCarouselIndex((prev) => (prev > 0 ? prev - 1 : categories.length - 1))}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-full p-3 transition-all z-10"
+              className="on-media absolute left-2 top-1/2 -translate-y-1/2 bg-ink/10 backdrop-blur-md hover:bg-ink/20 rounded-full p-3 transition-all z-10"
               aria-label="Previous slide"
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={() => setCategoryCarouselIndex((prev) => (prev < categories.length - 1 ? prev + 1 : 0))}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-full p-3 transition-all z-10"
+              className="on-media absolute right-2 top-1/2 -translate-y-1/2 bg-ink/10 backdrop-blur-md hover:bg-ink/20 rounded-full p-3 transition-all z-10"
               aria-label="Next slide"
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -620,7 +620,7 @@ const Home = () => {
                     : "cursor-pointer hover:-translate-y-1"
                 }`}
               >
-                <div className={`rounded-2xl overflow-hidden h-[200px] sm:h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)] transition-colors ${item.coming_soon ? "" : "hover:border-white/25"}`}>
+                <div className={`rounded-2xl overflow-hidden h-[200px] sm:h-[220px] relative border border-[var(--ps-brd)] bg-[var(--ps-card)] transition-colors ${item.coming_soon ? "" : "hover:border-ink/25"}`}>
                   <img
                     src={item.image}
                     alt={`${item.name} on PinkSurfing marketplace`}
@@ -628,16 +628,16 @@ const Home = () => {
                     loading="eager"
                     decoding="async"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
+                  <div className="on-media absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
                   {item.coming_soon && (
-                    <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/45">
-                      <span className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-semibold text-white">
+                    <div className="on-media absolute inset-0 z-[15] flex items-center justify-center bg-black/45">
+                      <span className="px-3 py-1.5 rounded-lg bg-ink/10 border border-ink/20 text-xs font-semibold text-ink">
                         Coming soon
                       </span>
                     </div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
-                    <h3 className="text-white text-lg sm:text-xl font-semibold mb-1 tracking-tight">{item.name}</h3>
+                  <div className="on-media absolute bottom-0 left-0 right-0 p-5 z-20">
+                    <h3 className="text-ink text-lg sm:text-xl font-semibold mb-1 tracking-tight">{item.name}</h3>
                     {!item.coming_soon && (
                       <span className="text-sm font-medium text-pink-200/90">Explore</span>
                     )}
@@ -649,7 +649,7 @@ const Home = () => {
         </section>
 
         {/* Browse by Category */}
-        <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-10 sm:py-12 bg-white/5 border-y border-white/10 overflow-hidden">
+        <section className="relative z-10 px-4 sm:px-6 lg:px-12 py-10 sm:py-12 bg-ink/5 border-y border-ink/10 overflow-hidden">
           <div className="relative max-w-6xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-center">
               <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -693,7 +693,7 @@ const Home = () => {
                         group w-full text-left rounded-2xl overflow-hidden
                         border border-[var(--ps-brd)] bg-[var(--ps-card)]
                         transition-colors
-                        hover:border-white/25 hover:-translate-y-1
+                        hover:border-ink/25 hover:-translate-y-1
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)]
                         ${isSoon ? "cursor-default" : "cursor-pointer active:scale-[0.98]"}
                       `}
@@ -707,18 +707,18 @@ const Home = () => {
                           decoding="async"
                         />
                         <div
-                          className="absolute inset-0 bg-gradient-to-t from-[#0e0f13] via-[#0e0f13]/30 to-transparent z-[1] pointer-events-none"
+                          className="absolute inset-0 bg-gradient-to-t from-[#0e0f13]/80 via-[#0e0f13]/30 to-transparent z-[1] pointer-events-none" /* theme-ok: scrim over photo */
                           aria-hidden
                         />
                         {isSoon && (
-                          <div className="absolute inset-0 z-[3] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-                            <span className="px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-[10px] sm:text-xs font-bold text-white tracking-wide">
+                          <div className="on-media absolute inset-0 z-[3] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+                            <span className="px-2 py-1 rounded-lg bg-ink/10 border border-ink/20 text-[10px] sm:text-xs font-bold text-ink tracking-wide">
                               Coming soon
                             </span>
                           </div>
                         )}
-                        <div className="absolute bottom-0 left-0 right-0 z-[4] p-3 sm:p-3.5 pt-10 bg-gradient-to-t from-black via-black/70 to-transparent">
-                          <h3 className="text-xs sm:text-sm font-semibold text-white text-center leading-snug line-clamp-2 drop-shadow-lg group-hover:text-pink-100 transition-colors">
+                        <div className="on-media absolute bottom-0 left-0 right-0 z-[4] p-3 sm:p-3.5 pt-10 bg-gradient-to-t from-black via-black/70 to-transparent">
+                          <h3 className="text-xs sm:text-sm font-semibold text-ink text-center leading-snug line-clamp-2 drop-shadow-lg group-hover:text-pink-100 transition-colors">
                             {item.name}
                           </h3>
                         </div>
@@ -737,7 +737,7 @@ const Home = () => {
 
             <LayoutGroup>
               <div
-                className="relative flex flex-wrap justify-center gap-1 sm:gap-2 mb-8 p-1 rounded-2xl bg-[var(--ps-surf)]/60 border border-[var(--ps-brd)] max-w-3xl mx-auto"
+                className="relative flex flex-wrap justify-center gap-1 sm:gap-2 mb-8 p-1 rounded-2xl bg-[color-mix(in_srgb,var(--ps-surf)_60%,transparent)] border border-[var(--ps-brd)] max-w-3xl mx-auto"
                 role="tablist"
                 aria-label="Featured collections"
               >
@@ -752,13 +752,13 @@ const Home = () => {
                       aria-selected={active}
                       onClick={() => selectFeaturedTab(category.id)}
                       className={`relative z-10 flex items-center gap-2 min-h-[44px] px-3 sm:px-4 rounded-xl text-sm font-medium transition-colors ${
-                        active ? "text-white" : "text-[var(--ps-muted)] hover:text-white"
+                        active ? "text-ink" : "text-[var(--ps-muted)] hover:text-ink"
                       }`}
                     >
                       {active && (
                         <motion.span
                           layoutId="home-tab-pill"
-                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)]"
+                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white"
                           transition={tabTransition}
                         />
                       )}
@@ -885,7 +885,7 @@ const Home = () => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-3xl glass bg-[#1a1a24] border border-purple-500/30 p-8 text-left align-middle shadow-2xl shadow-purple-500/20 transition-all">
+                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-3xl glass bg-ps-sunken border border-purple-500/30 p-8 text-left align-middle shadow-2xl shadow-purple-500/20 transition-all">
                   <Dialog.Title
                     as="h3"
                     className="text-2xl font-bold mb-2 flex items-center justify-between"
@@ -895,20 +895,20 @@ const Home = () => {
                     </span>
                     <button
                       onClick={() => setIsVendorDialogOpen(false)}
-                      className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
+                      className="text-ps-meta hover:text-ink transition-colors p-1 hover:bg-ink/10 rounded-lg"
                     >
                       <IoClose size={24} />
                     </button>
                   </Dialog.Title>
 
-                  <p className="text-sm text-gray-400 mb-6">
+                  <p className="text-sm text-ps-meta mb-6">
                     Please fill in the shipping related information to register as a vendor.
                   </p>
 
                   <form onSubmit={handleVendorRegistration} className="space-y-5">
                     {/* Store Name */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                         Store Name <span className="text-pink-500">*</span>
                       </label>
                       <input
@@ -917,14 +917,14 @@ const Home = () => {
                         value={vendorFormData.store_name}
                         onChange={handleVendorFormChange}
                         required
-                        className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-gray-500 transition-all"
+                        className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink placeholder-ps-meta transition-all"
                         placeholder="Enter your store name"
                       />
                     </div>
 
                     {/* Website */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                         Website
                       </label>
                       <input
@@ -932,14 +932,14 @@ const Home = () => {
                         name="website"
                         value={vendorFormData.website}
                         onChange={handleVendorFormChange}
-                        className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-gray-500 transition-all"
+                        className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink placeholder-ps-meta transition-all"
                         placeholder="https://yourwebsite.com"
                       />
                     </div>
 
                     {/* Bio */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                         Bio
                       </label>
                       <textarea
@@ -947,14 +947,14 @@ const Home = () => {
                         value={vendorFormData.bio}
                         onChange={handleVendorFormChange}
                         rows="3"
-                        className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-gray-500 transition-all resize-none"
+                        className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink placeholder-ps-meta transition-all resize-none"
                         placeholder="Tell us about your store"
                       />
                     </div>
 
                     {/* Store Image Upload */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                         Store Image
                       </label>
                       <div className="space-y-3">
@@ -962,7 +962,7 @@ const Home = () => {
                           type="file"
                           accept="image/*"
                           onChange={handleStoreImageChange}
-                          className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white/5 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white hover:file:from-purple-600 hover:file:to-pink-600 file:cursor-pointer transition-all"
+                          className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 bg-ink/5 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white hover:file:from-purple-600 hover:file:to-pink-600 file:cursor-pointer transition-all"
                         />
 
                         {storeImagePreview && (
@@ -986,7 +986,7 @@ const Home = () => {
                     </div>
 
                     {/* Shipping Address Section */}
-                    <div className="border-t border-white/10 pt-6 mt-6">
+                    <div className="border-t border-ink/10 pt-6 mt-6">
                       <h4 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                         Shipping Address
                       </h4>
@@ -994,7 +994,7 @@ const Home = () => {
                       <div className="space-y-4">
                         {/* Street 1 */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                             Street Address 1 <span className="text-pink-500">*</span>
                           </label>
                           <input
@@ -1003,14 +1003,14 @@ const Home = () => {
                             value={vendorFormData.street1}
                             onChange={handleVendorFormChange}
                             required
-                            className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-gray-500 transition-all"
+                            className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink placeholder-ps-meta transition-all"
                             placeholder="Street address"
                           />
                         </div>
 
                         {/* Street 2 */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                             Street Address 2
                           </label>
                           <input
@@ -1018,7 +1018,7 @@ const Home = () => {
                             name="street2"
                             value={vendorFormData.street2}
                             onChange={handleVendorFormChange}
-                            className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-gray-500 transition-all"
+                            className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink placeholder-ps-meta transition-all"
                             placeholder="Apartment, suite, etc. (optional)"
                           />
                         </div>
@@ -1027,7 +1027,7 @@ const Home = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           {/* Country */}
                           <div>
-                            <label className="block text-sm font-semibold text-gray-300 mb-2">
+                            <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                               Country <span className="text-pink-500">*</span>
                             </label>
                             <select
@@ -1035,11 +1035,11 @@ const Home = () => {
                               value={vendorFormData.country}
                               onChange={handleVendorFormChange}
                               required
-                              className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white transition-all cursor-pointer"
+                              className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink transition-all cursor-pointer"
                             >
-                              <option value="" className="bg-[#1a1a24]">Select Country</option>
+                              <option value="" className="bg-ps-sunken">Select Country</option>
                               {countries.map((country) => (
-                                <option key={country.isoCode} value={country.isoCode} className="bg-[#1a1a24]">
+                                <option key={country.isoCode} value={country.isoCode} className="bg-ps-sunken">
                                   {country.name}
                                 </option>
                               ))}
@@ -1048,7 +1048,7 @@ const Home = () => {
 
                           {/* State */}
                           <div>
-                            <label className="block text-sm font-semibold text-gray-300 mb-2">
+                            <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                               State <span className="text-pink-500">*</span>
                             </label>
                             <select
@@ -1057,11 +1057,11 @@ const Home = () => {
                               onChange={handleVendorFormChange}
                               required
                               disabled={!vendorFormData.country}
-                              className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <option value="" className="bg-[#1a1a24]">Select State</option>
+                              <option value="" className="bg-ps-sunken">Select State</option>
                               {states.map((state) => (
-                                <option key={state.isoCode} value={state.isoCode} className="bg-[#1a1a24]">
+                                <option key={state.isoCode} value={state.isoCode} className="bg-ps-sunken">
                                   {state.name}
                                 </option>
                               ))}
@@ -1070,7 +1070,7 @@ const Home = () => {
 
                           {/* City */}
                           <div>
-                            <label className="block text-sm font-semibold text-gray-300 mb-2">
+                            <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                               City <span className="text-pink-500">*</span>
                             </label>
                             <select
@@ -1079,11 +1079,11 @@ const Home = () => {
                               onChange={handleVendorFormChange}
                               required
                               disabled={!vendorFormData.state}
-                              className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <option value="" className="bg-[#1a1a24]">Select City</option>
+                              <option value="" className="bg-ps-sunken">Select City</option>
                               {cities.map((city) => (
-                                <option key={city.name} value={city.name} className="bg-[#1a1a24]">
+                                <option key={city.name} value={city.name} className="bg-ps-sunken">
                                   {city.name}
                                 </option>
                               ))}
@@ -1093,7 +1093,7 @@ const Home = () => {
 
                         {/* Zip Code */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          <label className="block text-sm font-semibold text-ps-fg2 mb-2">
                             Zip Code <span className="text-pink-500">*</span>
                           </label>
                           <input
@@ -1102,7 +1102,7 @@ const Home = () => {
                             value={vendorFormData.zip_code}
                             onChange={handleVendorFormChange}
                             required
-                            className="w-full px-4 py-3 glass border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-gray-500 transition-all"
+                            className="w-full px-4 py-3 glass border border-ink/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-ink/5 text-ink placeholder-ps-meta transition-all"
                             placeholder="Enter zip code"
                           />
                         </div>
@@ -1114,7 +1114,7 @@ const Home = () => {
                       <button
                         type="button"
                         onClick={() => setIsVendorDialogOpen(false)}
-                        className="flex-1 px-5 py-2.5 border border-white/20 rounded-xl text-gray-300 hover:bg-white/10 transition-colors font-semibold"
+                        className="flex-1 px-5 py-2.5 border border-ink/20 rounded-xl text-ps-fg2 hover:bg-ink/10 transition-colors font-semibold"
                       >
                         Cancel
                       </button>

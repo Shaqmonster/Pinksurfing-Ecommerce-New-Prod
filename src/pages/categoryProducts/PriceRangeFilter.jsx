@@ -49,8 +49,8 @@ export default function PriceRangeFilter({
             : "glass-card rounded-xl border border-[var(--ps-brd)] p-4"
         }>
             <h3 className="mb-1 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--ps-primary)] to-[var(--ps-purple-dark)] shadow-[0_6px_16px_-6px_rgba(151,71,255,0.55)]">
-                    <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--ps-primary)] to-[var(--ps-purple-dark)] shadow-[0_6px_16px_-6px_rgba(151,71,255,0.55)] text-white">
+                    <svg className="h-4 w-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
@@ -87,7 +87,7 @@ export default function PriceRangeFilter({
             </div>
 
             <div className="mt-4 flex gap-3">
-                <div className="min-h-[44px] flex-1 rounded-xl border border-gray-200 bg-white/70 px-3 py-2 text-center dark:border-[var(--ps-brd)] dark:bg-[var(--ps-surf)]">
+                <div className="min-h-[44px] flex-1 rounded-xl border border-gray-200 bg-ink/70 px-3 py-2 text-center dark:border-[var(--ps-brd)] dark:bg-[var(--ps-surf)]">
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-[var(--ps-dim)]">
                         Min
                     </span>
@@ -95,7 +95,7 @@ export default function PriceRangeFilter({
                         {formatFilterPrice(left)}
                     </p>
                 </div>
-                <div className="min-h-[44px] flex-1 rounded-xl border border-gray-200 bg-white/70 px-3 py-2 text-center dark:border-[var(--ps-brd)] dark:bg-[var(--ps-surf)]">
+                <div className="min-h-[44px] flex-1 rounded-xl border border-gray-200 bg-ink/70 px-3 py-2 text-center dark:border-[var(--ps-brd)] dark:bg-[var(--ps-surf)]">
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-[var(--ps-dim)]">
                         Max
                     </span>

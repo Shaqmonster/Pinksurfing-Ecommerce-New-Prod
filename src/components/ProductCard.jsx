@@ -404,7 +404,7 @@ const ProductCard = ({ product, isCard }) => {
           to={detailHref}
           className={`relative block w-full overflow-hidden bg-[var(--ps-surf)] ${imageAspect}`}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-[1] pointer-events-none" />
+          <div className="on-media absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-[1] pointer-events-none" />
           {product.image1 ? (
             <MediaImage
               fill
@@ -458,7 +458,7 @@ const ProductCard = ({ product, isCard }) => {
                 </span>
               </>
             ) : (
-              <span className="inline-flex items-center gap-1 leading-none text-[var(--ps-dim)]/80">
+              <span className="inline-flex items-center gap-1 leading-none text-[color-mix(in_srgb,var(--ps-dim)_80%,transparent)]">
                 <IoStarOutline className="text-[12px]" aria-hidden="true" />
                 No reviews yet
               </span>
@@ -475,7 +475,7 @@ const ProductCard = ({ product, isCard }) => {
 
         <Link to={detailHref} className="block min-w-0">
           <h2
-            className={`font-semibold text-white leading-snug group-hover:text-[var(--ps-purple-light)] transition-colors ${
+            className={`font-semibold text-ink leading-snug group-hover:text-[var(--ps-purple-light)] transition-colors ${
               isListing
                 ? "text-sm sm:text-[15px] line-clamp-2 mb-1.5"
                 : "text-sm sm:text-[15px] line-clamp-2 mb-2"
@@ -502,13 +502,13 @@ const ProductCard = ({ product, isCard }) => {
               <>
                 <div className="flex items-center gap-1.5 min-w-[2.5rem]">
                   <FaBed className="text-[var(--ps-primary)] text-[13px] shrink-0" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-white/90 tabular-nums">
+                  <span className="text-sm font-semibold text-ink/90 tabular-nums">
                     {beds}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 min-w-[2.5rem]">
                   <FaBath className="text-[var(--ps-primary)] text-[13px] shrink-0" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-white/90 tabular-nums">
+                  <span className="text-sm font-semibold text-ink/90 tabular-nums">
                     {baths}
                   </span>
                 </div>
@@ -517,7 +517,7 @@ const ProductCard = ({ product, isCard }) => {
                     className="text-[var(--ps-primary)] text-[13px] shrink-0"
                     aria-hidden="true"
                   />
-                  <span className="text-sm font-semibold text-white/90 tabular-nums whitespace-nowrap">
+                  <span className="text-sm font-semibold text-ink/90 tabular-nums whitespace-nowrap">
                     {sqftLabel}
                   </span>
                 </div>
@@ -530,26 +530,26 @@ const ProductCard = ({ product, isCard }) => {
                     className="text-[var(--ps-primary)] text-[13px] shrink-0"
                     aria-hidden="true"
                   />
-                  <span className="text-sm font-semibold text-white/90 tabular-nums whitespace-nowrap">
+                  <span className="text-sm font-semibold text-ink/90 tabular-nums whitespace-nowrap">
                     {sqftLabel}
                   </span>
                 </div>
                 {getAttr("cap_rate") && (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold bg-white/10 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-bold bg-ink/10 px-1.5 py-0.5 rounded">
                       CAP
                     </span>
-                    <span className="text-sm font-semibold text-white/90">
+                    <span className="text-sm font-semibold text-ink/90">
                       {getAttr("cap_rate")}%
                     </span>
                   </div>
                 )}
                 {getAttr("class_rating") && (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold bg-white/10 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-bold bg-ink/10 px-1.5 py-0.5 rounded">
                       CLASS
                     </span>
-                    <span className="text-sm font-semibold text-white/90">
+                    <span className="text-sm font-semibold text-ink/90">
                       {getAttr("class_rating")}
                     </span>
                   </div>
@@ -571,7 +571,7 @@ const ProductCard = ({ product, isCard }) => {
                     <span className="text-[10px] font-bold uppercase text-[var(--ps-dim)]">
                       Rev
                     </span>
-                    <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                    <span className="text-sm font-semibold text-ink/90 whitespace-nowrap">
                       ${formatMoney(bizRevenue)}
                     </span>
                   </div>
@@ -585,7 +585,7 @@ const ProductCard = ({ product, isCard }) => {
                     <span className="text-[10px] font-bold uppercase text-[var(--ps-dim)]">
                       EBITDA
                     </span>
-                    <span className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                    <span className="text-sm font-semibold text-ink/90 whitespace-nowrap">
                       ${formatMoney(bizEbitda)}
                     </span>
                   </div>
@@ -598,7 +598,7 @@ const ProductCard = ({ product, isCard }) => {
         {/* Price + CTA */}
         <div className="flex items-center justify-between gap-3 mt-auto pt-0.5">
           <div className="min-w-0 flex items-baseline gap-2 flex-wrap">
-            <p className="text-base sm:text-lg font-semibold text-white tabular-nums leading-none">
+            <p className="text-base sm:text-lg font-semibold text-ink tabular-nums leading-none">
               <span>
                 {currency}
                 {formatMoney(product.unit_price)}
@@ -637,12 +637,12 @@ const ProductCard = ({ product, isCard }) => {
                     ? "Already in cart"
                     : "Add to cart"
               }
-              className={`inline-flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px] px-3 rounded-xl text-white text-sm font-semibold transition-[transform,filter,background-color] duration-ps-instant active:scale-[0.97] ${
+              className={`inline-flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px] px-3 rounded-xl text-ink text-sm font-semibold transition-[transform,filter,background-color] duration-ps-instant active:scale-[0.97] ${
                 productOutOfStock
                   ? "bg-[var(--ps-dim)] cursor-not-allowed"
                   : isInCart
-                    ? "bg-[var(--ps-green)] cursor-default"
-                    : "bg-[var(--ps-primary)] hover:brightness-110"
+                    ? "bg-[var(--ps-green)] cursor-default text-white"
+                    : "bg-[var(--ps-primary)] hover:brightness-110 text-white"
               }`}
             >
               <IoCart className="text-lg" aria-hidden="true" />

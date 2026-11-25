@@ -6,39 +6,39 @@ import { Link } from "react-router-dom";
 import { formatMoney } from "../../api/offMarketDeals";
 
 const CSS = `
-.deal-card{background:#141418;border:1.5px solid #2a2a33;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,transform .15s;}
+.deal-card{background:var(--ps-color-surface);border:1.5px solid var(--ps-color-border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,transform .15s;}
 .deal-card:hover{border-color:rgba(151, 71, 255,.4);transform:translateY(-2px);}
-.deal-card-img{position:relative;aspect-ratio:16/10;background:#1c1c22;overflow:hidden;}
+.deal-card-img{position:relative;aspect-ratio:16/10;background:var(--ps-color-surface-sunken);overflow:hidden;}
 .deal-card-img img{width:100%;height:100%;object-fit:cover;filter:blur(8px);transform:scale(1.05);}
 .deal-card-img.unlocked img{filter:none;transform:none;}
 .deal-card-badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;}
 .deal-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
-.deal-badge.verified{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
-.deal-badge.unverified{background:rgba(14,15,19,.88);color:#e5e7eb;border:1px solid #6b7280}
-.deal-badge.sale{background:rgba(151, 71, 255,.12);color:#9747ff;border:1px solid rgba(151, 71, 255,.28);}
+.deal-badge.verified{background:rgba(52,211,153,.15);color:var(--ps-color-success);border:1px solid rgba(52,211,153,.3);}
+.deal-badge.unverified{background:rgba(14,15,19,.88);color:#e5e7eb;border:1px solid #6b7280/* theme-ok: on photo scrim */}
+.deal-badge.sale{background:rgba(151, 71, 255,.12);color:var(--ps-color-action-text);border:1px solid rgba(151, 71, 255,.28);}
 .deal-card-body{padding:16px;flex:1;display:flex;flex-direction:column;gap:10px;}
-.deal-card-type{font-size:10px;color:#66667a;text-transform:uppercase;font-weight:700;letter-spacing:.06em;}
-.deal-card-price{font-size:24px;font-weight:800;color:#9747ff;line-height:1;}
-.deal-card-loc{font-size:13px;color:#b0b0c0;}
-.deal-card-summary{font-size:12px;color:#66667a;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.deal-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:#1c1c22;border-radius:6px;padding:10px;}
-.deal-met-k{font-size:9px;color:#66667a;text-transform:uppercase;font-weight:700;}
-.deal-met-v{font-size:14px;font-weight:800;color:#f0f0f4;}
-.deal-met-v.green{color:#34d399;}
-.deal-slots{font-size:11px;color:#66667a;}
-.deal-slots-bar{height:4px;background:#2a2a33;border-radius:2px;margin-top:4px;overflow:hidden;}
-.deal-slots-fill{height:100%;background:#9747ff;border-radius:2px;}
+.deal-card-type{font-size:10px;color:var(--ps-color-text-meta);text-transform:uppercase;font-weight:700;letter-spacing:.06em;}
+.deal-card-price{font-size:24px;font-weight:800;color:var(--ps-color-action-text);line-height:1;}
+.deal-card-loc{font-size:13px;color:var(--ps-color-text-secondary);}
+.deal-card-summary{font-size:12px;color:var(--ps-color-text-meta);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.deal-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:var(--ps-color-surface-sunken);border-radius:6px;padding:10px;}
+.deal-met-k{font-size:9px;color:var(--ps-color-text-meta);text-transform:uppercase;font-weight:700;}
+.deal-met-v{font-size:14px;font-weight:800;color:var(--ps-color-text);}
+.deal-met-v.green{color:var(--ps-color-success);}
+.deal-slots{font-size:11px;color:var(--ps-color-text-meta);}
+.deal-slots-bar{height:4px;background:var(--ps-color-border);border-radius:2px;margin-top:4px;overflow:hidden;}
+.deal-slots-fill{height:100%;background:var(--ps-primary);border-radius:2px;}
 .deal-tags-row{display:flex;flex-wrap:wrap;gap:4px;}
-.deal-mini-tag{font-size:10px;padding:2px 6px;border-radius:3px;background:#232329;color:#b0b0c0;}
+.deal-mini-tag{font-size:10px;padding:2px 6px;border-radius:3px;background:var(--ps-color-surface-sunken);color:var(--ps-color-text-secondary);}
 .deal-cta{margin-top:auto;padding-top:8px;}
-.deal-cta-btn{display:block;width:100%;text-align:center;padding:10px;border-radius:6px;font-size:13px;font-weight:700;background:#9747ff;color:#fff;border:none;cursor:pointer;text-decoration:none;}
+.deal-cta-btn{display:block;width:100%;text-align:center;padding:10px;border-radius:6px;font-size:13px;font-weight:700;background:var(--ps-primary);color:#fff;border:none;cursor:pointer;text-decoration:none;}
 .deal-cta-btn:hover{background:#d4246f;color:#fff;}
-.deal-cta-btn.secondary{background:transparent;border:1.5px solid #9747ff;color:#9747ff;}
-.deal-lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(180deg,rgba(14,15,19,.15),rgba(14,15,19,.55));color:#f0f0f4;pointer-events:none;}
+.deal-cta-btn.secondary{background:transparent;border:1.5px solid var(--ps-primary);color:var(--ps-color-action-text);}
+.deal-lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(180deg,rgba(14,15,19,.15),rgba(14,15,19,.55));color:#fff;pointer-events:none;/* theme-ok: on photo scrim */}
 .deal-lock svg{width:26px;height:26px;opacity:.9;}
-.deal-lock span{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(14,15,19,.7);padding:3px 8px;border-radius:4px;}
-.deal-deadline{font-size:11px;font-weight:700;color:#fbbf24;}
-.deal-cta-note{font-size:11px;color:#66667a;text-align:center;margin-top:6px;line-height:1.4;}
+.deal-lock span{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(14,15,19,.7);padding:3px 8px;border-radius:4px;/* theme-ok: on photo scrim */}
+.deal-deadline{font-size:11px;font-weight:700;color:var(--ps-color-warning);}
+.deal-cta-note{font-size:11px;color:var(--ps-color-text-meta);text-align:center;margin-top:6px;line-height:1.4;}
 `;
 
 const DEADLINE_LABELS = {

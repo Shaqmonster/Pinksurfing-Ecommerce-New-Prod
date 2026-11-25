@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/authContext.jsx";
+import { ThemeProvider, useTheme } from "./context/themeContext.jsx";
 import { DataProvider } from "./context/dataContext.jsx";
 import { CookiesProvider } from "react-cookie";
 import { ToastContainer } from "react-toastify";
@@ -34,18 +35,25 @@ function AppProviders({ children }) {
   return <WalletProvider>{children}</WalletProvider>;
 }
 
+function ThemedToasts() {
+  const { resolvedTheme } = useTheme();
+  return <ToastContainer theme={resolvedTheme} />;
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <CookiesProvider defaultSetOptions={{ path: "/" }}>
       <BrowserRouter>
+        <ThemeProvider>
         <AuthProvider>
           <AppProviders>
             <DataProvider>
-              <ToastContainer />
+              <ThemedToasts />
               <App />
             </DataProvider>
           </AppProviders>
         </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </CookiesProvider>
   </React.StrictMode>

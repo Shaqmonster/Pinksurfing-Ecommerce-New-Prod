@@ -6,7 +6,7 @@ const variants = {
   secondary:
     "bg-[var(--ps-surf)] text-[var(--ps-white)] border-[var(--ps-brd)] hover:border-[var(--ps-purple-light)]",
   tertiary:
-    "bg-transparent text-[var(--ps-purple-light)] border-transparent hover:bg-white/5",
+    "bg-transparent text-[var(--ps-purple-light)] border-transparent hover:bg-ink/5",
   destructive:
     "bg-[var(--ps-red)] text-white border-transparent",
 };

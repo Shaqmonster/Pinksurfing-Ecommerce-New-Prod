@@ -53,12 +53,12 @@ export default function DealUnlockReturn() {
   return (
     <div
       className="min-h-[70vh] flex items-center justify-center px-4"
-      style={{ background: "#0d0d10", fontFamily: "'DM Sans', sans-serif" }}
+      style={{ background: "var(--ps-color-bg)", fontFamily: "'DM Sans', sans-serif" }}
     >
       <div
         style={{
-          background: "#141418",
-          border: "1px solid #2a2a33",
+          background: "var(--ps-color-surface)",
+          border: "1px solid var(--ps-color-border)",
           borderRadius: 16,
           maxWidth: 460,
           width: "100%",
@@ -68,14 +68,14 @@ export default function DealUnlockReturn() {
       >
         {phase === "verifying" && (
           <>
-            <h2 style={{ color: "#f0f0f4", marginBottom: 12 }}>Confirming unlock…</h2>
-            <p style={{ color: "#66667a" }}>Please wait while we verify your payment.</p>
+            <h2 style={{ color: "var(--ps-color-text)", marginBottom: 12 }}>Confirming unlock…</h2>
+            <p style={{ color: "var(--ps-color-text-meta)" }}>Please wait while we verify your payment.</p>
           </>
         )}
         {phase === "accepted" && (
           <>
-            <h2 style={{ color: "#34d399", marginBottom: 12 }}>Deal unlocked</h2>
-            <p style={{ color: "#b0b0c0", marginBottom: 24 }}>
+            <h2 style={{ color: "var(--ps-color-success)", marginBottom: 12 }}>Deal unlocked</h2>
+            <p style={{ color: "var(--ps-color-text-secondary)", marginBottom: 24 }}>
               You now have full access to this off-market deal.
             </p>
             <Link
@@ -83,7 +83,7 @@ export default function DealUnlockReturn() {
               style={{
                 display: "inline-block",
                 padding: "12px 24px",
-                background: "#9747ff",
+                background: "var(--ps-primary)",
                 color: "#fff",
                 borderRadius: 8,
                 fontWeight: 700,
@@ -96,19 +96,19 @@ export default function DealUnlockReturn() {
         )}
         {phase === "failed" && (
           <>
-            <h2 style={{ color: "#f87171", marginBottom: 12 }}>Still processing</h2>
-            <p style={{ color: "#b0b0c0", marginBottom: 24 }}>
+            <h2 style={{ color: "var(--ps-color-danger)", marginBottom: 12 }}>Still processing</h2>
+            <p style={{ color: "var(--ps-color-text-secondary)", marginBottom: 24 }}>
               Payment may still be processing. Check back in a few minutes or contact support.
             </p>
-            <Link to="/deals" style={{ color: "#9747ff" }}>
+            <Link to="/deals" style={{ color: "var(--ps-color-action-text)" }}>
               Back to Deals Home
             </Link>
           </>
         )}
         {phase === "not_found" && (
           <>
-            <h2 style={{ color: "#f87171" }}>Invalid return link</h2>
-            <Link to="/deals" style={{ color: "#9747ff" }}>
+            <h2 style={{ color: "var(--ps-color-danger)" }}>Invalid return link</h2>
+            <Link to="/deals" style={{ color: "var(--ps-color-action-text)" }}>
               Back to Deals Home
             </Link>
           </>

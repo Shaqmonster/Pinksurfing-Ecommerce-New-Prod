@@ -14,8 +14,8 @@ const CONDITIONS = [
 const MAX_PHOTOS = 4;
 
 const field =
-  "w-full rounded-xl bg-[#13131a] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-pink-500/50";
-const label = "block text-sm font-medium text-white mb-1.5";
+  "w-full rounded-xl bg-ps-surface border border-ink/10 px-4 py-3 text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-pink-500/50";
+const label = "block text-sm font-medium text-ink mb-1.5";
 
 function apiErrorText(err) {
   const data = err?.response?.data;
@@ -105,10 +105,10 @@ export default function RequestProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-ps-bg">
       <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">Request a product</h1>
-        <p className="text-white/50 text-sm mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-ink">Request a product</h1>
+        <p className="text-ink/50 text-sm mt-2">
           Can&apos;t find it in the Shopping Mall? Tell vendors what you want. They send offers with a
           price, shipping and delivery time, and you pick one. Accepted offers go straight to your cart.
         </p>
@@ -131,7 +131,7 @@ export default function RequestProductPage() {
 
           <div>
             <label htmlFor="rp-category" className={label}>
-              Category <span className="text-white/40 font-normal">(optional)</span>
+              Category <span className="text-ink/40 font-normal">(optional)</span>
             </label>
             <select id="rp-category" className={field} value={form.category} onChange={set("category")}>
               <option value="">Choose a category</option>
@@ -145,7 +145,7 @@ export default function RequestProductPage() {
 
           <div>
             <label htmlFor="rp-desc" className={label}>
-              Details <span className="text-white/40 font-normal">(optional)</span>
+              Details <span className="text-ink/40 font-normal">(optional)</span>
             </label>
             <textarea
               id="rp-desc"
@@ -205,7 +205,7 @@ export default function RequestProductPage() {
 
           <div>
             <label htmlFor="rp-zip" className={label}>
-              Ship to ZIP code <span className="text-white/40 font-normal">(optional, helps vendors quote shipping)</span>
+              Ship to ZIP code <span className="text-ink/40 font-normal">(optional, helps vendors quote shipping)</span>
             </label>
             <input
               id="rp-zip"
@@ -219,7 +219,7 @@ export default function RequestProductPage() {
 
           <div>
             <label htmlFor="rp-deadline" className={label}>
-              Needed by <span className="text-white/40 font-normal">(optional)</span>
+              Needed by <span className="text-ink/40 font-normal">(optional)</span>
             </label>
             <input
               id="rp-deadline"
@@ -233,16 +233,16 @@ export default function RequestProductPage() {
 
           <div>
             <span className={label}>
-              Photos <span className="text-white/40 font-normal">(optional, up to {MAX_PHOTOS})</span>
+              Photos <span className="text-ink/40 font-normal">(optional, up to {MAX_PHOTOS})</span>
             </span>
             <div className="flex flex-wrap gap-3">
               {previews.map((src, i) => (
                 <div key={src} className="relative w-20 h-20">
-                  <img src={src} alt="" className="w-20 h-20 rounded-xl object-cover border border-white/10" />
+                  <img src={src} alt="" className="w-20 h-20 rounded-xl object-cover border border-ink/10" />
                   <button
                     type="button"
                     onClick={() => setPhotos((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="absolute -top-2 -right-2 text-white/80 hover:text-white"
+                    className="absolute -top-2 -right-2 text-ink/80 hover:text-ink"
                     aria-label={`Remove photo ${i + 1}`}
                   >
                     <IoCloseCircle className="text-2xl" />
@@ -250,7 +250,7 @@ export default function RequestProductPage() {
                 </div>
               ))}
               {photos.length < MAX_PHOTOS && (
-                <label className="w-20 h-20 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center text-white/40 hover:text-white/70 hover:border-pink-500/40 cursor-pointer">
+                <label className="w-20 h-20 rounded-xl border border-dashed border-ink/20 flex flex-col items-center justify-center text-ink/40 hover:text-ink/70 hover:border-pink-500/40 cursor-pointer">
                   <IoImageOutline className="text-xl" />
                   <span className="text-[10px] mt-1">Add</span>
                   <input type="file" accept="image/*" multiple className="sr-only" onChange={addPhotos} />
@@ -266,13 +266,13 @@ export default function RequestProductPage() {
           >
             {submitting ? "Posting…" : "Post request — free"}
           </button>
-          <p className="text-center text-xs text-white/40">
+          <p className="text-center text-xs text-ink/40">
             Track offers in{" "}
-            <Link to="/my-bids" className="underline hover:text-white/70">
+            <Link to="/my-bids" className="underline hover:text-ink/70">
               My Bids
             </Link>
             . Need a service instead?{" "}
-            <Link to="/gigs/jobs/post" className="underline hover:text-white/70">
+            <Link to="/gigs/jobs/post" className="underline hover:text-ink/70">
               Post a job in GigHub
             </Link>
             .

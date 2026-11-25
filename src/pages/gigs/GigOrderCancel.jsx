@@ -5,7 +5,7 @@ import { IoCloseCircle, IoArrowBackOutline } from "react-icons/io5";
 import { FaBriefcase } from "react-icons/fa";
 
 const GigOrderCancel = () => (
-  <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden flex items-center justify-center px-4">
+  <div className="bg-ps-bg min-h-screen relative overflow-hidden flex items-center justify-center px-4">
     <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-red-600/8 rounded-full blur-[140px] pointer-events-none" />
 
     <motion.div
@@ -24,8 +24,8 @@ const GigOrderCancel = () => (
         </motion.div>
       </div>
 
-      <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Payment Cancelled</h1>
-      <p className="text-white/50 text-base mb-8">
+      <h1 className="text-3xl sm:text-4xl font-bold text-ink mb-3">Payment Cancelled</h1>
+      <p className="text-ink/50 text-base mb-8">
         Your payment was cancelled and no charges were made. You can try again or choose a different gig.
       </p>
 
@@ -39,7 +39,7 @@ const GigOrderCancel = () => (
         </Link>
         <button
           onClick={() => window.history.back()}
-          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#13131a] border border-white/10 text-white/60 font-semibold text-sm hover:border-white/20 transition-all"
+          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-ps-surface border border-ink/10 text-ink/60 font-semibold text-sm hover:border-ink/20 transition-all"
         >
           <IoArrowBackOutline className="text-base" />
           Go Back

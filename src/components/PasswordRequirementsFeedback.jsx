@@ -21,7 +21,7 @@ const RuleIcon = ({ passed }) => {
 
   return (
     <svg
-      className="h-4 w-4 shrink-0 text-slate-400"
+      className="h-4 w-4 shrink-0 text-ps-meta"
       viewBox="0 0 20 20"
       fill="currentColor"
       aria-hidden="true"

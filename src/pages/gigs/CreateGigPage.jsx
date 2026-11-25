@@ -297,7 +297,7 @@ const CreateGigPage = () => {
       title="Verify before publishing"
       description="Complete identity verification once to post gigs on GigHub. If you already verified as a vendor, you will not be asked again."
     >
-    <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden py-8 px-4">
+    <div className="bg-ps-bg min-h-screen relative overflow-hidden py-8 px-4">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[130px] pointer-events-none" />
 
       <div className="relative z-10 max-w-3xl mx-auto">
@@ -307,12 +307,12 @@ const CreateGigPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-4">
+          <div className="inline-flex items-center gap-2 bg-ink/5 border border-ink/10 rounded-full px-4 py-1.5 mb-4">
             <FaBriefcase className="text-pink-400 text-sm" />
-            <span className="text-white/60 text-sm font-medium">Create a Gig</span>
+            <span className="text-ink/60 text-sm font-medium">Create a Gig</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Post Your Service</h1>
-          <p className="text-white/50 text-sm">Complete the steps below to publish your gig.</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-ink mb-2">Post Your Service</h1>
+          <p className="text-ink/50 text-sm">Complete the steps below to publish your gig.</p>
         </motion.div>
 
         {/* Step indicator */}
@@ -326,14 +326,14 @@ const CreateGigPage = () => {
                       ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white"
                       : i === step
                       ? "border-purple-500 text-white bg-purple-500/20"
-                      : "border-white/10 text-white/30"
+                      : "border-ink/10 text-ink/30"
                   }`}
                 >
                   {i < step ? <IoCheckmarkCircle className="text-base" /> : i + 1}
                 </div>
                 <span
                   className={`text-xs mt-1 whitespace-nowrap ${
-                    i === step ? "text-white/80" : "text-white/30"
+                    i === step ? "text-ink/80" : "text-ink/30"
                   }`}
                 >
                   {label}
@@ -342,7 +342,7 @@ const CreateGigPage = () => {
               {i < STEPS.length - 1 && (
                 <div
                   className={`h-px w-16 sm:w-24 mx-2 mb-5 transition-all ${
-                    i < step ? "bg-purple-500/60" : "bg-white/10"
+                    i < step ? "bg-purple-500/60" : "bg-ink/10"
                   }`}
                 />
               )}
@@ -357,24 +357,24 @@ const CreateGigPage = () => {
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
-                className="bg-[#13131a] border border-white/5 rounded-2xl p-6 sm:p-8 space-y-5"
+                className="bg-ps-surface border border-ink/5 rounded-2xl p-6 sm:p-8 space-y-5"
               >
-                <h2 className="text-white font-bold text-lg">Gig Details</h2>
+                <h2 className="text-ink font-bold text-lg">Gig Details</h2>
 
                 <div className="space-y-1.5">
-            <label className="text-white/70 text-sm font-medium">Title <span className="text-pink-400">*</span></label>
+            <label className="text-ink/70 text-sm font-medium">Title <span className="text-pink-400">*</span></label>
             <input
               name="title"
               value={details.title}
               onChange={handleDetailChange}
               placeholder="I will design your professional logo"
               maxLength={255}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all"
+              className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink placeholder-ink/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all"
             />
                 </div>
 
                 <div className="space-y-1.5">
-            <label className="text-white/70 text-sm font-medium">Description <span className="text-pink-400">*</span></label>
+            <label className="text-ink/70 text-sm font-medium">Description <span className="text-pink-400">*</span></label>
             <textarea
               name="description"
               value={details.description}
@@ -385,13 +385,13 @@ const CreateGigPage = () => {
               }}
               placeholder="Describe your service in detail — what you offer, your process, what buyers can expect…"
               rows={5}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all overflow-hidden resize-none min-h-[120px]"
+              className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink placeholder-ink/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all overflow-hidden resize-none min-h-[120px]"
             />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-white/70 text-sm font-medium">Category *</label>
+              <label className="text-ink/70 text-sm font-medium">Category *</label>
               <select
                 name="category"
                 value={details.category}
@@ -399,7 +399,7 @@ const CreateGigPage = () => {
                   const val = e.target.value;
                   setDetails((prev) => ({ ...prev, category: val, subcategory: "" }));
                 }}
-                className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24]"
+                className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-ps-sunken"
               >
                 <option value="">Select category…</option>
                 {categories.length > 0  && categories.map((c) => (
@@ -408,13 +408,13 @@ const CreateGigPage = () => {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-white/70 text-sm font-medium">Subcategory</label>
+              <label className="text-ink/70 text-sm font-medium">Subcategory</label>
               <select
                 name="subcategory"
                 value={details.subcategory}
                 onChange={(e) => setDetails((prev) => ({ ...prev, subcategory: e.target.value }))}
                 disabled={!details.category || subcategories.length === 0}
-                className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-[#1a1a24] disabled:opacity-40"
+                className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink/80 text-sm outline-none focus:border-pink-400 transition-all [&>option]:bg-ps-sunken disabled:opacity-40"
               >
                 <option value="">Select subcategory…</option>
                 {subcategories.length > 0 && subcategories.map((s) => (
@@ -425,7 +425,7 @@ const CreateGigPage = () => {
                 </div>
 
                 <div className="space-y-1.5">
-            <label className="text-white/70 text-sm font-medium">Status</label>
+            <label className="text-ink/70 text-sm font-medium">Status</label>
             <div className="flex gap-3">
               {["active", "draft"].map((s) => (
                 <button
@@ -435,14 +435,14 @@ const CreateGigPage = () => {
                   className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold capitalize transition-all ${
               details.status === s
                 ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent text-white"
-                : "bg-transparent border-white/10 text-white/50 hover:border-white/20"
+                : "bg-transparent border-ink/10 text-ink/50 hover:border-ink/20"
                   }`}
                 >
                   {s}
                 </button>
               ))}
             </div>
-            <p className="text-white/30 text-xs">
+            <p className="text-ink/30 text-xs">
               {details.status === "active"
                 ? "Your gig will be visible to buyers immediately."
                 : "Your gig will be saved as a draft and not visible to buyers."}
@@ -457,7 +457,7 @@ const CreateGigPage = () => {
             className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-base shadow-lg hover:shadow-purple-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
             {submitting ? (
-              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
+              <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" /> Saving…</>
             ) : (
               "Continue to Packages →"
             )}
@@ -472,11 +472,11 @@ const CreateGigPage = () => {
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
-              className="bg-[#13131a] border border-white/5 rounded-2xl p-6 sm:p-8 space-y-6"
+              className="bg-ps-surface border border-ink/5 rounded-2xl p-6 sm:p-8 space-y-6"
             >
               <div>
-                <h2 className="text-white font-bold text-lg">Pricing Packages</h2>
-                <p className="text-white/40 text-sm mt-1">
+                <h2 className="text-ink font-bold text-lg">Pricing Packages</h2>
+                <p className="text-ink/40 text-sm mt-1">
                   Enable and configure one or more packages. Basic is required.
                 </p>
               </div>
@@ -487,7 +487,7 @@ const CreateGigPage = () => {
                   <div
                     key={pkg.tier}
                     className={`border rounded-2xl p-4 transition-all ${
-                      pkg.enabled ? colors.border + " bg-white/2" : "border-white/5 opacity-60"
+                      pkg.enabled ? colors.border + " bg-ink/2" : "border-ink/5 opacity-60"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-4">
@@ -515,7 +515,7 @@ const CreateGigPage = () => {
                           value={pkg.title}
                           onChange={(e) => updatePkg(pkg.tier, "title", e.target.value)}
                           placeholder={`${TIER_LABELS[pkg.tier]} package title (optional)`}
-                          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all"
+                          className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-2.5 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all"
                         />
                         <textarea
                           value={pkg.description}
@@ -526,11 +526,11 @@ const CreateGigPage = () => {
                           }}
                           placeholder="Describe what's included in this package (optional)…"
                           rows={2}
-                          className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all overflow-hidden resize-none min-h-[60px]"
+                          className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-2.5 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all overflow-hidden resize-none min-h-[60px]"
                         />
                         <div className="grid grid-cols-3 gap-3">
                           <div className="space-y-1">
-                            <label className="text-white/40 text-xs">Price ($) *</label>
+                            <label className="text-ink/40 text-xs">Price ($) *</label>
                             <input
                               type="number"
                               min="1"
@@ -538,28 +538,28 @@ const CreateGigPage = () => {
                               value={pkg.price}
                               onChange={(e) => updatePkg(pkg.tier, "price", e.target.value)}
                               placeholder="0.00"
-                              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all"
+                              className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-3 py-2 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-white/40 text-xs">Delivery (days) *</label>
+                            <label className="text-ink/40 text-xs">Delivery (days) *</label>
                             <input
                               type="number"
                               min="1"
                               value={pkg.delivery_days}
                               onChange={(e) => updatePkg(pkg.tier, "delivery_days", e.target.value)}
                               placeholder="3"
-                              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all"
+                              className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-3 py-2 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-white/40 text-xs">Revisions</label>
+                            <label className="text-ink/40 text-xs">Revisions</label>
                             <input
                               type="number"
                               min="0"
                               value={pkg.revisions}
                               onChange={(e) => updatePkg(pkg.tier, "revisions", e.target.value)}
-                              className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-white/30 text-sm outline-none focus:border-purple-400 transition-all"
+                              className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-3 py-2 text-ink placeholder-ink/30 text-sm outline-none focus:border-purple-400 transition-all"
                             />
                           </div>
                         </div>
@@ -572,7 +572,7 @@ const CreateGigPage = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep(0)}
-                  className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/20 transition-all"
+                  className="flex-1 py-3 rounded-xl border border-ink/10 text-ink/60 text-sm font-semibold hover:border-ink/20 transition-all"
                 >
                   ← Back
                 </button>
@@ -584,7 +584,7 @@ const CreateGigPage = () => {
                   className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? (
-                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
+                    <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" /> Saving…</>
                   ) : (
                     "Continue to Media →"
                   )}
@@ -600,11 +600,11 @@ const CreateGigPage = () => {
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
-              className="bg-[#13131a] border border-white/5 rounded-2xl p-6 sm:p-8 space-y-6"
+              className="bg-ps-surface border border-ink/5 rounded-2xl p-6 sm:p-8 space-y-6"
             >
               <div>
-                <h2 className="text-white font-bold text-lg">Gig Media</h2>
-                <p className="text-white/40 text-sm mt-1">
+                <h2 className="text-ink font-bold text-lg">Gig Media</h2>
+                <p className="text-ink/40 text-sm mt-1">
                   Add up to 6 images or videos. The first image is used as the thumbnail.
                 </p>
               </div>
@@ -617,7 +617,7 @@ const CreateGigPage = () => {
                       key={slot}
                       initial={{ opacity: 0, scale: 0.85 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group"
+                      className="relative aspect-video rounded-xl overflow-hidden border border-ink/10 group"
                     >
                       {mediaFiles[slot]?.type?.startsWith("video") ? (
                         <video src={src} className="w-full h-full object-cover" muted />
@@ -640,10 +640,10 @@ const CreateGigPage = () => {
                   ) : (
                     <label
                       key={slot}
-                      className="aspect-video rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-pink-400 hover:bg-white/5 transition-all"
+                      className="aspect-video rounded-xl border-2 border-dashed border-ink/10 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-pink-400 hover:bg-ink/5 transition-all"
                     >
-                      <IoImageOutline className="text-xl text-white/20" />
-                      <span className="text-white/20 text-xs">Add</span>
+                      <IoImageOutline className="text-xl text-ink/20" />
+                      <span className="text-ink/20 text-xs">Add</span>
                       <input
                         type="file"
                         accept="image/*,video/*"
@@ -656,12 +656,12 @@ const CreateGigPage = () => {
                 })}
               </div>
 
-              <div className="bg-[#1a1a24] border border-white/5 rounded-xl p-4">
+              <div className="bg-ps-sunken border border-ink/5 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <IoCheckmarkCircle className="text-green-400 text-base" />
-                  <p className="text-white font-semibold text-sm">Gig is ready to publish!</p>
+                  <p className="text-ink font-semibold text-sm">Gig is ready to publish!</p>
                 </div>
-                <p className="text-white/40 text-xs">
+                <p className="text-ink/40 text-xs">
                   Your gig has been created with all package details. Adding media is optional but strongly recommended.
                 </p>
               </div>
@@ -669,7 +669,7 @@ const CreateGigPage = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/20 transition-all"
+                  className="flex-1 py-3 rounded-xl border border-ink/10 text-ink/60 text-sm font-semibold hover:border-ink/20 transition-all"
                 >
                   ← Back
                 </button>
@@ -681,7 +681,7 @@ const CreateGigPage = () => {
                   className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold text-sm shadow-lg hover:shadow-green-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? (
-                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {publishStage || "Publishing…"}</>
+                    <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" /> {publishStage || "Publishing…"}</>
                   ) : (
                     <>
                       <IoCheckmarkCircle className="text-base" />
@@ -694,7 +694,7 @@ const CreateGigPage = () => {
               <button
                 onClick={() => handlePublish({ skipMedia: true })}
                 disabled={submitting}
-                className="w-full text-center text-white/30 text-xs hover:text-white/50 transition-colors"
+                className="w-full text-center text-ink/30 text-xs hover:text-ink/50 transition-colors"
               >
                 Skip media and publish gig →
               </button>

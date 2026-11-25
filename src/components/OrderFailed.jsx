@@ -57,7 +57,7 @@ const OrderFailed = () => {
         {/* CTAs */}
         <Link
           to="/checkout"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#9747FF] px-6 py-3.5 text-base font-semibold text-white hover:bg-[#8533EE] active:bg-[#7B2FBE] transition-colors mb-3"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ps-action px-6 py-3.5 text-base font-semibold text-white hover:bg-[#8533EE] active:bg-[#7B2FBE] transition-colors mb-3"
         >
           <ArrowPathIcon className="h-5 w-5" />
           Try Again
@@ -78,7 +78,7 @@ const OrderFailed = () => {
         {/* Support link */}
         <p className="mt-5 text-xs text-gray-400 dark:text-gray-500">
           Still having issues?{" "}
-          <Link to="/contact" className="text-[#9747FF] hover:underline">
+          <Link to="/contact" className="text-ps-action-text hover:underline">
             Contact support
           </Link>
         </p>
