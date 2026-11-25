@@ -32,6 +32,7 @@ import ProductDetailReviewSection from "./ProductDetail-ReviewSection";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { authContext } from "../../context/authContext";
 
+import { notify } from "../../lib/notify";
 const CSS = `
   .biz-root{--pink:#f0318a;--pink-h:#d4246f;--pink-light:rgba(240,49,138,.12);--pink-mid:rgba(240,49,138,.10);--pink-border:rgba(240,49,138,.28);--bg:var(--ps-color-bg);--surface:var(--ps-color-surface);--surface-2:var(--ps-color-surface-sunken);--surface-3:var(--ps-color-surface-sunken);--border:var(--ps-color-border);--border-2:var(--ps-color-border);--text:var(--ps-color-text);--text-2:var(--ps-color-text-secondary);--text-3:var(--ps-color-text-meta);--green:var(--ps-color-success);--green-bg:rgba(52,211,153,.10);--green-border:rgba(52,211,153,.22);--amber:var(--ps-color-warning);--amber-bg:rgba(251,191,36,.10);--amber-border:rgba(251,191,36,.22);--blue:var(--ps-color-info);--blue-bg:rgba(96,165,250,.10);--blue-border:rgba(96,165,250,.22);--red:var(--ps-color-danger);--red-bg:rgba(248,113,113,.10);--red-border:rgba(248,113,113,.22);--indigo:var(--ps-color-action-text);--indigo-bg:rgba(167,139,250,.10);--indigo-border:rgba(167,139,250,.22);}
   .biz-root{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
@@ -354,9 +355,7 @@ const BusinessListingDetail = ({
   const { setIsProfileOpen } = useContext(authContext);
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("overview");
-  const [activeImage, setActiveImage] = useState(
-    product.image1 || product.image2 || product.image3 || product.image4 || ""
-  );
+  const [activeImage, setActiveImage] = useState(product.image1 || product.image2 || product.image3 || product.image4 || "");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [wishlistBusy, setWishlistBusy] = useState(false);
@@ -473,9 +472,7 @@ const BusinessListingDetail = ({
       attempts += 1;
       if (ndaId) {
         try {
-          const res = await axios.get(
-            `${import.meta.env.VITE_SERVER_URL}/api/nda/status/${ndaId}/`
-          );
+          const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/nda/status/${ndaId}/`);
           if (cancelled) return;
           if (res.data?.status === "accepted") {
             setNdaSigned(true);
@@ -513,7 +510,7 @@ const BusinessListingDetail = ({
     if (!accessToken || !user?.id) {
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
-      toast.info("Please sign in to sign the NDA.", { position: "top-right" });
+      notify.info("Please sign in to sign the NDA.");
       return;
     }
     setNdaError("");
@@ -566,7 +563,7 @@ const BusinessListingDetail = ({
       if (detail === "Payment pending.") {
         setNdaStatus("pending_payment");
         setNdaModalOpen(false);
-        toast.info("Complete payment in the checkout tab to unlock business financials.", { position: "top-right" });
+        notify.info("Complete payment in the checkout tab to unlock business financials.");
         return;
       }
 
@@ -576,7 +573,7 @@ const BusinessListingDetail = ({
         setNdaStatus(null);
         setNdaModalOpen(false);
         fetchListingDocuments();
-        toast.success("✅ NDA complete — financial documents are unlocked.", { position: "top-right" });
+        notify.success("✅ NDA complete — financial documents are unlocked.");
         return;
       }
 
@@ -589,10 +586,10 @@ const BusinessListingDetail = ({
           setNdaSigned(true);
           setNdaStatus(null);
           fetchListingDocuments();
-          toast.success("✅ NDA complete — financial documents are unlocked.", { position: "top-right" });
+          notify.success("✅ NDA complete — financial documents are unlocked.");
         } else {
           setNdaStatus(st);
-          toast.info("Your request is being processed. Check My Business Financials for status.", { position: "top-right" });
+          notify.info("Your request is being processed. Check My Business Financials for status.");
         }
         return;
       }
@@ -600,7 +597,7 @@ const BusinessListingDetail = ({
       // Redirect to Square checkout for the $1 NDA fee
       if (payment_url) {
         setNdaError("");
-        toast.info("Redirecting to secure payment…", { position: "top-right" });
+        notify.info("Redirecting to secure payment…");
         window.open(payment_url, "_blank", "noopener");
         return;
       }
@@ -674,7 +671,7 @@ const BusinessListingDetail = ({
 
   const handleWishlistClick = useCallback(async () => {
     if (!accessToken) {
-      toast.error("Please sign in to save listings", { position: "top-right" });
+      notify.error("Please sign in to save listings");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       navigate("/signin");
       return;
@@ -697,7 +694,7 @@ const BusinessListingDetail = ({
       await axios.post(url, {}, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      toast.success(wasInWishlist ? "Removed from wishlist" : "Saved to wishlist", { position: "top-right" });
+      notify.success(wasInWishlist ? "Removed from wishlist" : "Saved to wishlist");
     } catch (err) {
       // Revert on failure
       if (wasInWishlist) {
@@ -706,7 +703,7 @@ const BusinessListingDetail = ({
         setWishlistProducts((prev) => (prev || []).filter((i) => i.id !== product.id));
       }
       const msg = err?.response?.data?.detail || err?.response?.data?.message || "Couldn't update wishlist";
-      toast.error(msg, { position: "top-right" });
+      notify.error(msg );
     } finally {
       setWishlistBusy(false);
     }
@@ -1203,7 +1200,7 @@ const BusinessListingDetail = ({
                         </div>
                         <div className="b-doc-row-right">
                           <span className="b-doc-badge-free">Free Access</span>
-                          <button className="b-doc-btn" onClick={() => toast.info("📄 Teaser download — contact lister for file.", { position: "top-right" })}>Download</button>
+                          <button className="b-doc-btn" onClick={() => notify.info("📄 Teaser download — contact lister for file.")}>Download</button>
                         </div>
                       </div>
                       {/* NDA-gated docs — real list from vendor */}
@@ -1256,7 +1253,7 @@ const BusinessListingDetail = ({
                         </div>
                         <div className="b-doc-row-right">
                           <span className="b-doc-badge-free">✅ Unlocked</span>
-                          <button className="b-doc-btn" onClick={() => toast.info("📥 Contact the lister for file access.", { position: "top-right" })}>📥 Download</button>
+                          <button className="b-doc-btn" onClick={() => notify.info("📥 Contact the lister for file access.")}>📥 Download</button>
                         </div>
                       </div>
                       {listingDocuments.length > 0
@@ -1731,9 +1728,7 @@ const BusinessListingDetail = ({
                   >
                     {contactingAgent ? (
                       <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,.3)", borderTop: "2px solid #fff", borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
-                    ) : isDealClosed ? (
-                      "Deal Closed"
-                    ) : (
+                    ) : isDealClosed ? ("Deal Closed") : (
                       <>💬 Message Lister</>
                     )}
                   </button>

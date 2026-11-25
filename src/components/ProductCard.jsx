@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import { formatListingLocation } from "../pages/categoryProducts/locationFilterUtils";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
@@ -25,6 +24,7 @@ import MediaImage from "./ui/MediaImage";
 import NoImagePlaceholder from "./ui/NoImagePlaceholder";
 import { EBITDA_ATTR_ALIASES, REVENUE_ATTR_ALIASES, parseMoney } from "../utils/businessMetrics";
 
+import { notify } from "../lib/notify";
 const EMPTY_SPEC = "—";
 
 const ProductCard = ({ product, isCard }) => {
@@ -68,7 +68,7 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   const requireSignIn = (message) => {
-    toast.error(message, { position: "top-right" });
+    notify.error(message );
     navigate("/signin", {
       state: { from: window.location.pathname + window.location.search },
     });
@@ -80,11 +80,11 @@ const ProductCard = ({ product, isCard }) => {
       return;
     }
     if (productOutOfStock) {
-      toast.error("This product is out of stock", { position: "top-right" });
+      notify.error("This product is out of stock");
       return;
     }
     if (isInCart) {
-      toast.info("Already in your cart", { position: "top-right" });
+      notify.info("Already in your cart");
       return;
     }
     axios
@@ -100,25 +100,18 @@ const ProductCard = ({ product, isCard }) => {
       )
       .then((response) => {
         if (response.data?.already_in_cart) {
-          toast.info(response.data.message || "Already in your cart", {
-            position: "top-right",
-          });
+          notify.info(response.data.message || "Already in your cart");
         } else {
-          toast.success("Added to Cart", {
-            position: "top-right",
-          });
+          notify.success("Added to Cart");
         }
         GetCartProducts();
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
-          error.response?.data?.message ||
+        notify.error(error.response?.data?.message ||
             error.response?.data?.Status ||
             error.response?.data?.detail ||
-            "Could not add to cart",
-          { position: "top-right" }
-        );
+            "Could not add to cart");
       });
   };
 
@@ -136,21 +129,11 @@ const ProductCard = ({ product, isCard }) => {
       )
       .then(() => {
         GetWishlist();
-        toast.success("Added to wishlist", {
-          position: "top-right",
-        });
+        notify.success("Added to wishlist");
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
-          error.response?.data?.message ||
-            error.response?.data?.Status ||
-            error.response?.data?.detail ||
-            "An error occurred",
-          {
-            position: "top-right",
-          }
-        );
+        notify.apiError(error, "We couldn’t save this to your wishlist. Please try again.");
       });
   };
 
@@ -186,20 +169,15 @@ const ProductCard = ({ product, isCard }) => {
         }
       );
       GetWishlist();
-      toast.success("Removed from wishlist", {
-        position: "top-right",
-      });
+      notify.success("Removed from wishlist");
     } catch (error) {
       console.error(error);
       const data = error.response?.data;
-      toast.error(
-        data?.message ||
+      notify.error(data?.message ||
           data?.Status ||
           data?.Err ||
           data?.detail ||
-          "Unable to remove from wishlist",
-        { position: "top-right" }
-      );
+          "Unable to remove from wishlist");
     }
   };
 
@@ -217,10 +195,8 @@ const ProductCard = ({ product, isCard }) => {
       } else {
         await AddtoWishlist(product.id);
       }
-    } catch {
-      toast.error("An error occurred", {
-        position: "top-right",
-      });
+    } catch (error) {
+      notify.apiError(error, "We couldn’t update your wishlist. Please try again.");
     }
   };
 
@@ -345,11 +321,11 @@ const ProductCard = ({ product, isCard }) => {
       return;
     }
     if (productOutOfStock) {
-      toast.error("This product is out of stock", { position: "top-right" });
+      notify.error("This product is out of stock");
       return;
     }
     if (isInCart) {
-      toast.info("Already in your cart", { position: "top-right" });
+      notify.info("Already in your cart");
       return;
     }
     AddtoCart();

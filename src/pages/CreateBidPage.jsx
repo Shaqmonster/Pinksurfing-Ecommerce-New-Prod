@@ -1,7 +1,6 @@
 import React, { useState, useContext, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
 import {
   IoCamera,
   IoDocumentText,
@@ -46,6 +45,7 @@ import { useAccessToken } from "../hooks/useAccessToken";
 import { useJobCategories } from "../hooks/useJobCategories";
 import { BUDGET_OPTIONS } from "../constants/jobBudgets";
 
+import { notify } from "../lib/notify";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 // Step ids: 0 start, 1 photos, 2 category, 3 location, 4 scope (description), 5 budget, 6 review.
@@ -910,9 +910,7 @@ const RequestReviewStep = ({ data, onPublish, onUpdate, submitting, onEdit }) =>
             <span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />
             Publishing...
           </>
-        ) : (
-          "Post Job \u2014 Free"
-        )}
+        ) : ("Post Job \u2014 Free")}
       </motion.button>
       <p className="text-xs text-ink/30 text-center">
         Freelancers can send proposals right away. You pick who to hire from My Jobs.
@@ -993,7 +991,7 @@ const CreateBidPage = () => {
     });
   const handleNext = () => moveStep(1);
   const handleBack = () => moveStep(-1);
-  const handleSaveDraft = () => toast.info("Draft saved!");
+  const handleSaveDraft = () => notify.info("Draft saved!");
 
   // Same token source as the rest of the app: auth context, then cookie, then localStorage.
   const accessToken = useAccessToken();
@@ -1006,14 +1004,14 @@ const CreateBidPage = () => {
     } catch (err) {
       // Never fail silently: anything thrown while building or sending the request reaches the user.
       console.error("[CreateBidPage] publish failed:", err);
-      toast.error(extractApiError(err));
+      notify.error(extractApiError(err));
       setSubmitting(false);
     }
   };
 
   const publishRequest = async () => {
     if (!accessToken) {
-      toast.error("Please sign in to post a request.");
+      notify.error("Please sign in to post a request.");
       navigate("/signin");
       return;
     }
@@ -1057,11 +1055,11 @@ const CreateBidPage = () => {
         deadline,
         images,
       });
-      toast.success("Job posted! Freelancers can now send proposals.");
+      notify.success("Job posted! Freelancers can now send proposals.");
       navigate("/gigs/jobs/mine");
     } catch (err) {
       console.error("[CreateBidPage] createBuyerRequest failed:", err?.response?.data || err);
-      toast.error(extractApiError(err));
+      notify.error(extractApiError(err));
     } finally {
       setSubmitting(false);
     }

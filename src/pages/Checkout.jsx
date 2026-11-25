@@ -6,7 +6,6 @@ import AddressForm from "../components/AddressForm";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import OrderConfirm from "../components/OrderConfirm";
 import PaymentOptionsModal from "./PaymentOptionsModal";
 import { formatMoney } from "../utils/formatMoney";
@@ -17,6 +16,7 @@ import {
 } from "../utils/cartStock";
 
 
+import { notify } from "../lib/notify";
 const Checkout = () => {
   const accessToken = useAccessToken();
   const { setIsAddressFormOpen, currency, isAddressFormOpen } =
@@ -114,11 +114,11 @@ const Checkout = () => {
       navigate("/signin");
     }
     if (checkoutBlocked) {
-      toast.error(getCartStockIssueMessage(cartProducts));
+      notify.error(getCartStockIssueMessage(cartProducts));
       return;
     }
     if (shippingUnknown && addresses[0] && addressesId) {
-      toast.info(shippingLoading ? "Still working out shipping — one moment." : "We need a shipping price for every item before you can place the order.");
+      notify.info(shippingLoading ? "Still working out shipping — one moment." : "We need a shipping price for every item before you can place the order.");
       return;
     }
     if (!addresses[0]) {
@@ -126,7 +126,7 @@ const Checkout = () => {
       setIsAddressFormOpen(true);
       return;
     } else if (!addressesId) {
-      toast.info("Choose a shipping address to continue.");
+      notify.info("Choose a shipping address to continue.");
       return;
     }
     setPlacing(true);
@@ -158,7 +158,7 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
+        notify.error(
           error.response?.data?.error ||
             (error.response
               ? "We couldn't place your order. Nothing was charged — please try again."
@@ -201,7 +201,7 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
+        notify.error(
           error.response?.data?.error ||
             (error.response
               ? "We couldn't load your addresses. Please try again."
@@ -239,7 +239,7 @@ const Checkout = () => {
       })
       .then((response) => {
         if (response.data.length == 0) {
-          toast.info("Your cart is empty, so there's nothing to check out yet.");
+          notify.info("Your cart is empty, so there's nothing to check out yet.");
           navigate("/shoppingMall");
         }
         setCartProducts(response.data);
@@ -247,7 +247,7 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error("We couldn't load your cart. Refresh the page to try again.");
+        notify.error("We couldn't load your cart. Refresh the page to try again.");
       });
   };
 
@@ -377,7 +377,7 @@ const Checkout = () => {
                 }
                 acc[vendorId].items.push(item);
                 return acc;
-              }, {})
+              })
             ).map(([vendorId, group]) => (
               <div key={vendorId} className="space-y-4 border-b border-gray-100 dark:border-white/5 last:border-0 pb-6 last:pb-0">
                 <div className="flex items-center gap-2">
@@ -462,7 +462,12 @@ const Checkout = () => {
             </button>
           </div>
 
-          {addresses.length > 0 ? (
+          {loading && addresses.length === 0 ? (
+            <div className="mt-4 space-y-3" aria-busy="true" aria-label="Loading your addresses">
+              <div className="ps-skeleton h-16 rounded-xl" />
+              <div className="ps-skeleton h-16 rounded-xl" />
+            </div>
+          ) : addresses.length > 0 ? (
             <div className="mt-4 space-y-3 max-h-[220px] overflow-y-auto pr-1 w-[95vw] sm:w-full">
               {addresses.map((address, index) => {
                 const isSelected = addressesId === address.id;
@@ -604,11 +609,6 @@ const Checkout = () => {
           </div>
         </div>
       </div>
-      {loading && (
-        <div className="fixed inset-0 bg-ps-bg bg-opacity-50 flex items-center justify-center z-50">
-          <img src="/loading.svg" alt="Loading..." className="w-16 h-16" />
-        </div>
-      )}
     </>
   );
 };

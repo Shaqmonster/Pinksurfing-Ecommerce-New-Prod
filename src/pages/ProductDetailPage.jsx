@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import Header from "../components/Header";
 import axios from "axios";
 import { FaCopy, FaFacebook, FaFontAwesome, FaPinterest, FaShare, FaTwitter } from "react-icons/fa";
@@ -59,6 +58,7 @@ import {
 } from "../api/propertyVisits";
 import { createConversationForProduct } from "../api/gigs";
 
+import { notify } from "../lib/notify";
 /** API returns `/media/...` paths; resolve against API origin when SPA is on another host. */
 function resolveProductMediaUrl(url) {
   if (url == null || url === "") return "";
@@ -266,9 +266,7 @@ const ProductDetailPage = () => {
     const currentURL = window.location.href;
 
     navigator.clipboard.writeText(currentURL).then(() => {
-      toast.success("Product URL copied to clipboard", {
-        position: "top-right",
-      });
+      notify.success("Product URL copied to clipboard");
     });
   };
   const handleShareClick = async () => {
@@ -289,9 +287,9 @@ const ProductDetailPage = () => {
 
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied to clipboard", { position: "top-right" });
+      notify.success("Link copied to clipboard");
     } catch {
-      toast.error("Couldn't share or copy the link.", { position: "top-right" });
+      notify.error("Couldn't share or copy the link.");
     }
   };
 
@@ -299,7 +297,7 @@ const ProductDetailPage = () => {
     if (isDealClosed) return;
 
     if (!accessToken || !user) {
-      toast.info("Please sign in to message the agent.", { position: "top-right" });
+      notify.info("Please sign in to message the agent.");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       navigate("/signin");
       return;
@@ -310,7 +308,7 @@ const ProductDetailPage = () => {
     }
 
     if (!product?.id) {
-      toast.error("Agent contact isn't available right now.", { position: "top-right" });
+      notify.error("Agent contact isn't available right now.");
       return;
     }
 
@@ -323,9 +321,7 @@ const ProductDetailPage = () => {
       }
     } catch (err) {
       const detail = err?.response?.data?.detail || err?.response?.data?.error;
-      toast.error(typeof detail === "string" ? detail : "Couldn't start a chat with the agent.", {
-        position: "top-right",
-      });
+      notify.error(typeof detail === "string" ? detail : "Couldn't start a chat with the agent.");
     } finally {
       setContactingAgent(false);
     }
@@ -334,7 +330,7 @@ const ProductDetailPage = () => {
   const openScheduleVisitModal = () => {
     if (isDealClosed) return;
     if (!accessToken) {
-      toast.info("Please sign in to continue.");
+      notify.info("Please sign in to continue.");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       navigate("/signin");
       return;
@@ -355,10 +351,10 @@ const ProductDetailPage = () => {
       const pay = await createVisitPaymentLink(accessToken, activeVisit.id);
       const url = pay.payment_link || pay.payment_link_url;
       if (url) window.location.href = url;
-      else toast.error("Could not resume checkout.");
+      else notify.error("Could not resume checkout.");
     } catch (e) {
       const d = e?.response?.data?.detail;
-      toast.error(typeof d === "string" ? d : "Checkout error");
+      notify.error(typeof d === "string" ? d : "Checkout error");
     }
   };
 
@@ -366,32 +362,32 @@ const ProductDetailPage = () => {
     if (!activeVisit?.id || !accessToken) return;
     try {
       await buyerRespondVendorReschedule(accessToken, activeVisit.id, accept);
-      toast.success(accept ? "You accepted the new time." : "You declined — a refund will be processed.");
+      notify.success(accept ? "You accepted the new time." : "You declined — a refund will be processed.");
       const data = await getVisitForProduct(accessToken, product.id);
       setActiveVisit(data.visit || null);
     } catch (e) {
       const d = e?.response?.data?.detail;
-      toast.error(typeof d === "string" ? d : "Could not update request.");
+      notify.error(typeof d === "string" ? d : "Could not update request.");
     }
   };
 
   const submitDispute = async () => {
     if (!activeVisit?.id || !accessToken) return;
     if (disputeReason.trim().length < 10) {
-      toast.error("Please enter at least 10 characters.");
+      notify.error("Please enter at least 10 characters.");
       return;
     }
     setDisputeBusy(true);
     try {
       await submitVisitDispute(accessToken, activeVisit.id, disputeReason.trim());
-      toast.success("Dispute submitted. Our team will review it.");
+      notify.success("Dispute submitted. Our team will review it.");
       setDisputeModalOpen(false);
       setDisputeReason("");
       const data = await getVisitForProduct(accessToken, product.id);
       setActiveVisit(data.visit || null);
     } catch (e) {
       const d = e?.response?.data?.detail;
-      toast.error(typeof d === "string" ? d : "Could not submit dispute.");
+      notify.error(typeof d === "string" ? d : "Could not submit dispute.");
     } finally {
       setDisputeBusy(false);
     }
@@ -468,21 +464,21 @@ const ProductDetailPage = () => {
   const AddtoCart = () => {
     const cartProductId = product?.id || productId;
     if (!accessToken) {
-      toast.error("You are not Signed In", { position: "top-right" });
+      notify.error("You are not Signed In");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       return;
     }
     if (isOutOfStock(product)) {
-      toast.error("This product is out of stock", { position: "top-right" });
+      notify.error("This product is out of stock");
       return;
     }
     if (!cartProductId) {
-      toast.error("Product is still loading", { position: "top-right" });
+      notify.error("Product is still loading");
       return;
     }
     if (cartContainsProduct(cartProducts, cartProductId)) {
-      toast.info("Already in your cart", { position: "top-right" });
+      notify.info("Already in your cart");
       return;
     }
     // Send the raw variant selections — the backend validates the price from DB.
@@ -502,39 +498,32 @@ const ProductDetailPage = () => {
       )
       .then((response) => {
         if (response.data?.already_in_cart) {
-          toast.info(response.data.message || "Already in your cart", {
-            position: "top-right",
-          });
+          notify.info(response.data.message || "Already in your cart");
         } else {
-          toast.success("Added to Cart", {
-            position: "top-right",
-          });
+          notify.success("Added to Cart");
         }
         GetCartProducts();
       })
       .catch((error) => {
         console.error(error);
         const data = error.response?.data;
-        toast.error(
-          data?.message || data?.Status || data?.detail || "Could not add to cart",
-          { position: "top-right" }
-        );
+        notify.error(data?.message || data?.Status || data?.detail || "Could not add to cart");
       });
   };
 
   const handleAddToBagClick = () => {
     if (!accessToken) {
-      toast.error("You are not Signed In", { position: "top-right" });
+      notify.error("You are not Signed In");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       return;
     }
     if (isOutOfStock(product)) {
-      toast.error("This product is out of stock", { position: "top-right" });
+      notify.error("This product is out of stock");
       return;
     }
     if (isInCart) {
-      toast.info("Already in your cart", { position: "top-right" });
+      notify.info("Already in your cart");
       return;
     }
     AddtoCart();
@@ -557,20 +546,12 @@ const ProductDetailPage = () => {
         }
       );
       GetWishlist();
-      toast.success("Removed from wishlist", {
-        position: "top-right",
-      });
+      notify.success("Removed from wishlist");
     } catch (error) {
       console.error(error);
       heartElement.classList.add("text-red-500");
       heartElement.classList.remove("text-ps-meta");
-      toast.error(error.response.data.message ||
-        error.response.data.Status ||
-        error.response.data.Err ||
-        error.response.data.detail ||
-        "An error occurred", {
-        position: "top-right",
-      });
+      notify.apiError(error, "We couldn’t remove this from your wishlist. Please try again.");
     }
   };
   const AddtoWishlist = (productId) => {
@@ -588,15 +569,11 @@ const ProductDetailPage = () => {
       )
       .then((response) => {
         GetWishlist();
-        toast.success("Added to wishlist", {
-          position: "top-right",
-        });
+        notify.success("Added to wishlist");
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
-          position: "top-right",
-        });
+        notify.apiError(error, "We couldn’t save this to your wishlist. Please try again.");
       });
   };
   useEffect(() => {
@@ -787,9 +764,7 @@ const ProductDetailPage = () => {
   }
   const handleWishlistClick = async () => {
     if (!accessToken) {
-      toast.error("You are not Signed In", {
-        position: "top-right",
-      });
+      notify.error("You are not Signed In");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       setTimeout(() => {
@@ -814,9 +789,7 @@ const ProductDetailPage = () => {
       // Revert the color if there's an error
       heartElement.classList.remove("text-red-500");
       heartElement.classList.add("text-ps-meta");
-      toast.error("An error occurred", {
-        position: "top-right",
-      });
+      notify.apiError(error, "We couldn’t update your wishlist. Please try again.");
     }
   };
   useEffect(() => {
@@ -1781,7 +1754,7 @@ const ProductDetailPage = () => {
                               <button
                                 onClick={() => {
                                   if (!accessToken) {
-                                    toast.error("You are not Signed In", { position: "top-right" });
+                                    notify.error("You are not Signed In");
                                     sessionStorage.setItem("redirectAfterLogin", window.location.href);
                                     setIsProfileOpen(true);
                                     setTimeout(() => setIsProfileOpen(false), 10000);

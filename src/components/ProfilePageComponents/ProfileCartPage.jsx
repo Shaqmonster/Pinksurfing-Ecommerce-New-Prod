@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { dataContext } from "../../context/dataContext";
 import { useAccessToken } from "../../hooks/useAccessToken";
@@ -21,6 +20,7 @@ import {
     isCartItemOutOfStock,
 } from "../../utils/cartStock";
 
+import { notify } from "../../lib/notify";
 export default function ProfileCartPage() {
     const { isCartOpen, setIsCartOpen, currency } =
         useContext(authContext);
@@ -50,10 +50,7 @@ export default function ProfileCartPage() {
             })
             .catch((error) => {
                 console.error(error);
-                toast.error("Unable to load cart", {
-                    position: "top-center",
-                    autoClose: 3000,
-                });
+                notify.error("Unable to load cart");
             });
     };
     useEffect(() => {
@@ -82,16 +79,13 @@ export default function ProfileCartPage() {
             })
             .catch((error) => {
                 // console.error(error);
-                toast.error(error.response?.data?.detail || "An error occurred while removing product from cart", {
-                    position: "top-center",
-                    autoClose: 3000,
-                });
+                notify.apiError(error, "We couldn’t remove this from your cart. Please try again.");
             });
     };
     //   increment product--------------------------------------------------------
     const IncrementQty = (productId) => {
         if (!accessToken) {
-            toast.error("Please sign in to update your cart", { position: "top-center" });
+            notify.error("Please sign in to update your cart");
             return;
         }
         const cartItem = cartProducts?.find(
@@ -99,11 +93,10 @@ export default function ProfileCartPage() {
         );
         if (cartItem && isCartItemAtMaxStock(cartItem)) {
             const stockQty = getCartItemStockQty(cartItem);
-            toast.info(
+            notify.info(
                 stockQty != null
                     ? cartStockLimitMessage(stockQty)
-                    : "Unable to increase quantity for this item",
-                { position: "top-center", autoClose: 2500 }
+                    : "Unable to increase quantity for this item" 
             );
             return;
         }
@@ -126,16 +119,13 @@ export default function ProfileCartPage() {
             .catch((error) => {
                 console.error(error);
                 GetCartProducts();
-                toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
-                    position: "top-center",
-                    autoClose: 3000,
-                });
+                notify.apiError(error, "We couldn’t change the quantity. Please try again.");
             });
     };
     //   decrement product--------------------------------------------------------
     const DecrementQty = (productId) => {
         if (!accessToken) {
-            toast.error("Please sign in to update your cart", { position: "top-center" });
+            notify.error("Please sign in to update your cart");
             return;
         }
         axios
@@ -156,10 +146,7 @@ export default function ProfileCartPage() {
             })
             .catch((error) => {
                 console.error(error);
-                toast.error(error.response?.data?.message || error.response?.data?.Status || error.response?.data?.detail || "An error occurred", {
-                    position: "top-center",
-                    autoClose: 3000,
-                });
+                notify.apiError(error, "We couldn’t change the quantity. Please try again.");
             });
     };
     const subTotal = cartProducts?.reduce((acc, product) => {
@@ -260,11 +247,10 @@ export default function ProfileCartPage() {
                                                                 <button
                                                                     onClick={() => {
                                                                         if (isAtMaxStock) {
-                                                                            toast.info(
+                                                                            notify.info(
                                                                                 stockQty != null
                                                                                     ? cartStockLimitMessage(stockQty)
-                                                                                    : "Unable to increase quantity for this item",
-                                                                                { position: "top-center", autoClose: 2500 }
+                                                                                    : "Unable to increase quantity for this item" 
                                                                             );
                                                                             return;
                                                                         }

@@ -1,4 +1,5 @@
 import { createContext, useState } from "react";
+import { notify, apiErrorMessage } from "../lib/notify";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
@@ -27,30 +28,14 @@ export const DataProvider = ({ children }) => {
   });
   // toast functions ------------------------------------------------------------
   const [profileActiveIndex, setProfileActiveIndex] = useState(0);
+  // Errors may be a sentence or an API error object; never show raw technical text.
   const handleError = (err) => {
-    console.error("Error occurred",err);
-    toast.error(err, {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-  }
+    console.error("Error occurred", err);
+    notify.error(apiErrorMessage(err));
+  };
   const handleSuccess = (msg) => {
-    console.log("success",msg);
-    toast.success(msg, {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-  }
+    notify.success(msg);
+  };
 
 
     

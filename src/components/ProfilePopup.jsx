@@ -4,11 +4,11 @@ import { authContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import Loader from "./Loader";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { fetchCustomerProfile } from "../utils/authSession";
+import { notify } from "../lib/notify";
 export default function ProfilePopup() {
   const accessToken = useAccessToken();
   const {
@@ -131,9 +131,7 @@ export default function ProfilePopup() {
       );
 
       if (response.status === 200) {
-        toast.success("Profile updated successfully", {
-          position: "top-center",
-        });
+        notify.success("Profile updated successfully");
         await GetProfile();
       }
     } catch (error) {
@@ -142,9 +140,7 @@ export default function ProfilePopup() {
         error?.response?.data?.error ||
         error?.response?.data?.message ||
         "Failed to update profile. Please fill the details correctly.";
-      toast.error(message, {
-        position: "top-center",
-      });
+      notify.error(message );
     } finally {
       setIsLoading(false); // Stop loader
     }

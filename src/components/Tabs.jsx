@@ -57,13 +57,11 @@ export default function Tabs() {
               }}
               key={category + index}
               className={({ selected }) =>
-                classNames(
-                  "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
+                classNames("w-full rounded-lg py-2.5 text-sm font-medium leading-5",
                   " focus:outline-none ",
                   selected
                     ? "bg-white text-purple-900 shadow"
-                    : "text-blue-100 hover:bg-ink/[0.12] hover:text-ink"
-                )
+                    : "text-blue-100 hover:bg-ink/[0.12] hover:text-ink")
               }
             >
               {category.name}
@@ -72,10 +70,8 @@ export default function Tabs() {
         </Tab.List>
         <Tab.Panels className="mt-2">
           <Tab.Panel
-            className={classNames(
-              "rounded-xl bg-white p-3",
-              " ring-offset-2 grid grid-cols-3  focus:outline-none focus:ring-2"
-            )}
+            className={classNames("rounded-xl bg-white p-3",
+              " ring-offset-2 grid grid-cols-3  focus:outline-none focus:ring-2")}
           >
             {subCategories.map((item, idx) => {
               return (
@@ -88,10 +84,8 @@ export default function Tabs() {
                         </h3>
                         <a
                           href="#"
-                          className={classNames(
-                            "absolute inset-0 rounded-md",
-                            "ring-blue-400 focus:z-10 focus:outline-none focus:ring-2"
-                          )}
+                          className={classNames("absolute inset-0 rounded-md",
+                            "ring-blue-400 focus:z-10 focus:outline-none focus:ring-2")}
                         />
                       </li>
                     )}

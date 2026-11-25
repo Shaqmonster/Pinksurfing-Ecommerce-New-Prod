@@ -1,12 +1,12 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { MapPinIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { authContext } from "../../context/authContext";
 import AddressForm from "../AddressForm";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 function formatAddressLine(address) {
   const line1 = [address.street1, address.street2].filter(Boolean).join(", ");
   const line2 = [address.city, address.state, address.country]
@@ -66,10 +66,7 @@ export default function ProfileAddresses() {
       setAddresses(sorted);
     } catch (error) {
       console.error(error);
-      toast.error(
-        error.response?.data?.error || "Unable to load addresses",
-        { position: "top-center", autoClose: 3000 }
-      );
+      notify.error(error.response?.data?.error || "Unable to load addresses");
       setAddresses([]);
     } finally {
       setLoading(false);

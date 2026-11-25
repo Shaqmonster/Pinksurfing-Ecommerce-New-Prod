@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { getMyGigOrders, submitOrderRequirements, gigUrl } from "../../api/gigs";
 import {
@@ -16,6 +15,7 @@ import {
 import { FaBriefcase, FaSpinner } from "react-icons/fa";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const STATUS_CONFIG = {
   pending_requirements: {
     label: "Awaiting Your Input",
@@ -160,7 +160,7 @@ const MyGigOrders = () => {
       const res = await getMyGigOrders(accessToken);
       setOrders(Array.isArray(res.data) ? res.data : res.data.results || []);
     } catch (err) {
-      toast.error("Failed to load gig orders.");
+      notify.error("Failed to load gig orders.");
     } finally {
       setLoading(false);
     }
@@ -170,11 +170,11 @@ const MyGigOrders = () => {
     try {
       setSubmittingReq(true);
       await submitOrderRequirements(accessToken, orderId, answers);
-      toast.success("Requirements submitted! Your order is now in progress.");
+      notify.success("Requirements submitted! Your order is now in progress.");
       setRequirementsOrder(null);
       fetchOrders();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to submit requirements.");
+      notify.error(err?.response?.data?.error || "Failed to submit requirements.");
     } finally {
       setSubmittingReq(false);
     }

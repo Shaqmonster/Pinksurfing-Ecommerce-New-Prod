@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
   createGig,
@@ -25,6 +24,7 @@ import { FaBriefcase, FaPlus } from "react-icons/fa";
 import DiditVerificationGate from "../../components/DiditVerificationGate";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const TIERS = ["basic", "standard", "premium"];
 const TIER_LABELS = { basic: "Basic", standard: "Standard", premium: "Premium" };
 
@@ -103,7 +103,7 @@ const CreateGigPage = () => {
         if (gig.media_files && gig.media_files.length > 0) {
           setMediaPreviews(gig.media_files.map((m) => m.file));
         }
-      }).catch(() => toast.error("Failed to load gig for editing."));
+      }).catch(() => notify.error("Failed to load gig for editing."));
     }
   }, [editId]);
 
@@ -160,12 +160,12 @@ const CreateGigPage = () => {
   // Step 1 → Step 2 — validate details and move to packages
   const handleDetailsNext = () => {
     if (!details.title.trim() || !details.description.trim()) {
-      toast.error("Title and description are required.");
+      notify.error("Title and description are required.");
       return;
     }
     // Without a category the gig page shows blanks and buyers can't find it by category.
     if (!details.category) {
-      toast.error("Please choose a category.");
+      notify.error("Please choose a category.");
       return;
     }
     setStep(1);
@@ -175,12 +175,12 @@ const CreateGigPage = () => {
   const handlePackagesNext = () => {
     const activePkgs = packages.filter((p) => p.enabled);
     if (activePkgs.length === 0) {
-      toast.error("Please enable and configure at least one package.");
+      notify.error("Please enable and configure at least one package.");
       return;
     }
     for (const p of activePkgs) {
       if (!p.price || !p.delivery_days) {
-        toast.error(`Please complete all fields for the ${TIER_LABELS[p.tier]} package.`);
+        notify.error(`Please complete all fields for the ${TIER_LABELS[p.tier]} package.`);
         return;
       }
     }
@@ -253,20 +253,16 @@ const CreateGigPage = () => {
         }
       }
 
-      toast.success(
-        editId ? "Gig updated. It's live in GigHub." : "Gig published! It's now live in GigHub."
-      );
+      notify.success(editId ? "Gig updated. It's live in GigHub." : "Gig published! It's now live in GigHub.");
       if (failedUploads > 0) {
-        toast.warn(
-          `${failedUploads} image${failedUploads === 1 ? "" : "s"} could not be uploaded. Edit the gig to try again.`
-        );
+        notify.info(`${failedUploads} image${failedUploads === 1 ? "" : "s"} could not be uploaded. Edit the gig to try again.`);
       }
       navigate(gigUrl({ ...(savedGig || {}), id: finalGigId, title: savedGig?.title || gigDetails.title }));
     } catch (err) {
       const errData = err?.response?.data;
       const code = errData?.code || errData?.errors?.[0]?.code;
       if (code === "kyc_required" || err?.response?.status === 403) {
-        toast.error("Identity verification is required before publishing a gig.");
+        notify.error("Identity verification is required before publishing a gig.");
         navigate("/identity/verify?returnUrl=/gigs/create");
         return;
       }
@@ -279,7 +275,7 @@ const CreateGigPage = () => {
           : null) ||
         err?.message ||
         "Failed to save gig.";
-      toast.error(msg);
+      notify.error(msg);
     } finally {
       setSubmitting(false);
       setPublishStage("");
@@ -458,9 +454,7 @@ const CreateGigPage = () => {
                 >
             {submitting ? (
               <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" /> Saving…</>
-            ) : (
-              "Continue to Packages →"
-            )}
+            ) : ("Continue to Packages →")}
                 </motion.button>
               </motion.div>
             )}
@@ -585,9 +579,7 @@ const CreateGigPage = () => {
                 >
                   {submitting ? (
                     <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" /> Saving…</>
-                  ) : (
-                    "Continue to Media →"
-                  )}
+                  ) : ("Continue to Media →")}
                 </motion.button>
               </div>
             </motion.div>

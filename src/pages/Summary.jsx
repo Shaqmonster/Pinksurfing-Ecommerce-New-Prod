@@ -7,7 +7,6 @@ import axios from "axios";
 import { FaStar } from "react-icons/fa";
 import { IoStar, IoStarOutline } from "react-icons/io5";
 import CancelDialog from "../components/CancelDialog";
-import { toast } from "react-toastify";
 import RatingForm from "../components/RatingForm";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import TrackingTimeline from "../components/TrackingTimeline";
@@ -18,6 +17,7 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { orderStatusLabel } from "../utils/orderStatus";
 import { isItemPaid } from "../utils/orderPayment";
 
+import { notify } from "../lib/notify";
 const Summary = () => {
   const accessToken = useAccessToken();
   const { user, isRatingFormOpen, currency, setIsRatingFormOpen } =
@@ -119,7 +119,7 @@ const Summary = () => {
         setOrder((prev) =>
           prev ? { ...prev, order_status: "RETURN-REQUESTED" } : prev
         );
-        toast.success("Return requested. We'll show the next steps here.");
+        notify.success("Return requested. We'll show the next steps here.");
       }
     } catch (error) {
       const err = new Error("return failed");

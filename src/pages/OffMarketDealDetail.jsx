@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import DealRoomPanel from "../components/deals/DealRoomPanel";
 import DealImage from "../components/deals/DealImage";
 import UnlockDealModal from "../components/deals/UnlockDealModal";
@@ -16,6 +15,7 @@ import {
 import { useAccessToken } from "../hooks/useAccessToken";
 import { formatDay } from "../utils/formatDate";
 
+import { notify } from "../lib/notify";
 const CSS = `
 .deal-detail-page{min-height:100vh;background:var(--ps-color-bg);color:var(--ps-color-text);font-family:'DM Sans',sans-serif;padding:28px 32px 80px;}
 .deal-detail-inner{max-width:1200px;margin:0 auto;}
@@ -74,7 +74,7 @@ export default function OffMarketDealDetail() {
         setRoom(null);
       }
     } catch (e) {
-      toast.error("Could not load deal");
+      notify.error("Could not load deal");
     } finally {
       setLoading(false);
     }
@@ -86,14 +86,14 @@ export default function OffMarketDealDetail() {
 
   const handleUnlock = async () => {
     if (!token) {
-      toast.info("Please sign in to unlock this deal");
+      notify.info("Please sign in to unlock this deal");
       return;
     }
     setUnlockLoading(true);
     try {
       const res = await initiateDealUnlock(slug, token);
       if (res.detail === "already_unlocked") {
-        toast.success("Already unlocked");
+        notify.success("Already unlocked");
         setShowUnlock(false);
         load();
         return;
@@ -102,7 +102,7 @@ export default function OffMarketDealDetail() {
         window.location.href = res.payment_url;
       }
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Unlock failed");
+      notify.error(e.response?.data?.detail || "Unlock failed");
     } finally {
       setUnlockLoading(false);
     }

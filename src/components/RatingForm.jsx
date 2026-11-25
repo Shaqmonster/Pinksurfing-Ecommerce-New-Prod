@@ -4,11 +4,11 @@ import { authContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { IoCloseOutline, IoStar, IoStarOutline } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 import { useAccessToken } from "../hooks/useAccessToken";
 
+import { notify } from "../lib/notify";
 export default function RatingForm({ order }) {
   const accessToken = useAccessToken();
   const { isRatingFormOpen, setIsRatingFormOpen } = useContext(authContext);
@@ -47,7 +47,7 @@ export default function RatingForm({ order }) {
           },
         }
       );
-      toast.success("Review Posted Successfully");
+      notify.success("Review Posted Successfully");
       setIsRatingFormOpen(false);
     } catch (error) {
       if (error.response?.data?.error === "You have already reviewed this order") {
@@ -62,13 +62,13 @@ export default function RatingForm({ order }) {
               },
             }
           );
-          toast.success("Review Updated Successfully");
+          notify.success("Review Updated Successfully");
           setIsRatingFormOpen(false);
         } catch (fallbackError) {
-          toast.error("Failed to update review");
+          notify.error("Failed to update review");
         }
       } else {
-        toast.error("Failed to post review");
+        notify.error("Failed to post review");
       }
     }
   };

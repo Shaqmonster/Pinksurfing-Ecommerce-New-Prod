@@ -8,7 +8,6 @@ import React, {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
   createConversation,
@@ -40,6 +39,7 @@ import {
   IoCodeSlashOutline,
 } from "react-icons/io5";
 
+import { notify } from "../../lib/notify";
 const dateBanner = (iso) => {
   const d = new Date(iso);
   const now = new Date();
@@ -223,7 +223,7 @@ const GigMessages = () => {
         selectConversation(conv);
         navigate(`/gighub/messages?conversation=${conv.id}`, { replace: true });
       } catch {
-        toast.error("Could not open chat with that user.");
+        notify.error("Could not open chat with that user.");
       } finally {
         setOpeningWith(false);
       }
@@ -251,7 +251,7 @@ const GigMessages = () => {
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
       setConversations(data);
     } catch {
-      if (!silent) toast.error("Failed to load conversations.");
+      if (!silent) notify.error("Failed to load conversations.");
     } finally {
       if (!silent) setLoadingConvs(false);
     }
@@ -265,7 +265,7 @@ const GigMessages = () => {
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
       setMessages((prev) => mergeChatMessages(prev, data));
     } catch {
-      if (!silent) toast.error("Failed to load messages.");
+      if (!silent) notify.error("Failed to load messages.");
     } finally {
       if (!silent) setLoadingMsgs(false);
     }
@@ -364,7 +364,7 @@ const GigMessages = () => {
       if (textareaRef.current) textareaRef.current.style.height = "44px";
       fetchConversations();
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Failed to send message.");
+      notify.error(err?.response?.data?.detail || "Failed to send message.");
     } finally { setSending(false); }
   };
 

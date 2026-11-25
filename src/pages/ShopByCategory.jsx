@@ -677,9 +677,7 @@ export default function ShopByCategory() {
                               </span>{" "}
                               yet.
                             </>
-                          ) : (
-                            "No products available yet."
-                          )}
+                          ) : ("No products available yet.")}
                         </p>
                       )}
                       {activeSlug === "perfumes" &&

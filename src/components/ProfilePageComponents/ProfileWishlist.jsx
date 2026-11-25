@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { dataContext } from "../../context/dataContext";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
@@ -14,6 +13,7 @@ import { formatMoney } from "../../utils/formatMoney";
 import { isOutOfStock } from "../../utils/cartStock";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 export default function ProfileWishlist() {
   const accessToken = useAccessToken();
     const { isWishlistOpen, setIsWishlistOpen } =
@@ -85,17 +85,13 @@ export default function ProfileWishlist() {
             )
             .then((response) => {
                 // console.log(response.data);
-                toast.success("Added to Cart", {
-                    position: "top-right",
-                });
+                notify.success("Added to Cart");
                 GetCartProducts();
             })
             .catch((error) => {
                 console.error(error);
                 // Handle the error here
-                toast.error(error.response.data.message || error.response.data.Status || error.response.data.detail || "An error occurred", {
-                    position: "top-right",
-                });
+                notify.apiError(error, "We couldn’t add this to your cart. Please try again.");
             });
     };
     //   remove product--------------------------------------------------------
@@ -123,14 +119,7 @@ export default function ProfileWishlist() {
             .catch((error) => {
                 console.error(error);
                 // Handle the error here
-                toast.error(error.response.data.message ||
-                    error.response.data.Status ||
-                    error.response.data.Err ||
-                    error.response.data.detail ||
-                    "An error occurred", {
-                    position: "top-right",
-                    autoClose: 3000
-                });
+                notify.apiError(error, "We couldn’t remove this from your wishlist. Please try again.");
             });
     };
 

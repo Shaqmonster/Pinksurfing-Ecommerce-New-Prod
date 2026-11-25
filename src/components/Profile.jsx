@@ -5,12 +5,12 @@ import { MdLogout, MdSettings } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { authContext } from "../context/authContext";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { FaWallet } from "react-icons/fa";
 import { FaBoxOpen } from "react-icons/fa";
 import axios from "axios";
 import { deleteCookie } from "../utils/cookie";
 import { SHOW_CRYPTO_WALLET } from "../config/featureFlags";
+import { notify } from "../lib/notify";
 const Profile = ({ user }) => {
   const {
     setIsCartOpen,
@@ -29,7 +29,7 @@ const Profile = ({ user }) => {
       setIsProfileOpen(false);
       navigate(`/store/${user.vendor.slug}`);
     } else {
-      toast.info("You do not have a store. Register on our vendor page.");
+      notify.info("You do not have a store. Register on our vendor page.");
       setTimeout(() => {
         window.open("https://vendors.pinksurfing.com", "_blank");
       }, 3000);

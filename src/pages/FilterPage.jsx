@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import Header from "../components/Header";
 import ProductCard from "../components/ProductCard";
 import { dataContext } from "../context/dataContext";
@@ -18,6 +17,7 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 
+import { notify } from "../lib/notify";
 const sortOptions = [
   { name: "Most Popular", href: "#", current: true },
   { name: "Best Rating", href: "#", current: false },
@@ -99,16 +99,12 @@ export default function Filter() {
         console.log(response.data);
         // setProduct(response.data.Products);
         //   console.log(product);
-        toast.success("Added to wishlist", {
-          position: "top-right",
-        });
+        notify.success("Added to wishlist");
       })
       .catch((error) => {
         console.error(error);
         // Handle the error here
-        toast.error(error.message || "An error occurred", {
-          position: "top-right",
-        });
+        notify.apiError(error, "We couldn’t save this to your wishlist. Please try again.");
       });
   };
 
@@ -273,13 +269,11 @@ export default function Filter() {
                           {({ active }) => (
                             <a
                               href={option.href}
-                              className={classNames(
-                                option.current
+                              className={classNames(option.current
                                   ? "font-medium text-gray-900"
                                   : "text-gray-500",
                                 active ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm"
-                              )}
+                                "block px-4 py-2 text-sm")}
                             >
                               {option.name}
                             </a>

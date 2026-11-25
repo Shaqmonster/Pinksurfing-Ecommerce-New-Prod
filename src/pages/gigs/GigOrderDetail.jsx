@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { ethers } from "ethers";
 import { authContext } from "../../context/authContext";
 import { useInAppWallet } from "../../context/inAppWalletContext";
@@ -53,6 +52,7 @@ import {
 import { FaBriefcase } from "react-icons/fa";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const STATUS_STEPS = [
   { key: "pending_payment", label: "Payment", icon: <IoWalletOutline className="text-base" /> },
   { key: "pending_requirements", label: "Requirements", icon: <IoDocumentTextOutline className="text-base" /> },
@@ -184,9 +184,7 @@ const RequirementsModal = ({ order, onClose, onSubmit, submitting }) => {
           >
             {submitting ? (
               <><span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />Submitting…</>
-            ) : (
-              "Submit & Start Order"
-            )}
+            ) : ("Submit & Start Order")}
           </motion.button>
         </div>
       </motion.div>
@@ -331,9 +329,7 @@ const DisputeModal = ({ onClose, onSubmit, submitting }) => {
           >
             {submitting ? (
               <><span className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />Submitting…</>
-            ) : (
-              "Submit Dispute"
-            )}
+            ) : ("Submit Dispute")}
           </motion.button>
         </div>
       </motion.div>
@@ -389,7 +385,7 @@ const GigOrderDetail = () => {
       setOrder(res.data);
       setEscrowId(res.data.escrow_id || "");
     } catch {
-      toast.error("Failed to load order details.");
+      notify.error("Failed to load order details.");
       navigate("/gigs/orders");
     } finally {
       setLoading(false);
@@ -463,7 +459,7 @@ const GigOrderDetail = () => {
 
   const runServices = async (fn, args = [], valueWei = 0n) => {
     if (!inAppWallet || !escrowId) {
-      toast.error("Wallet or escrow id missing.");
+      notify.error("Wallet or escrow id missing.");
       return;
     }
     try {
@@ -487,12 +483,12 @@ const GigOrderDetail = () => {
       const sellerFns = new Set(["completeMilestone"]);
 
       if (buyerFns.has(fn) && escrowBuyer && signerAddress !== escrowBuyer) {
-        toast.error(`Wrong wallet for ${fn}. Connected ${signerAddress.slice(0, 8)}... but escrow buyer is ${escrowBuyer.slice(0, 8)}...`);
+        notify.error(`Wrong wallet for ${fn}. Connected ${signerAddress.slice(0, 8)}... but escrow buyer is ${escrowBuyer.slice(0, 8)}...`);
         setChainBusy(false);
         return;
       }
       if (sellerFns.has(fn) && escrowSeller && signerAddress !== escrowSeller) {
-        toast.error(`Wrong wallet for ${fn}. Connected ${signerAddress.slice(0, 8)}... but escrow seller is ${escrowSeller.slice(0, 8)}...`);
+        notify.error(`Wrong wallet for ${fn}. Connected ${signerAddress.slice(0, 8)}... but escrow seller is ${escrowSeller.slice(0, 8)}...`);
         setChainBusy(false);
         return;
       }
@@ -501,10 +497,10 @@ const GigOrderDetail = () => {
           ? await services[fn](escrowId, ...args, { value: valueWei })
           : await services[fn](escrowId, ...args);
       await tx.wait();
-      toast.success(`${fn} confirmed.`);
+      notify.success(`${fn} confirmed.`);
       await refreshEscrow();
     } catch (e) {
-      toast.error(e?.shortMessage || e?.message || `${fn} failed`);
+      notify.error(e?.shortMessage || e?.message || `${fn} failed`);
     } finally {
       setChainBusy(false);
     }
@@ -519,10 +515,10 @@ const GigOrderDetail = () => {
       const { services } = await getGigHubContracts({ signer });
       const tx = await services.withdraw();
       await tx.wait();
-      toast.success("withdraw confirmed.");
+      notify.success("withdraw confirmed.");
       await refreshEscrow();
     } catch (e) {
-      toast.error(e?.shortMessage || e?.message || "withdraw failed");
+      notify.error(e?.shortMessage || e?.message || "withdraw failed");
     } finally {
       setChainBusy(false);
     }
@@ -607,10 +603,10 @@ const GigOrderDetail = () => {
       const toSeller = ethers.parseEther(resolveSellerEth || "0");
       const tx = await services.resolveDispute(escrowId, toBuyer, toSeller, { value: toBuyer + toSeller });
       await tx.wait();
-      toast.success("resolveDispute confirmed.");
+      notify.success("resolveDispute confirmed.");
       await refreshEscrow();
     } catch (e) {
-      toast.error(e?.shortMessage || e?.message || "resolveDispute failed");
+      notify.error(e?.shortMessage || e?.message || "resolveDispute failed");
     } finally {
       setChainBusy(false);
     }
@@ -618,11 +614,11 @@ const GigOrderDetail = () => {
 
   const handleCreateAndLinkEscrow = async () => {
     if (!showBuyerControls) {
-      toast.error("Only buyer can create escrow for this order.");
+      notify.error("Only buyer can create escrow for this order.");
       return;
     }
     if (!order || !inAppWallet) {
-      toast.error("Connect in-app wallet first.");
+      notify.error("Connect in-app wallet first.");
       return;
     }
     try {
@@ -640,10 +636,10 @@ const GigOrderDetail = () => {
       setEscrowId(createdEscrowId);
       setEscrowIdForOrder(order.id, createdEscrowId);
       await setGigOrderEscrowId(accessToken, order.id, createdEscrowId);
-      toast.success("Escrow created and linked to this order.");
+      notify.success("Escrow created and linked to this order.");
       await refreshEscrow();
     } catch (e) {
-      toast.error(e?.shortMessage || e?.message || "Escrow creation failed");
+      notify.error(e?.shortMessage || e?.message || "Escrow creation failed");
     } finally {
       setCreatingEscrow(false);
     }
@@ -653,11 +649,11 @@ const GigOrderDetail = () => {
     try {
       setSubmittingReq(true);
       await submitOrderRequirements(accessToken, id, answers);
-      toast.success("Requirements submitted! Your order is now in progress.");
+      notify.success("Requirements submitted! Your order is now in progress.");
       setShowRequirementsModal(false);
       fetchOrder();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to submit requirements.");
+      notify.error(err?.response?.data?.error || "Failed to submit requirements.");
     } finally {
       setSubmittingReq(false);
     }
@@ -667,11 +663,11 @@ const GigOrderDetail = () => {
     try {
       setSubmittingDelivery(true);
       await deliverOrder(accessToken, id, { message, files });
-      toast.success("Delivery submitted successfully!");
+      notify.success("Delivery submitted successfully!");
       setShowDeliveryModal(false);
       fetchOrder();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to submit delivery.");
+      notify.error(err?.response?.data?.error || "Failed to submit delivery.");
     } finally {
       setSubmittingDelivery(false);
     }
@@ -682,10 +678,10 @@ const GigOrderDetail = () => {
     try {
       setActionLoading(true);
       await completeOrder(accessToken, id);
-      toast.success("Order completed! Payment released to seller.");
+      notify.success("Order completed! Payment released to seller.");
       fetchOrder();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to complete order.");
+      notify.error(err?.response?.data?.error || "Failed to complete order.");
     } finally {
       setActionLoading(false);
     }
@@ -696,10 +692,10 @@ const GigOrderDetail = () => {
     try {
       setActionLoading(true);
       await cancelOrder(accessToken, id);
-      toast.success("Order cancelled.");
+      notify.success("Order cancelled.");
       fetchOrder();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to cancel order.");
+      notify.error(err?.response?.data?.error || "Failed to cancel order.");
     } finally {
       setActionLoading(false);
     }
@@ -709,11 +705,11 @@ const GigOrderDetail = () => {
     try {
       setSubmittingDispute(true);
       await disputeOrder(accessToken, id, reason);
-      toast.success("Dispute raised successfully. Admin will review your case.");
+      notify.success("Dispute raised successfully. Admin will review your case.");
       setShowDisputeModal(false);
       fetchOrder();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to submit dispute.");
+      notify.error(err?.response?.data?.error || "Failed to submit dispute.");
     } finally {
       setSubmittingDispute(false);
     }
@@ -723,7 +719,7 @@ const GigOrderDetail = () => {
     if (!order) return;
     const targetEmail = isBuyer ? order.seller_email : order.buyer_email;
     if (!targetEmail) {
-      toast.error("Could not find the other party's email for chat.");
+      notify.error("Could not find the other party's email for chat.");
       return;
     }
     openChatWithParticipantEmail(targetEmail);
@@ -927,7 +923,7 @@ const GigOrderDetail = () => {
                         setEscrowIdForOrder(order.id, "");
                         setGigOrderEscrowId(accessToken, order.id, "").catch(() => {});
                       }
-                      toast.info("Cleared stale escrow link for this order.");
+                      notify.info("Cleared stale escrow link for this order.");
                     }}
                     className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-xs"
                   >
@@ -1325,7 +1321,7 @@ const GigOrderDetail = () => {
                       if (order?.id && escrowId) {
                         setEscrowIdForOrder(order.id, escrowId);
                         setGigOrderEscrowId(accessToken, order.id, escrowId).catch(() => {});
-                        toast.success("Escrow id linked to order.");
+                        notify.success("Escrow id linked to order.");
                       }
                     }}
                     className="flex-1 px-3 py-2 rounded-lg bg-ink/5 border border-ink/10 text-ink/70 text-xs hover:bg-ink/10"

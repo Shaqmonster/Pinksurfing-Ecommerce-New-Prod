@@ -1,10 +1,10 @@
 import axios from "axios";
-import { toast } from "react-toastify";
 import { useAccessToken } from "../hooks/useAccessToken";
 import ConfirmDialog from "./ui/ConfirmDialog";
 import { formatMoney } from "../utils/formatMoney";
 import { isItemPaid } from "../utils/orderPayment";
 
+import { notify } from "../lib/notify";
 /**
  * Cancel one order item. Says plainly whether money comes back, and only reports
  * what the server actually did (cancellation runs in the background → "requested").
@@ -21,11 +21,9 @@ export default function CancelDialog({ isOpen, setIsOpen, orderId, order, GetOrd
         {},
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      toast.success(
-        response.status === 202
+      notify.success(response.status === 202
           ? "Cancellation requested. This order will update in a moment."
-          : "Order canceled."
-      );
+          : "Order canceled.");
       GetOrders?.();
     } catch (error) {
       const err = new Error("cancel failed");

@@ -4,7 +4,6 @@ import { authContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import OrderConfirm from "./OrderConfirm";
 import {
   XMarkIcon,
@@ -18,6 +17,7 @@ import PaymentOptionsModal from "../pages/PaymentOptionsModal";
 import { formatMoney } from "../utils/formatMoney";
 import { useAccessToken } from "../hooks/useAccessToken";
 
+import { notify } from "../lib/notify";
 export default function SingleOrderForm() {
   const accessToken = useAccessToken();
   const {
@@ -79,7 +79,7 @@ export default function SingleOrderForm() {
       navigate("/signin");
     }
     if (!addressesId) {
-      toast.error("Select an Address");
+      notify.error("Select an Address");
       setIsAddressFormOpen(true);
       return;
     }
@@ -110,12 +110,7 @@ export default function SingleOrderForm() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
-          error.response?.data?.Status ||
-            error.response?.data?.error ||
-            "An error occurred",
-          { position: "top-center", autoClose: 3000 }
-        );
+        notify.apiError(error, "We couldn’t place this order. Nothing was charged — please try again.");
       })
       .finally(() => {
         setLoading(false);
@@ -389,9 +384,7 @@ export default function SingleOrderForm() {
                             </svg>
                             Processing...
                           </>
-                        ) : (
-                          "Continue to Payment"
-                        )}
+                        ) : ("Continue to Payment")}
                       </button>
                     </div>
                   </Dialog.Panel>

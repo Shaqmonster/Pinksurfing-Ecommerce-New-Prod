@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { MdEmail } from "react-icons/md";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { toast } from "react-toastify";
 
+import { notify } from "../lib/notify";
 const Contact = () => {
   const [loading, setLoading] = useState(false);
 
@@ -25,17 +25,12 @@ const Contact = () => {
         { name, email, subject, message }
       );
       if (response.status === 200) {
-        toast.success(response.data.status || "Message sent successfully!", {
-          position: "top-center",
-        });
+        notify.success(response.data.status || "Message sent successfully!");
         e.target.reset();
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error(
-        error.response?.data?.error || "Failed to send message. Please try again.",
-        { position: "top-center" }
-      );
+      notify.error(error.response?.data?.error || "Failed to send message. Please try again.");
     } finally {
       setLoading(false);
     }

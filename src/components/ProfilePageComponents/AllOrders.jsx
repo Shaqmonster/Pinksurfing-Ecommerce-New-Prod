@@ -5,7 +5,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import CancelDialog from "../CancelDialog";
 import { formatMoney } from "../../utils/formatMoney";
@@ -21,6 +20,7 @@ import {
     unpaidByVendor,
 } from "../../utils/orderPayment";
 
+import { notify } from "../../lib/notify";
 export default function AllOrders() {
   const accessToken = useAccessToken();
     const { currency, authToken, setIsSingleOrderFormOpen, setSingleOrderProduct, setIsProfileOpen } =
@@ -75,7 +75,7 @@ export default function AllOrders() {
             }
             acc[order.order].push(order);
             return acc;
-        }, {});
+        });
     };
 
     const calculateTotalPrice = (orders) => {
@@ -120,7 +120,7 @@ export default function AllOrders() {
                             : o
                     )
                 );
-                toast.success("Return requested. We'll show the next steps on this order.");
+                notify.success("Return requested. We'll show the next steps on this order.");
             }
         } catch (error) {
             console.error(error);

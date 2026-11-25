@@ -2,13 +2,13 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import { FaCalendarAlt } from "react-icons/fa";
-import { toast } from "react-toastify";
 import {
   createPropertyVisit,
   createVisitPaymentLink,
   buyerRescheduleVisit,
 } from "../../api/propertyVisits";
 
+import { notify } from "../../lib/notify";
 function pad(n) {
   return String(n).padStart(2, "0");
 }
@@ -68,20 +68,20 @@ export default function VisitScheduleModal({
 
   const handlePay = async () => {
     if (!accessToken) {
-      toast.info("Please sign in to schedule a visit.");
+      notify.info("Please sign in to schedule a visit.");
       return;
     }
     if (!slot) {
-      toast.error("Choose a date and time.");
+      notify.error("Choose a date and time.");
       return;
     }
     const dt = new Date(slot);
     if (Number.isNaN(dt.getTime())) {
-      toast.error("Invalid date.");
+      notify.error("Invalid date.");
       return;
     }
     if (dt.getMinutes() !== 0 && dt.getMinutes() !== 30) {
-      toast.error("Use 30-minute slots (on the hour or half-hour).");
+      notify.error("Use 30-minute slots (on the hour or half-hour).");
       return;
     }
     setSubmitting(true);
@@ -97,10 +97,10 @@ export default function VisitScheduleModal({
         window.location.href = url;
         return;
       }
-      toast.error("Could not start checkout.");
+      notify.error("Could not start checkout.");
     } catch (e) {
       const d = e?.response?.data?.detail || e?.message || "Request failed";
-      toast.error(typeof d === "string" ? d : JSON.stringify(d));
+      notify.error(typeof d === "string" ? d : JSON.stringify(d));
     } finally {
       setSubmitting(false);
     }
@@ -108,23 +108,23 @@ export default function VisitScheduleModal({
 
   const handleReschedule = async () => {
     if (!accessToken) {
-      toast.info("Please sign in.");
+      notify.info("Please sign in.");
       return;
     }
     if (!slot) {
-      toast.error("Choose a new time.");
+      notify.error("Choose a new time.");
       return;
     }
     const dt = new Date(slot);
     setSubmitting(true);
     try {
       await buyerRescheduleVisit(accessToken, rescheduleVisitId, dt.toISOString());
-      toast.success("Your new time was sent to the listing agent.");
+      notify.success("Your new time was sent to the listing agent.");
       onSuccess?.();
       onClose();
     } catch (e) {
       const d = e?.response?.data?.detail || e?.message || "Request failed";
-      toast.error(typeof d === "string" ? d : JSON.stringify(d));
+      notify.error(typeof d === "string" ? d : JSON.stringify(d));
     } finally {
       setSubmitting(false);
     }

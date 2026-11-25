@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import InAppWalletBalanceCard from "../../components/gigs/InAppWalletBalanceCard";
 import WalletTxHistoryCard from "../../components/gigs/WalletTxHistoryCard";
@@ -16,6 +15,7 @@ import {
 import { FaBriefcase } from "react-icons/fa";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const STATUS_CONFIG = {
   pending_requirements: {
     label: "Awaiting requirements",
@@ -337,7 +337,7 @@ const GigHubDashboard = () => {
       const data = res.data;
       setAllOrders(Array.isArray(data) ? data : data.results || []);
     } catch {
-      toast.error("Failed to load orders.");
+      notify.error("Failed to load orders.");
       setAllOrders([]);
     } finally {
       setLoadingOrders(false);

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import {
   getMyGigOrders,
@@ -29,6 +28,7 @@ import { FaBriefcase } from "react-icons/fa";
 import { FiCreditCard } from "react-icons/fi";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const STATUS_CONFIG = {
   pending_requirements: {
     label: "Awaiting Requirements",
@@ -89,7 +89,7 @@ const GigHubSellerDashboard = () => {
       const data = res.data;
       setAllOrders(Array.isArray(data) ? data : data.results || []);
     } catch {
-      toast.error("Failed to load orders.");
+      notify.error("Failed to load orders.");
       setAllOrders([]);
     } finally {
       setLoadingOrders(false);
@@ -140,7 +140,7 @@ const GigHubSellerDashboard = () => {
 
   const handleSquareOnboarding = async () => {
     if (!accessToken) {
-      toast.error("Please sign in again.");
+      notify.error("Please sign in again.");
       return;
     }
     setOnboardingLoading(true);
@@ -154,7 +154,7 @@ const GigHubSellerDashboard = () => {
       const url = `${origin}/integrations/square/connect/?${qs.toString()}`;
       const popup = window.open(url, "ps-square-connect", "width=560,height=720");
       if (!popup) {
-        toast.error("Popup blocked — allow popups to connect Square");
+        notify.error("Popup blocked — allow popups to connect Square");
         return;
       }
       const started = Date.now();
@@ -177,12 +177,12 @@ const GigHubSellerDashboard = () => {
       }
       if (connected) {
         setSquareConnected(true);
-        toast.success("Square connected");
+        notify.success("Square connected");
       } else {
-        toast.error("Timed out waiting for Square connection.");
+        notify.error("Timed out waiting for Square connection.");
       }
     } catch {
-      toast.error("Failed to start Square connect.");
+      notify.error("Failed to start Square connect.");
     } finally {
       setOnboardingLoading(false);
     }
@@ -203,10 +203,10 @@ const GigHubSellerDashboard = () => {
     try {
       setDeletingId(gigId);
       await deleteGig(accessToken, gigId);
-      toast.success("Gig deleted.");
+      notify.success("Gig deleted.");
       fetchWorkerAndGigs();
     } catch {
-      toast.error("Failed to delete gig.");
+      notify.error("Failed to delete gig.");
     } finally {
       setDeletingId(null);
     }
