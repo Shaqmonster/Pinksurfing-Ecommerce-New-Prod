@@ -34,6 +34,8 @@ const Checkout = () => {
   const [shippingSpeed, setShippingSpeed] = useState("standard");
   const [shippingByProduct, setShippingByProduct] = useState({});
   const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingRetry, setShippingRetry] = useState(0);
+  const [placing, setPlacing] = useState(false);
   const checkoutBlocked = cartBlocksCheckout(cartProducts);
 
   const pickRateAmount = (rates, speed) => {
@@ -42,7 +44,7 @@ const Checkout = () => {
       : Array.isArray(rates?.rates)
         ? rates.rates
         : [];
-    if (!list.length) return 0;
+    if (!list.length) return null;
     const expressKeywords = ["priority", "express", "air", "nextday", "2day", "expedited"];
     const scored = list
       .map((r) => ({
@@ -50,7 +52,7 @@ const Checkout = () => {
         service: String(r.service || r.servicelevel?.name || "").toLowerCase(),
       }))
       .filter((r) => !Number.isNaN(r.rate) && r.rate >= 0);
-    if (!scored.length) return 0;
+    if (!scored.length) return null;
     if (speed === "express") {
       const express = scored.filter((r) =>
         expressKeywords.some((k) => r.service.includes(k))
@@ -91,7 +93,7 @@ const Checkout = () => {
             next[productId] = pickRateAmount(res.data, shippingSpeed);
           } catch (err) {
             console.error("Shipping rate fetch failed", productId, err);
-            next[productId] = 0;
+            next[productId] = null; // unknown — never silently free
           }
         })
       );
@@ -99,7 +101,13 @@ const Checkout = () => {
       setShippingLoading(false);
     };
     fetchShippingQuotes();
-  }, [accessToken, addressesId, cartProducts, shippingSpeed]);
+  }, [accessToken, addressesId, cartProducts, shippingSpeed, shippingRetry]);
+
+  // Items we couldn't get a shipping price for. Checkout waits until every item has one.
+  const shippingMissing = (cartProducts || []).filter(
+    (item) => item?.product?.id && addressesId && !shippingLoading && shippingByProduct[item.product.id] == null
+  );
+  const shippingUnknown = shippingLoading || shippingMissing.length > 0;
 
   const PlaceOrder = async () => {
     if (!accessToken) {
@@ -109,16 +117,19 @@ const Checkout = () => {
       toast.error(getCartStockIssueMessage(cartProducts));
       return;
     }
+    if (shippingUnknown && addresses[0] && addressesId) {
+      toast.info(shippingLoading ? "Still working out shipping — one moment." : "We need a shipping price for every item before you can place the order.");
+      return;
+    }
     if (!addresses[0]) {
       console.log("No address found, opening address form...");
       setIsAddressFormOpen(true);
       return;
     } else if (!addressesId) {
-      toast.error("Select an Address");
+      toast.info("Choose a shipping address to continue.");
       return;
     }
-    setLoading(true);
-    console.log(loading);
+    setPlacing(true);
     const shipping_quotes = cartProducts
       .map((item) => ({
         product_id: item?.product?.id,
@@ -142,19 +153,20 @@ const Checkout = () => {
         }
       )
       .then((response) => {
-        console.log(response.data);
         setOrderId(response.data.order_id);
         setModalOpen(true);
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.error || "An error occurred", {
-          position: "top-center",
-          autoClose: 3000,
-        });
+        toast.error(
+          error.response?.data?.error ||
+            (error.response
+              ? "We couldn't place your order. Nothing was charged — please try again."
+              : "We couldn't reach PinkSurfing. Check your connection and try again.")
+        );
       })
       .finally(() => {
-        setLoading(false);
+        setPlacing(false);
       });
   };
 
@@ -189,10 +201,12 @@ const Checkout = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response.data.error || "An error occurred", {
-          position: "top-center",
-          autoClose: 3000,
-        });
+        toast.error(
+          error.response?.data?.error ||
+            (error.response
+              ? "We couldn't load your addresses. Please try again."
+              : "We couldn't reach PinkSurfing. Check your connection and try again.")
+        );
       })
       .finally(() => {
         setLoading(false);
@@ -225,17 +239,15 @@ const Checkout = () => {
       })
       .then((response) => {
         if (response.data.length == 0) {
-          navigate("/");
+          toast.info("Your cart is empty, so there's nothing to check out yet.");
+          navigate("/shoppingMall");
         }
         setCartProducts(response.data);
         // console.log(subTotal);
       })
       .catch((error) => {
         console.error(error);
-        toast.error("Unable to load cart", {
-          position: "top-center",
-          autoClose: 3000,
-        });
+        toast.error("We couldn't load your cart. Refresh the page to try again.");
       });
   };
 
@@ -510,9 +522,9 @@ const Checkout = () => {
           )}
         </div>
         <div className="sm:mt-10 h-fit w-[98vw] sm:w-full   bg-white dark:bg-[#0E0F13] dark:text-[#f5f5f5] px-4 pt-4 sm:pt-8 lg:mt-0">
-          <p className="text-xl font-medium">Payment Details</p>
+          <p className="text-xl font-medium">Order summary</p>
           <p className="text-ps-meta">
-            Complete your order by providing your payment details.
+            You&apos;ll pay each store securely with Square after placing the order.
           </p>
           <div className="">
             <div className="mt-6 border-t border-b py-2">
@@ -526,43 +538,60 @@ const Checkout = () => {
                 </p>
               </div>
               <div className="flex items-center justify-between mt-2">
-                <p className="text-sm font-medium text-gray-900 dark:text-[#f5f5f5]">
-                  Shipping {shippingLoading ? "(calculating…)" : ""}
-                </p>
-                <p className="font-semibold text-gray-900 dark:text-[#f5f5f5]">
-                  {currency}
-                  {formatMoney(shippingTotal)}
+                <p className="text-sm font-medium text-ink">Shipping</p>
+                <p className="font-semibold text-ink" aria-live="polite">
+                  {!addressesId
+                    ? "Add an address"
+                    : shippingLoading
+                    ? "Calculating…"
+                    : shippingMissing.length
+                    ? "Unavailable"
+                    : `${currency}${formatMoney(shippingTotal)}`}
                 </p>
               </div>
+              {shippingMissing.length > 0 && (
+                <div role="alert" className="mt-2 rounded-lg bg-ps-sunken px-3 py-2 text-sm text-ps-fg2">
+                  We couldn&apos;t get a shipping price for{" "}
+                  {shippingMissing.length === 1
+                    ? shippingMissing[0].product?.name || "one item"
+                    : `${shippingMissing.length} items`}
+                  .{" "}
+                  <button
+                    type="button"
+                    onClick={() => setShippingRetry((n) => n + 1)}
+                    className="font-medium text-ps-action-text underline underline-offset-2"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
             </div>
             <div className="mt-6 flex items-center justify-between">
               <p className="text-sm font-medium text-gray-900 dark:text-[#f5f5f5]">
                 Total
               </p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-[#f5f5f5]">
-                {currency}
-                {formatMoney(Number(subTotal || 0) + Number(shippingTotal || 0))}
+              <p className="text-2xl font-semibold text-ink">
+                {shippingUnknown && addressesId
+                  ? `${currency}${formatMoney(subTotal)} + shipping`
+                  : `${currency}${formatMoney(Number(subTotal || 0) + Number(shippingTotal || 0))}`}
               </p>
             </div>
           </div>
 
           <div>
             {checkoutBlocked && (
-              <p className="mt-4 text-sm text-red-500">
+              <p className="mt-4 text-sm text-ps-danger" role="alert">
                 {getCartStockIssueMessage(cartProducts)}
               </p>
             )}
             <button
               type="button"
-              className={`mt-4 mb-8 w-full rounded-md px-6 py-3 font-medium text-ink ${
-                checkoutBlocked
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-ps-action text-white"
-              }`}
+              className="mt-4 mb-8 w-full min-h-[48px] rounded-xl px-6 py-3 font-semibold bg-ps-action text-white disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={PlaceOrder}
-              disabled={checkoutBlocked || loading}
+              disabled={checkoutBlocked || loading || placing || (Boolean(addressesId) && shippingUnknown)}
+              aria-busy={placing}
             >
-              Place Order
+              {placing ? "Placing order…" : "Place order"}
             </button>
 
             <PaymentOptionsModal

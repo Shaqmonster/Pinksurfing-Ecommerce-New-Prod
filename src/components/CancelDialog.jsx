@@ -1,130 +1,61 @@
-import { Dialog, Transition } from "@headlessui/react";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
-import { Fragment } from "react";
-import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
 import { useAccessToken } from "../hooks/useAccessToken";
+import ConfirmDialog from "./ui/ConfirmDialog";
+import { formatMoney } from "../utils/formatMoney";
+import { isItemPaid } from "../utils/orderPayment";
 
-export default function CancelDialog({
-  isOpen,
-  setIsOpen,
-  orderId,
-  GetOrders,
-  onOptimisticCancel,
-}) {
+/**
+ * Cancel one order item. Says plainly whether money comes back, and only reports
+ * what the server actually did (cancellation runs in the background → "requested").
+ */
+export default function CancelDialog({ isOpen, setIsOpen, orderId, order, GetOrders }) {
   const accessToken = useAccessToken();
-  const [cookies] = useCookies([]);
-  function closeModal() {
-    setIsOpen(false);
-  }
+  const paid = order ? isItemPaid(order) : null;
+  const amount = order ? Number(order.total_price || 0) + Number(order.shipping_cost || 0) : null;
 
-  const DeleteOrder = () => {
-    if (onOptimisticCancel) {
-      onOptimisticCancel(orderId);
-    }
-
-    axios
-      .post(
+  const cancel = async () => {
+    try {
+      const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/order/cancel-order/${orderId}/`,
         {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      )
-      .then((response) => {
-        if (response.status === 202) {
-          toast.info("Cancellation Processing...", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-        } else {
-          toast.success("Order Cancelled", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-        }
-        GetOrders();
-      })
-      .catch((error) => {
-        console.error(error);
-        toast.error("Failed to cancel order. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      });
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      toast.success(
+        response.status === 202
+          ? "Cancellation requested. This order will update in a moment."
+          : "Order canceled."
+      );
+      GetOrders?.();
+    } catch (error) {
+      const err = new Error("cancel failed");
+      err.userMessage =
+        error.response?.data?.error ||
+        (error.response ? "We couldn't cancel this order. Please try again." : "We couldn't reach PinkSurfing. Check your connection and try again.");
+      throw err;
+    }
   };
 
   return (
-    <>
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-bold leading-6 mb-4 text-red-600"
-                  >
-                    Cancel this Order ?
-                  </Dialog.Title>
-                  <div className="mt-2">
-                    <p className="text-base text-black dark:text-white">
-                      Are you sure you want to delete this order? This cannot be
-                      undone.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 flex items-center gap-4 ">
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={() => {
-                        DeleteOrder();
-                        closeModal();
-                      }}
-                    >
-                      Cancel Order
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent  px-4 py-2 text-base font-medium text-black hover:text-ink dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700
- focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={closeModal}
-                    >
-                      Back <ArrowRightIcon className=" w-4 ml-1" />
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
-    </>
+    <ConfirmDialog
+      open={isOpen}
+      onClose={() => setIsOpen(false)}
+      title="Cancel this order?"
+      confirmLabel="Cancel order"
+      busyLabel="Canceling…"
+      cancelLabel="Keep order"
+      tone="danger"
+      onConfirm={cancel}
+    >
+      {paid === false && <p>You haven’t been charged for this item, so there’s nothing to refund.</p>}
+      {paid === true && (
+        <p>
+          You’ll be refunded ${formatMoney(amount)} to your original payment method. Refunds usually take 5–10
+          business days to appear.
+        </p>
+      )}
+      {paid === null && <p>If you’ve paid for this item, the payment is refunded to your original payment method.</p>}
+      <p className="mt-2">Once canceled, the store won’t ship it.</p>
+    </ConfirmDialog>
   );
 }

@@ -16,6 +16,7 @@ import ProductDetailReviewSection from "../components/ProductPageComponents/Prod
 import YouMightAlsoLike from "../components/ProductPageComponents/YouMightAlsoLike";
 import BusinessListingDetail from "../components/ProductPageComponents/BusinessListingDetail";
 import { EmptyState } from "../components/ui";
+import ErrorState from "../components/ui/ErrorState";
 import { Helmet } from "react-helmet";
 import ImageZoom from "../components/ProductPageComponents/ZoomImage";
 import parse from "html-react-parser";
@@ -113,7 +114,8 @@ const ProductDetailPage = () => {
   const [productQty, setProductQty] = useState(1);
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [loading, setLoading] = useState(false);
-  const [loadError, setLoadError] = useState(false);
+  const [loadError, setLoadError] = useState(false); // false | "not_found" | "error"
+  const [reloadKey, setReloadKey] = useState(0);
   const [activeTab, setActiveTab] = useState("story");
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
@@ -675,15 +677,9 @@ const ProductDetailPage = () => {
       } catch (error) {
         console.error(error);
         setProduct({});
-        setLoadError(true);
-        const msg =
-          error?.response?.data?.Status ||
-          error?.response?.data?.detail ||
-          error?.message ||
-          "Could not load this listing.";
-        toast.error(typeof msg === "string" ? msg : "Could not load this listing.", {
-          position: "top-right",
-        });
+        // Only a real 404 means the listing is gone; anything else is a loading problem.
+        const st = error?.response?.status;
+        setLoadError(st === 404 ? "not_found" : !error?.response ? "network" : "error");
       } finally {
         setLoading(false);
       }
@@ -698,7 +694,7 @@ const ProductDetailPage = () => {
     if (productInCart) {
       setProductQty(productInCart.quantity);
     }
-  }, [productId, location.search, accessToken, user?.addresses]);
+  }, [productId, location.search, accessToken, user?.addresses, reloadKey]);
 
   useEffect(() => {
     const getProductRatings = async (productId) => {
@@ -869,6 +865,25 @@ const ProductDetailPage = () => {
     );
   };
 
+
+  if (!loading && (loadError === "error" || loadError === "network")) {
+    return (
+      <section className="min-h-[70vh] bg-[var(--ps-bg)] flex flex-col items-center justify-center px-4">
+        <ErrorState
+          title="We couldn’t open this listing"
+          description={
+            loadError === "network"
+              ? "We couldn’t reach PinkSurfing. Check your connection and try again."
+              : "It may have been removed, or something went wrong on our side. Try again, or keep browsing."
+          }
+          onRetry={() => setReloadKey((k) => k + 1)}
+        />
+        <a href="/shoppingMall" className="text-sm text-ps-fg2 hover:text-ink min-h-[44px] leading-[44px]">
+          Browse the shopping mall
+        </a>
+      </section>
+    );
+  }
 
   if (!loading && (loadError || !product?.id)) {
     return (

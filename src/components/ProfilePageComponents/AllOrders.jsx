@@ -11,6 +11,15 @@ import CancelDialog from "../CancelDialog";
 import { formatMoney } from "../../utils/formatMoney";
 import { AnimatePresence } from "framer-motion";
 import { useAccessToken } from "../../hooks/useAccessToken";
+import ErrorState from "../ui/ErrorState";
+import ConfirmDialog from "../ui/ConfirmDialog";
+import { orderStatusLabel } from "../../utils/orderStatus";
+import {
+    createVendorPaymentLink,
+    pendingLabel,
+    shopperPaymentError,
+    unpaidByVendor,
+} from "../../utils/orderPayment";
 
 export default function AllOrders() {
   const accessToken = useAccessToken();
@@ -21,6 +30,10 @@ export default function AllOrders() {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [deleteOrderId, setDeleteOrderId] = useState("");
+    const [loadError, setLoadError] = useState(false);
+    const [returnItem, setReturnItem] = useState(null);
+    const [payingVendor, setPayingVendor] = useState(null);
+    const [payError, setPayError] = useState("");
 
     const GetOrders = async () => {
         if (!accessToken) {
@@ -28,6 +41,7 @@ export default function AllOrders() {
             return;
         }
         setLoading(true);
+        setLoadError(false);
         try {
             const response = await axios.get(
                 `${import.meta.env.VITE_SERVER_URL}/api/customer/my-orders/`,
@@ -42,9 +56,10 @@ export default function AllOrders() {
                 (a, b) => new Date(b.date_of_order) - new Date(a.date_of_order)
             );
             setOrders(sortedOrders);
-            setLoading(false);
         } catch (error) {
             console.error(error);
+            setLoadError(true);
+        } finally {
             setLoading(false);
         }
     };
@@ -70,14 +85,15 @@ export default function AllOrders() {
         );
     };
 
-    const handleOptimisticCancel = (cancelledOrderId) => {
-        setOrders((prev) =>
-            prev.map((o) =>
-                o.id === cancelledOrderId
-                    ? { ...o, order_status: "CANCELED" }
-                    : o
-            )
-        );
+    const payVendor = async (orderId, vendorId) => {
+        setPayError("");
+        setPayingVendor(`${orderId}:${vendorId}`);
+        try {
+            window.location.href = await createVendorPaymentLink(orderId, vendorId, accessToken);
+        } catch (error) {
+            setPayError(shopperPaymentError(error));
+            setPayingVendor(null);
+        }
     };
 
     const handleReturnOrder = async (orderItemId) => {
@@ -104,37 +120,36 @@ export default function AllOrders() {
                             : o
                     )
                 );
-                toast.success(
-                    "Return Scheduled! A carrier will arrive tomorrow. No printing required.",
-                    { position: "top-center", autoClose: 6000 }
-                );
+                toast.success("Return requested. We'll show the next steps on this order.");
             }
         } catch (error) {
             console.error(error);
-            toast.error(
-                error.response?.data?.error || "Failed to initiate return.",
-                { position: "top-center", autoClose: 3000 }
-            );
+            const err = new Error("return failed");
+            err.userMessage =
+                error.response?.data?.error ||
+                (error.response
+                    ? "We couldn't request this return. Please try again."
+                    : "We couldn't reach PinkSurfing. Check your connection and try again.");
+            throw err;
         }
     };
 
     const getStatusStyle = (status) => {
         switch (status?.toUpperCase()) {
-            case "DELIVERED": return "text-green-400 bg-green-400/10 border-green-400/20";
-            case "CANCELED": return "text-red-400 bg-red-400/10 border-red-400/20";
-            case "RETURN-REQUESTED":
-            case "RETURN-DELIVERED": return "text-orange-400 bg-orange-400/10 border-orange-400/20";
-            case "PENDING":
-            case "RECEIVED":
-            case "PACKED": return "text-yellow-400 bg-yellow-400/10 border-yellow-400/20";
-            default: return "text-purple-400 bg-purple-400/10 border-purple-400/20";
+            case "DELIVERED":
+            case "RETURNED":
+                return "text-ps-success border-[color-mix(in_srgb,var(--ps-color-success)_30%,transparent)] bg-[color-mix(in_srgb,var(--ps-color-success)_10%,transparent)]";
+            case "CANCELED":
+            case "ERROR":
+            case "RETURN-DISPUTED":
+                return "text-ps-warning border-[color-mix(in_srgb,var(--ps-color-warning)_30%,transparent)] bg-[color-mix(in_srgb,var(--ps-color-warning)_10%,transparent)]";
+            default:
+                return "text-ps-fg2 border-ps-border bg-ps-sunken";
         }
     };
 
     const grouped = groupOrdersByOrderId(orders);
-    const visibleOrderIds = Object.keys(grouped).filter(
-        (id) => !grouped[id].some((o) => o.order_status.toUpperCase() === "PENDING")
-    );
+    const visibleOrderIds = Object.keys(grouped);
 
     return (
         <div className="w-full max-w-4xl mx-auto space-y-6 pb-16">
@@ -155,7 +170,17 @@ export default function AllOrders() {
                 </div>
             </div>
 
-            {loading ? (
+            {payError && (
+                <p role="alert" className="text-sm text-ps-danger">{payError}</p>
+            )}
+            {loadError && !loading ? (
+                <ErrorState
+                    title="We couldn't load your orders"
+                    description="Your orders are safe — this is a connection problem on our side or yours."
+                    onRetry={GetOrders}
+                    className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)]"
+                />
+            ) : loading ? (
                 <div className="space-y-3" aria-busy="true">
                     {Array.from({ length: 3 }).map((_, i) => (
                         <div key={i} className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-4 flex gap-4">
@@ -192,6 +217,31 @@ export default function AllOrders() {
                                         {formatMoney(calculateTotalPrice(items))}
                                     </p>
                                 </div>
+                                {unpaidByVendor(items).length > 0 && (
+                                    <div className="px-4 py-3 border-b border-[var(--ps-brd)] bg-ps-sunken">
+                                        <p className="text-sm font-medium text-ink">
+                                            {pendingLabel(items.filter((o) => o.order_status === "PENDING"))}
+                                        </p>
+                                        <p className="text-xs text-ps-fg2 mb-2">
+                                            {pendingLabel(items.filter((o) => o.order_status === "PENDING")) === "Confirming payment"
+                                                ? "Square is confirming your payment. This usually takes under a minute."
+                                                : "Some items in this order haven't been paid for yet."}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {unpaidByVendor(items).map((g) => (
+                                                <button
+                                                    key={g.vendorId}
+                                                    type="button"
+                                                    disabled={Boolean(payingVendor)}
+                                                    onClick={() => payVendor(orderId, g.vendorId)}
+                                                    className="min-h-[40px] px-3 rounded-xl bg-ps-action text-white text-xs font-semibold disabled:opacity-60"
+                                                >
+                                                    {payingVendor === `${orderId}:${g.vendorId}` ? "Opening…" : `Pay ${g.storeName} · ${currency}${formatMoney(g.total)}`}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 <ul className="divide-y divide-[var(--ps-brd)]">
                                     {items.map((order) => (
                                         <li key={order.id} className="p-4 flex gap-3 sm:gap-4">
@@ -213,9 +263,9 @@ export default function AllOrders() {
                                                         </p>
                                                     </div>
                                                     <span
-                                                        className={`inline-flex items-center px-2 py-0.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(order.order_status)}`}
+                                                        className={`inline-flex items-center px-2 py-0.5 rounded-lg border text-[11px] font-medium ${getStatusStyle(order.order_status)}`}
                                                     >
-                                                        {order.order_status}
+                                                        {orderStatusLabel(order.order_status)}
                                                     </span>
                                                 </div>
                                                 <div className="flex flex-wrap gap-2">
@@ -265,7 +315,7 @@ export default function AllOrders() {
                                                             {order.order_status.toUpperCase() === "DELIVERED" && (
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => handleReturnOrder(order.id)}
+                                                                    onClick={() => setReturnItem(order)}
                                                                     className="min-h-[40px] px-3 rounded-xl border border-[var(--ps-brd)] text-[var(--ps-muted)] text-xs font-semibold"
                                                                 >
                                                                     Return
@@ -281,6 +331,22 @@ export default function AllOrders() {
                             </article>
                         );
                     })}
+
+                    <ConfirmDialog
+                        open={Boolean(returnItem)}
+                        onClose={() => setReturnItem(null)}
+                        title="Request a return?"
+                        confirmLabel="Request return"
+                        busyLabel="Requesting…"
+                        cancelLabel="Not now"
+                        onConfirm={() => handleReturnOrder(returnItem.id)}
+                    >
+                        <p>
+                            {returnItem?.product?.name || "This item"} goes back to the store. Once they receive and check it,
+                            your refund is processed to your original payment method.
+                        </p>
+                        <p className="mt-2">You’ll see each step on this order.</p>
+                    </ConfirmDialog>
 
                     {visibleOrderIds.length === 0 && (
                         <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] px-6 py-14 text-center">
@@ -306,9 +372,9 @@ export default function AllOrders() {
                     <CancelDialog
                         isOpen={isOpen}
                         orderId={deleteOrderId}
+                        order={orders.find((o) => o.id === deleteOrderId)}
                         setIsOpen={setIsOpen}
                         GetOrders={GetOrders}
-                        onOptimisticCancel={handleOptimisticCancel}
                     />
                 )}
             </AnimatePresence>

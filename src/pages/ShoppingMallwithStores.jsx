@@ -4,32 +4,37 @@ import axios from 'axios';
 import { authContext } from '../context/authContext';
 import SearchForm from '../components/Search';
 import StoreCard from '../components/StoreCard';
+import { EmptyState } from '../components/ui';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function ShoppingMallwithStores() {
     const [stores, setStores] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
 
     useEffect(() => {
         const fetchStores = async () => {
             try {
                 setLoading(true);
+                setLoadError(false);
                 const response = await axios.get(
                     `${import.meta.env.VITE_SERVER_URL}/api/vendor/all-stores/`,
                     {
                         headers: { "Content-Type": "application/json" },
                     }
                 );
-                setStores(response.data.stores);
-                console.log("Stores:", response.data.stores);
+                setStores(response.data.stores || []);
             } catch (error) {
                 console.error("Error fetching stores:", error);
+                setLoadError(true);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchStores();
-    }, []);
+    }, [reloadKey]);
 
     return (
         <div className={`min-h-screen bg-ps-bg`}>
@@ -94,12 +99,19 @@ export default function ShoppingMallwithStores() {
                             className="w-[50px] h-[50px] sm:w-[70px] sm:h-[70px] object-contain"
                         />
                     </div>
+                ) : loadError ? (
+                    <ErrorState
+                        title="We couldn’t load the stores"
+                        description="Check your connection and try again."
+                        onRetry={() => setReloadKey((k) => k + 1)}
+                        className="min-h-[400px]"
+                    />
                 ) : stores.length === 0 ? (
-                    <div className="flex justify-center items-center min-h-[400px]">
-                        <p className="text-gray-500 dark:text-gray-400 text-lg">
-                            No stores available
-                        </p>
-                    </div>
+                    <EmptyState
+                        title="No stores yet"
+                        description="Stores will appear here as soon as they open."
+                        className="min-h-[400px]"
+                    />
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                         {stores.map((store, index) => (

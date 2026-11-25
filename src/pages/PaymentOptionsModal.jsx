@@ -1,188 +1,157 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { XMarkIcon, ShieldCheckIcon, CreditCardIcon } from "@heroicons/react/24/outline";
-import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { XMarkIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { formatMoney } from "../utils/formatMoney";
 import { useAccessToken } from "../hooks/useAccessToken";
+import ErrorState from "../components/ui/ErrorState";
+import {
+  createVendorPaymentLink,
+  fetchMyOrderItems,
+  itemsForOrder,
+  shopperPaymentError,
+  unpaidByVendor,
+} from "../utils/orderPayment";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
-
-const PaymentOptionsModal = ({
-  isOpen,
-  onClose,
-  order_id,
-  cartProducts,
-  singleOrderProduct,
-}) => {
+/**
+ * After an order is placed: pay each store separately with Square.
+ * Amounts come from the order the server just created (items + shipping), so what we
+ * show is exactly what Square will charge.
+ */
+const PaymentOptionsModal = ({ isOpen, onClose, order_id }) => {
   const accessToken = useAccessToken();
-  const navigate = useNavigate();
-  const [loadingVendorId, setLoadingVendorId] = useState(null);
+  const [groups, setGroups] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+  const [payingVendor, setPayingVendor] = useState(null);
+  const [payError, setPayError] = useState("");
 
-  // 1. Group items by Vendor
-  const groupedCart = useMemo(() => {
-    if (cartProducts && cartProducts.length > 0) {
-      return cartProducts.reduce((acc, item) => {
-        const vendorId = item.product.vendor.id;
-        if (!acc[vendorId]) {
-          acc[vendorId] = {
-            vendorName: item.product.vendor.store_name || "Unknown Store",
-            items: [],
-            total: 0
-          };
-        }
-        const price = item.additional_price > 0 
-          ? Number(item.product.unit_price) + Number(item.additional_price) 
-          : Number(item.product.unit_price);
-        
-        acc[vendorId].items.push(item);
-        acc[vendorId].total += price * item.quantity;
-        return acc;
-      }, {});
-    }
-    
-    if (singleOrderProduct) {
-      const vendorId = singleOrderProduct.vendor?.id || singleOrderProduct.product?.vendor?.id;
-      const vendorName = singleOrderProduct.vendor?.store_name || singleOrderProduct.product?.vendor?.store_name || "Unknown Store";
-      const price = Number(singleOrderProduct.unit_price ?? singleOrderProduct.total_price ?? 0) + Number(singleOrderProduct.additional_price ?? 0);
-      
-      return {
-        [vendorId]: {
-          vendorName,
-          items: [singleOrderProduct],
-          total: price * (singleOrderProduct.quantity || 1)
-        }
-      };
-    }
-    
-    return {};
-  }, [cartProducts, singleOrderProduct]);
-
-  const handleVendorPayment = async (vendorId) => {
-    if (!accessToken) {
-      navigate("/signin");
-      return;
-    }
-
-    setLoadingVendorId(vendorId);
+  const load = useCallback(async () => {
+    setLoadError(false);
+    setGroups(null);
     try {
-      const response = await axios.post(
-        `${SERVER_URL}/api/payments/square/create-order/${order_id}/vendor/${vendorId}/`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      // Redirect to Square's hosted checkout page
-      window.location.href = response.data.payment_link;
-    } catch (error) {
-      console.error("Payment error:", error);
-      let errorMessage = "Payment setup incomplete for this vendor.";
-      const errorCode = error.response?.data?.square_error_code;
-      const errorDetails = error.response?.data?.details;
-      const errorHint = error.response?.data?.hint;
-      
-      if (
-        errorCode === "UNAUTHORIZED" ||
-        errorCode === "ACCESS_TOKEN_EXPIRED" ||
-        errorCode === "ACCESS_TOKEN_REVOKED"
-      ) {
-        errorMessage =
-          errorHint ||
-          "This vendor's Square connection has expired. They need to reconnect Square in their vendor dashboard, then try checkout again.";
-      } else if (error.response?.status === 403 && errorCode === "INSUFFICIENT_SCOPES") {
-        errorMessage = "This vendor needs to reconnect their Square account with the correct permissions. Please notify the vendor.";
-      } else if (errorCode === "INSUFFICIENT_SCOPES") {
-        errorMessage = `Permission error: ${errorDetails || "Vendor account needs reauthorization."}`;
-      } else if (error.response?.status === 400) {
-        errorMessage = errorHint || errorDetails || error.response?.data?.error || errorMessage;
-      } else {
-        errorMessage = errorHint || error.response?.data?.error || errorDetails || errorMessage;
-      }
-      
-      toast.error(errorMessage, {
-        position: "top-center"
-      });
+      const items = itemsForOrder(await fetchMyOrderItems(accessToken), order_id);
+      setGroups(unpaidByVendor(items));
+    } catch (e) {
+      console.error(e);
+      setLoadError(true);
+    }
+  }, [accessToken, order_id]);
 
-    } finally {
-      setLoadingVendorId(null);
+  useEffect(() => {
+    if (isOpen && order_id) load();
+  }, [isOpen, order_id, load]);
+
+  const pay = async (vendorId) => {
+    setPayError("");
+    setPayingVendor(vendorId);
+    try {
+      window.location.href = await createVendorPaymentLink(order_id, vendorId, accessToken);
+    } catch (error) {
+      console.error("Payment link error:", error?.response?.data || error);
+      setPayError(shopperPaymentError(error));
+      setPayingVendor(null);
     }
   };
 
-  if (!isOpen) return null;
+  const many = (groups?.length || 0) > 1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-[#121214] shadow-2xl overflow-hidden border border-ink/5">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-6 flex items-center justify-between text-white">
-          <div>
-            <h2 className="text-2xl font-black text-ink uppercase tracking-tight">Multi-Vendor Checkout</h2>
-            <p className="text-ink/70 text-sm font-medium">Items are grouped by vendor for individual payment.</p>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-ink/10 rounded-full transition-colors">
-            <XMarkIcon className="h-6 w-6 text-ink" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-8 max-h-[70vh] overflow-y-auto space-y-6">
-          {Object.entries(groupedCart).map(([vendorId, data]) => (
-            <div key={vendorId} className="bg-ink/[0.03] border border-gray-100 dark:border-white/5 rounded-2xl p-6 space-y-4">
-              <div className="flex justify-between items-center border-b border-gray-100 dark:border-white/5 pb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                  Order from {data.vendorName}
-                </h3>
-                <span className="text-xl font-black text-purple-600 dark:text-purple-400">${formatMoney(data.total)}</span>
+    <Dialog open={Boolean(isOpen)} onClose={() => !payingVendor && onClose()} className="relative z-[110]">
+      <div className="fixed inset-0 bg-ps-overlay" aria-hidden="true" />
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-lg rounded-2xl border border-ps-border bg-ps-surface shadow-[var(--ps-shadow-3)]">
+            <div className="flex items-start justify-between gap-4 px-6 pt-6">
+              <div>
+                <Dialog.Title className="text-lg font-semibold tracking-tight text-ink">
+                  {many ? "Pay each store" : "Pay for your order"}
+                </Dialog.Title>
+                <p className="mt-1 text-sm text-ps-fg2">
+                  {many
+                    ? "Your order has items from more than one store. Each store is paid separately — start with any of them."
+                    : "Your order is placed. Pay securely with Square to confirm it."}
+                </p>
               </div>
-              
-              <ul className="space-y-3">
-                {data.items.map((item, idx) => (
-                  <li key={idx} className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                    <span>{item.product?.name || item.name} <span className="text-xs text-ps-meta">x{item.quantity}</span></span>
-                    <span className="font-medium">${formatMoney((Number(item.product?.unit_price || item.unit_price || 0) + Number(item.additional_price || 0)) * item.quantity)}</span>
-                  </li>
-                ))}
-              </ul>
-
               <button
-                disabled={loadingVendorId !== null}
-                onClick={() => handleVendorPayment(vendorId)}
-                className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs transition-all ${
-                  loadingVendorId === vendorId
-                    ? "bg-gray-100 text-ps-meta cursor-wait"
-                    : "bg-ps-sunken text-white hover:bg-ps-bg shadow-lg"
-                }`}
+                type="button"
+                onClick={onClose}
+                disabled={Boolean(payingVendor)}
+                aria-label="Close"
+                className="-mr-2 -mt-1 inline-flex h-10 w-10 items-center justify-center rounded-full text-ps-fg2 hover:bg-ps-hover hover:text-ink"
               >
-                {loadingVendorId === vendorId ? (
-                  <div className="h-4 w-4 border-2 border-purple-500 border-t-transparent animate-spin rounded-full" />
-                ) : (
-                  <>
-                    <CreditCardIcon className="h-4 w-4" />
-                    Pay with Square
-                  </>
-                )}
+                <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-          ))}
 
-          {Object.keys(groupedCart).length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-ps-meta">No items found in your order.</p>
+            <div className="max-h-[60vh] overflow-y-auto px-6 py-5 space-y-3">
+              {loadError ? (
+                <ErrorState
+                  title="We couldn't load your order"
+                  description="Your order was placed. You can also pay from My orders."
+                  onRetry={load}
+                  className="py-6"
+                />
+              ) : groups === null ? (
+                <div className="space-y-3" aria-busy="true" aria-label="Loading your order">
+                  {[0, 1].map((i) => (
+                    <div key={i} className="ps-skeleton h-24 rounded-xl" />
+                  ))}
+                </div>
+              ) : groups.length === 0 ? (
+                <p className="py-6 text-center text-sm text-ps-fg2">
+                  Everything in this order is already paid. You can follow it in My orders.
+                </p>
+              ) : (
+                groups.map((g) => (
+                  <section key={g.vendorId} className="rounded-xl border border-ps-border bg-ps-raised p-4">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h3 className="text-sm font-semibold text-ink truncate">{g.storeName}</h3>
+                      <span className="text-base font-semibold text-ink tabular-nums">${formatMoney(g.total)}</span>
+                    </div>
+                    <ul className="mt-2 space-y-1">
+                      {g.items.map((item) => (
+                        <li key={item.id} className="flex justify-between gap-3 text-sm text-ps-fg2">
+                          <span className="truncate">
+                            {item.product?.name || "Item"} <span className="text-ps-meta">× {item.quantity}</span>
+                          </span>
+                          <span className="tabular-nums">${formatMoney(item.total_price)}</span>
+                        </li>
+                      ))}
+                      {g.items.some((i) => Number(i.shipping_cost) > 0) && (
+                        <li className="flex justify-between gap-3 text-sm text-ps-meta">
+                          <span>Shipping</span>
+                          <span className="tabular-nums">
+                            ${formatMoney(g.items.reduce((s, i) => s + Number(i.shipping_cost || 0), 0))}
+                          </span>
+                        </li>
+                      )}
+                    </ul>
+                    <button
+                      type="button"
+                      disabled={Boolean(payingVendor)}
+                      onClick={() => pay(g.vendorId)}
+                      aria-busy={payingVendor === g.vendorId}
+                      className="mt-3 inline-flex w-full items-center justify-center gap-2 min-h-[44px] rounded-xl bg-ps-action px-4 text-sm font-semibold text-white disabled:opacity-60"
+                    >
+                      {payingVendor === g.vendorId ? "Opening Square…" : `Pay ${g.storeName}`}
+                    </button>
+                  </section>
+                ))
+              )}
+              {payError && (
+                <p role="alert" className="text-sm text-ps-danger">
+                  {payError}
+                </p>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Footer */}
-        <div className="p-8 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01] flex items-center justify-center gap-2 text-xs text-ps-meta uppercase font-bold tracking-widest">
-          <ShieldCheckIcon className="h-4 w-4 text-emerald-500" />
-          <span>Secure Multi-Vendor Transaction System</span>
+            <div className="flex items-center justify-center gap-2 border-t border-ps-border px-6 py-4 text-xs text-ps-meta">
+              <LockClosedIcon className="h-4 w-4" aria-hidden />
+              <span>Payments are handled by Square. PinkSurfing never sees your card details.</span>
+            </div>
+          </Dialog.Panel>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 };
 

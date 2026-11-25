@@ -23,6 +23,8 @@ import { HiMiniSquares2X2 } from "react-icons/hi2";
 import SearchForm from "../components/Search";
 import { fetchCategoryProducts } from "../api/catalogProducts";
 import { ProductCardSkeleton } from "../components/ui/Skeleton";
+import { EmptyState } from "../components/ui";
+import ErrorState from "../components/ui/ErrorState";
 
 export default function ShoppingMallNew() {
   const { category } = useParams();
@@ -42,6 +44,8 @@ export default function ShoppingMallNew() {
   const [sortMethod, setSortMethod] = useState("default");
   const [sortName, setSortName] = useState("Sort By Newest");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [minValue, setMinValue] = useState(0);
   const [maximumValue, setMaximumValue] = useState(0);
   const [isCard, setIsCard] = useState(true);
@@ -118,6 +122,7 @@ export default function ShoppingMallNew() {
   // axios requests ===================================================================
   useEffect(() => {
     const getFilterProducts = async () => {
+      setLoadError(false);
       if (filterBy === "") {
         setLoading(true);
   
@@ -143,6 +148,7 @@ export default function ShoppingMallNew() {
           }
         } catch (error) {
           console.error(error);
+          setLoadError(true);
           setLoading(false);
         }
       } else {
@@ -160,6 +166,7 @@ export default function ShoppingMallNew() {
           setLoading(false);
         } catch (error) {
           console.error(error);
+          setLoadError(true);
           setLoading(false);
         }
       }
@@ -167,7 +174,7 @@ export default function ShoppingMallNew() {
   
     setCategoryFilter(category);
     getFilterProducts();
-  }, [cookies, filterBy, navigate, removeCookie]);  
+  }, [cookies, filterBy, navigate, removeCookie, reloadKey]);  
 
   uniqueAttributes.forEach((attribute) => {
     const { name, value } = attribute;
@@ -202,6 +209,21 @@ export default function ShoppingMallNew() {
   const handleSliderChange = (e) => {
     setMinValue(Number(e.minValue));
     setMaximumValue(Number(e.maxValue));
+  };
+
+  const visibleProducts = (shoppingProduct || []).filter((i) => {
+    const priceFilter = i.unit_price >= minValue && i.unit_price <= maximumValue;
+    const categoryFilterReturn = categoryFilter === "all" ? true : i?.category?.name === categoryFilter;
+    return priceFilter && categoryFilterReturn;
+  });
+
+  const clearMallFilters = () => {
+    const prices = (shoppingProduct || []).map((p) => Number(p.unit_price)).filter(Number.isFinite);
+    setCategoryFilter("all");
+    if (prices.length) {
+      setMinValue(Math.min(...prices));
+      setMaximumValue(Math.max(...prices));
+    }
   };
 
   return (
@@ -777,19 +799,7 @@ export default function ShoppingMallNew() {
                             : "2xl:grid-cols-2 lg:grid-cols-2 sm:grid-cols-2 grid-cols-1"
                         } gap-x-3 gap-y-3 lg:gap-x-5 lg:items-center lg:justify-start flex-wrap`}
                       >
-                        {shoppingProduct
-                          ?.filter((i) => {
-                            const priceFilter =
-                              i.unit_price >= minValue &&
-                              i.unit_price <= maximumValue;
-
-                            const categoryFilterReturn =
-                              categoryFilter === "all"
-                                ? true
-                                : i?.category?.name === categoryFilter;
-
-                            return priceFilter && categoryFilterReturn;
-                          })
+                        {visibleProducts
                           .sort(handleSort(sortMethod))
                           .map((product) => (
                             <ProductCard
@@ -799,13 +809,27 @@ export default function ShoppingMallNew() {
                             />
                           ))}
                       </div>
-                      {shoppingProduct?.length === 0 && (
-                        <div className="w-full text-center py-16">
-                          <p className="dark:text-[#f5f5f5] text-[var(--ps-muted)]">
-                            No products available
-                          </p>
-                        </div>
-                      )}
+                      {loadError ? (
+                        <ErrorState
+                          title="We couldn’t load products"
+                          description="Check your connection and try again."
+                          onRetry={() => setReloadKey((k) => k + 1)}
+                        />
+                      ) : shoppingProduct?.length === 0 ? (
+                        <EmptyState
+                          title="No products here yet"
+                          description="Stores haven’t listed anything in this section. Can’t find what you need? Request it and vendors will send you offers."
+                          actionLabel="Request a product"
+                          actionHref="/request-product"
+                        />
+                      ) : visibleProducts.length === 0 ? (
+                        <EmptyState
+                          title="No products match these filters"
+                          description="Try a wider price range or another category."
+                          actionLabel="Clear filters"
+                          onAction={clearMallFilters}
+                        />
+                      ) : null}
                     </div>
                   </div>
                 </div>

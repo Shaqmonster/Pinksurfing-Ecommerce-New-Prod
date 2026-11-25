@@ -4,7 +4,7 @@ const variants = {
   primary:
     "bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white border-transparent shadow-[0_8px_18px_-6px_rgba(151,71,255,0.45)]",
   secondary:
-    "bg-[var(--ps-surf)] text-[var(--ps-white)] border-[var(--ps-brd)] hover:border-[var(--ps-purple-light)]",
+    "bg-[var(--ps-surf)] text-ink border-[var(--ps-brd)] hover:border-[var(--ps-purple-light)]",
   tertiary:
     "bg-transparent text-[var(--ps-purple-light)] border-transparent hover:bg-ink/5",
   destructive:

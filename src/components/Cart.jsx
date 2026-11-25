@@ -11,6 +11,7 @@ import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
 import { formatMoney } from "../utils/formatMoney";
 import MediaImage from "./ui/MediaImage";
+import ErrorState from "./ui/ErrorState";
 import {
   cartBlocksCheckout,
   cartStockLimitMessage,
@@ -26,11 +27,12 @@ export default function Cart() {
   const navigate = useNavigate();
   const accessToken = useAccessToken();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const checkoutBlocked = useMemo(
     () => cartBlocksCheckout(cartProducts),
     [cartProducts]
   );
-  const isEmpty = !loading && !cartProducts?.length;
+  const isEmpty = !loading && !loadError && !cartProducts?.length;
 
   const GetCartProducts = async () => {
     if (!accessToken) {
@@ -38,6 +40,7 @@ export default function Cart() {
       return;
     }
     setLoading(true);
+    setLoadError(false);
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/view/`,
@@ -56,10 +59,7 @@ export default function Cart() {
         setCartProducts([]);
         return;
       }
-      toast.error("Unable to load cart", {
-        position: "top-center",
-        autoClose: 3000,
-      });
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -249,6 +249,13 @@ export default function Cart() {
                             </li>
                           ))}
                         </ul>
+                      ) : loadError ? (
+                        <ErrorState
+                          title="We couldn't load your cart"
+                          description="Your items are still saved. Check your connection and try again."
+                          onRetry={GetCartProducts}
+                          className="flex-1"
+                        />
                       ) : isEmpty ? (
                         <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
                           <img

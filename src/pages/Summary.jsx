@@ -13,6 +13,10 @@ import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import TrackingTimeline from "../components/TrackingTimeline";
 import { formatMoney } from "../utils/formatMoney";
 import { useAccessToken } from "../hooks/useAccessToken";
+import ErrorState from "../components/ui/ErrorState";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
+import { orderStatusLabel } from "../utils/orderStatus";
+import { isItemPaid } from "../utils/orderPayment";
 
 const Summary = () => {
   const accessToken = useAccessToken();
@@ -28,6 +32,8 @@ const Summary = () => {
   const [reviews, setReviews] = useState([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [confirmReturn, setConfirmReturn] = useState(false);
 
   const navigate = useNavigate();
   const { orderId } = useParams();
@@ -38,6 +44,7 @@ const Summary = () => {
       return;
     }
     setLoading(true);
+    setLoadError(false);
     axios
       .get(
         `${import.meta.env.VITE_SERVER_URL}/api/order/track-order/${orderId}/`,
@@ -53,6 +60,7 @@ const Summary = () => {
       })
       .catch((error) => {
         console.error(error);
+        setLoadError(true);
       })
       .finally(() => {
         setLoading(false);
@@ -91,12 +99,6 @@ const Summary = () => {
       .catch(() => {});
   }, [order?.product?.id]);
 
-  const handleOptimisticCancel = (cancelledOrderId) => {
-    setOrder((prev) =>
-      prev ? { ...prev, order_status: "CANCELED" } : prev
-    );
-  };
-
   const handleReturnOrder = async (orderItemId) => {
     if (!accessToken) {
       navigate("/signin");
@@ -117,20 +119,41 @@ const Summary = () => {
         setOrder((prev) =>
           prev ? { ...prev, order_status: "RETURN-REQUESTED" } : prev
         );
-        toast.success("Return Requested Successfully");
+        toast.success("Return requested. We'll show the next steps here.");
       }
     } catch (error) {
-      toast.error("Failed to initiate return");
+      const err = new Error("return failed");
+      err.userMessage =
+        error.response?.data?.error ||
+        (error.response
+          ? "We couldn't request this return. Please try again."
+          : "We couldn't reach PinkSurfing. Check your connection and try again.");
+      throw err;
     }
   };
 
   const getStatusColor = (status) => {
     const s = status?.toUpperCase();
-    if (s === "DELIVERED") return "text-emerald-400 bg-emerald-400/10 border-emerald-400/20";
-    if (["PENDING", "RECEIVED", "PACKED", "SHIPPED"].includes(s)) return "text-amber-400 bg-amber-400/10 border-amber-400/20";
-    if (s === "CANCELED") return "text-rose-400 bg-rose-400/10 border-rose-400/20";
-    return "text-[var(--ps-purple-light)] bg-[color-mix(in_srgb,var(--ps-primary)_10%,transparent)] border-[color-mix(in_srgb,var(--ps-primary)_20%,transparent)]";
+    if (s === "DELIVERED" || s === "RETURNED")
+      return "text-ps-success bg-[color-mix(in_srgb,var(--ps-color-success)_10%,transparent)] border-[color-mix(in_srgb,var(--ps-color-success)_30%,transparent)]";
+    if (s === "CANCELED" || s === "ERROR" || s === "RETURN-DISPUTED")
+      return "text-ps-warning bg-[color-mix(in_srgb,var(--ps-color-warning)_10%,transparent)] border-[color-mix(in_srgb,var(--ps-color-warning)_30%,transparent)]";
+    return "text-ps-fg2 bg-ps-sunken border-ps-border";
   };
+
+  if (loadError && !loading) {
+    return (
+      <div className="min-h-screen bg-ps-bg text-ink">
+        <main className="max-w-xl mx-auto px-4 py-16">
+          <ErrorState
+            title="We couldn't load this order"
+            description="Your order is safe — this is a connection problem on our side or yours."
+            onRetry={GetOrder}
+          />
+        </main>
+      </div>
+    );
+  }
 
   if (loading || !order) {
     return (
@@ -180,8 +203,8 @@ const Summary = () => {
             </p>
           </div>
           
-          <div className={`inline-flex px-3 py-1.5 rounded-xl border text-xs font-semibold uppercase tracking-wide ${getStatusColor(order.order_status)}`}>
-            {order.order_status}
+          <div className={`inline-flex px-3 py-1.5 rounded-xl border text-sm font-medium ${getStatusColor(order.order_status)}`}>
+            {orderStatusLabel(order.order_status)}
           </div>
         </div>
 
@@ -235,7 +258,7 @@ const Summary = () => {
                     <button
                       type="button"
                       onClick={() => navigate(`/product/productDetail/${order.product.slug}?productId=${order.product.id}`)}
-                      className="min-h-[44px] px-4 rounded-xl bg-white text-black text-xs font-semibold"
+                      className="min-h-[44px] px-4 rounded-xl border border-ps-border bg-ps-surface text-ink text-xs font-semibold"
                     >
                       View product
                     </button>
@@ -251,7 +274,7 @@ const Summary = () => {
                     {order.order_status.toUpperCase() === "DELIVERED" && (
                       <button
                         type="button"
-                        onClick={() => handleReturnOrder(order.id)}
+                        onClick={() => setConfirmReturn(true)}
                         className="min-h-[44px] px-4 rounded-xl border border-[var(--ps-brd)] text-[var(--ps-muted)] text-xs font-semibold"
                       >
                         Return item
@@ -274,7 +297,11 @@ const Summary = () => {
               <p className="text-sm text-[var(--ps-muted)] leading-relaxed">
                 {order.held_in_escrow > 0
                   ? `Payment of ${currency}${formatMoney(order.held_in_escrow)} is held until fulfillment.`
-                  : "Payment processed and verified for this order."}
+                  : isItemPaid(order)
+                  ? "Paid. Square confirmed the payment for this item."
+                  : String(order.order_status).toUpperCase() === "CANCELED"
+                  ? "This item was canceled. If it had been paid, the refund goes to your original payment method."
+                  : "Not paid yet. You can pay for it from your orders."}
               </p>
             </div>
           </div>
@@ -289,12 +316,14 @@ const Summary = () => {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-[var(--ps-muted)]">Shipping</span>
-                  <span className="text-emerald-400 font-medium">FREE</span>
+                  <span className="font-medium">
+                    {Number(order.shipping_cost || 0) > 0 ? `${currency}${formatMoney(order.shipping_cost)}` : "Free"}
+                  </span>
                 </div>
                 <div className="pt-3 border-t border-[var(--ps-brd)] flex justify-between items-center">
                   <span className="text-sm font-semibold">Total</span>
                   <span className="text-xl font-semibold text-ink">
-                    {currency}{formatMoney(order.total_price)}
+                    {currency}{formatMoney(Number(order.total_price || 0) + Number(order.shipping_cost || 0))}
                   </span>
                 </div>
               </div>
@@ -313,7 +342,7 @@ const Summary = () => {
                         ))}
                       </div>
                       <p className="text-ink font-medium mb-1">{myRating.title || "Your review"}</p>
-                      <p className="text-[var(--ps-muted)] text-sm mb-4 line-clamp-3">"{myRating.body}"</p>
+                      <p className="text-[var(--ps-muted)] text-sm mb-4 line-clamp-3">”{myRating.body}”</p>
                       <button
                         type="button"
                         onClick={() => setIsRatingFormOpen(true)}
@@ -343,13 +372,29 @@ const Summary = () => {
         </div>
       </main>
 
+      <ConfirmDialog
+        open={confirmReturn}
+        onClose={() => setConfirmReturn(false)}
+        title="Request a return?"
+        confirmLabel="Request return"
+        busyLabel="Requesting…"
+        cancelLabel="Not now"
+        onConfirm={() => handleReturnOrder(order.id)}
+      >
+        <p>
+          {order.product?.name || "This item"} goes back to the store. Once they receive and check it, your refund is
+          processed to your original payment method.
+        </p>
+        <p className="mt-2">You’ll see each step on this page.</p>
+      </ConfirmDialog>
+
       {isOpen && (
         <CancelDialog
           isOpen={isOpen}
           orderId={deleteOrderId}
+          order={order}
           setIsOpen={setIsOpen}
           GetOrders={GetOrder}
-          onOptimisticCancel={handleOptimisticCancel}
         />
       )}
       
