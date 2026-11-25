@@ -52,15 +52,15 @@ const ForgotPassword = () => {
         }
       );
       if (response.status === 200) {
-        handleSuccess("Email Sent Successfully");
+        handleSuccess("We’ve emailed you a code.");
         setOtpHidden(false);
       }
     } catch (error) {
       if (error.response?.status === 404) {
-        handleError("Email not found");
+        handleError("We couldn’t find an account with that email. Check it, or create an account.");
         return;
       }
-      handleError(error.response?.data?.message || "Failed to send OTP");
+      handleError(error.response?.data?.message || "We couldn’t send a code. Please try again.");
     }
   };
 
@@ -86,7 +86,7 @@ const ForgotPassword = () => {
         }
       );
       if (response.status === 200) {
-        handleSuccess("Password reset successfully");
+        handleSuccess("Password updated. You can sign in now.");
         navigate("/signin");
       }
     } catch (error) {

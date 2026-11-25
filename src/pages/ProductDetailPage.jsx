@@ -464,7 +464,7 @@ const ProductDetailPage = () => {
   const AddtoCart = () => {
     const cartProductId = product?.id || productId;
     if (!accessToken) {
-      notify.error("You are not Signed In");
+      notify.error("Sign in to continue.");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       return;
@@ -474,7 +474,7 @@ const ProductDetailPage = () => {
       return;
     }
     if (!cartProductId) {
-      notify.error("Product is still loading");
+      notify.error("One moment — this product is still loading.");
       return;
     }
     if (cartContainsProduct(cartProducts, cartProductId)) {
@@ -500,7 +500,7 @@ const ProductDetailPage = () => {
         if (response.data?.already_in_cart) {
           notify.info(response.data.message || "Already in your cart");
         } else {
-          notify.success("Added to Cart");
+          notify.success("Added to your cart.");
         }
         GetCartProducts();
       })
@@ -513,7 +513,7 @@ const ProductDetailPage = () => {
 
   const handleAddToBagClick = () => {
     if (!accessToken) {
-      notify.error("You are not Signed In");
+      notify.error("Sign in to continue.");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       return;
@@ -546,7 +546,7 @@ const ProductDetailPage = () => {
         }
       );
       GetWishlist();
-      notify.success("Removed from wishlist");
+      notify.success("Removed from your wishlist.");
     } catch (error) {
       console.error(error);
       heartElement.classList.add("text-red-500");
@@ -569,7 +569,7 @@ const ProductDetailPage = () => {
       )
       .then((response) => {
         GetWishlist();
-        notify.success("Added to wishlist");
+        notify.success("Saved to your wishlist.");
       })
       .catch((error) => {
         console.error(error);
@@ -754,9 +754,7 @@ const ProductDetailPage = () => {
   const finalUnitPrice = Number(product.unit_price) + additionalPrice;
   const finalMrp = Number(product.mrp) + additionalPrice;
 
-  const discountPercentage = (
-    ((finalMrp - finalUnitPrice) / finalMrp) * 100
-  ).toFixed(2);
+  const discountPercentage = Math.round(((finalMrp - finalUnitPrice) / finalMrp) * 100);
 
   function htmlToText(html) {
     let doc = new DOMParser().parseFromString(html, "text/html");
@@ -764,7 +762,7 @@ const ProductDetailPage = () => {
   }
   const handleWishlistClick = async () => {
     if (!accessToken) {
-      notify.error("You are not Signed In");
+      notify.error("Sign in to continue.");
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
       setIsProfileOpen(true);
       setTimeout(() => {
@@ -999,16 +997,16 @@ const ProductDetailPage = () => {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div className="space-y-2">
                     <div className="flex flex-wrap gap-2">
-                      <span className="px-3 py-1 bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-purple-500/20">
+                      <span className="px-3 py-1 bg-purple-600 text-white text-[10px] font-semibold uppercase tracking-widest rounded-full shadow-lg shadow-purple-500/20">
                         {isBusiness ? "Business For Sale" : (isResidential ? "Residential" : "Commercial")}
                       </span>
                       {daysOnMarket && (
-                        <span className="px-3 py-1 bg-ink/10 dark:bg-white/5 border border-ink/10 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5">
+                        <span className="px-3 py-1 bg-ink/10 dark:bg-white/5 border border-ink/10 text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-widest rounded-full flex items-center gap-1.5">
                           <FaClock className="text-purple-500" /> {daysOnMarket} on market
                         </span>
                       )}
                     </div>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white tracking-tighter leading-[0.95]">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-gray-900 dark:text-white tracking-tight leading-[0.95]">
                       {product.name}
                     </h1>
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium capitalize">
@@ -1024,11 +1022,11 @@ const ProductDetailPage = () => {
 
                   <div className="flex flex-col items-start md:items-end gap-1">
                     <div className="flex items-center gap-3">
-                      <div className="text-5xl md:text-6xl font-black text-purple-600 tracking-tighter">
+                      <div className="text-5xl md:text-6xl font-semibold text-purple-600 tracking-tight">
                         {currency}{formatMoney(finalUnitPrice)}
                       </div>
                       {isDealClosed && (
-                        <div className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl">
+                        <div className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-semibold uppercase tracking-widest text-xs rounded-xl">
                           Deal Closed
                         </div>
                       )}
@@ -1046,7 +1044,7 @@ const ProductDetailPage = () => {
                             <FaBed size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{beds}</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{beds}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Beds</div>
                           </div>
                         </div>
@@ -1057,7 +1055,7 @@ const ProductDetailPage = () => {
                             <FaBath size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{baths}</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{baths}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Baths</div>
                           </div>
                         </div>
@@ -1068,7 +1066,7 @@ const ProductDetailPage = () => {
                             <FaRulerCombined size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{formatMoney(sqft).replace("$", "")}</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{formatMoney(sqft).replace("$", "")}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Sqft</div>
                           </div>
                         </div>
@@ -1079,7 +1077,7 @@ const ProductDetailPage = () => {
                             <FaChartLine size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{capRate}%</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{capRate}%</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Cap Rate</div>
                           </div>
                         </div>
@@ -1093,7 +1091,7 @@ const ProductDetailPage = () => {
                             <FaMoneyBillWave size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(revenue))}</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(revenue))}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Revenue</div>
                           </div>
                         </div>
@@ -1104,7 +1102,7 @@ const ProductDetailPage = () => {
                             <FaChartLine size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(ebitda))}</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{currency}{formatMoney(parseMoney(ebitda))}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">EBITDA</div>
                           </div>
                         </div>
@@ -1115,7 +1113,7 @@ const ProductDetailPage = () => {
                             <FaBuilding size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{getAttr("years in operation")} yrs</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{getAttr("years in operation")} yrs</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">In operation</div>
                           </div>
                         </div>
@@ -1126,7 +1124,7 @@ const ProductDetailPage = () => {
                             <FaUsers size={18} />
                           </div>
                           <div>
-                            <div className="text-lg font-black text-gray-900 dark:text-white leading-none">{getAttr("employees")}</div>
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{getAttr("employees")}</div>
                             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Employees</div>
                           </div>
                         </div>
@@ -1168,7 +1166,7 @@ const ProductDetailPage = () => {
                           aria-hidden={src ? "true" : "false"}
                         >
                           <FaBriefcase className="text-2xl text-gray-600" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">No photo</span>
+                          <span className="text-[9px] font-semibold uppercase tracking-widest">No photo</span>
                         </div>
                       </div>
                     );
@@ -1362,7 +1360,7 @@ const ProductDetailPage = () => {
                       return (
                         <div className="bg-white dark:bg-[#111]/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-white/10 shadow-xl p-6 sm:p-8 space-y-8">
                           <div>
-                            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-4">
+                            <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-4">
                               {isBusiness ? "Business snapshot" : "Listing snapshot"}
                             </h2>
 
@@ -1375,7 +1373,7 @@ const ProductDetailPage = () => {
                                   >
                                     <div className={`text-base mt-0.5 ${toneClass(f.tone)}`}>{f.icon}</div>
                                     <div className="min-w-0">
-                                      <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta truncate">
+                                      <div className="text-[9px] font-semibold uppercase tracking-widest text-ps-meta truncate">
                                         {f.label}
                                       </div>
                                       <div className="text-sm font-bold text-gray-900 dark:text-white truncate">
@@ -1390,7 +1388,7 @@ const ProductDetailPage = () => {
 
                           {smartFeatures.length > 0 && (
                             <div>
-                              <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3 flex items-center gap-2">
+                              <h3 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                                 <FaTags className="text-purple-500" /> Smart highlights
                               </h3>
                               <div className="flex flex-wrap gap-2">
@@ -1410,19 +1408,19 @@ const ProductDetailPage = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               {staffRoles && (
                                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                                  <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta mb-1.5">Staff & roles</div>
+                                  <div className="text-[9px] font-semibold uppercase tracking-widest text-ps-meta mb-1.5">Staff & roles</div>
                                   <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{staffRoles}</div>
                                 </div>
                               )}
                               {techStack && (
                                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                                  <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta mb-1.5">Tech stack</div>
+                                  <div className="text-[9px] font-semibold uppercase tracking-widest text-ps-meta mb-1.5">Tech stack</div>
                                   <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{techStack}</div>
                                 </div>
                               )}
                               {keyVendors && (
                                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                                  <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta mb-1.5">Key vendors</div>
+                                  <div className="text-[9px] font-semibold uppercase tracking-widest text-ps-meta mb-1.5">Key vendors</div>
                                   <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{keyVendors}</div>
                                 </div>
                               )}
@@ -1431,7 +1429,7 @@ const ProductDetailPage = () => {
 
                           {(product.short_description || product.description) && (
                             <div>
-                              <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3">
+                              <h3 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3">
                                 {isBusiness ? "About this business" : "About this listing"}
                               </h3>
                               <div className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200 leading-relaxed">
@@ -1473,9 +1471,9 @@ const ProductDetailPage = () => {
                       )}
 
                       {/* Discount Badge */}
-                      {discountPercentage !== "0.00" && (
+                      {discountPercentage > 0 && (
                         <div className="absolute bottom-4 left-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-full shadow-lg">
-                          {discountPercentage}% OFF
+                          {discountPercentage}% off
                         </div>
                       )}
                     </div>
@@ -1510,7 +1508,7 @@ const ProductDetailPage = () => {
                   /* Specialized Action Panel */
                   <div className="space-y-6">
                     <div className="p-8 bg-ps-bg/90 dark:bg-[#111]/90 backdrop-blur-3xl rounded-[2.5rem] border border-ink/10 shadow-2xl">
-                      <h3 className="text-lg font-black text-ink uppercase tracking-widest mb-6 border-b border-ink/5 pb-4 flex items-center gap-3">
+                      <h3 className="text-lg font-semibold text-ink uppercase tracking-widest mb-6 border-b border-ink/5 pb-4 flex items-center gap-3">
                         <FaEnvelope className="text-purple-500" /> Interested?
                       </h3>
                       <div className="space-y-4">
@@ -1518,7 +1516,7 @@ const ProductDetailPage = () => {
                           type="button"
                           onClick={handleContactAgent}
                           disabled={isDealClosed || contactingAgent || isOwner}
-                          className={`w-full py-5 ${isDealClosed || isOwner ? 'bg-ps-surface text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                          className={`w-full py-5 ${isDealClosed || isOwner ? 'bg-ps-surface text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-semibold uppercase tracking-wide text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
                           {contactingAgent ? (
                             <span className="w-4 h-4 border-2 border-ink/40 border-t-ink rounded-full animate-spin" />
@@ -1536,7 +1534,7 @@ const ProductDetailPage = () => {
 
                         {activeVisit?.status === "vendor_reschedule_pending" && activeVisit?.pending_reschedule_at && (
                           <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-4 space-y-3">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-purple-200">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-purple-200">
                               New time proposed
                             </p>
                             <p className="text-xs text-ps-fg2">
@@ -1550,14 +1548,14 @@ const ProductDetailPage = () => {
                               <button
                                 type="button"
                                 onClick={() => respondToVendorReschedule(true)}
-                                className="flex-1 py-3 rounded-xl bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest"
+                                className="flex-1 py-3 rounded-xl bg-purple-600 text-white text-[10px] font-semibold uppercase tracking-widest"
                               >
                                 Accept
                               </button>
                               <button
                                 type="button"
                                 onClick={() => respondToVendorReschedule(false)}
-                                className="flex-1 py-3 rounded-xl border border-ink/20 text-[10px] font-black uppercase tracking-widest text-ink"
+                                className="flex-1 py-3 rounded-xl border border-ink/20 text-[10px] font-semibold uppercase tracking-widest text-ink"
                               >
                                 Reject (refund)
                               </button>
@@ -1587,7 +1585,7 @@ const ProductDetailPage = () => {
                             activeVisit?.status === "buyer_reschedule_pending" ||
                             activeVisit?.status === "vendor_reschedule_pending"
                           }
-                          className={`w-full py-5 ${isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending" ? 'bg-ps-surface/50 text-gray-500 cursor-not-allowed border border-ps-border' : 'bg-ink/5 hover:bg-ink/10 text-ink border border-ink/10 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                          className={`w-full py-5 ${isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending" ? 'bg-ps-surface/50 text-gray-500 cursor-not-allowed border border-ps-border' : 'bg-ink/5 hover:bg-ink/10 text-ink border border-ink/10 active:scale-95'} font-semibold uppercase tracking-wide text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
                           <FaCalendarAlt /> {isDealClosed ? "Deal Closed" : scheduleButtonLabel}
                         </button>
@@ -1596,7 +1594,7 @@ const ProductDetailPage = () => {
                           <button
                             type="button"
                             onClick={() => setDisputeModalOpen(true)}
-                            className="w-full py-3 rounded-2xl border border-red-500/30 text-red-300 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10"
+                            className="w-full py-3 rounded-2xl border border-red-500/30 text-red-300 text-[10px] font-semibold uppercase tracking-widest hover:bg-red-500/10"
                           >
                             Raise a dispute
                           </button>
@@ -1608,7 +1606,7 @@ const ProductDetailPage = () => {
                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                             {isBusiness ? "Listed by" : "Listing Agent"}
                           </span>
-                          <span className="text-xs font-black text-ink text-right truncate">
+                          <span className="text-xs font-semibold text-ink text-right truncate">
                             {product.vendor?.store_name ||
                               [product.vendor?.first_name, product.vendor?.last_name].filter(Boolean).join(" ") ||
                               "Pinksurfing seller"}
@@ -1618,7 +1616,7 @@ const ProductDetailPage = () => {
                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                             {isBusiness ? "Listing ID" : "Property ID"}
                           </span>
-                          <span className="text-xs font-black text-ink">#PS-{product.id?.slice(-6).toUpperCase()}</span>
+                          <span className="text-xs font-semibold text-ink">#PS-{product.id?.slice(-6).toUpperCase()}</span>
                         </div>
                       </div>
                     </div>
@@ -1642,7 +1640,7 @@ const ProductDetailPage = () => {
                           />
                         </div>
                         <div className="text-left">
-                          <div className="text-[12px] font-black text-ink uppercase tracking-widest leading-tight">
+                          <div className="text-[12px] font-semibold text-ink uppercase tracking-widest leading-tight">
                             {wishlistProducts.find((i) => i.id === product.id)
                               ? "Saved"
                               : "Save listing"}
@@ -1662,7 +1660,7 @@ const ProductDetailPage = () => {
                           <FaShare size={16} />
                         </div>
                         <div className="text-left">
-                          <div className="text-[12px] font-black text-ink uppercase tracking-widest leading-tight">
+                          <div className="text-[12px] font-semibold text-ink uppercase tracking-widest leading-tight">
                             Share
                           </div>
                           <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
@@ -1708,12 +1706,12 @@ const ProductDetailPage = () => {
                       <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-purple-500/20 transition-all duration-700"></div>
                       <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-baseline gap-4 flex-wrap">
-                          <span className="text-5xl sm:text-6xl font-black tracking-tighter text-gray-900 dark:text-white">
+                          <span className="text-5xl sm:text-6xl font-semibold tracking-tight text-gray-900 dark:text-white">
                             {currency}{formatMoney(finalUnitPrice)}
                           </span>
                         </div>
                         {isDealClosed && (
-                          <div className="px-6 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-sm rounded-xl">
+                          <div className="px-6 py-2 bg-red-500/10 border border-red-500/20 text-red-500 font-semibold uppercase tracking-widest text-sm rounded-xl">
                             Deal Closed
                           </div>
                         )}
@@ -1729,7 +1727,7 @@ const ProductDetailPage = () => {
                               type="button"
                               onClick={handleAddToBagClick}
                               disabled={isOutOfStock(product) || isDealClosed}
-                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : isOutOfStock(product) ? 'bg-gray-400 text-white cursor-not-allowed' : isInCart ? 'bg-emerald-600 text-white cursor-default' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-black uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
+                              className={`flex-1 group relative px-8 py-4 ${isDealClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500' : isOutOfStock(product) ? 'bg-gray-400 text-white cursor-not-allowed' : isInCart ? 'bg-emerald-600 text-white cursor-default' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl'} font-semibold uppercase tracking-widest text-[10px] rounded-xl overflow-hidden transition-all duration-500`}
                             >
                               <span className="relative z-10 flex items-center justify-center gap-3">
                                 {isDealClosed ? (
@@ -1754,7 +1752,7 @@ const ProductDetailPage = () => {
                               <button
                                 onClick={() => {
                                   if (!accessToken) {
-                                    notify.error("You are not Signed In");
+                                    notify.error("Sign in to continue.");
                                     sessionStorage.setItem("redirectAfterLogin", window.location.href);
                                     setIsProfileOpen(true);
                                     setTimeout(() => setIsProfileOpen(false), 10000);
@@ -1774,7 +1772,7 @@ const ProductDetailPage = () => {
                                   });
                                   setIsSingleOrderFormOpen(true);
                                 }}
-                                className="flex-1 px-8 py-4 bg-purple-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl transition-all duration-500 hover:bg-purple-700 hover:shadow-2xl hover:shadow-purple-500/20 active:scale-95 shadow-xl flex items-center justify-center gap-3"
+                                className="flex-1 px-8 py-4 bg-purple-600 text-white font-semibold uppercase tracking-widest text-[10px] rounded-xl transition-all duration-500 hover:bg-purple-700 hover:shadow-2xl hover:shadow-purple-500/20 active:scale-95 shadow-xl flex items-center justify-center gap-3"
                               >
                                 <IoFlash size={16} />
                                 Buy now — {currency}{formatMoney(finalUnitPrice)}
@@ -1782,7 +1780,7 @@ const ProductDetailPage = () => {
                             )}
                           </>
                         ) : (
-                          <div className="flex-1 px-8 py-4 bg-ink/5 border border-ink/10 rounded-xl text-ink/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
+                          <div className="flex-1 px-8 py-4 bg-ink/5 border border-ink/10 rounded-xl text-ink/30 text-[10px] font-semibold uppercase tracking-widest flex items-center justify-center">
                             Your Product
                           </div>
                         )}
@@ -1801,7 +1799,7 @@ const ProductDetailPage = () => {
                                 : "text-ps-meta group-hover:text-red-400"
                             }`}
                           />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 group-hover:text-purple-600 transition-colors">
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 group-hover:text-purple-600 transition-colors">
                             {wishlistProducts.find((i) => i.id === product.id) ? "In Wishlist" : "Save for later"}
                           </span>
                         </button>
@@ -1843,7 +1841,7 @@ const ProductDetailPage = () => {
                         key={tab.id}
                         type="button"
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 flex items-center justify-center gap-3 py-6 text-[10px] font-black uppercase tracking-widest transition-colors duration-ps-normal relative ${
+                        className={`flex-1 flex items-center justify-center gap-3 py-6 text-[10px] font-semibold uppercase tracking-widest transition-colors duration-ps-normal relative ${
                           activeTab === tab.id
                             ? "text-purple-600 dark:text-purple-400"
                             : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -1869,10 +1867,10 @@ const ProductDetailPage = () => {
                         [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
                         [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6
                         [&_li]:mb-3
-                        [&_strong]:font-black
-                        [&_h1]:text-3xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-6
-                        [&_h2]:text-2xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-6
-                        [&_h3]:text-xl [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-4
+                        [&_strong]:font-semibold
+                        [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:mb-6
+                        [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:mb-6
+                        [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:tracking-tight [&_h3]:mb-4
                         [&_a]:text-purple-600 [&_a]:underline transition-all
                       ">
                         {formatTextToParagraphs(product?.short_description)}
@@ -1893,13 +1891,13 @@ const ProductDetailPage = () => {
                           
                           return (
                             <div key={attrName} className="flex flex-col gap-2.5 group">
-                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-400 group-hover:text-purple-500 transition-colors">
+                              <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-400 group-hover:text-purple-500 transition-colors">
                                 {attrName}
                               </span>
                               
                               <div className="flex items-center gap-3">
                                 {isBoolean ? (
-                                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider ${
+                                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-semibold uppercase tracking-wider ${
                                     isTrue 
                                       ? "bg-green-500/10 text-green-500 border border-green-500/20" 
                                       : "bg-gray-100 dark:bg-white/5 text-ps-meta"

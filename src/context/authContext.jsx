@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
       const token = getAccessToken() || cookies.access_token;
       await signOut(token, setCookie);
       clearSession();
-      notify.success("Logged out successfully");
+      notify.success("You’re signed out.");
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);

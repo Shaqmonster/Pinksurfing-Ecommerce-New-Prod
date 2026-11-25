@@ -95,7 +95,7 @@ export default function AddressForm() {
         }
       )
       .then(() => {
-        notify.success("Address added successfully!");
+        notify.success("Address saved.");
         setAddress({
           name: "",
           phone: "",

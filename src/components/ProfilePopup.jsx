@@ -131,7 +131,7 @@ export default function ProfilePopup() {
       );
 
       if (response.status === 200) {
-        notify.success("Profile updated successfully");
+        notify.success("Profile saved.");
         await GetProfile();
       }
     } catch (error) {

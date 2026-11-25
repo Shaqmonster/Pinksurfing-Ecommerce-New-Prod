@@ -654,7 +654,7 @@ const Home = () => {
                 const isSoon = Boolean(item.coming_soon);
                 const handleClick = () => {
                   if (isSoon) {
-                    notify.info("This category is coming soon!");
+                    notify.info("This category isn’t open yet.");
                     return;
                   }
                   setCategory(String(item.category).toLowerCase());

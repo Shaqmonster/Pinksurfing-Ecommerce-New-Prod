@@ -288,7 +288,7 @@ const Signup = () => {
       });
 
       if (createResult.success) {
-        notify.success("Signup successful! Redirecting to sign-in page.");
+        notify.success("Your account is ready. Sign in to continue.");
         navigate("/signin");
       } else {
         notify.error(createResult.message || "Signup failed. Please try again later.");
@@ -392,7 +392,7 @@ const Signup = () => {
       );
       console.log(response.data);
       if (response.status === 200) {
-        notify.success("OTP sent successfully, please check your email");
+        notify.success("We’ve emailed you a code.");
         setTimer(60); // Start the timer
       }
     } catch (error) {

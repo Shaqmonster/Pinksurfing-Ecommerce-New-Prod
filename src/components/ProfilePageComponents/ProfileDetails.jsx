@@ -125,7 +125,7 @@ export default function ProfileDetails() {
       );
 
       if (response.status === 200) {
-        notify.success("Profile updated successfully");
+        notify.success("Profile saved.");
         await reloadProfile();
       }
     } catch (error) {

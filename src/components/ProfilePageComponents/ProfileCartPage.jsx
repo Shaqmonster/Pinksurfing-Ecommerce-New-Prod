@@ -171,12 +171,12 @@ export default function ProfileCartPage() {
                         <div className="flex-1">
                             <div className="flex items-end justify-between mb-12 border-b border-ink/5 pb-8">
                                 <div className="space-y-1">
-                                    <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em]">Management</p>
-                                    <h2 className="text-4xl font-black text-ink tracking-tighter uppercase">
+                                    <p className="text-purple-400 text-[10px] font-semibold uppercase tracking-wide">Management</p>
+                                    <h2 className="text-4xl font-semibold text-ink tracking-tight uppercase">
                                         Shopping Cart
                                     </h2>
                                 </div>
-                                <span className="text-xs font-black text-ink/30 uppercase tracking-widest bg-ink/5 px-4 py-2 rounded-xl">
+                                <span className="text-xs font-semibold text-ink/30 uppercase tracking-widest bg-ink/5 px-4 py-2 rounded-xl">
                                     {cartProducts.length} {cartProducts.length === 1 ? 'Item' : 'Items'}
                                 </span>
                             </div>
@@ -200,13 +200,13 @@ export default function ProfileCartPage() {
 
                                                 <div className="ml-8 flex flex-1 flex-col">
                                                     <div>
-                                                        <div className="flex justify-between text-xl font-black text-ink tracking-tighter uppercase">
+                                                        <div className="flex justify-between text-xl font-semibold text-ink tracking-tight uppercase">
                                                             <h3>
                                                                 <a href={product.product.href} className="hover:text-purple-400 transition-colors">
                                                                     {product.product.name}
                                                                 </a>
                                                             </h3>
-                                                            <p className="ml-4 text-purple-400 font-black">
+                                                            <p className="ml-4 text-purple-400 font-semibold">
                                                                 {currency}{" "}
                                                                 {formatMoney(
                                                                     product.additional_price > 0
@@ -229,7 +229,7 @@ export default function ProfileCartPage() {
                                                     
                                                     <div className="flex flex-1 items-end justify-between text-sm mt-8">
                                                         <div className="flex items-center gap-6 bg-ink/[0.03] px-5 py-3 rounded-2xl border border-ink/5">
-                                                            <span className="text-[10px] font-black text-ink/20 uppercase tracking-widest">Qty</span>
+                                                            <span className="text-[10px] font-semibold text-ink/20 uppercase tracking-widest">Qty</span>
                                                             <div className="flex items-center gap-5">
                                                                 <button
                                                                     onClick={() => {
@@ -241,7 +241,7 @@ export default function ProfileCartPage() {
                                                                 >
                                                                     -
                                                                 </button>
-                                                                <span className="text-base font-black text-ink min-w-[20px] text-center">
+                                                                <span className="text-base font-semibold text-ink min-w-[20px] text-center">
                                                                     {product.quantity}
                                                                 </span>
                                                                 <button
@@ -270,7 +270,7 @@ export default function ProfileCartPage() {
 
                                                         <button
                                                             onClick={() => RemoveCartProduct(product.product.id)}
-                                                            className="text-[10px] font-black text-red-400/50 hover:text-red-400 uppercase tracking-[0.2em] transition-all py-2 px-4 rounded-xl hover:bg-red-500/5"
+                                                            className="text-[10px] font-semibold text-red-400/50 hover:text-red-400 uppercase tracking-wide transition-all py-2 px-4 rounded-xl hover:bg-red-500/5"
                                                         >
                                                             Remove Item
                                                         </button>
@@ -295,7 +295,7 @@ export default function ProfileCartPage() {
                                     />
                                 </div>
                                 <div className="text-center space-y-3">
-                                    <h3 className="text-3xl font-black text-ink uppercase tracking-tighter">Your cart is empty</h3>
+                                    <h3 className="text-3xl font-semibold text-ink uppercase tracking-tight">Your cart is empty</h3>
                                     <p className="text-ink/30 text-sm font-medium max-w-xs mx-auto">
                                         Explore our exclusive marketplace and start adding premium products.
                                     </p>
@@ -305,7 +305,7 @@ export default function ProfileCartPage() {
                                         navigate("/shoppingMall");
                                         setIsCartOpen(false);
                                     }}
-                                    className="px-12 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
+                                    className="px-12 py-5 bg-white text-black font-semibold rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
                                 >
                                     Start Shopping
                                 </button>
@@ -317,8 +317,8 @@ export default function ProfileCartPage() {
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
                                     <div className="space-y-2">
                                         <div className="flex items-baseline gap-6">
-                                            <p className="text-ink/30 font-black uppercase tracking-[0.2em] text-[10px]">Total Value</p>
-                                            <p className="text-5xl font-black text-ink tracking-tighter">
+                                            <p className="text-ink/30 font-semibold uppercase tracking-wide text-[10px]">Total Value</p>
+                                            <p className="text-5xl font-semibold text-ink tracking-tight">
                                                 {currency}{formatMoney(subTotal)}
                                             </p>
                                         </div>
@@ -334,7 +334,7 @@ export default function ProfileCartPage() {
                                     <div className="flex flex-col sm:flex-row items-center gap-6">
                                         <button
                                             onClick={() => navigate("/shoppingMall")}
-                                            className="text-[10px] font-black text-ink/30 hover:text-ink transition-all uppercase tracking-widest px-8 py-5 border border-ink/5 rounded-2xl hover:bg-ink/5"
+                                            className="text-[10px] font-semibold text-ink/30 hover:text-ink transition-all uppercase tracking-widest px-8 py-5 border border-ink/5 rounded-2xl hover:bg-ink/5"
                                         >
                                             Continue Shopping
                                         </button>
@@ -342,7 +342,7 @@ export default function ProfileCartPage() {
                                             <button
                                                 type="button"
                                                 disabled
-                                                className="w-full sm:px-16 py-6 bg-gray-600 text-ink/70 font-black rounded-2xl uppercase tracking-[0.2em] text-xs cursor-not-allowed"
+                                                className="w-full sm:px-16 py-6 bg-gray-600 text-ink/70 font-semibold rounded-2xl uppercase tracking-wide text-xs cursor-not-allowed"
                                             >
                                                 Secure Checkout
                                             </button>
@@ -351,7 +351,7 @@ export default function ProfileCartPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsCartOpen(false)}
-                                                    className="w-full sm:px-16 py-6 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-2xl shadow-2xl shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-[0.2em] text-xs"
+                                                    className="w-full sm:px-16 py-6 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-2xl shadow-2xl shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-wide text-xs"
                                                 >
                                                     Secure Checkout
                                                 </button>

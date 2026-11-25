@@ -36,7 +36,8 @@ const ProductCard = ({ product, isCard }) => {
     listHasRatings ? Number(product.rating_avg) || 0 : 0
   );
   const [ratingCount, setRatingCount] = useState(listHasRatings ? product.rating_count : 0);
-  const { currency } = useContext(authContext);
+  const { currency, setIsCartOpen } = useContext(authContext);
+  const [adding, setAdding] = useState(false);
   const {
     setCartProducts,
     setWishlistProducts,
@@ -87,6 +88,7 @@ const ProductCard = ({ product, isCard }) => {
       notify.info("Already in your cart");
       return;
     }
+    setAdding(true);
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${product.id}/`,
@@ -100,19 +102,26 @@ const ProductCard = ({ product, isCard }) => {
       )
       .then((response) => {
         if (response.data?.already_in_cart) {
-          notify.info(response.data.message || "Already in your cart");
+          notify.info("Already in your cart");
         } else {
-          notify.success("Added to Cart");
+          notify.success(
+            <span className="flex items-center justify-between gap-3">
+              <span>Added to your cart.</span>
+              {setIsCartOpen && (
+                <button type="button" onClick={() => setIsCartOpen(true)} className="font-semibold underline underline-offset-2">
+                  View cart
+                </button>
+              )}
+            </span>
+          );
         }
         GetCartProducts();
       })
       .catch((error) => {
         console.error(error);
-        notify.error(error.response?.data?.message ||
-            error.response?.data?.Status ||
-            error.response?.data?.detail ||
-            "Could not add to cart");
-      });
+        notify.apiError(error, "We couldn’t add this to your cart. Please try again.");
+      })
+      .finally(() => setAdding(false));
   };
 
   const AddtoWishlist = (productId) => {
@@ -129,7 +138,7 @@ const ProductCard = ({ product, isCard }) => {
       )
       .then(() => {
         GetWishlist();
-        notify.success("Added to wishlist");
+        notify.success("Saved to your wishlist.");
       })
       .catch((error) => {
         console.error(error);
@@ -169,7 +178,7 @@ const ProductCard = ({ product, isCard }) => {
         }
       );
       GetWishlist();
-      notify.success("Removed from wishlist");
+      notify.success("Removed from your wishlist.");
     } catch (error) {
       console.error(error);
       const data = error.response?.data;
@@ -363,7 +372,7 @@ const ProductCard = ({ product, isCard }) => {
       {/* Discount badge */}
       {!isListing && !productOutOfStock && discountPct > 0 && (
         <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full bg-[var(--ps-primary)] text-white text-[11px] font-bold">
-          {discountPct}% OFF
+          {discountPct}% off
         </div>
       )}
 
@@ -605,7 +614,8 @@ const ProductCard = ({ product, isCard }) => {
             <button
               type="button"
               onClick={handleAddToCartClick}
-              disabled={productOutOfStock || isInCart}
+              disabled={productOutOfStock || isInCart || adding}
+              aria-busy={adding}
               aria-label={
                 productOutOfStock
                   ? "Out of stock"
@@ -623,7 +633,7 @@ const ProductCard = ({ product, isCard }) => {
             >
               <IoCart className="text-lg" aria-hidden="true" />
               <span className="hidden sm:inline">
-                {productOutOfStock ? "Unavailable" : isInCart ? "In cart" : "Add"}
+                {productOutOfStock ? "Unavailable" : isInCart ? "In cart" : adding ? "Adding…" : "Add"}
               </span>
             </button>
           )}

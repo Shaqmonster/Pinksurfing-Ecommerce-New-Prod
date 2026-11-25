@@ -83,14 +83,14 @@ const ProfileUserWallet = () => {
         
         {/* Manual Inbound Protocol (Merged from dev) */}
         <div className="bg-ps-surface border border-ink/5 p-8 rounded-3xl shadow-2xl relative overflow-hidden group">
-          <h3 className="text-xl font-black text-ink uppercase tracking-tighter mb-8 border-b border-ink/5 pb-4">
+          <h3 className="text-xl font-semibold text-ink uppercase tracking-tight mb-8 border-b border-ink/5 pb-4">
             Manual Deposit Protocol
           </h3>
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-ink/30">Asset</label>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-ink/30">Asset</label>
                 <select
                   onChange={(e) => setAsset(e.target.value)}
                   className="w-full bg-ink/[0.03] border border-ink/5 rounded-xl py-3 px-4 text-ink outline-none focus:border-purple-500/40"
@@ -103,7 +103,7 @@ const ProfileUserWallet = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-ink/30">Receiving Address</label>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-ink/30">Receiving Address</label>
                 <div className="relative">
                   <input
                     type="text"

@@ -515,10 +515,10 @@ const GigOrderDetail = () => {
       const { services } = await getGigHubContracts({ signer });
       const tx = await services.withdraw();
       await tx.wait();
-      notify.success("withdraw confirmed.");
+      notify.success("Withdrawal confirmed.");
       await refreshEscrow();
     } catch (e) {
-      notify.error(e?.shortMessage || e?.message || "withdraw failed");
+      notify.error("Withdrawal didn’t go through. Please try again.");
     } finally {
       setChainBusy(false);
     }
@@ -603,10 +603,10 @@ const GigOrderDetail = () => {
       const toSeller = ethers.parseEther(resolveSellerEth || "0");
       const tx = await services.resolveDispute(escrowId, toBuyer, toSeller, { value: toBuyer + toSeller });
       await tx.wait();
-      notify.success("resolveDispute confirmed.");
+      notify.success("Dispute resolved.");
       await refreshEscrow();
     } catch (e) {
-      notify.error(e?.shortMessage || e?.message || "resolveDispute failed");
+      notify.error("We couldn’t resolve the dispute. Please try again.");
     } finally {
       setChainBusy(false);
     }
@@ -663,7 +663,7 @@ const GigOrderDetail = () => {
     try {
       setSubmittingDelivery(true);
       await deliverOrder(accessToken, id, { message, files });
-      notify.success("Delivery submitted successfully!");
+      notify.success("Delivery sent to the buyer.");
       setShowDeliveryModal(false);
       fetchOrder();
     } catch (err) {
@@ -705,7 +705,7 @@ const GigOrderDetail = () => {
     try {
       setSubmittingDispute(true);
       await disputeOrder(accessToken, id, reason);
-      notify.success("Dispute raised successfully. Admin will review your case.");
+      notify.success("Dispute opened. Our team will review it and reply by email.");
       setShowDisputeModal(false);
       fetchOrder();
     } catch (err) {

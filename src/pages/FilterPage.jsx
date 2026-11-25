@@ -99,7 +99,7 @@ export default function Filter() {
         console.log(response.data);
         // setProduct(response.data.Products);
         //   console.log(product);
-        notify.success("Added to wishlist");
+        notify.success("Saved to your wishlist.");
       })
       .catch((error) => {
         console.error(error);

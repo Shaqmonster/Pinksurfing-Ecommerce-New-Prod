@@ -99,8 +99,7 @@ export default function VisitScheduleModal({
       }
       notify.error("Could not start checkout.");
     } catch (e) {
-      const d = e?.response?.data?.detail || e?.message || "Request failed";
-      notify.error(typeof d === "string" ? d : JSON.stringify(d));
+      notify.apiError(e, "We couldn’t send this request. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -123,8 +122,7 @@ export default function VisitScheduleModal({
       onSuccess?.();
       onClose();
     } catch (e) {
-      const d = e?.response?.data?.detail || e?.message || "Request failed";
-      notify.error(typeof d === "string" ? d : JSON.stringify(d));
+      notify.apiError(e, "We couldn’t send this request. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -153,7 +151,7 @@ export default function VisitScheduleModal({
               <div className="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center text-purple-300">
                 <FaCalendarAlt />
               </div>
-              <h2 className="text-sm font-black uppercase tracking-widest">{title}</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-widest">{title}</h2>
             </div>
             <button
               type="button"
@@ -186,7 +184,7 @@ export default function VisitScheduleModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 rounded-2xl border border-ink/10 text-xs font-black uppercase tracking-widest hover:bg-ink/5"
+                className="flex-1 py-3 rounded-2xl border border-ink/10 text-xs font-semibold uppercase tracking-widest hover:bg-ink/5"
               >
                 Cancel
               </button>
@@ -195,7 +193,7 @@ export default function VisitScheduleModal({
                   type="button"
                   disabled={submitting}
                   onClick={handleReschedule}
-                  className="flex-[2] py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-xs font-black uppercase tracking-widest disabled:opacity-50 text-white"
+                  className="flex-[2] py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-xs font-semibold uppercase tracking-widest disabled:opacity-50 text-white"
                 >
                   {submitting ? "Sending…" : "Send new time"}
                 </button>
@@ -204,7 +202,7 @@ export default function VisitScheduleModal({
                   type="button"
                   disabled={submitting}
                   onClick={handlePay}
-                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-black uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-purple-600/30 text-white"
+                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-semibold uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-purple-600/30 text-white"
                 >
                   {submitting ? "Redirecting…" : "Continue to payment"}
                 </button>

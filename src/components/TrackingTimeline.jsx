@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   IoLocationSharp,
   IoCheckmarkCircle,
@@ -122,11 +121,9 @@ const TrackingTimeline = ({ orderItemId }) => {
 
   if (loading) {
     return (
-      <div className="w-full bg-ink/[0.02] border border-ink/5 rounded-[2.5rem] p-20 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Syncing with carrier...</p>
-        </div>
+      <div className="w-full rounded-2xl border border-ps-border bg-ps-surface p-10 flex flex-col items-center gap-3" aria-busy="true">
+        <div className="w-8 h-8 border-2 border-ps-border border-t-[var(--ps-primary)] rounded-full motion-safe:animate-spin" aria-hidden />
+        <p className="text-sm text-ps-meta" role="status">Getting the latest from the carrier…</p>
       </div>
     );
   }
@@ -135,42 +132,22 @@ const TrackingTimeline = ({ orderItemId }) => {
     const isNotShipped = error.toLowerCase().includes("not been shipped");
     if (isNotShipped) {
       return (
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-ink/[0.02] border border-ink/5 p-12 md:p-20 flex flex-col items-center text-center group">
-          {/* Decorative Background Glows */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-pink-500/10 rounded-full blur-[60px] pointer-events-none" />
-          
-          <div className="relative mb-10">
-            <div className="w-24 h-24 bg-gradient-to-br from-ink/10 to-ink/5 rounded-3xl flex items-center justify-center border border-ink/10 shadow-2xl backdrop-blur-xl group-hover:scale-110 transition-transform duration-500">
-              <div className="relative">
-                <FaBox className="text-4xl text-purple-400/80" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-ps-bg animate-pulse" />
-              </div>
-            </div>
-            {/* Pulsing ring around icon */}
-            <div className="absolute inset-0 w-24 h-24 rounded-3xl border border-purple-500/20 animate-ping [animation-duration:3s]" />
+        <div className="rounded-2xl border border-ps-border bg-ps-surface p-8 sm:p-10 flex flex-col items-center text-center">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-ps-action-soft">
+            <FaBox className="text-2xl text-ps-action-text" aria-hidden />
           </div>
-
-          <h4 className="text-3xl font-black uppercase tracking-tighter mb-4 bg-gradient-to-r from-white via-ink/80 to-ink/60 bg-clip-text text-transparent">
-            Item Has Not Shipped Yet
-          </h4>
-          
-          <div className="space-y-4 max-w-sm">
-            <p className="text-ps-meta text-sm leading-relaxed">
-              The vendor is currently preparing your package for dispatch. We'll update this timeline with live tracking data as soon as the carrier receives the item.
-            </p>
-            
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full">
-              <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Processing at warehouse</span>
-            </div>
-          </div>
+          <h4 className="text-lg font-semibold tracking-tight text-ink mb-2">Not shipped yet</h4>
+          <p className="max-w-sm text-sm leading-relaxed text-ps-fg2">
+            The store is preparing your order. Tracking appears here as soon as the carrier scans the package.
+          </p>
         </div>
       );
     }
     return (
-      <div className="w-full bg-rose-500/5 border border-rose-500/20 rounded-[2.5rem] p-10 text-center">
-        <p className="text-rose-400 text-sm font-medium tracking-tight">{error}</p>
+      <div role="alert" className="w-full rounded-2xl border border-ps-border bg-ps-surface p-8 text-center">
+        <p className="text-sm text-ps-fg2">
+          We couldn’t load tracking right now. Your order isn’t affected — try again in a little while.
+        </p>
       </div>
     );
   }
@@ -183,149 +160,118 @@ const TrackingTimeline = ({ orderItemId }) => {
   const stageIndex = getStageIndex(tracking.status);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full space-y-6"
-    >
-      <div className="bg-ink/[0.03] backdrop-blur-xl border border-ink/5 rounded-[2.5rem] overflow-hidden">
-        {/* Header Section */}
-        <div className="p-8 md:p-10 border-b border-ink/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h3 className="text-xl font-black uppercase tracking-tight mb-1 flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-              Live Shipment Data
-            </h3>
-            <div className="flex items-center gap-4 text-xs font-mono text-gray-500">
-              <span>{tracking.carrier}</span>
-              <span className="w-1 h-1 rounded-full bg-ink/10" />
-              <span>#{tracking.tracking_code}</span>
-            </div>
+    <div className="w-full rounded-2xl border border-ps-border bg-ps-surface overflow-hidden">
+      <div className="p-6 sm:p-8 border-b border-ps-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-semibold tracking-tight text-ink mb-1">Shipment</h3>
+          <div className="flex items-center gap-3 text-xs text-ps-meta">
+            <span>{tracking.carrier}</span>
+            <span aria-hidden>·</span>
+            <span className="font-mono">{tracking.tracking_code}</span>
           </div>
+        </div>
+        {tracking.est_delivery_date && !isPending && (
+          <div className="rounded-xl border border-ps-border bg-ps-sunken px-4 py-2">
+            <p className="text-xs text-ps-meta">Estimated arrival</p>
+            <p className="text-sm font-semibold text-ink">{formatDeliveryDate(tracking.est_delivery_date)}</p>
+          </div>
+        )}
+      </div>
 
-          {tracking.est_delivery_date && !isPending && (
-            <div className="bg-purple-600/10 border border-purple-500/20 rounded-2xl px-6 py-3">
-              <p className="text-[9px] font-black uppercase tracking-widest text-purple-400 mb-0.5">Est. Arrival</p>
-              <p className="text-base font-black tracking-tight">{formatDeliveryDate(tracking.est_delivery_date)}</p>
-            </div>
+      {isPending ? (
+        <div className="p-8 sm:p-10 flex flex-col items-center text-center">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-ps-action-soft">
+            <IoTimeOutline className="text-2xl text-ps-action-text" aria-hidden />
+          </div>
+          <h4 className="text-lg font-semibold tracking-tight text-ink mb-2">Waiting for the first carrier scan</h4>
+          <p className="max-w-sm text-sm leading-relaxed text-ps-fg2 mb-6">
+            The label is ready. Updates appear here once the carrier picks up the package.
+          </p>
+          {tracking.tracking_url && (
+            <a
+              href={tracking.tracking_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 min-h-[44px] rounded-xl border border-ps-border px-5 text-sm font-medium text-ink hover:bg-ps-hover"
+            >
+              <IoOpenOutline aria-hidden />
+              Track on the carrier’s site
+            </a>
           )}
         </div>
+      ) : (
+        <div className="p-6 sm:p-8">
+          <ol className="relative flex items-start justify-between max-w-3xl mx-auto mb-10" aria-label="Shipment progress">
+            <div className="absolute top-5 left-0 right-0 h-px bg-ps-border" aria-hidden />
+            <div
+              className="absolute top-5 left-0 h-px bg-[var(--ps-primary)] motion-safe:transition-all motion-safe:duration-700"
+              style={{ width: stageIndex >= 0 ? `${(stageIndex / (TRACKING_STAGES.length - 1)) * 100}%` : "0%" }}
+              aria-hidden
+            />
+            {TRACKING_STAGES.map((stage, idx) => {
+              const isCompleted = idx <= stageIndex;
+              const isCurrent = idx === stageIndex;
+              const Icon = stage.icon;
+              return (
+                <li key={stage.key} className="relative z-10 flex flex-col items-center" aria-current={isCurrent ? "step" : undefined}>
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border ${
+                      isCompleted
+                        ? "bg-ps-action border-transparent text-white"
+                        : "bg-ps-surface border-ps-border text-ps-meta"
+                    }`}
+                  >
+                    {idx < stageIndex ? <IoCheckmarkCircle className="text-lg" aria-hidden /> : <Icon className="text-lg" aria-hidden />}
+                  </div>
+                  <span className={`mt-2 text-xs ${isCompleted ? "text-ink font-medium" : "text-ps-meta"}`}>{stage.label}</span>
+                </li>
+              );
+            })}
+          </ol>
 
-        {isPending ? (
-          <div className="relative overflow-hidden p-12 md:p-20 flex flex-col items-center text-center group">
-            {/* Decorative Background Glows */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-500/5 rounded-full blur-[80px] pointer-events-none" />
-            
-            <div className="relative mb-10">
-              <div className="w-24 h-24 bg-gradient-to-br from-ink/10 to-ink/5 rounded-3xl flex items-center justify-center border border-ink/10 shadow-2xl backdrop-blur-xl group-hover:scale-110 transition-transform duration-500">
-                <IoTimeOutline className="text-4xl text-amber-400/80" />
-              </div>
-              <div className="absolute inset-0 w-24 h-24 rounded-3xl border border-amber-500/20 animate-ping [animation-duration:4s]" />
+          {tracking.tracking_details?.length > 0 && (
+            <div className="pt-6 border-t border-ps-border">
+              <h4 className="text-sm font-semibold text-ink mb-5">Updates</h4>
+              <ol className="relative pl-6 space-y-6">
+                <div className="absolute left-[3px] top-2 bottom-2 w-px bg-ps-border" aria-hidden />
+                {tracking.tracking_details.map((detail, idx) => {
+                  const isFirst = idx === 0;
+                  const location = detail.tracking_location;
+                  const locationStr = [location?.city, location?.state].filter(Boolean).join(", ");
+                  return (
+                    <li key={idx} className="relative">
+                      <div
+                        className={`absolute -left-[26px] top-1.5 w-2 h-2 rounded-full ${isFirst ? "bg-[var(--ps-primary)]" : "bg-ps-border-strong"}`}
+                        aria-hidden
+                      />
+                      <p className={`text-sm mb-0.5 ${isFirst ? "text-ink font-medium" : "text-ps-fg2"}`}>{detail.message}</p>
+                      <p className="text-xs text-ps-meta">
+                        {formatDate(detail.datetime)}
+                        {locationStr ? ` · ${locationStr}` : ""}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ol>
             </div>
+          )}
 
-            <h4 className="text-3xl font-black uppercase tracking-tighter mb-4 bg-gradient-to-r from-white via-ink/80 to-ink/60 bg-clip-text text-transparent">
-              Awaiting Carrier Scan
-            </h4>
-            <p className="text-ps-meta text-sm max-w-sm leading-relaxed mb-8">
-              Your package is prepared and ready. Once the carrier processes the initial scan, live updates will appear here.
-            </p>
-            
-            {tracking.tracking_url && (
+          {tracking.tracking_url && (
+            <div className="mt-8 flex justify-center">
               <a
                 href={tracking.tracking_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative z-10 px-8 py-3.5 bg-ink/5 border border-ink/10 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-ink/10 transition-all flex items-center gap-2"
+                className="inline-flex items-center gap-2 min-h-[44px] rounded-xl border border-ps-border px-5 text-sm font-medium text-ink hover:bg-ps-hover"
               >
-                <IoOpenOutline className="text-lg" />
-                Track on Website
+                <IoOpenOutline aria-hidden />
+                Full carrier history
               </a>
-            )}
-          </div>
-        ) : (
-          <div className="p-8 md:p-10">
-            {/* Progress Visualization */}
-            <div className="mb-12">
-              <div className="relative flex items-center justify-between max-w-4xl mx-auto">
-                <div className="absolute top-5 left-0 right-0 h-[2px] bg-ink/5 rounded-full" />
-                <div
-                  className="absolute top-5 left-0 h-[2px] bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 bg-[length:200%_auto] animate-gradient transition-all duration-1000 ease-in-out"
-                  style={{ width: stageIndex >= 0 ? `${(stageIndex / (TRACKING_STAGES.length - 1)) * 100}%` : "0%" }}
-                />
-
-                {TRACKING_STAGES.map((stage, idx) => {
-                  const isCompleted = idx <= stageIndex;
-                  const isCurrent = idx === stageIndex;
-                  const Icon = stage.icon;
-
-                  return (
-                    <div key={stage.key} className="relative z-10 flex flex-col items-center group">
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 border ${
-                        isCompleted 
-                          ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]" 
-                          : "bg-ps-surface border-ink/5 text-gray-600"
-                      }`}>
-                        {idx < stageIndex ? <IoCheckmarkCircle className="text-lg" /> : <Icon className="text-lg" />}
-                      </div>
-                      <span className={`mt-4 text-[9px] font-black uppercase tracking-widest transition-colors ${isCompleted ? "text-ink" : "text-gray-600"}`}>
-                        {stage.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
-
-            {/* Event Log */}
-            {tracking.tracking_details?.length > 0 && (
-              <div className="space-y-6 pt-10 border-t border-ink/5">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8">Movement History</h4>
-                <div className="relative pl-8 space-y-10">
-                  <div className="absolute left-[3px] top-2 bottom-2 w-[1px] bg-ink/10" />
-                  {tracking.tracking_details.map((detail, idx) => {
-                    const isFirst = idx === 0;
-                    const location = detail.tracking_location;
-                    const locationStr = [location?.city, location?.state].filter(Boolean).join(", ");
-
-                    return (
-                      <div key={idx} className="relative group">
-                        <div className={`absolute -left-[33px] top-1 w-2 h-2 rounded-full border ${isFirst ? "bg-purple-500 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]" : "bg-ps-bg border-ink/20"}`} />
-                        <div>
-                          <p className={`text-sm font-bold tracking-tight mb-1 ${isFirst ? "text-ink" : "text-ps-meta"}`}>{detail.message}</p>
-                          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-500">
-                            <span>{formatDate(detail.datetime)}</span>
-                            {locationStr && (
-                              <>
-                                <span className="w-1 h-1 rounded-full bg-ink/10" />
-                                <span className="text-pink-500/60">{locationStr}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            
-            {tracking.tracking_url && (
-              <div className="mt-12 flex justify-center">
-                <a
-                  href={tracking.tracking_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-10 py-4 bg-ink/[0.03] border border-ink/5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-ink/[0.08] transition-all flex items-center gap-3"
-                >
-                  <IoOpenOutline className="text-lg text-purple-400" />
-                  Detailed Carrier Log
-                </a>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </motion.div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

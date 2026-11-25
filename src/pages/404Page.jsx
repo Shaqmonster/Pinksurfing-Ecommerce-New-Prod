@@ -1,29 +1,44 @@
-// src/pages/NotFound.js
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
+/** Calm not-found page: say what happened, then help the person carry on. */
 const NotFound = () => {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+
+  const search = (e) => {
+    e.preventDefault();
+    if (q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-black text-center">
-      <div className="flex flex-grow flex-col items-center justify-center px-4">
-        <img
-          src="/logo.jpg"
-          alt="PinkSurfing"
-          className="w-32 h-32 md:w-40 md:h-40 object-contain mb-8 rounded-2xl opacity-90"
+    <div className="flex min-h-[80vh] flex-col items-center justify-center bg-ps-bg px-4 py-16 text-center">
+      <p className="text-sm font-medium text-ps-meta mb-3">Page not found</p>
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-3">
+        This page isn’t here anymore
+      </h1>
+      <p className="max-w-md text-ps-fg2 mb-8">
+        The link may be old, or the page has moved. Try a search, or head back to the shop.
+      </p>
+      <form onSubmit={search} role="search" className="flex w-full max-w-md gap-2 mb-4">
+        <label htmlFor="nf-search" className="sr-only">
+          Search the marketplace
+        </label>
+        <input
+          id="nf-search"
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search products and stores"
+          className="flex-1 min-h-[48px] rounded-xl border border-ps-border bg-ps-surface px-4 text-ink placeholder-ps-meta outline-none focus:ring-2 focus:ring-ps-focus"
         />
-        <h1 className="text-4xl font-bold mb-4 text-black dark:text-white">
-          OOPS !! Page not found
-        </h1>
-        <p className="text-lg mb-6 text-black dark:text-white">
-          Sorry, the page you are looking for does not exist.
-        </p>
-        <Link
-          to="/"
-          className="inline-flex items-center justify-center min-h-[44px] px-6 py-2 rounded-xl bg-[var(--ps-primary)] text-white font-semibold hover:bg-[var(--ps-purple-dark)] transition-colors"
-        >
-          Return Home
-        </Link>
-      </div>
+        <button type="submit" className="min-h-[48px] rounded-xl bg-ps-action px-5 font-semibold text-white">
+          Search
+        </button>
+      </form>
+      <Link to="/" className="min-h-[44px] leading-[44px] text-sm text-ps-fg2 hover:text-ink">
+        Go to the home page
+      </Link>
     </div>
   );
 };

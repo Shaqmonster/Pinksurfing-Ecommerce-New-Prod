@@ -25,7 +25,7 @@ const Contact = () => {
         { name, email, subject, message }
       );
       if (response.status === 200) {
-        notify.success(response.data.status || "Message sent successfully!");
+        notify.success(response.data.status || "Message sent. We’ll reply by email.");
         e.target.reset();
       }
     } catch (error) {

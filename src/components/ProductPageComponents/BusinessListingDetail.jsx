@@ -694,7 +694,7 @@ const BusinessListingDetail = ({
       await axios.post(url, {}, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      notify.success(wasInWishlist ? "Removed from wishlist" : "Saved to wishlist");
+      notify.success(wasInWishlist ? "Removed from your wishlist." : "Saved to wishlist");
     } catch (err) {
       // Revert on failure
       if (wasInWishlist) {

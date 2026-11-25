@@ -471,6 +471,13 @@ a[role="button"]:active,
     scroll-behavior: auto !important;
   }
 
+  /* Loading spinners are status, not decoration: keep them turning (slowly) so they
+     never look frozen. */
+  .animate-spin,
+  .motion-safe\:animate-spin {
+    animation: spin 1.6s linear infinite !important;
+  }
+
   .ps-skeleton,
   .fade-in,
   .hover-lift:hover,

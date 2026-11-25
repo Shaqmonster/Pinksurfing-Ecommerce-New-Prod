@@ -97,7 +97,7 @@ export default function CategoryHeader({
                             </button>
                             {(title?.includes('realestate') || title?.includes('business')) && (
                                 <button
-                                    onClick={() => notify.info("Map View coming soon!")}
+                                    onClick={() => notify.info("Map view isn’t available yet.")}
                                     className="p-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-300"
                                     title="Map View"
                                 >

@@ -12,8 +12,8 @@ export default function ProfileMyStore() {
                 <div className="relative z-10 max-w-4xl mx-auto space-y-16">
                     <div className="text-center space-y-6">
                         <div className="space-y-2">
-                            <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.4em] leading-none">Global Commerce</p>
-                            <h2 className="text-5xl md:text-6xl font-black text-ink tracking-tighter uppercase leading-[0.9]">
+                            <p className="text-purple-400 text-[10px] font-semibold uppercase tracking-[0.4em] leading-none">Global Commerce</p>
+                            <h2 className="text-5xl md:text-6xl font-semibold text-ink tracking-tight uppercase leading-[0.9]">
                                 Elevate Your Business <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-purple-500/50">
                                     to the Next Level
@@ -28,18 +28,18 @@ export default function ProfileMyStore() {
 
                     <div className="pt-8 flex flex-col items-center space-y-8">
                         <div className="text-center space-y-2">
-                            <p className="text-ink font-black uppercase tracking-[0.2em] text-[10px]">Merchant Onboarding</p>
+                            <p className="text-ink font-semibold uppercase tracking-wide text-[10px]">Merchant Onboarding</p>
                             <p className="text-ink/20 text-sm font-medium">Ready to deploy? Initialize your storefront in minutes.</p>
                         </div>
                         
                         <div className="flex flex-col sm:flex-row items-center gap-6 w-full justify-center">
                             <a
                                 href={VENDOR_PORTAL_BASE}
-                                className="px-16 py-6 bg-white text-black font-black rounded-2xl transition-all duration-500 uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-purple-50 active:scale-95 text-center"
+                                className="px-16 py-6 bg-white text-black font-semibold rounded-2xl transition-all duration-500 uppercase tracking-wide text-xs shadow-2xl hover:bg-purple-50 active:scale-95 text-center"
                             >
                                 Deploy Merchant Portal
                             </a>
-                            <div className="text-ink/20 text-xs font-black uppercase tracking-widest">
+                            <div className="text-ink/20 text-xs font-semibold uppercase tracking-widest">
                                 Already Registered?{' '}
                                 <a href={VENDOR_PORTAL_BASE} className="text-purple-400 hover:text-purple-300 transition-colors ml-2 underline decoration-purple-500/30 underline-offset-4">
                                     Sign In

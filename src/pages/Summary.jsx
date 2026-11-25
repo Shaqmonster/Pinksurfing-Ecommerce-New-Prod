@@ -235,7 +235,7 @@ const Summary = () => {
                       {String(order.product.description || "").replace(/<[^>]*>/g, "").length > 150 && (
                         <button 
                           onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                          className="text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors"
+                          className="text-[10px] font-semibold uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors"
                         >
                           {isDescriptionExpanded ? "Read Less —" : "Read More +"}
                         </button>

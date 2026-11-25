@@ -83,7 +83,7 @@ export default function Wishlist() {
         }
       )
       .then(() => {
-        notify.success("Added to Cart");
+        notify.success("Added to your cart.");
         GetCartProducts();
       })
       .catch((error) => {

@@ -85,7 +85,7 @@ export default function ProfileWishlist() {
             )
             .then((response) => {
                 // console.log(response.data);
-                notify.success("Added to Cart");
+                notify.success("Added to your cart.");
                 GetCartProducts();
             })
             .catch((error) => {
@@ -133,12 +133,12 @@ export default function ProfileWishlist() {
             <div className="bg-ink/[0.02] backdrop-blur-2xl border border-ink/5 rounded-[2.5rem] p-8 lg:p-14 shadow-2xl">
                 <div className="flex items-end justify-between mb-12 border-b border-ink/5 pb-8">
                     <div className="space-y-1">
-                        <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em]">Curation</p>
-                        <h2 className="text-4xl font-black text-ink tracking-tighter uppercase">
+                        <p className="text-purple-400 text-[10px] font-semibold uppercase tracking-wide">Curation</p>
+                        <h2 className="text-4xl font-semibold text-ink tracking-tight uppercase">
                             My Wishlist
                         </h2>
                     </div>
-                    <span className="text-xs font-black text-ink/30 uppercase tracking-widest bg-ink/5 px-4 py-2 rounded-xl">
+                    <span className="text-xs font-semibold text-ink/30 uppercase tracking-widest bg-ink/5 px-4 py-2 rounded-xl">
                         {wishlistProducts?.length || 0} {wishlistProducts?.length === 1 ? 'Item' : 'Items'}
                     </span>
                 </div>
@@ -166,7 +166,7 @@ export default function ProfileWishlist() {
                                                         onClick={() => setIsWishlistOpen(false)}
                                                         className="block"
                                                     >
-                                                        <h3 className="text-lg font-black text-ink tracking-tighter uppercase hover:text-purple-400 transition-colors">
+                                                        <h3 className="text-lg font-semibold text-ink tracking-tight uppercase hover:text-purple-400 transition-colors">
                                                             {product.name}
                                                         </h3>
                                                     </Link>
@@ -185,13 +185,13 @@ export default function ProfileWishlist() {
                                             </div>
 
                                             <div className="mt-4 flex items-center justify-between">
-                                                <p className="text-xl font-black text-purple-400 tracking-tighter">
+                                                <p className="text-xl font-semibold text-purple-400 tracking-tight">
                                                     {currency}{formatMoney(product.unit_price)}
                                                 </p>
                                                 <button
                                                     disabled={isOutOfStock(product)}
                                                     onClick={() => AddtoCart(product.id)}
-                                                    className="px-6 py-2.5 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-purple-50 transition-all active:scale-95 disabled:opacity-20"
+                                                    className="px-6 py-2.5 bg-white text-black font-semibold text-[10px] uppercase tracking-widest rounded-xl hover:bg-purple-50 transition-all active:scale-95 disabled:opacity-20"
                                                 >
                                                     Add to Cart
                                                 </button>
@@ -211,7 +211,7 @@ export default function ProfileWishlist() {
                             <FaHeartBroken className="relative text-ink/10 text-8xl transition-transform duration-700 group-hover:scale-110" />
                         </div>
                         <div className="text-center space-y-3">
-                            <h3 className="text-3xl font-black text-ink uppercase tracking-tighter">Your wishlist is empty</h3>
+                            <h3 className="text-3xl font-semibold text-ink uppercase tracking-tight">Your wishlist is empty</h3>
                             <p className="text-ink/30 text-sm font-medium max-w-xs mx-auto">
                                 Save the premium products you love here for future consideration.
                             </p>
@@ -221,7 +221,7 @@ export default function ProfileWishlist() {
                                 navigate("/shoppingMall");
                                 setIsWishlistOpen(false);
                             }}
-                            className="px-12 py-5 bg-white text-black font-black rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
+                            className="px-12 py-5 bg-white text-black font-semibold rounded-2xl shadow-2xl hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs active:scale-95"
                         >
                             Explore Marketplace
                         </button>

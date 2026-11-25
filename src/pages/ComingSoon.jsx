@@ -45,7 +45,7 @@ export default function ComingSoon() {
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-6">
+                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-semibold mb-6">
                         <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 bg-clip-text text-transparent">
                             Coming Soon
                         </span>

@@ -158,7 +158,7 @@ const CryptoPaymentModal = ({
   const handleSend = async () => {
     notify.info("Sending crypto...", { autoClose: 2000 });
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    notify.success("Crypto sent successfully!");
+    notify.success("Transfer sent.");
     await new Promise((resolve) => setTimeout(resolve, 2000));
     onClose();
   };
