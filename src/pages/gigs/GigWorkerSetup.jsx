@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { authContext } from "../../context/authContext";
 import { createGigWorkerProfile } from "../../api/gigs";
 import {
@@ -14,6 +13,7 @@ import {
 import { FaBriefcase, FaStar, FaUsers, FaMoneyBillWave } from "react-icons/fa";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const PERKS = [
   { icon: <FaMoneyBillWave className="text-green-400" />, title: "Earn on Your Terms", desc: "Set your own prices and work schedule." },
   { icon: <FaUsers className="text-blue-400" />, title: "Global Buyers", desc: "Reach customers across PinkSurfing." },
@@ -46,12 +46,12 @@ const GigWorkerSetup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!accessToken) {
-      toast.error("Please sign in first.");
+      notify.error("Please sign in first.");
       navigate("/signin");
       return;
     }
     if (!bio.trim()) {
-      toast.error("Please write a short bio.");
+      notify.error("Please write a short bio.");
       return;
     }
     try {
@@ -60,14 +60,14 @@ const GigWorkerSetup = () => {
         bio: bio.trim(),
         profile_picture: profilePic,
       });
-      toast.success("Gig worker profile created! You can now post gigs.");
+      notify.success("Gig worker profile created! You can now post gigs.");
       navigate("/gigs/create");
     } catch (err) {
       const msg =
         err?.response?.data?.detail ||
         err?.response?.data?.non_field_errors?.[0] ||
         "Failed to create gig worker profile.";
-      toast.error(msg);
+      notify.error(msg);
     } finally {
       setSubmitting(false);
     }

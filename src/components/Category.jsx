@@ -92,10 +92,8 @@ const Category = () => {
                                     "subcategory",
                                     item.slug
                                   );
-                                  searchProducts(
-                                    `/?subcategory=${item.slug}`,
-                                    "/shopByCategory"
-                                  );
+                                  searchProducts(`/?subcategory=${item.slug}`,
+                                    "/shopByCategory");
                                   setShopHeading(item.slug);
                                 }}
                                 className={` py-1 px-2 cursor-pointer rounded-sm ${

@@ -14,6 +14,13 @@ export async function getVisitForProduct(token, productId) {
   return res.data;
 }
 
+export async function getMyVisits(token) {
+  const res = await axios.get(`${BASE_URL}/api/property-visits/mine/`, {
+    headers: headers(token),
+  });
+  return Array.isArray(res.data) ? res.data : res.data?.results || [];
+}
+
 export async function createPropertyVisit(token, payload) {
   const res = await axios.post(`${BASE_URL}/api/property-visits/`, payload, {
     headers: headers(token),

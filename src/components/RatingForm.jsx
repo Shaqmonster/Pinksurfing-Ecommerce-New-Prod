@@ -4,11 +4,11 @@ import { authContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { IoCloseOutline, IoStar, IoStarOutline } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 import { useAccessToken } from "../hooks/useAccessToken";
 
+import { notify } from "../lib/notify";
 export default function RatingForm({ order }) {
   const accessToken = useAccessToken();
   const { isRatingFormOpen, setIsRatingFormOpen } = useContext(authContext);
@@ -47,7 +47,7 @@ export default function RatingForm({ order }) {
           },
         }
       );
-      toast.success("Review Posted Successfully");
+      notify.success("Thanks — your review is posted.");
       setIsRatingFormOpen(false);
     } catch (error) {
       if (error.response?.data?.error === "You have already reviewed this order") {
@@ -62,13 +62,13 @@ export default function RatingForm({ order }) {
               },
             }
           );
-          toast.success("Review Updated Successfully");
+          notify.success("Your review is updated.");
           setIsRatingFormOpen(false);
         } catch (fallbackError) {
-          toast.error("Failed to update review");
+          notify.error("Failed to update review");
         }
       } else {
-        toast.error("Failed to post review");
+        notify.error("We couldn’t post your review. Please try again.");
       }
     }
   };
@@ -109,43 +109,71 @@ export default function RatingForm({ order }) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-[2.5rem] bg-ps-bg border border-ink/10 p-10 shadow-2xl transition-all">
+              <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-ps-surface border border-ps-border p-6 sm:p-8 shadow-[var(--ps-shadow-3)] transition-all">
                 <div className="flex justify-between items-center mb-8">
-                  <Dialog.Title as="h3" className="text-3xl font-black uppercase tracking-tighter">
-                    Rate Product
+                  <Dialog.Title as="h3" className="text-xl font-semibold tracking-tight">
+                    Rate this product
                   </Dialog.Title>
-                  <button onClick={() => setIsRatingFormOpen(false)} className="w-10 h-10 rounded-full bg-ink/5 border border-ink/10 flex items-center justify-center hover:bg-ink/10 transition-all">
+                  <button onClick={() => setIsRatingFormOpen(false)} aria-label="Close" className="w-10 h-10 rounded-full flex items-center justify-center text-ps-fg2 hover:bg-ps-hover hover:text-ink">
                     <IoCloseOutline className="text-2xl" />
                   </button>
                 </div>
 
                 <form onSubmit={handleReview} className="space-y-8">
-                  <div className="flex justify-between items-center bg-ink/5 p-6 rounded-3xl border border-ink/5">
-                    {STYLES.map((style, idx) => {
-                      const level = idx + 1;
-                      const isActive = starRating >= level;
-                      return (
-                        <div 
-                          key={idx} 
-                          onClick={() => { setStarRating(level); setReview(prev => ({ ...prev, rating: level })); }}
-                          className="flex flex-col items-center gap-2 cursor-pointer group"
-                        >
-                          <div className={`transition-all duration-300 ${isActive ? style.color : "text-ink/10 group-hover:text-ink/30"}`}>
-                            <IoStar className="text-3xl" />
-                          </div>
-                          <span className={`text-[8px] font-black uppercase tracking-widest transition-opacity ${starRating === level ? "opacity-100" : "opacity-0"}`}>
-                            {style.label}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <fieldset>
+                    <legend className="text-sm font-medium text-ink mb-3">Your rating</legend>
+                    <div
+                      role="radiogroup"
+                      aria-label="Rating"
+                      className="flex justify-between items-center gap-1 rounded-2xl border border-ps-border bg-ps-sunken p-4"
+                      onKeyDown={(e) => {
+                        const next =
+                          e.key === "ArrowRight" || e.key === "ArrowUp"
+                            ? Math.min(STYLES.length, (starRating || 0) + 1)
+                            : e.key === "ArrowLeft" || e.key === "ArrowDown"
+                            ? Math.max(1, (starRating || 1) - 1)
+                            : null;
+                        if (next == null) return;
+                        e.preventDefault();
+                        setStarRating(next);
+                        setReview((prev) => ({ ...prev, rating: next }));
+                        e.currentTarget.querySelector(`[data-level="${next}"]`)?.focus();
+                      }}
+                    >
+                      {STYLES.map((style, idx) => {
+                        const level = idx + 1;
+                        const isActive = starRating >= level;
+                        const selected = starRating === level;
+                        return (
+                          <button
+                            type="button"
+                            key={idx}
+                            role="radio"
+                            aria-checked={selected}
+                            aria-label={`${level} of ${STYLES.length}: ${style.label}`}
+                            data-level={level}
+                            tabIndex={selected || (!starRating && level === 1) ? 0 : -1}
+                            onClick={() => {
+                              setStarRating(level);
+                              setReview((prev) => ({ ...prev, rating: level }));
+                            }}
+                            className="flex min-h-[44px] min-w-[36px] flex-col items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ps-focus"
+                          >
+                            <IoStar className={`text-2xl ${isActive ? "text-[var(--ps-gold)]" : "text-ps-border-strong"}`} aria-hidden />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-sm text-ps-fg2 min-h-[20px]" aria-live="polite">
+                      {starRating ? STYLES[starRating - 1].label : "Choose from 1 to 7 stars."}
+                    </p>
+                  </fieldset>
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Headline</label>
+                      <label className="block text-sm font-medium text-ink mb-2">Headline</label>
                       <input
-                        className="w-full bg-ink/5 border border-ink/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-ink placeholder-gray-600 font-bold"
+                        className="w-full bg-ink/5 border border-ink/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-ink placeholder-ps-meta"
                         name="title"
                         type="text"
                         placeholder="Summarize your experience..."
@@ -155,9 +183,9 @@ export default function RatingForm({ order }) {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Detailed Review</label>
+                      <label className="block text-sm font-medium text-ink mb-2">Your review</label>
                       <textarea
-                        className="w-full bg-ink/5 border border-ink/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-ink placeholder-gray-600 leading-relaxed font-medium"
+                        className="w-full bg-ink/5 border border-ink/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-ink placeholder-ps-meta leading-relaxed"
                         rows={5}
                         name="body"
                         placeholder="What did you like or dislike? How was the quality?"
@@ -171,9 +199,9 @@ export default function RatingForm({ order }) {
                   <button
                     type="submit"
                     disabled={starRating === 0}
-                    className="w-full py-5 bg-white text-black rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-gray-200 transition-all disabled:opacity-20 disabled:grayscale"
+                    className="w-full min-h-[48px] rounded-xl bg-ps-action text-white text-sm font-semibold disabled:opacity-50"
                   >
-                    Publish Review
+                    Post review
                   </button>
                 </form>
               </Dialog.Panel>

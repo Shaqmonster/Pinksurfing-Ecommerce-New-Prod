@@ -4,13 +4,13 @@ import { authContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import { CountriesISO } from "../utils/CountriesISO";
 import { Country, State, City } from "country-state-city";
 import { getAccessToken } from "../utils/authSession";
 import { useAccessToken } from "../hooks/useAccessToken";
 
+import { notify } from "../lib/notify";
 export default function VendorDetailsForm() {
   const accessToken = useAccessToken();
   const { isVendorFormOpen, user, setUser, setIsVendorFormOpen } =
@@ -186,14 +186,9 @@ export default function VendorDetailsForm() {
       )
       .then((response) => {
         console.log(response);
-        toast.success("You're now a vendor on Pinksurfing", {
-          position: "top-center",
-        });
+        notify.success("You're now a vendor on Pinksurfing");
         if (response.data?.address_warning) {
-          toast.warn(response.data.address_warning, {
-            position: "top-center",
-            autoClose: 6000,
-          });
+          notify.info(response.data.address_warning );
         }
         if (response.data?.kyc_required) {
           const returnUrl = encodeURIComponent("https://vendors.pinksurfing.com/");

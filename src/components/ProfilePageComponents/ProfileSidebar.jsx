@@ -147,8 +147,8 @@ export function Sidebar() {
                 <div className="bg-ink/[0.03] backdrop-blur-2xl rounded-[2rem] border border-ink/5 shadow-2xl overflow-hidden min-w-[240px] w-[300px]">
                     {/* Sidebar Header */}
                     <div className="px-10 py-12 border-b border-ink/5">
-                        <h3 className="text-2xl font-black text-ink tracking-tighter uppercase leading-tight">Account</h3>
-                        <p className="text-[10px] text-purple-400/80 mt-1.5 font-bold uppercase tracking-[0.25em]">Secure Dashboard</p>
+                        <h3 className="text-2xl font-semibold text-ink tracking-tight uppercase leading-tight">Account</h3>
+                        <p className="text-[10px] text-purple-400/80 mt-1.5 font-bold uppercase tracking-wide">Secure Dashboard</p>
                     </div>
                     
                     {/* Navigation Items */}

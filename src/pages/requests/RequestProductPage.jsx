@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import { IoCloseCircle, IoImageOutline } from "react-icons/io5";
 import { createBuyerRequest, getCategories } from "../../api/buyerRequests";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const CONDITIONS = [
   { value: "any", label: "Any" },
   { value: "new", label: "New" },
@@ -71,15 +71,15 @@ export default function RequestProductPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!accessToken) {
-      toast.info("Sign in to request a product.");
+      notify.info("Sign in to request a product.");
       navigate("/signin");
       return;
     }
     const title = form.title.trim();
     const budget = Number(form.budget);
     const quantity = Math.max(1, parseInt(form.quantity, 10) || 1);
-    if (!title) return toast.error("Tell vendors what you're looking for.");
-    if (!Number.isFinite(budget) || budget <= 0) return toast.error("Enter your budget per item.");
+    if (!title) return notify.error("Tell vendors what you're looking for.");
+    if (!Number.isFinite(budget) || budget <= 0) return notify.error("Enter your budget per item.");
 
     try {
       setSubmitting(true);
@@ -95,10 +95,10 @@ export default function RequestProductPage() {
         deadline: form.deadline || undefined,
         images: photos,
       });
-      toast.success("Request posted! Vendors can now send you offers.");
+      notify.success("Request posted! Vendors can now send you offers.");
       navigate("/my-bids");
     } catch (err) {
-      toast.error(apiErrorText(err));
+      notify.error(apiErrorText(err));
     } finally {
       setSubmitting(false);
     }

@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from "./context/themeContext.jsx";
 import { DataProvider } from "./context/dataContext.jsx";
 import { CookiesProvider } from "react-cookie";
 import { ToastContainer } from "react-toastify";
+import { TOAST_CONTAINER_PROPS } from "./lib/notify";
 import "react-toastify/dist/ReactToastify.css";
 import LogRocket from "logrocket";
 import { SHOW_CRYPTO_WALLET } from "./config/featureFlags.js";
@@ -37,7 +38,7 @@ function AppProviders({ children }) {
 
 function ThemedToasts() {
   const { resolvedTheme } = useTheme();
-  return <ToastContainer theme={resolvedTheme} />;
+  return <ToastContainer {...TOAST_CONTAINER_PROPS} theme={resolvedTheme} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(

@@ -5,7 +5,6 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { FaHeart } from "react-icons/fa";
@@ -14,6 +13,7 @@ import { isOutOfStock } from "../utils/cartStock";
 import { useAccessToken } from "../hooks/useAccessToken";
 import MediaImage from "./ui/MediaImage";
 
+import { notify } from "../lib/notify";
 export default function Wishlist() {
   const accessToken = useAccessToken();
   const { isWishlistOpen, setIsWishlistOpen, currency } = useContext(authContext);
@@ -83,18 +83,12 @@ export default function Wishlist() {
         }
       )
       .then(() => {
-        toast.success("Added to Cart", { position: "top-right" });
+        notify.success("Added to your cart.");
         GetCartProducts();
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
-          error.response?.data?.message ||
-            error.response?.data?.Status ||
-            error.response?.data?.detail ||
-            "An error occurred",
-          { position: "top-right" }
-        );
+        notify.apiError(error, "We couldn’t add this to your cart. Please try again.");
       });
   };
 
@@ -113,14 +107,7 @@ export default function Wishlist() {
       .then(() => GetWishlist())
       .catch((error) => {
         console.error(error);
-        toast.error(
-          error.response?.data?.message ||
-            error.response?.data?.Status ||
-            error.response?.data?.Err ||
-            error.response?.data?.detail ||
-            "An error occurred",
-          { position: "top-right", autoClose: 3000 }
-        );
+        notify.apiError(error, "We couldn’t remove this from your wishlist. Please try again.");
       });
   };
 

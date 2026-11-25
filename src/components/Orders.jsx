@@ -12,11 +12,23 @@ import CancelDialog from "./CancelDialog";
 import RatingForm from '../components/RatingForm'
 import { formatMoney } from "../utils/formatMoney";
 import { useAccessToken } from "../hooks/useAccessToken";
+import { EmptyState } from "./ui";
+import ErrorState from "./ui/ErrorState";
+import { orderStatusLabel, orderStatusTone } from "../utils/orderStatus";
+import {
+  createVendorPaymentLink,
+  pendingLabel,
+  shopperPaymentError,
+  unpaidByVendor,
+} from "../utils/orderPayment";
 export default function Orders() {
   const accessToken = useAccessToken();
   const { currency, setIsRatingFormOpen, isRatingFormOpen, authToken } = useContext(authContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [payingVendor, setPayingVendor] = useState(null);
+  const [payError, setPayError] = useState("");
   const navigate = useNavigate();
   const [cookies] = useCookies(["access_token"]);
     const [isOpen, setIsOpen] = useState(false);
@@ -40,6 +52,7 @@ export default function Orders() {
       return;
     }
     setLoading(true);
+    setLoadError(false);
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/my-orders/`,
@@ -50,15 +63,16 @@ export default function Orders() {
           },
         }
       );
-      console.log(response.data);
       const sortedOrders = response.data.sort(
         (a, b) => new Date(b.date_of_order) - new Date(a.date_of_order)
       );
 
       setOrders(sortedOrders);
-      setLoading(false);
     } catch (error) {
       console.error(error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,6 +99,17 @@ export default function Orders() {
       (total, order) => total + Number(order.total_price),
       0
     );
+  };
+
+  const payVendor = async (orderId, vendorId) => {
+    setPayError("");
+    setPayingVendor(`${orderId}:${vendorId}`);
+    try {
+      window.location.href = await createVendorPaymentLink(orderId, vendorId, accessToken);
+    } catch (error) {
+      setPayError(shopperPaymentError(error));
+      setPayingVendor(null);
+    }
   };
 
   const closeModal = () => {
@@ -135,16 +160,21 @@ export default function Orders() {
           </defs>
         </svg>
 
-        {!loading ? (
+        {loadError && !loading ? (
+          <ErrorState
+            title="We couldn't load your orders"
+            description="Your orders are safe — this is a connection problem on our side or yours."
+            onRetry={GetOrders}
+          />
+        ) : !loading ? (
           <>
+            {payError && (
+              <p role="alert" className="w-full lg:w-[80%] mx-auto mt-4 text-sm text-ps-danger">
+                {payError}
+              </p>
+            )}
             <div className="flex flex-col items-center gap-2">
               {Object.keys(groupOrdersByOrderId(orders))
-                .filter(
-                  (orderId) =>
-                    !groupOrdersByOrderId(orders)[orderId].some(
-                      (order) => order.order_status.toUpperCase() === "PENDING"
-                    )
-                )
                 .map((orderId) => (
                   <div
                     key={orderId}
@@ -179,6 +209,31 @@ export default function Orders() {
                         </p>
                       </div>
                     </div>
+                    {unpaidByVendor(groupOrdersByOrderId(orders)[orderId]).length > 0 && (
+                      <div className="px-4 py-3 border-b border-ps-border bg-ps-sunken">
+                        <p className="text-sm font-medium text-ink">
+                          {pendingLabel(groupOrdersByOrderId(orders)[orderId].filter((o) => o.order_status === "PENDING"))}
+                        </p>
+                        <p className="text-sm text-ps-fg2 mb-2">
+                          {pendingLabel(groupOrdersByOrderId(orders)[orderId].filter((o) => o.order_status === "PENDING")) === "Confirming payment"
+                            ? "Square is confirming your payment. This usually takes under a minute."
+                            : "Some items in this order haven't been paid for yet."}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {unpaidByVendor(groupOrdersByOrderId(orders)[orderId]).map((g) => (
+                            <button
+                              key={g.vendorId}
+                              type="button"
+                              disabled={Boolean(payingVendor)}
+                              onClick={() => payVendor(orderId, g.vendorId)}
+                              className="min-h-[40px] rounded-xl bg-ps-action px-4 text-sm font-semibold text-white disabled:opacity-60"
+                            >
+                              {payingVendor === `${orderId}:${g.vendorId}` ? "Opening…" : `Pay ${g.storeName} · ${currency} ${formatMoney(g.total)}`}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {groupOrdersByOrderId(orders)[orderId].map((order, index) => (
 
                       <div
@@ -212,16 +267,8 @@ export default function Orders() {
                             </p>
                             <p className="text-[13.5px] sm:text-[14.5px] font-medium mb-1 text-gray-700 dark:text-[#f5f5f5]">
                               Status:{" "}
-                              <span className={
-                                order.order_status === "DELIVERED"
-                                  ? "text-green-600"
-                                  : order.order_status === "PENDING"
-                                    ? "text-yellow-600"
-                                    : order.order_status === "CANCELED"
-                                      ? "text-red-600"
-                                      : "black" // default color if status is unknown                            
-                              }>
-                                {order.order_status}
+                              <span className={orderStatusTone(order.order_status)}>
+                                {orderStatusLabel(order.order_status)}
                               </span>
                             </p>
                             {/* Payment Protection Badge */}
@@ -345,17 +392,19 @@ export default function Orders() {
                   </div>
                 ))}
               {orders.length === 0 && (
-                <div className="w-full text-center mt-4">
-                  <p className="dark:text-[#f5f5f5]">
-                    You have not made any Orders till Now
-                  </p>
-                </div>
+                <EmptyState
+                  title="No orders yet"
+                  description="When you buy something, it will show up here with tracking."
+                  actionLabel="Start shopping"
+                  actionHref="/shoppingMall"
+                />
               )}
             </div>
             {isOpen && (
               <CancelDialog
                 isOpen={isOpen}
                 orderId={deleteOrderId}
+                order={orders.find((o) => o.id === deleteOrderId)}
                 setIsOpen={setIsOpen}
                 GetOrders={GetOrders}
               />

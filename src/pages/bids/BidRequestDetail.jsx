@@ -38,12 +38,12 @@ import {
   getMyProposals,
   withdrawProposal,
 } from "../../api/buyerRequests";
-import { toast } from "react-toastify";
 import BidsNavBar from "../../components/BidsNavBar";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { jobBudgetLabel } from "../../constants/jobBudgets";
 import { formatDay } from "../../utils/formatDate";
 
+import { notify } from "../../lib/notify";
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const STEPS = [
@@ -1107,17 +1107,17 @@ export default function BidRequestDetail() {
   const handleSendOffer = async () => {
     // Defensive checks
     if (!offerData) {
-      toast.error("Offer data is missing. Please refresh the page.");
+      notify.error("Offer data is missing. Please refresh the page.");
       return;
     }
 
     if (!offerData.amount) {
-      toast.error("Please fill in your price in the Price & Payment step.");
+      notify.error("Please fill in your price in the Price & Payment step.");
       setCurrentStep(2);
       return;
     }
     if (!offerData.deliveryDays) {
-      toast.error("Please fill in the delivery days in the Timeline step.");
+      notify.error("Please fill in the delivery days in the Timeline step.");
       setCurrentStep(3);
       return;
     }
@@ -1146,14 +1146,14 @@ export default function BidRequestDetail() {
         cover_letter: proposal,
       });
       setIsConfirmed(true);
-      toast.success("Proposal sent! The job poster will see it in My Jobs.");
+      notify.success("Proposal sent! The job poster will see it in My Jobs.");
     } catch (err) {
       const data = err?.response?.data;
       const msg =
         data?.detail ||
         (data && typeof data === "object" ? Object.values(data).flat().join(" ") : null) ||
         "Failed to send proposal. Please try again.";
-      toast.error(msg);
+      notify.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -1165,10 +1165,10 @@ export default function BidRequestDetail() {
     try {
       setDeleting(true);
       await withdrawProposal(token, myBid.id);
-      toast.success("Proposal withdrawn.");
+      notify.success("Proposal withdrawn.");
       setMyBid(null);
     } catch {
-      toast.error("Failed to withdraw proposal.");
+      notify.error("Failed to withdraw proposal.");
     } finally {
       setDeleting(false);
     }

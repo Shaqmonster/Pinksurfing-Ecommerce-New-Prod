@@ -66,7 +66,7 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
               </svg>
             </div>
             <div className="text-left">
-              <h2 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Description</h2>
+              <h2 className="text-lg font-semibold uppercase tracking-tight text-gray-900 dark:text-white">Description</h2>
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Comprehensive Overview</p>
             </div>
           </div>
@@ -82,10 +82,10 @@ const ProductDetailReviewSection = ({ reviews, product }) => {
             [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
             [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
             [&_li]:mb-2
-            [&_strong]:font-black
-            [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-4
-            [&_h2]:text-xl [&_h2]:font-black [&_h2]:tracking-tighter [&_h2]:mb-4
-            [&_h3]:text-lg [&_h3]:font-black [&_h3]:tracking-tighter [&_h3]:mb-2
+            [&_strong]:font-semibold
+            [&_h1]:text-2xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:mb-4
+            [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:mb-4
+            [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:tracking-tight [&_h3]:mb-2
             [&_a]:text-purple-600 [&_a]:underline transition-all
           ">
             {formatTextToParagraphs(product?.description)}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
+import WelcomeNote from "../components/WelcomeNote";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
@@ -15,7 +16,6 @@ import Footer from "../components/Footer";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
 import SearchForm from "../components/Search";
 import { categories, subCategories } from "../utils/Categories";
 import Carousel from "react-multi-carousel";
@@ -37,6 +37,7 @@ import {
 } from "../api/catalogProducts";
 
 
+import { notify } from "../lib/notify";
 const responsive = {
   desktop: { breakpoint: { max: 3000, min: 1024 }, items: 4 },
   tablet: { breakpoint: { max: 1024, min: 464 }, items: 2 },
@@ -125,10 +126,7 @@ const Home = () => {
   }, []);
 
   const handleComingSoonClick = (item) => {
-    toast.info(`${item.name} is coming soon!`, {
-      position: "top-right",
-      autoClose: 2200,
-    });
+    notify.info(`${item.name} is coming soon!`);
   };
 
   const handleCategoryCardClick = (item) => {
@@ -163,7 +161,7 @@ const Home = () => {
   const handleMyStoreClick = (choice = "portal") => {
     // Check if user is logged in
     if (!accessToken) {
-      toast.info("Please sign in to access your store");
+      notify.info("Please sign in to access your store");
       navigate("/signin");
       return;
     }
@@ -182,7 +180,7 @@ const Home = () => {
 
     if (!isVendor && !user) {
       // The profile loads in the background after start-up; don't guess "not a seller".
-      toast.info("Loading your account. Tap Sell again in a moment.");
+      notify.info("Loading your account. Tap Sell again in a moment.");
       return;
     }
 
@@ -191,7 +189,7 @@ const Home = () => {
       const opened = window.open("https://vendors.pinksurfing.com", "_blank", "noopener");
       if (!opened) window.location.assign("https://vendors.pinksurfing.com");
     } else if (isVendor) {
-      toast.info("You already have a seller account. Opening the vendor portal.");
+      notify.info("You already have a seller account. Opening the vendor portal.");
       const opened = window.open("https://vendors.pinksurfing.com", "_blank", "noopener");
       if (!opened) window.location.assign("https://vendors.pinksurfing.com");
     } else {
@@ -265,7 +263,7 @@ const Home = () => {
     e.preventDefault();
 
     if (!accessToken) {
-      toast.error("Please sign in first");
+      notify.error("Please sign in first");
       navigate("/signin");
       return;
     }
@@ -305,16 +303,10 @@ const Home = () => {
       // Update localStorage
       localStorage.setItem("vendorAccess", "true");
 
-      toast.success("Congratulations! You're now a vendor on Pinksurfing", {
-        position: "top-center",
-        autoClose: 3000,
-      });
+      notify.success("Congratulations! You're now a vendor on Pinksurfing");
 
       if (response.data?.address_warning) {
-        toast.warn(response.data.address_warning, {
-          position: "top-center",
-          autoClose: 6000,
-        });
+        notify.info(response.data.address_warning );
       }
 
       // Close dialog
@@ -333,15 +325,9 @@ const Home = () => {
 
     } catch (error) {
       console.error("Vendor registration error:", error);
-      toast.error(
-        error.response?.data?.message ||
+      notify.error(error.response?.data?.message ||
         error.response?.data?.status ||
-        "Unable to register as vendor. Please try again.",
-        {
-          position: "top-center",
-          autoClose: 3000,
-        }
-      );
+        "Unable to register as vendor. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -444,6 +430,7 @@ const Home = () => {
 
         {/* Hero Section - Main Categories */}
         <section className="relative z-10 px-4 sm:px-6 lg:px-12 pt-6 pb-8">
+          <WelcomeNote firstName={user?.first_name} />
           <div className="text-center mb-8 max-w-3xl mx-auto">
             <div className="flex justify-center mb-4">
               <img src="/brand/logo.jpeg?v=2" alt="" className="w-14 h-14 rounded-2xl object-cover ring-1 ring-[var(--ps-brd)]" />
@@ -669,7 +656,7 @@ const Home = () => {
                 const isSoon = Boolean(item.coming_soon);
                 const handleClick = () => {
                   if (isSoon) {
-                    toast.info("This category is coming soon!", { position: "top-right", autoClose: 2200 });
+                    notify.info("This category isn’t open yet.");
                     return;
                   }
                   setCategory(String(item.category).toLowerCase());

@@ -4,12 +4,12 @@ import { authContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { XMarkIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { Country, State, City } from "country-state-city";
 import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
 
+import { notify } from "../lib/notify";
 export default function AddressForm() {
   const accessToken = useAccessToken();
   const [countries, setCountries] = useState([]);
@@ -95,7 +95,7 @@ export default function AddressForm() {
         }
       )
       .then(() => {
-        toast.success("Address added successfully!", { position: "top-center" });
+        notify.success("Address saved.");
         setAddress({
           name: "",
           phone: "",
@@ -109,11 +109,9 @@ export default function AddressForm() {
         setTimeout(() => setIsAddressFormOpen(false), 600);
       })
       .catch((error) => {
-        handleError(
-          error.response?.data?.msg ||
+        handleError(error.response?.data?.msg ||
             error.response?.data?.error ||
-            "Error adding address"
-        );
+            "Error adding address");
         console.error(error);
       })
       .finally(() => setSubmitting(false));
@@ -351,9 +349,7 @@ export default function AddressForm() {
                           </svg>
                           Saving...
                         </>
-                      ) : (
-                        "Save Address"
-                      )}
+                      ) : ("Save Address")}
                     </button>
                   </div>
                 </form>

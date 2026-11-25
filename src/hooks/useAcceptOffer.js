@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { acceptBid, addToCart } from "../api/buyerRequests";
 
+import { notify } from "../lib/notify";
 /** Accept a vendor's offer on a product request and put it in the cart. */
 export function useAcceptOffer(accessToken, onDone) {
   const [accepting, setAccepting] = useState(null);
@@ -11,10 +11,10 @@ export function useAcceptOffer(accessToken, onDone) {
       setAccepting(bidId);
       const res = await acceptBid(accessToken, requestId, bidId);
       await addToCart(accessToken, res.data.product_id);
-      toast.success("Offer accepted and added to your cart!");
+      notify.success("Offer accepted and added to your cart!");
       onDone?.();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to accept the offer. Please try again.");
+      notify.error(err?.response?.data?.error || "Failed to accept the offer. Please try again.");
     } finally {
       setAccepting(null);
     }

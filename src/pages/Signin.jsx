@@ -71,7 +71,7 @@ const Signin = () => {
         return;
       }
       setIsProfileOpen(false);
-      handleSuccess("Signed In Successfully");
+      handleSuccess("Welcome back.");
       setInputValue({ email: "", password: "" });
 
       const redirectPath = sessionStorage.getItem("redirectAfterLogin");
@@ -83,15 +83,18 @@ const Signin = () => {
       }
     } catch (error) {
       console.error("Sign in failed:", error?.response?.data || error);
-      const authFailed = error?.config?.url?.includes("auth.pinksurfing.com");
-      if (authFailed) {
-        handleError("Invalid email or password");
+      const status = error?.response?.status;
+      if (!error?.response) {
+        // Network/CORS/offline — not the person's password.
+        handleError("We couldn’t reach sign-in. Check your connection and try again.");
+      } else if (status === 400 || status === 401) {
+        handleError("That email and password don’t match. Check them and try again.");
+      } else if (status === 429) {
+        handleError("Too many attempts. Wait a minute, then try again.");
+      } else if (status >= 500) {
+        handleError("Sign-in is having trouble right now. Please try again in a moment.");
       } else {
-        handleError(
-          error?.response?.data?.detail ||
-            error?.response?.data?.message ||
-            "Sign in failed. Please try again."
-        );
+        handleError("We couldn’t sign you in. Please try again.");
       }
     } finally {
       setLoading(false);

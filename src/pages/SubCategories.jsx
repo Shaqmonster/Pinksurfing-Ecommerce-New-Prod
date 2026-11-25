@@ -1,6 +1,5 @@
 import { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 import axios from "axios";
 import { authContext } from "../context/authContext";
 import Header from "../components/Header";

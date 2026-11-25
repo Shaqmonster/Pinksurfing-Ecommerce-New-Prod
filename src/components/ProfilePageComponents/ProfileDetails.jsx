@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { authContext } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { FaCopy, FaCheck } from "react-icons/fa";
 import { fetchCustomerProfile, getAccessToken } from "../../utils/authSession";
 import { getJoinedYear } from "../../utils/userDisplay";
@@ -12,6 +11,7 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 import MediaImage from "../ui/MediaImage";
 import ThemeToggle from "../ThemeToggle";
 
+import { notify } from "../../lib/notify";
 export default function ProfileDetails() {
   const accessToken = useAccessToken();
   const [copied, setCopied] = useState(false);
@@ -125,9 +125,7 @@ export default function ProfileDetails() {
       );
 
       if (response.status === 200) {
-        toast.success("Profile updated successfully", {
-          position: "top-center",
-        });
+        notify.success("Profile saved.");
         await reloadProfile();
       }
     } catch (error) {
@@ -136,9 +134,7 @@ export default function ProfileDetails() {
         error?.response?.data?.error ||
         error?.response?.data?.message ||
         "Failed to update profile. Please fill the details correctly.";
-      toast.error(message, {
-        position: "top-center",
-      });
+      notify.error(message );
     } finally {
       setIsLoading(false);
     }

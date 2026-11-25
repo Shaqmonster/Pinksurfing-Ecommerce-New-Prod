@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import { formatListingLocation } from "../pages/categoryProducts/locationFilterUtils";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import { authContext } from "../context/authContext";
 import { dataContext } from "../context/dataContext";
 import { useAccessToken } from "../hooks/useAccessToken";
@@ -25,6 +24,7 @@ import MediaImage from "./ui/MediaImage";
 import NoImagePlaceholder from "./ui/NoImagePlaceholder";
 import { EBITDA_ATTR_ALIASES, REVENUE_ATTR_ALIASES, parseMoney } from "../utils/businessMetrics";
 
+import { notify } from "../lib/notify";
 const EMPTY_SPEC = "—";
 
 const ProductCard = ({ product, isCard }) => {
@@ -36,7 +36,8 @@ const ProductCard = ({ product, isCard }) => {
     listHasRatings ? Number(product.rating_avg) || 0 : 0
   );
   const [ratingCount, setRatingCount] = useState(listHasRatings ? product.rating_count : 0);
-  const { currency } = useContext(authContext);
+  const { currency, setIsCartOpen } = useContext(authContext);
+  const [adding, setAdding] = useState(false);
   const {
     setCartProducts,
     setWishlistProducts,
@@ -68,7 +69,7 @@ const ProductCard = ({ product, isCard }) => {
   };
 
   const requireSignIn = (message) => {
-    toast.error(message, { position: "top-right" });
+    notify.error(message );
     navigate("/signin", {
       state: { from: window.location.pathname + window.location.search },
     });
@@ -80,13 +81,14 @@ const ProductCard = ({ product, isCard }) => {
       return;
     }
     if (productOutOfStock) {
-      toast.error("This product is out of stock", { position: "top-right" });
+      notify.error("This product is out of stock");
       return;
     }
     if (isInCart) {
-      toast.info("Already in your cart", { position: "top-right" });
+      notify.info("Already in your cart");
       return;
     }
+    setAdding(true);
     axios
       .post(
         `${import.meta.env.VITE_SERVER_URL}/api/customer/cart/add/${product.id}/`,
@@ -100,26 +102,26 @@ const ProductCard = ({ product, isCard }) => {
       )
       .then((response) => {
         if (response.data?.already_in_cart) {
-          toast.info(response.data.message || "Already in your cart", {
-            position: "top-right",
-          });
+          notify.info("Already in your cart");
         } else {
-          toast.success("Added to Cart", {
-            position: "top-right",
-          });
+          notify.success(
+            <span className="flex items-center justify-between gap-3">
+              <span>Added to your cart.</span>
+              {setIsCartOpen && (
+                <button type="button" onClick={() => setIsCartOpen(true)} className="font-semibold underline underline-offset-2">
+                  View cart
+                </button>
+              )}
+            </span>
+          );
         }
         GetCartProducts();
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
-          error.response?.data?.message ||
-            error.response?.data?.Status ||
-            error.response?.data?.detail ||
-            "Could not add to cart",
-          { position: "top-right" }
-        );
-      });
+        notify.apiError(error, "We couldn’t add this to your cart. Please try again.");
+      })
+      .finally(() => setAdding(false));
   };
 
   const AddtoWishlist = (productId) => {
@@ -136,21 +138,11 @@ const ProductCard = ({ product, isCard }) => {
       )
       .then(() => {
         GetWishlist();
-        toast.success("Added to wishlist", {
-          position: "top-right",
-        });
+        notify.success("Saved to your wishlist.");
       })
       .catch((error) => {
         console.error(error);
-        toast.error(
-          error.response?.data?.message ||
-            error.response?.data?.Status ||
-            error.response?.data?.detail ||
-            "An error occurred",
-          {
-            position: "top-right",
-          }
-        );
+        notify.apiError(error, "We couldn’t save this to your wishlist. Please try again.");
       });
   };
 
@@ -186,20 +178,15 @@ const ProductCard = ({ product, isCard }) => {
         }
       );
       GetWishlist();
-      toast.success("Removed from wishlist", {
-        position: "top-right",
-      });
+      notify.success("Removed from your wishlist.");
     } catch (error) {
       console.error(error);
       const data = error.response?.data;
-      toast.error(
-        data?.message ||
+      notify.error(data?.message ||
           data?.Status ||
           data?.Err ||
           data?.detail ||
-          "Unable to remove from wishlist",
-        { position: "top-right" }
-      );
+          "Unable to remove from wishlist");
     }
   };
 
@@ -217,10 +204,8 @@ const ProductCard = ({ product, isCard }) => {
       } else {
         await AddtoWishlist(product.id);
       }
-    } catch {
-      toast.error("An error occurred", {
-        position: "top-right",
-      });
+    } catch (error) {
+      notify.apiError(error, "We couldn’t update your wishlist. Please try again.");
     }
   };
 
@@ -345,11 +330,11 @@ const ProductCard = ({ product, isCard }) => {
       return;
     }
     if (productOutOfStock) {
-      toast.error("This product is out of stock", { position: "top-right" });
+      notify.error("This product is out of stock");
       return;
     }
     if (isInCart) {
-      toast.info("Already in your cart", { position: "top-right" });
+      notify.info("Already in your cart");
       return;
     }
     AddtoCart();
@@ -387,7 +372,7 @@ const ProductCard = ({ product, isCard }) => {
       {/* Discount badge */}
       {!isListing && !productOutOfStock && discountPct > 0 && (
         <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full bg-[var(--ps-primary)] text-white text-[11px] font-bold">
-          {discountPct}% OFF
+          {discountPct}% off
         </div>
       )}
 
@@ -629,7 +614,8 @@ const ProductCard = ({ product, isCard }) => {
             <button
               type="button"
               onClick={handleAddToCartClick}
-              disabled={productOutOfStock || isInCart}
+              disabled={productOutOfStock || isInCart || adding}
+              aria-busy={adding}
               aria-label={
                 productOutOfStock
                   ? "Out of stock"
@@ -647,7 +633,7 @@ const ProductCard = ({ product, isCard }) => {
             >
               <IoCart className="text-lg" aria-hidden="true" />
               <span className="hidden sm:inline">
-                {productOutOfStock ? "Unavailable" : isInCart ? "In cart" : "Add"}
+                {productOutOfStock ? "Unavailable" : isInCart ? "In cart" : adding ? "Adding…" : "Add"}
               </span>
             </button>
           )}

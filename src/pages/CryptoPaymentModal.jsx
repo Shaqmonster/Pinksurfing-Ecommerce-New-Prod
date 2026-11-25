@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { IoClose } from "react-icons/io5";
 import { useCookies } from "react-cookie";
 import { formatMoney } from "../utils/formatMoney";
 import { useAccessToken } from "../hooks/useAccessToken";
 
+import { notify } from "../lib/notify";
 const CryptoPaymentModal = ({
   order_id,
   isOpen,
@@ -23,9 +23,7 @@ const CryptoPaymentModal = ({
     usdt: "",
     ps: "",
   });
-  const [receiverAddress, setReceiverAddress] = useState(
-    "0x97b5ad3e470bc30d707bfeb57060c37d9efafab2"
-  );
+  const [receiverAddress, setReceiverAddress] = useState("0x97b5ad3e470bc30d707bfeb57060c37d9efafab2");
   const [selectedCurrency, setSelectedCurrency] = useState("eth");
   const [convertedPrice, setConvertedPrice] = useState(null);
   const [gasFee, setGasFee] = useState(null);
@@ -58,10 +56,7 @@ const CryptoPaymentModal = ({
       });
     } catch (error) {
       console.error("Failed to fetch wallet addresses", error);
-      toast.error(error.response?.data?.message || "An error occurred", {
-        position: "top-center",
-        autoClose: 3000,
-      });
+      notify.apiError(error, "We couldn’t load your wallet. Please try again.");
     }
   };
 
@@ -161,9 +156,9 @@ const CryptoPaymentModal = ({
   };
 
   const handleSend = async () => {
-    toast.info("Sending crypto...", { autoClose: 2000 });
+    notify.info("Sending crypto...", { autoClose: 2000 });
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    toast.success("Crypto sent successfully!");
+    notify.success("Transfer sent.");
     await new Promise((resolve) => setTimeout(resolve, 2000));
     onClose();
   };
@@ -171,7 +166,7 @@ const CryptoPaymentModal = ({
   const payWithEscrow = async () => {
     try {
       setLoading(true);
-      toast.info("Connecting to wallet...", { autoClose: 2000 });
+      notify.info("Connecting to wallet...", { autoClose: 2000 });
       await new Promise((resolve) => setTimeout(resolve, 2000));
       const response = await axios.post(
         `${
@@ -187,7 +182,7 @@ const CryptoPaymentModal = ({
       );
 
       if (response.data && response.data.success === true) {
-        toast.success("Payment with Escrow initiated");
+        notify.success("Payment with Escrow initiated");
         await new Promise((resolve) => setTimeout(resolve, 2000));
         navigate("/orders");
       }
@@ -195,7 +190,7 @@ const CryptoPaymentModal = ({
       closePaymentModal()
     } catch (error) {
       console.error("Error initiating payment with Escrow:", error);
-      toast.error("Error connecting to wallet");
+      notify.error("Error connecting to wallet");
     } finally {
       setLoading(false);
     }

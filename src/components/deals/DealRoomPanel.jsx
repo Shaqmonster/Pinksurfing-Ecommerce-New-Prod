@@ -1,9 +1,9 @@
 import React, { useContext, useState } from "react";
-import { toast } from "react-toastify";
 import { transitionDealRoom, updateEscrowChecklist } from "../../api/offMarketDeals";
 import { getConversation } from "../../api/gigs";
 import { authContext } from "../../context/authContext";
 
+import { notify } from "../../lib/notify";
 const CSS = `
 .deal-room{background:var(--ps-color-surface);border:1.5px solid var(--ps-color-border);border-radius:8px;padding:20px;margin-top:20px;}
 .deal-room h3{font-size:16px;font-weight:700;margin-bottom:12px;}
@@ -67,7 +67,7 @@ export default function DealRoomPanel({ room, token, onUpdate }) {
       const updated = await transitionDealRoom(room.id, { new_state: newState }, token);
       onUpdate(updated);
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Couldn't update the deal room.");
+      notify.error(e?.response?.data?.detail || "Couldn't update the deal room.");
     } finally {
       setBusy(false);
     }
@@ -80,7 +80,7 @@ export default function DealRoomPanel({ room, token, onUpdate }) {
       const res = await getConversation(token, room.conversation_id);
       openChatWithConversation(res.data);
     } catch (e) {
-      toast.error("Couldn't open the chat. Please try again.");
+      notify.error("Couldn't open the chat. Please try again.");
     } finally {
       setOpening(false);
     }

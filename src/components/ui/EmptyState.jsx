@@ -20,7 +20,7 @@ export default function EmptyState({
       ].join(" ")}
       role="status"
     >
-      <h3 className="text-[var(--ps-text-title-lg)] font-semibold text-[var(--ps-white)] leading-[var(--ps-leading-title-lg)]">
+      <h3 className="text-[var(--ps-text-title-lg)] font-semibold text-ink leading-[var(--ps-leading-title-lg)]">
         {title}
       </h3>
       {description ? (

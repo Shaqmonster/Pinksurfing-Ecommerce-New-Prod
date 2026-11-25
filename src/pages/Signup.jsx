@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
+import { markWelcomePending } from "../components/WelcomeNote";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { dataContext } from "../context/dataContext";
 import { IoEyeSharp } from "react-icons/io5";
@@ -27,6 +27,7 @@ import {
   pinInputStyle,
 } from "../components/auth/authTheme";
 
+import { notify } from "../lib/notify";
 const Signup = () => {
   const navigate = useNavigate();
   const [passwordHidden, setPasswordHidden] = useState(true);
@@ -76,9 +77,7 @@ const Signup = () => {
       };
 
       try {
-        const response = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,cca2,idd,currencies,latlng,timezones"
-        );
+        const response = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2,idd,currencies,latlng,timezones");
         const data = await response.json();
 
         // Transform the data to match the desired structure
@@ -251,7 +250,7 @@ const Signup = () => {
     setLoading(true);
 
     if (!inputValue.entered_otp || inputValue.entered_otp.length !== 6) {
-      toast.error("Please enter a valid 6-digit OTP.");
+      notify.error("Please enter a valid 6-digit OTP.");
       setLoading(false);
       return;
     }
@@ -264,7 +263,7 @@ const Signup = () => {
         last_name: inputValue.last_name,
       })
     ) {
-      toast.error("Please meet all password requirements before signing up.");
+      notify.error("Please meet all password requirements before signing up.");
       setLoading(false);
       return;
     }
@@ -290,16 +289,15 @@ const Signup = () => {
       });
 
       if (createResult.success) {
-        toast.success("Signup successful! Redirecting to sign-in page.");
+        markWelcomePending();
+        notify.success("Your account is ready. Sign in to continue.");
         navigate("/signin");
       } else {
-        toast.error(
-          createResult.message || "Signup failed. Please try again later."
-        );
+        notify.error(createResult.message || "Signup failed. Please try again later.");
       }
     } catch (error) {
       console.log(error);
-      toast.error("Signup failed. Please try again later.");
+      notify.error("Signup failed. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -396,12 +394,12 @@ const Signup = () => {
       );
       console.log(response.data);
       if (response.status === 200) {
-        toast.success("OTP sent successfully, please check your email");
+        notify.success("We’ve emailed you a code.");
         setTimer(60); // Start the timer
       }
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || "Failed to send OTP. Please try again later.");
+      notify.error(error?.response?.data?.message || "Failed to send OTP. Please try again later.");
     }
   };
 

@@ -19,8 +19,8 @@ import {
   hasRefreshCapability,
   shouldRefreshAccessToken,
 } from "../utils/authSession";
-import { toast } from "react-toastify";
 
+import { notify } from "../lib/notify";
 export const authContext = createContext();
 
 const Loader = () => (
@@ -119,10 +119,7 @@ export const AuthProvider = ({ children }) => {
       const token = getAccessToken() || cookies.access_token;
       await signOut(token, setCookie);
       clearSession();
-      toast.success("Logged out successfully", {
-        position: "top-right",
-        autoClose: 2500,
-      });
+      notify.success("You’re signed out.");
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);

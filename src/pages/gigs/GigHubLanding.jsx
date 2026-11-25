@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import PageSEO from "../../components/PageSEO";
 import { listGigs, getGigCategories, gigUrl } from "../../api/gigs";
@@ -34,6 +33,7 @@ import {
   FaGlobe,
 } from "react-icons/fa";
 
+import { notify } from "../../lib/notify";
 const CATEGORY_ICONS = {
   default: FaBriefcase,
   design: FaPaintBrush,
@@ -99,10 +99,7 @@ const InAppWalletBanner = () => {
   };
 
   const onImport = () => {
-    toast.info("Seed phrase import isn't available in the browser. Manage your wallet in account settings.", {
-      position: "top-center",
-      autoClose: 4000,
-    });
+    notify.info("Seed phrase import isn't available in the browser. Manage your wallet in account settings.");
     navigate("/userwallet");
   };
 

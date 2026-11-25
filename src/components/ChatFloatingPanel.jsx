@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useContext, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
 import {
   IoChatbubbleOutline,
   IoCloseOutline,
@@ -34,6 +33,7 @@ import {
   seedMessagesFromConversation,
 } from "../utils/chatHelpers";
 
+import { notify } from "../lib/notify";
 const ChatFloatingPanel = ({
   isOpen,
   onClose,
@@ -204,7 +204,7 @@ const ChatFloatingPanel = ({
       } catch (err) {
         console.error("Failed to fetch messages", err);
         if (!silent && activeConvRef.current?.id === convId) {
-          toast.error("Could not load messages. Try again.");
+          notify.error("Could not load messages. Try again.");
         }
       } finally {
         if (!silent) setLoadingThread(false);
@@ -497,11 +497,9 @@ const ChatFloatingPanel = ({
     } catch (err) {
       console.error("Failed to send message", err);
       const detail = err?.response?.data?.detail;
-      toast.error(
-        typeof detail === "string"
+      notify.error(typeof detail === "string"
           ? detail
-          : "Could not send message. Try refreshing the page."
-      );
+          : "Could not send message. Try refreshing the page.");
       setMessageInput(text);
       setAttachments(files);
     } finally {
@@ -588,7 +586,7 @@ const ChatFloatingPanel = ({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-black tracking-tight text-ink">Messages</h3>
+                <h3 className="text-base font-semibold tracking-tight text-ink">Messages</h3>
                 {totalUnread > 0 && (
                   <span className="bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                     {totalUnread > 9 ? "9+" : totalUnread}

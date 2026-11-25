@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
 import {
   IoChevronDown,
   IoChevronUp,
@@ -29,6 +28,7 @@ import { jobBudgetLabel } from "../constants/jobBudgets";
 import { formatMoney } from "../utils/formatMoney";
 import { formatDay } from "../utils/formatDate";
 
+import { notify } from "../lib/notify";
 // One page, two features:
 //   product: "My Bids" — things the buyer asked for; vendors' offers; accepting one adds it to the cart.
 //   job:     "My Jobs" — GigHub jobs; freelancers' proposals; hiring one opens a chat.
@@ -93,14 +93,14 @@ const JobProposals = ({ req, accessToken, onHired }) => {
     try {
       setHiring(proposal.id);
       const res = await hireProposal(accessToken, req.id, proposal.id);
-      toast.success(`You hired ${proposal.worker_name}. Say hello in chat to get started.`);
+      notify.success(`You hired ${proposal.worker_name}. Say hello in chat to get started.`);
       const email = res.data?.proposal?.worker_email;
       if (email && typeof openChatWithParticipantEmail === "function") {
         openChatWithParticipantEmail(email);
       }
       onHired();
     } catch (err) {
-      toast.error(err?.response?.data?.error || "Failed to hire. Please try again.");
+      notify.error(err?.response?.data?.error || "Failed to hire. Please try again.");
     } finally {
       setHiring(null);
     }
@@ -376,7 +376,7 @@ const MyBidsPage = ({ type = "product" }) => {
       setRequests(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("[MyBidsPage] Failed to load requests:", err);
-      toast.error(copy.loadError);
+      notify.error(copy.loadError);
     } finally {
       setLoading(false);
     }
@@ -396,10 +396,10 @@ const MyBidsPage = ({ type = "product" }) => {
     if (!window.confirm(copy.deleteConfirm)) return;
     try {
       await deleteRequest(accessToken, requestId);
-      toast.success("Request deleted.");
+      notify.success("Request deleted.");
       setRequests((prev) => prev.filter((r) => r.id !== requestId));
     } catch {
-      toast.error("Failed to delete request.");
+      notify.error("Failed to delete request.");
     }
   };
 
@@ -409,9 +409,7 @@ const MyBidsPage = ({ type = "product" }) => {
     (acc, r) => {
       acc[r.status] = (acc[r.status] || 0) + 1;
       return acc;
-    },
-    {}
-  );
+    });
 
   return (
     <div className="min-h-screen bg-ps-bg">

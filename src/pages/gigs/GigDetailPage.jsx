@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCookies } from "react-cookie";
-import { toast } from "react-toastify";
 import { ethers } from "ethers";
 import { authContext } from "../../context/authContext";
 import {
@@ -33,6 +32,7 @@ import {
 import { FaBriefcase, FaCheck } from "react-icons/fa";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const TIER_STYLES = {
   basic: {
     label: "Basic",
@@ -286,7 +286,7 @@ const GigDetailPage = () => {
 
   const messageSeller = async () => {
     if (!accessToken) {
-      toast.error("Please sign in to message this seller.");
+      notify.error("Please sign in to message this seller.");
       navigate("/signin");
       return;
     }
@@ -299,7 +299,7 @@ const GigDetailPage = () => {
         openChatWithParticipantEmail(gig.worker.email);
         return;
       }
-      toast.error(err?.response?.data?.detail || "Couldn't open a chat with this seller.");
+      notify.error(err?.response?.data?.detail || "Couldn't open a chat with this seller.");
     }
   };
 
@@ -319,7 +319,7 @@ const GigDetailPage = () => {
           navigate(gigUrl(gigData), { replace: true });
         }
       })
-      .catch(() => toast.error("Failed to load gig."))
+      .catch(() => notify.error("Failed to load gig."))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -375,12 +375,12 @@ const GigDetailPage = () => {
 
   const handleBuy = () => {
     if (!accessToken) {
-      toast.error("Please sign in to purchase.");
+      notify.error("Please sign in to purchase.");
       navigate("/signin");
       return;
     }
     if (!selectedPkg) {
-      toast.error("Please select a package first.");
+      notify.error("Please select a package first.");
       return;
     }
     openCheckoutSetup();
@@ -388,19 +388,19 @@ const GigDetailPage = () => {
 
   const handleCheckoutConfirm = async () => {
     if (!accessToken) {
-      toast.error("Please sign in to purchase.");
+      notify.error("Please sign in to purchase.");
       navigate("/signin");
       return;
     }
     if (!selectedPkg) {
-      toast.error("Please select a package.");
+      notify.error("Please select a package.");
       return;
     }
     if (
       (checkoutOptions.paymentMode === "escrow_wallet_only" || checkoutOptions.paymentMode === "escrow_plus_stripe") &&
       (!Number.isFinite(Number(checkoutOptions.escrowEth)) || Number(checkoutOptions.escrowEth) <= 0)
     ) {
-      toast.error("Enter a valid escrow ETH amount.");
+      notify.error("Enter a valid escrow ETH amount.");
       return;
     }
     try {
@@ -427,13 +427,13 @@ const GigDetailPage = () => {
               escrowEth: checkoutOptions.escrowEth,
             });
             await setGigOrderEscrowId(accessToken, order.id, chainRes.escrowId);
-            toast.success(`Escrow created (${checkoutOptions.milestoneCount} milestones): ${chainRes.escrowId.slice(0, 10)}...`);
+            notify.success(`Escrow created (${checkoutOptions.milestoneCount} milestones): ${chainRes.escrowId.slice(0, 10)}...`);
           } else {
             throw new Error("Buyer wallet or seller wallet address is missing for escrow.");
           }
         } catch (chainErr) {
           const msg = chainErr?.shortMessage || chainErr?.message || "On-chain escrow create failed.";
-          toast.warning(msg);
+          notify.info(msg);
           setPurchasing(false);
           return;
         }
@@ -445,7 +445,7 @@ const GigDetailPage = () => {
         if (url) {
           window.location.href = url;
         } else {
-          toast.error("Failed to create Square payment link.");
+          notify.error("Failed to create Square payment link.");
         }
       } else if (checkoutOptions.paymentMode === "square") {
         // If you still want to support the old Square path:
@@ -454,15 +454,15 @@ const GigDetailPage = () => {
         if (url) {
           window.location.href = url;
         } else {
-          toast.error("Failed to create Square payment link.");
+          notify.error("Failed to create Square payment link.");
         }
       } else {
-        toast.success("Order + escrow created. Continuing to order workspace.");
+        notify.success("Order + escrow created. Continuing to order workspace.");
         navigate(`/gigs/orders/${order.id}`);
       }
     } catch (err) {
       const msg = err?.response?.data?.detail || err?.response?.data?.error || "Purchase failed.";
-      toast.error(msg);
+      notify.error(msg);
     } finally {
       setPurchasing(false);
     }
@@ -1053,9 +1053,7 @@ const GigDetailPage = () => {
                           <span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />
                           Processing…
                         </>
-                      ) : (
-                        "Continue to Checkout"
-                      )}
+                      ) : ("Continue to Checkout")}
                     </motion.button>
                   ) : (
                     <div className="mt-4 py-3.5 rounded-xl bg-ink/5 border border-ink/10 text-ink/30 text-xs italic text-center">

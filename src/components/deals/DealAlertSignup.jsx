@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
 import { fetchDealAlert, saveDealAlert, turnOffDealAlert } from "../../api/offMarketDeals";
 import { authContext } from "../../context/authContext";
 
+import { notify } from "../../lib/notify";
 const PROPERTY_TYPES = [
   { id: "", label: "Any property type" },
   { id: "residential", label: "Residential" },
@@ -62,15 +62,13 @@ export default function DealAlertSignup({ token }) {
     try {
       const a = await saveDealAlert(token, form);
       setActive(Boolean(a?.active));
-      toast.success(
-        email
+      notify.success(email
           ? `Deal alert saved. We'll email ${email} when a matching deal goes live.`
-          : "Deal alert saved. We'll email you when a matching deal goes live."
-      );
+          : "Deal alert saved. We'll email you when a matching deal goes live.");
     } catch (err) {
       const data = err?.response?.data;
       const msg = data && typeof data === "object" ? Object.values(data).flat().join(" ") : "";
-      toast.error(msg || "Couldn't save your deal alert. Please try again.");
+      notify.error(msg || "Couldn't save your deal alert. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -81,9 +79,9 @@ export default function DealAlertSignup({ token }) {
     try {
       await turnOffDealAlert(token);
       setActive(false);
-      toast.info("Deal alert turned off.");
+      notify.info("Deal alert turned off.");
     } catch {
-      toast.error("Couldn't turn off your deal alert. Please try again.");
+      notify.error("Couldn't turn off your deal alert. Please try again.");
     } finally {
       setSaving(false);
     }

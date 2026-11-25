@@ -329,7 +329,7 @@ const BusinessForSale = () => {
                       <div className="text-center"><div className="text-[11px] font-bold text-ink">{biz.multi ? `${biz.multi}x` : "—"}</div><div className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Multiple</div></div>
                     </div>
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {biz.smart.map(s => <div key={s} className="px-2 py-0.5 rounded bg-ps-action/10 border border-ps-action/20 text-ps-action-text text-[8px] font-bold uppercase tracking-tighter">{s}</div>)}
+                      {biz.smart.map(s => <div key={s} className="px-2 py-0.5 rounded bg-ps-action/10 border border-ps-action/20 text-ps-action-text text-[8px] font-bold uppercase tracking-tight">{s}</div>)}
                     </div>
                     <div className="flex items-center justify-between mt-auto pt-3 border-t border-ink/5">
                       <div className="flex gap-1.5">

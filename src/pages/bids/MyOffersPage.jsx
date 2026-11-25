@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
 import {
   IoPaperPlaneOutline,
   IoTimeOutline,
@@ -25,6 +24,7 @@ const toOfferView = (p) => ({
 import BidsNavBar from "../../components/BidsNavBar";
 import { useAccessToken } from "../../hooks/useAccessToken";
 
+import { notify } from "../../lib/notify";
 const BID_STATUS_STYLES = {
   PENDING: {
     bg: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
@@ -206,7 +206,7 @@ export default function MyOffersPage() {
       setBids(Array.isArray(data) ? data.map(toOfferView) : []);
     } catch (err) {
       console.error("[MyOffersPage] Failed to load proposals:", err);
-      toast.error("Failed to load your proposals.");
+      notify.error("Failed to load your proposals.");
     } finally {
       setLoading(false);
     }
@@ -225,10 +225,10 @@ export default function MyOffersPage() {
     try {
       setWithdrawing(bidId);
       await withdrawProposal(accessToken, bidId);
-      toast.success("Proposal withdrawn.");
+      notify.success("Proposal withdrawn.");
       setBids((prev) => prev.filter((b) => b.id !== bidId));
     } catch {
-      toast.error("Failed to withdraw proposal.");
+      notify.error("Failed to withdraw proposal.");
     } finally {
       setWithdrawing(null);
     }
@@ -240,9 +240,7 @@ export default function MyOffersPage() {
     (acc, b) => {
       acc[b.status] = (acc[b.status] || 0) + 1;
       return acc;
-    },
-    {}
-  );
+    });
 
   return (
     <div className="min-h-screen bg-ps-bg">
