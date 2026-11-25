@@ -47,7 +47,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#0E0F13] overflow-hidden selection:bg-purple-500/30">
+    <div className="relative min-h-screen bg-ps-bg overflow-hidden selection:bg-purple-500/30">
       {/* Required Fonts */}
       <link
         href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600&display=swap"
@@ -61,7 +61,7 @@ export default function ProfilePage() {
         <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-blue-900/10 blur-[100px] rounded-full"></div>
       </div>
 
-      <div className="relative z-10 max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-8 lg:gap-16 px-6 md:px-12 lg:px-20 pt-16 pb-32 min-h-screen text-gray-200">
+      <div className="relative z-10 max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-8 lg:gap-16 px-6 md:px-12 lg:px-20 pt-16 pb-32 min-h-screen text-ps-fg2">
         {/* Sidebar Container */}
         <div className="sidebar-container flex-shrink-0 lg:sticky lg:top-16 self-start">
           <Sidebar />

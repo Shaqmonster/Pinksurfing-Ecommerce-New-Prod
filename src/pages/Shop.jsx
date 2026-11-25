@@ -67,7 +67,7 @@ const Shop = () => {
               />
             </div>
             <div class="absolute top-0 m-1 rounded-full bg-white">
-              <p class="rounded-full bg-black p-1 text-[10px] font-bold uppercase tracking-wide text-white sm:py-1 sm:px-3">
+              <p class="rounded-full bg-ps-bg p-1 text-[10px] font-bold uppercase tracking-wide text-white sm:py-1 sm:px-3">
                 Sale
               </p>
             </div>
@@ -125,7 +125,7 @@ const Shop = () => {
                     ></path>
                   </svg>
                   <svg
-                    class="block h-3 w-3 align-middle text-gray-400 sm:h-4 sm:w-4"
+                    class="block h-3 w-3 align-middle text-ps-meta sm:h-4 sm:w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -407,7 +407,7 @@ const Shop = () => {
               />
             </div>
             <div class="absolute top-0 m-1 rounded-full bg-white">
-              <p class="rounded-full bg-black p-1 text-[10px] font-bold uppercase tracking-wide text-white sm:py-1 sm:px-3">
+              <p class="rounded-full bg-ps-bg p-1 text-[10px] font-bold uppercase tracking-wide text-white sm:py-1 sm:px-3">
                 Sale
               </p>
             </div>
@@ -465,7 +465,7 @@ const Shop = () => {
                     ></path>
                   </svg>
                   <svg
-                    class="block h-3 w-3 align-middle text-gray-400 sm:h-4 sm:w-4"
+                    class="block h-3 w-3 align-middle text-ps-meta sm:h-4 sm:w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -554,7 +554,7 @@ const Shop = () => {
                   </svg>
 
                   <svg
-                    class="block h-3 w-3 align-middle text-gray-400 sm:h-4 sm:w-4"
+                    class="block h-3 w-3 align-middle text-ps-meta sm:h-4 sm:w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -584,7 +584,7 @@ const Shop = () => {
               />
             </div>
             <div class="absolute top-0 m-1 rounded-full bg-white">
-              <p class="rounded-full bg-black p-1 text-[10px] font-bold uppercase tracking-wide text-white sm:py-1 sm:px-3">
+              <p class="rounded-full bg-ps-bg p-1 text-[10px] font-bold uppercase tracking-wide text-white sm:py-1 sm:px-3">
                 Sale
               </p>
             </div>
@@ -642,7 +642,7 @@ const Shop = () => {
                     ></path>
                   </svg>
                   <svg
-                    class="block h-3 w-3 align-middle text-gray-400 sm:h-4 sm:w-4"
+                    class="block h-3 w-3 align-middle text-ps-meta sm:h-4 sm:w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -731,7 +731,7 @@ const Shop = () => {
                   </svg>
 
                   <svg
-                    class="block h-3 w-3 align-middle text-gray-400 sm:h-4 sm:w-4"
+                    class="block h-3 w-3 align-middle text-ps-meta sm:h-4 sm:w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"

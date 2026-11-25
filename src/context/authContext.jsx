@@ -24,7 +24,7 @@ import { toast } from "react-toastify";
 export const authContext = createContext();
 
 const Loader = () => (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+  <div className="fixed inset-0 flex items-center justify-center bg-ps-bg bg-opacity-50 z-50">
     <img
       src="/loading.svg"
       alt="loading"
@@ -43,9 +43,6 @@ export const AuthProvider = ({ children }) => {
   const [shopHeading, setShopHeading] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("theme") === "dark" || !localStorage.getItem("theme")
-  );
   const [isRatingFormOpen, setIsRatingFormOpen] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -159,15 +156,6 @@ export const AuthProvider = ({ children }) => {
     setPendingChatParticipantEmail(null);
   };
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDarkMode]);
 
   useEffect(() => {
     const responseInterceptor = axios.interceptors.response.use(
@@ -286,12 +274,10 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: Boolean(authToken),
         setAuthToken,
         login,
-        isDarkMode,
         openDrawer,
         currency,
         setCurrency,
         setOpenDrawer,
-        setIsDarkMode,
         isFirstSearch,
         setIsFirstSearch,
         category,

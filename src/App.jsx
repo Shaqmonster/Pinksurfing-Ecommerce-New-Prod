@@ -80,7 +80,6 @@ function LegacyJobRedirect() {
 function App() {
   const {
     isCartOpen,
-    isDarkMode,
     openDrawer,
     isWishlistOpen,
     isVendorFormOpen,
@@ -115,7 +114,7 @@ function App() {
   );
 
   return (
-    <main className={`${isDarkMode && "dark"} `}>
+    <main>
       <ScrollToTop />
       {!hideHeaderFooter && <Header />}
       <Routes>

@@ -293,7 +293,7 @@ const Checkout = () => {
               </li>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-400"
+                className="h-4 w-4 text-ps-meta"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -307,7 +307,7 @@ const Checkout = () => {
               </svg>
               <li className="flex items-center space-x-3 text-left sm:space-x-4">
                 <a
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-600 text-xs font-semibold text-white ring ring-gray-600 ring-offset-2"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-600 text-xs font-semibold text-ink ring ring-gray-600 ring-offset-2"
                   href="#"
                 >
                   2
@@ -350,7 +350,7 @@ const Checkout = () => {
       <div className="grid sm:px-10 h-min min-h-screen pb-8 bg-white dark:bg-[#0E0F13] dark:text-[#f5f5f5] text-black lg:grid-cols-2 lg:px-20 xl:px-32">
         <div className=" px-2 sm:px-4 pt-8">
           <p className="text-xl font-medium">Order Summary</p>
-          <p className="text-gray-400">
+          <p className="text-ps-meta">
             Check your items. And select a suitable shipping method.
           </p>
           <div className="mt-8 space-y-6 rounded-lg w-[95vw] sm:w-full max-h-[450px] overflow-y-auto border border-gray-100 dark:border-white/5 bg-white dark:bg-[#0E0F13] sm:py-6 sm:px-6">
@@ -370,12 +370,12 @@ const Checkout = () => {
               <div key={vendorId} className="space-y-4 border-b border-gray-100 dark:border-white/5 last:border-0 pb-6 last:pb-0">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Order from {group.vendorName}</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-ps-meta">Order from {group.vendorName}</h3>
                 </div>
                 {group.items.map((product) => (
-                  <div key={product.id} className="flex flex-row items-center rounded-xl bg-white/5 p-3 sm:flex-row">
+                  <div key={product.id} className="flex flex-row items-center rounded-xl bg-ink/5 p-3 sm:flex-row">
                     <img
-                      className="h-20 w-24 rounded-lg border border-white/10 object-cover object-center"
+                      className="h-20 w-24 rounded-lg border border-ink/10 object-cover object-center"
                       src={`${product.product.image1}`}
                       alt={product.product.name}
                     />
@@ -403,7 +403,7 @@ const Checkout = () => {
           </div>
 
           <p className="mt-8 text-lg font-medium">Shipping Speed</p>
-          <p className="text-gray-400 text-sm mb-3">
+          <p className="text-ps-meta text-sm mb-3">
             Select your preferred shipping speed.
           </p>
           <div className="flex gap-4">
@@ -411,7 +411,7 @@ const Checkout = () => {
               onClick={() => setShippingSpeed("standard")}
               className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
                 shippingSpeed === "standard"
-                  ? "border-[#9747FF] bg-purple-50 dark:bg-purple-900/20"
+                  ? "border-ps-action bg-purple-50 dark:bg-purple-900/20"
                   : "border-gray-300 dark:border-gray-600"
               }`}
             >
@@ -424,7 +424,7 @@ const Checkout = () => {
               onClick={() => setShippingSpeed("express")}
               className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
                 shippingSpeed === "express"
-                  ? "border-[#9747FF] bg-purple-50 dark:bg-purple-900/20"
+                  ? "border-ps-action bg-purple-50 dark:bg-purple-900/20"
                   : "border-gray-300 dark:border-gray-600"
               }`}
             >
@@ -437,13 +437,13 @@ const Checkout = () => {
 
           <div className="mt-8 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MapPinIcon className="w-5 h-5 text-[#9747FF]" />
+              <MapPinIcon className="w-5 h-5 text-ps-action-text" />
               <p className="text-lg font-medium">Shipping Address</p>
             </div>
             <button
               type="button"
               onClick={() => setIsAddressFormOpen(true)}
-              className="flex items-center gap-1.5 text-sm font-medium text-[#9747FF] hover:text-[#8533EE] transition-colors"
+              className="flex items-center gap-1.5 text-sm font-medium text-ps-action-text hover:text-ps-action-text transition-colors"
             >
               <PlusIcon className="w-4 h-4" />
               Add New
@@ -460,7 +460,7 @@ const Checkout = () => {
                     onClick={() => setAddressesId(address.id)}
                     className={`relative cursor-pointer rounded-xl p-4 transition-all ${
                       isSelected
-                        ? "border-2 border-[#9747FF] bg-purple-50 dark:bg-purple-900/10"
+                        ? "border-2 border-ps-action bg-purple-50 dark:bg-purple-900/10"
                         : "border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
                     }`}
                   >
@@ -468,12 +468,12 @@ const Checkout = () => {
                       <div
                         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                           isSelected
-                            ? "border-[#9747FF] bg-[#9747FF]"
+                            ? "border-ps-action bg-ps-action text-white"
                             : "border-gray-300 dark:border-gray-600"
                         }`}
                       >
                         {isSelected && (
-                          <CheckIcon className="h-3 w-3 text-white" />
+                          <CheckIcon className="h-3 w-3 text-ink" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -495,10 +495,10 @@ const Checkout = () => {
           ) : (
             <div
               onClick={() => setIsAddressFormOpen(true)}
-              className="mt-4 cursor-pointer rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-[#9747FF] dark:hover:border-[#9747FF] p-8 flex flex-col items-center justify-center transition-colors"
+              className="mt-4 cursor-pointer rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-ps-action dark:hover:border-[#9747FF] p-8 flex flex-col items-center justify-center transition-colors"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#9747FF]/10 mb-3">
-                <MapPinIcon className="h-6 w-6 text-[#9747FF]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ps-action/10 mb-3">
+                <MapPinIcon className="h-6 w-6 text-ps-action-text" />
               </div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 No shipping address yet
@@ -511,7 +511,7 @@ const Checkout = () => {
         </div>
         <div className="sm:mt-10 h-fit w-[98vw] sm:w-full   bg-white dark:bg-[#0E0F13] dark:text-[#f5f5f5] px-4 pt-4 sm:pt-8 lg:mt-0">
           <p className="text-xl font-medium">Payment Details</p>
-          <p className="text-gray-400">
+          <p className="text-ps-meta">
             Complete your order by providing your payment details.
           </p>
           <div className="">
@@ -554,10 +554,10 @@ const Checkout = () => {
             )}
             <button
               type="button"
-              className={`mt-4 mb-8 w-full rounded-md px-6 py-3 font-medium text-white ${
+              className={`mt-4 mb-8 w-full rounded-md px-6 py-3 font-medium text-ink ${
                 checkoutBlocked
                   ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-[#9747FF]"
+                  : "bg-ps-action text-white"
               }`}
               onClick={PlaceOrder}
               disabled={checkoutBlocked || loading}
@@ -576,7 +576,7 @@ const Checkout = () => {
         </div>
       </div>
       {loading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-ps-bg bg-opacity-50 flex items-center justify-center z-50">
           <img src="/loading.svg" alt="Loading..." className="w-16 h-16" />
         </div>
       )}

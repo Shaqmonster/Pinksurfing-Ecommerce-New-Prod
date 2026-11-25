@@ -129,12 +129,12 @@ const Summary = () => {
     if (s === "DELIVERED") return "text-emerald-400 bg-emerald-400/10 border-emerald-400/20";
     if (["PENDING", "RECEIVED", "PACKED", "SHIPPED"].includes(s)) return "text-amber-400 bg-amber-400/10 border-amber-400/20";
     if (s === "CANCELED") return "text-rose-400 bg-rose-400/10 border-rose-400/20";
-    return "text-[var(--ps-purple-light)] bg-[var(--ps-primary)]/10 border-[var(--ps-primary)]/20";
+    return "text-[var(--ps-purple-light)] bg-[color-mix(in_srgb,var(--ps-primary)_10%,transparent)] border-[color-mix(in_srgb,var(--ps-primary)_20%,transparent)]";
   };
 
   if (loading || !order) {
     return (
-      <div className="min-h-screen bg-[var(--ps-bg)] text-white">
+      <div className="min-h-screen bg-[var(--ps-bg)] text-ink">
         <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6" aria-busy="true">
           <div className="space-y-3">
             <div className="ps-skeleton h-4 w-28 rounded" />
@@ -160,14 +160,14 @@ const Summary = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--ps-bg)] text-white">
+    <div className="min-h-screen bg-[var(--ps-bg)] text-ink">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
             <button 
               type="button"
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 min-h-[44px] text-[var(--ps-muted)] hover:text-white transition-colors mb-2"
+              className="inline-flex items-center gap-2 min-h-[44px] text-[var(--ps-muted)] hover:text-ink transition-colors mb-2"
             >
               <ArrowLeftCircleIcon className="w-5 h-5" />
               <span className="text-sm">Back to orders</span>
@@ -202,7 +202,7 @@ const Summary = () => {
                     <h2 className="text-lg font-semibold tracking-tight mb-2">{order.product.name}</h2>
                     <div>
                       <div
-                        className={`text-gray-400 text-sm leading-relaxed mb-2 transition-all duration-300 ${isDescriptionExpanded ? "" : "line-clamp-2"}`}
+                        className={`text-ps-meta text-sm leading-relaxed mb-2 transition-all duration-300 ${isDescriptionExpanded ? "" : "line-clamp-2"}`}
                       >
                         {String(order.product.description || "")
                           .replace(/<[^>]*>/g, " ")
@@ -264,13 +264,13 @@ const Summary = () => {
 
             {order.order_status && ["RECEIVED", "PACKED", "SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(order.order_status.toUpperCase().replace(/\s+/g, "_")) && (
               <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
-                <h3 className="text-sm font-semibold text-white mb-4">Shipment progress</h3>
+                <h3 className="text-sm font-semibold text-ink mb-4">Shipment progress</h3>
                 <TrackingTimeline orderItemId={orderId} />
               </div>
             )}
 
             <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
-              <h3 className="text-sm font-semibold text-white mb-3">Payment status</h3>
+              <h3 className="text-sm font-semibold text-ink mb-3">Payment status</h3>
               <p className="text-sm text-[var(--ps-muted)] leading-relaxed">
                 {order.held_in_escrow > 0
                   ? `Payment of ${currency}${formatMoney(order.held_in_escrow)} is held until fulfillment.`
@@ -281,7 +281,7 @@ const Summary = () => {
 
           <div className="lg:col-span-4 space-y-5">
             <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
-              <h3 className="text-sm font-semibold text-white mb-4">Price summary</h3>
+              <h3 className="text-sm font-semibold text-ink mb-4">Price summary</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-[var(--ps-muted)]">Subtotal</span>
@@ -293,7 +293,7 @@ const Summary = () => {
                 </div>
                 <div className="pt-3 border-t border-[var(--ps-brd)] flex justify-between items-center">
                   <span className="text-sm font-semibold">Total</span>
-                  <span className="text-xl font-semibold text-white">
+                  <span className="text-xl font-semibold text-ink">
                     {currency}{formatMoney(order.total_price)}
                   </span>
                 </div>
@@ -304,20 +304,20 @@ const Summary = () => {
               const myRating = reviews.find((r) => String(r.order_item) === String(order.id));
               return (
                 <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-5 sm:p-6">
-                  <h3 className="text-sm font-semibold text-white mb-4">Product feedback</h3>
+                  <h3 className="text-sm font-semibold text-ink mb-4">Product feedback</h3>
                   {myRating ? (
                     <>
                       <div className="flex gap-1 mb-3">
                         {Array.from({ length: 7 }, (_, i) => (
-                          <IoStar key={i} className={`text-lg ${myRating.rating >= i + 1 ? "text-amber-400" : "text-white/10"}`} />
+                          <IoStar key={i} className={`text-lg ${myRating.rating >= i + 1 ? "text-amber-400" : "text-ink/10"}`} />
                         ))}
                       </div>
-                      <p className="text-white font-medium mb-1">{myRating.title || "Your review"}</p>
+                      <p className="text-ink font-medium mb-1">{myRating.title || "Your review"}</p>
                       <p className="text-[var(--ps-muted)] text-sm mb-4 line-clamp-3">"{myRating.body}"</p>
                       <button
                         type="button"
                         onClick={() => setIsRatingFormOpen(true)}
-                        className="text-sm text-[var(--ps-purple-light)] hover:text-white"
+                        className="text-sm text-[var(--ps-purple-light)] hover:text-ink"
                       >
                         Edit review
                       </button>

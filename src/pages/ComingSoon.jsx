@@ -11,10 +11,9 @@ import {
 } from "react-icons/io5";
 
 export default function ComingSoon() {
-    const { isDarkMode } = useContext(authContext);
 
     return (
-        <div className={`min-h-screen ${isDarkMode ? "dark bg-[#0A0B0E]" : "bg-gradient-to-br from-slate-50 via-white to-purple-50"}`}>
+        <div className={`min-h-screen bg-ps-bg`}>
             {/* Background Effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-[120px]"></div>
@@ -33,8 +32,8 @@ export default function ComingSoon() {
                             {/* Middle ring */}
                             <div className="absolute inset-2 rounded-full border-4 border-pink-500/40"></div>
                             {/* Inner circle with icon */}
-                            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-purple-500/30">
-                                <svg className="w-16 h-16 sm:w-20 sm:h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-purple-600 via-pink-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-purple-500/30 text-white">
+                                <svg className="w-16 h-16 sm:w-20 sm:h-20 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
@@ -73,7 +72,7 @@ export default function ComingSoon() {
                         ].map((feature) => (
                             <span
                                 key={feature.label}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-ink/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm"
                             >
                                 <feature.Icon className="text-base opacity-80" aria-hidden />
                                 {feature.label}
@@ -103,7 +102,7 @@ export default function ComingSoon() {
                         </Link>
                         <Link
                             to="/shoppingMall"
-                            className="px-8 py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-gray-300 font-semibold rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 hover:scale-105"
+                            className="px-8 py-4 bg-ink/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-gray-300 font-semibold rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 hover:scale-105"
                         >
                             Explore Shopping Mall
                         </Link>

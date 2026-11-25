@@ -142,7 +142,7 @@ const ForgotPassword = () => {
                 containerStyle={otpContainerStyle}
                 inputStyle={otpInputStyle}
                 shouldAutoFocus={true}
-                renderSeparator={<span className="text-slate-300">-</span>}
+                renderSeparator={<span className="text-ps-fg2">-</span>}
                 renderInput={(props) => (
                   <input
                     {...props}
@@ -178,7 +178,7 @@ const ForgotPassword = () => {
                 <button
                   type="button"
                   onClick={() => setPasswordHidden(!passwordHidden)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ps-meta hover:text-slate-600 transition-colors"
                   aria-label={
                     passwordHidden ? "Show password" : "Hide password"
                   }

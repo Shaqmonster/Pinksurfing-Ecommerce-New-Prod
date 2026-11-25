@@ -161,12 +161,12 @@ export default function Wishlist() {
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
                   <div className="flex h-full flex-col bg-[var(--ps-bg)] border-l border-[var(--ps-brd)] shadow-2xl">
                     <div className="flex shrink-0 items-center justify-between border-b border-[var(--ps-brd)] px-5 py-4">
-                      <Dialog.Title className="text-base font-semibold text-white">
+                      <Dialog.Title className="text-base font-semibold text-ink">
                         Wishlist
                       </Dialog.Title>
                       <button
                         type="button"
-                        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)]"
+                        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-ink hover:bg-[var(--ps-surf)]"
                         onClick={() => setIsWishlistOpen(false)}
                       >
                         <span className="sr-only">Close panel</span>
@@ -191,7 +191,7 @@ export default function Wishlist() {
                       ) : isEmpty ? (
                         <div className="h-full min-h-[280px] flex flex-col items-center justify-center text-center px-4">
                           <FaHeart className="text-[var(--ps-dim)] text-4xl mb-3" />
-                          <p className="text-base font-semibold text-white">Wishlist is empty</p>
+                          <p className="text-base font-semibold text-ink">Wishlist is empty</p>
                           <p className="mt-1 text-sm text-[var(--ps-muted)]">
                             Save products you love and find them here later.
                           </p>
@@ -223,7 +223,7 @@ export default function Wishlist() {
                                   onClick={() => setIsWishlistOpen(false)}
                                   className="block"
                                 >
-                                  <h3 className="text-sm font-medium text-white line-clamp-2 hover:text-[var(--ps-purple-light)]">
+                                  <h3 className="text-sm font-medium text-ink line-clamp-2 hover:text-[var(--ps-purple-light)]">
                                     {product.name}
                                   </h3>
                                   {cleanBlurb(htmlToText(product.short_description)) && (
@@ -232,7 +232,7 @@ export default function Wishlist() {
                                     </p>
                                   )}
                                 </Link>
-                                <p className="text-sm font-semibold text-white">
+                                <p className="text-sm font-semibold text-ink">
                                   {currency}
                                   {formatMoney(product.unit_price)}
                                 </p>
@@ -248,7 +248,7 @@ export default function Wishlist() {
                                   <button
                                     type="button"
                                     onClick={() => RemoveWishlistProduct(product.id)}
-                                    className="min-h-[40px] px-3 rounded-xl text-xs font-medium text-[var(--ps-muted)] hover:text-white"
+                                    className="min-h-[40px] px-3 rounded-xl text-xs font-medium text-[var(--ps-muted)] hover:text-ink"
                                   >
                                     Remove
                                   </button>

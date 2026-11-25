@@ -49,7 +49,7 @@ export default function Tabs() {
   return (
     <div className="w-full  px-2 py-1 sm:px-0">
       <Tab.Group>
-        <Tab.List className="flex space-x-1 rounded-xl bg-[#2d1e5f] p-1">
+        <Tab.List className="flex space-x-1 rounded-xl bg-ps-action-soft p-1">
           {categories.map((category, index) => (
             <Tab
               onClick={() => {
@@ -62,7 +62,7 @@ export default function Tabs() {
                   " focus:outline-none ",
                   selected
                     ? "bg-white text-purple-900 shadow"
-                    : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
+                    : "text-blue-100 hover:bg-ink/[0.12] hover:text-ink"
                 )
               }
             >

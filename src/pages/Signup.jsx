@@ -517,7 +517,7 @@ const Signup = () => {
                   inputStyle={pinInputStyle}
                 />
               </div>
-              <p className="text-slate-400 text-xs mt-2">
+              <p className="text-ps-meta text-xs mt-2">
                 Check your spam folder if you don&apos;t see the email
               </p>
             </div>
@@ -542,7 +542,7 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setPasswordHidden(!passwordHidden)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ps-meta hover:text-slate-600 transition-colors"
                   aria-label={passwordHidden ? "Show password" : "Hide password"}
                 >
                   {passwordHidden ? (
@@ -591,13 +591,13 @@ const Signup = () => {
                     >
                       <div className="p-2 border-b border-slate-100">
                         <div className="relative">
-                          <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-ps-meta" />
                           <input
                             type="text"
                             placeholder="Search country..."
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
-                            className="w-full pl-8 pr-3 py-2 bg-slate-50 text-slate-900 rounded-lg outline-none text-sm placeholder-slate-400 border border-slate-200"
+                            className="w-full pl-8 pr-3 py-2 bg-slate-50 text-slate-900 rounded-lg outline-none text-sm placeholder-ps-meta border border-slate-200"
                             onClick={(e) => e.stopPropagation()}
                           />
                         </div>
@@ -621,7 +621,7 @@ const Signup = () => {
                             </button>
                           ))
                         ) : (
-                          <div className="px-3 py-2 text-slate-400 text-sm">
+                          <div className="px-3 py-2 text-ps-meta text-sm">
                             No countries found
                           </div>
                         )}
@@ -653,7 +653,7 @@ const Signup = () => {
           </form>
       </AuthLayout>
       {loading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-ps-bg bg-opacity-50 flex items-center justify-center z-50">
           <img src="/loading.svg" alt="Loading..." className="w-16 h-16" />
         </div>
       )}

@@ -29,7 +29,7 @@ export default function ShoppingMallNew() {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const { products } = useContext(dataContext);
-  const { currency, isDarkMode } = useContext(authContext);
+  const { currency } = useContext(authContext);
 
   // useState========================================================================
   const [filterBy, setFilterBy] = useState("");
@@ -205,7 +205,7 @@ export default function ShoppingMallNew() {
   };
 
   return (
-    <div className={`bg-white ${isDarkMode && "dark"} dark:bg-black`}>
+    <div className="bg-ps-bg">
       {/* <SearchForm /> */}
       <div>
         {/* Mobile filter dialog ===================================================================================================== */}
@@ -224,7 +224,7 @@ export default function ShoppingMallNew() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
+              <div className="fixed inset-0 bg-ps-bg bg-opacity-25" />
             </Transition.Child>
 
             <div className="fixed inset-0 z-40 flex">
@@ -244,7 +244,7 @@ export default function ShoppingMallNew() {
                     </h2>
                     <button
                       type="button"
-                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-gray-400"
+                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-ps-meta"
                       onClick={() => setMobileFiltersOpen(false)}
                     >
                       <span className="sr-only">Close menu</span>
@@ -254,7 +254,7 @@ export default function ShoppingMallNew() {
 
                   <div></div>
                   {/* Filters */}
-                  <form className="block lg:hidden px-5 py-3 text-black">
+                  <form className="block lg:hidden px-5 py-3 text-ink">
                     <h3 className="sr-only">Categories</h3>
                     <div>
                       <h2 className=" dark:text-purple-500 pb-2 text-[#363F4D] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
@@ -311,7 +311,7 @@ export default function ShoppingMallNew() {
                       {({ open }) => (
                         <>
                           <h3 className="-my-3 flow-root">
-                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                               <span className="font-medium text-gray-900 dark:text-purple-600">
                                 Sort By
                               </span>
@@ -382,8 +382,8 @@ export default function ShoppingMallNew() {
                           boxShadow: "none",
                         }}
                         barInnerColor="#F9BA48"
-                        barRightColor="#000"
-                        barLeftColor="#000"
+                        barRightColor="var(--ps-color-border)"
+                        barLeftColor="var(--ps-color-border)"
                         thumbLeftColor="#F9BA48"
                         thumbRightColor="#F9BA48"
                         onInput={(e) => handleSliderChange(e)}
@@ -406,7 +406,7 @@ export default function ShoppingMallNew() {
                             {({ open }) => (
                               <>
                                 <h3 className="-my-3 flow-root">
-                                  <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                                  <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                                     <span className="font-medium text-gray-900 dark:text-purple-600">
                                       {section.name}
                                     </span>
@@ -503,13 +503,13 @@ export default function ShoppingMallNew() {
                 <HiMiniSquares2X2
                   onClick={() => setIsCard(true)}
                   className={`text-[19px] cursor-pointer ${
-                    isCard ? "text-[#F9BA48]" : ""
+                    isCard ? "text-ps-warning" : ""
                   }`}
                 />
                 <AiOutlineBars
                   onClick={() => setIsCard(false)}
                   className={`text-[19px] cursor-pointer ${
-                    !isCard ? "text-[#F9BA48]" : ""
+                    !isCard ? "text-ps-warning" : ""
                   }`}
                 />
               </div>
@@ -519,7 +519,7 @@ export default function ShoppingMallNew() {
               {({ open }) => (
                 <>
                   <h3 className="-my-3 flow-root">
-                    <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                    <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                       <span className="font-medium text-gray-900 dark:text-white">
                         Sort By: {sortName}
                       </span>
@@ -568,7 +568,7 @@ export default function ShoppingMallNew() {
 
             <button
               type="button"
-              className="lg:hidden text-gray-400 hover:text-gray-500"
+              className="lg:hidden text-ps-meta hover:text-gray-500"
               onClick={() => setMobileFiltersOpen(true)}
             >
               <FunnelIcon className="h-5 w-5" aria-hidden="true" />
@@ -646,7 +646,7 @@ export default function ShoppingMallNew() {
                         {({ open }) => (
                           <>
                             <h3 className="-my-3 flow-root">
-                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                                 <span className="font-medium text-gray-900 dark:text-purple-600">
                                   {section.name}
                                 </span>
@@ -740,13 +740,13 @@ export default function ShoppingMallNew() {
                       boxShadow: "none",
                     }}
                     barInnerColor="#F9BA48"
-                    barRightColor="#000"
-                    barLeftColor="#000"
+                    barRightColor="var(--ps-color-border)"
+                    barLeftColor="var(--ps-color-border)"
                     thumbLeftColor="#F9BA48"
                     thumbRightColor="#F9BA48"
                     onInput={(e) => handleSliderChange(e)}
                   />
-                  <div className="flex justify-between mt-2 text-[#4d5c73]">
+                  <div className="flex justify-between mt-2 text-ps-meta">
                     <span>{`$${minValue}`}</span>
                     <span>{`$${maximumValue}`}</span>
                   </div>

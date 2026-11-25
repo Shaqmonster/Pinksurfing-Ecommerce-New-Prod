@@ -146,9 +146,9 @@ export default function VisitScheduleModal({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.96, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[#111] text-white shadow-2xl overflow-hidden"
+          className="w-full max-w-md rounded-[2rem] border border-ink/10 bg-ps-bg text-ink shadow-2xl overflow-hidden"
         >
-          <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-ink/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center text-purple-300">
                 <FaCalendarAlt />
@@ -158,14 +158,14 @@ export default function VisitScheduleModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-white/10 text-gray-400"
+              className="p-2 rounded-xl hover:bg-ink/10 text-ps-meta"
               aria-label="Close"
             >
               <IoClose size={22} />
             </button>
           </div>
           <div className="p-6 space-y-5">
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-xs text-ps-meta leading-relaxed">
               Choose any slot from the next available half-hour up to 30 days ahead.
               You will complete a small scheduling fee on our secure checkout (same as
               listing activation). Emails are sent only after payment succeeds.
@@ -180,13 +180,13 @@ export default function VisitScheduleModal({
               step={1800}
               value={slot}
               onChange={(e) => setSlot(e.target.value)}
-              className="w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-purple-500 outline-none"
+              className="w-full rounded-2xl bg-ink/5 border border-ink/10 px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-purple-500 outline-none"
             />
             <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 rounded-2xl border border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/5"
+                className="flex-1 py-3 rounded-2xl border border-ink/10 text-xs font-black uppercase tracking-widest hover:bg-ink/5"
               >
                 Cancel
               </button>
@@ -195,7 +195,7 @@ export default function VisitScheduleModal({
                   type="button"
                   disabled={submitting}
                   onClick={handleReschedule}
-                  className="flex-[2] py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-xs font-black uppercase tracking-widest disabled:opacity-50"
+                  className="flex-[2] py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-xs font-black uppercase tracking-widest disabled:opacity-50 text-white"
                 >
                   {submitting ? "Sending…" : "Send new time"}
                 </button>
@@ -204,7 +204,7 @@ export default function VisitScheduleModal({
                   type="button"
                   disabled={submitting}
                   onClick={handlePay}
-                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-black uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-purple-600/30"
+                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-black uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-purple-600/30 text-white"
                 >
                   {submitting ? "Redirecting…" : "Continue to payment"}
                 </button>

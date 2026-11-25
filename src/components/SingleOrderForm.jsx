@@ -26,7 +26,6 @@ export default function SingleOrderForm() {
     setIsSingleOrderFormOpen,
     singleOrderProduct,
     setSingleOrderProduct,
-    isDarkMode,
     isAddressFormOpen,
     setIsAddressFormOpen,
   } = useContext(authContext);
@@ -149,7 +148,7 @@ export default function SingleOrderForm() {
         <Transition appear show={showQuickOrderDialog && isSingleOrderFormOpen} as={Fragment}>
           <Dialog
             as="div"
-            className={`${isDarkMode && "dark"} relative z-50`}
+            className={`relative z-50`}
             onClose={closeModal}
           >
             <Transition.Child
@@ -179,8 +178,8 @@ export default function SingleOrderForm() {
                     {/* Header */}
                     <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9747FF]/10">
-                          <ShoppingBagIcon className="h-[18px] w-[18px] text-[#9747FF]" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ps-action/10">
+                          <ShoppingBagIcon className="h-[18px] w-[18px] text-ps-action-text" />
                         </div>
                         <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
                           Quick Order
@@ -207,7 +206,7 @@ export default function SingleOrderForm() {
                           <p className="font-semibold text-gray-900 dark:text-white capitalize truncate">
                             {singleOrderProduct.name}
                           </p>
-                          <p className="text-lg font-bold text-[#9747FF] mt-1">
+                          <p className="text-lg font-bold text-ps-action-text mt-1">
                             {currency}
                             {formatMoney(singleOrderProduct.unit_price)}
                           </p>
@@ -232,14 +231,14 @@ export default function SingleOrderForm() {
                             onClick={() => setShippingSpeed("standard")}
                             className={`rounded-xl border-2 p-3 text-left transition-all ${
                               shippingSpeed === "standard"
-                                ? "border-[#9747FF] bg-[#9747FF]/10"
-                                : "border-gray-200 dark:border-gray-700 hover:border-[#9747FF]/50"
+                                ? "border-ps-action bg-ps-action/10"
+                                : "border-gray-200 dark:border-gray-700 hover:border-ps-action/50"
                             }`}
                           >
                             <div className="flex items-center gap-2 mb-0.5">
                               <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
                                 shippingSpeed === "standard"
-                                  ? "border-[#9747FF] bg-[#9747FF]"
+                                  ? "border-ps-action bg-ps-action text-white"
                                   : "border-gray-400 dark:border-gray-500"
                               }`} />
                               <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -257,14 +256,14 @@ export default function SingleOrderForm() {
                             onClick={() => setShippingSpeed("express")}
                             className={`rounded-xl border-2 p-3 text-left transition-all ${
                               shippingSpeed === "express"
-                                ? "border-[#9747FF] bg-[#9747FF]/10"
-                                : "border-gray-200 dark:border-gray-700 hover:border-[#9747FF]/50"
+                                ? "border-ps-action bg-ps-action/10"
+                                : "border-gray-200 dark:border-gray-700 hover:border-ps-action/50"
                             }`}
                           >
                             <div className="flex items-center gap-2 mb-0.5">
                               <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
                                 shippingSpeed === "express"
-                                  ? "border-[#9747FF] bg-[#9747FF]"
+                                  ? "border-ps-action bg-ps-action text-white"
                                   : "border-gray-400 dark:border-gray-500"
                               }`} />
                               <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -282,7 +281,7 @@ export default function SingleOrderForm() {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-1.5">
-                            <MapPinIcon className="w-4 h-4 text-[#9747FF]" />
+                            <MapPinIcon className="w-4 h-4 text-ps-action-text" />
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               Delivery Address
                             </p>
@@ -290,7 +289,7 @@ export default function SingleOrderForm() {
                           <button
                             type="button"
                             onClick={() => setIsAddressFormOpen(true)}
-                            className="flex items-center gap-1 text-xs font-medium text-[#9747FF] hover:text-[#8533EE] transition-colors"
+                            className="flex items-center gap-1 text-xs font-medium text-ps-action-text hover:text-ps-action-text transition-colors"
                           >
                             <PlusIcon className="w-3.5 h-3.5" />
                             Add New
@@ -307,7 +306,7 @@ export default function SingleOrderForm() {
                                   onClick={() => setAddressesId(address.id)}
                                   className={`relative cursor-pointer rounded-xl p-3.5 transition-all ${
                                     isSelected
-                                      ? "border-2 border-[#9747FF] bg-purple-50 dark:bg-purple-900/10"
+                                      ? "border-2 border-ps-action bg-purple-50 dark:bg-purple-900/10"
                                       : "border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
                                   }`}
                                 >
@@ -315,12 +314,12 @@ export default function SingleOrderForm() {
                                     <div
                                       className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                                         isSelected
-                                          ? "border-[#9747FF] bg-[#9747FF]"
+                                          ? "border-ps-action bg-ps-action text-white"
                                           : "border-gray-300 dark:border-gray-600"
                                       }`}
                                     >
                                       {isSelected && (
-                                        <CheckIcon className="h-3 w-3 text-white" />
+                                        <CheckIcon className="h-3 w-3 text-ink" />
                                       )}
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -345,10 +344,10 @@ export default function SingleOrderForm() {
                         ) : (
                           <div
                             onClick={() => setIsAddressFormOpen(true)}
-                            className="cursor-pointer rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-[#9747FF] dark:hover:border-[#9747FF] p-6 flex flex-col items-center justify-center transition-colors"
+                            className="cursor-pointer rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-ps-action dark:hover:border-[#9747FF] p-6 flex flex-col items-center justify-center transition-colors"
                           >
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9747FF]/10 mb-2">
-                              <MapPinIcon className="h-5 w-5 text-[#9747FF]" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ps-action/10 mb-2">
+                              <MapPinIcon className="h-5 w-5 text-ps-action-text" />
                             </div>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
                               No address yet
@@ -365,7 +364,7 @@ export default function SingleOrderForm() {
                         type="button"
                         onClick={PlaceSingleOrder}
                         disabled={loading || !addressesId}
-                        className="w-full rounded-xl bg-[#9747FF] hover:bg-[#8533EE] disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-3 transition-colors flex items-center justify-center gap-2"
+                        className="w-full rounded-xl bg-ps-action hover:bg-[#8533EE] disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-3 transition-colors flex items-center justify-center gap-2"
                       >
                         {loading ? (
                           <>

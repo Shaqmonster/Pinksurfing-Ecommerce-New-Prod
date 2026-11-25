@@ -5,24 +5,24 @@ import { getConversation } from "../../api/gigs";
 import { authContext } from "../../context/authContext";
 
 const CSS = `
-.deal-room{background:#141418;border:1.5px solid #2a2a33;border-radius:8px;padding:20px;margin-top:20px;}
+.deal-room{background:var(--ps-color-surface);border:1.5px solid var(--ps-color-border);border-radius:8px;padding:20px;margin-top:20px;}
 .deal-room h3{font-size:16px;font-weight:700;margin-bottom:12px;}
-.deal-state{display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;text-transform:uppercase;background:rgba(151, 71, 255,.12);color:#9747ff;margin-bottom:16px;}
+.deal-state{display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;text-transform:uppercase;background:rgba(151, 71, 255,.12);color:var(--ps-color-action-text);margin-bottom:16px;}
 .deal-room-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
-.deal-room-btn{padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a2a33;background:#1c1c22;color:#f0f0f4;}
-.deal-room-btn:hover{border-color:#9747ff;color:#9747ff;}
-.deal-audit{font-size:12px;color:#66667a;margin-top:16px;}
+.deal-room-btn{padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--ps-color-border);background:var(--ps-color-surface-sunken);color:var(--ps-color-text);}
+.deal-room-btn:hover{border-color:var(--ps-primary);color:var(--ps-color-action-text);}
+.deal-audit{font-size:12px;color:var(--ps-color-text-meta);margin-top:16px;}
 .deal-audit li{margin-bottom:6px;}
 .escrow-list{list-style:none;padding:0;margin:0;}
-.escrow-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #2a2a33;font-size:13px;}
+.escrow-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--ps-color-border);font-size:13px;}
 .escrow-item input{width:16px;height:16px;}
 .deal-room-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
 .deal-room-head h3{margin:0;}
-.deal-room-chat{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:#9747ff;color:#fff;}
+.deal-room-chat{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:var(--ps-primary);color:#fff;}
 .deal-room-chat:disabled{opacity:.6;cursor:default;}
-.deal-room-btn.danger{border-color:#3a2226;color:#f87171;}
-.deal-room-btn.danger:hover{border-color:#f87171;color:#f87171;}
-.deal-room-note{font-size:12px;color:#8a8a9c;margin:-8px 0 16px;}
+.deal-room-btn.danger{border-color:var(--ps-color-border);color:var(--ps-color-danger);}
+.deal-room-btn.danger:hover{border-color:var(--ps-color-danger);color:var(--ps-color-danger);}
+.deal-room-note{font-size:12px;color:var(--ps-color-text-meta);margin:-8px 0 16px;}
 `;
 
 const STATE_LABELS = {
@@ -148,7 +148,7 @@ export default function DealRoomPanel({ room, token, onUpdate }) {
                     onChange={() => toggleChecklist(item.id)}
                     disabled={busy}
                   />
-                  <span style={{ color: item.done ? "#34d399" : "#b0b0c0" }}>{item.label}</span>
+                  <span style={{ color: item.done ? "var(--ps-color-success)" : "var(--ps-color-text-secondary)" }}>{item.label}</span>
                 </li>
               ))}
             </ul>

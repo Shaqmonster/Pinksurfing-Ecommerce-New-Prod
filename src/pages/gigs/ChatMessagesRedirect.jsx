@@ -50,7 +50,7 @@ const ChatMessagesRedirect = () => {
   }, []);
 
   return (
-    <div className="min-h-[40vh] flex items-center justify-center bg-[#0a0a0f] text-white/40 text-sm">
+    <div className="min-h-[40vh] flex items-center justify-center bg-ps-bg text-ink/40 text-sm">
       Opening messages…
     </div>
   );

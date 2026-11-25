@@ -46,7 +46,7 @@ export default function ProductsSection({
                 <div className="w-16 h-16 rounded-2xl bg-[var(--ps-surf)] border border-[var(--ps-brd)] flex items-center justify-center mb-5 text-[var(--ps-purple-light)]">
                     <IoCubeOutline className="text-3xl" aria-hidden />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">No products found</h3>
+                <h3 className="text-xl font-semibold text-ink mb-2">No products found</h3>
                 <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mb-6">
                     We couldn&apos;t find any products matching your criteria. Try adjusting your filters.
                 </p>

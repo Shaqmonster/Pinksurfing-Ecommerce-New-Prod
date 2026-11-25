@@ -40,7 +40,7 @@ export default function ShopByCategory() {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const { products } = useContext(dataContext);
-  const { currency, isDarkMode } = useContext(authContext);
+  const { currency } = useContext(authContext);
 
   // useState========================================================================
   const [filterBy, setFilterBy] = useState("");
@@ -297,7 +297,7 @@ export default function ShopByCategory() {
   });
 
   return (
-    <div className={`bg-white ${isDarkMode && "dark"} dark:bg-black`}>
+    <div className="bg-ps-bg">
       {/* <SearchForm /> */}
       <div>
         {/* Mobile filter dialog */}
@@ -317,7 +317,7 @@ export default function ShopByCategory() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
+              <div className="fixed inset-0 bg-ps-bg bg-opacity-25" />
             </Transition.Child>
 
             <div className="fixed inset-0 z-40 flex">
@@ -334,7 +334,7 @@ export default function ShopByCategory() {
                   <div className="flex items-center justify-between px-4">
                     <button
                       type="button"
-                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-gray-400"
+                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-ps-meta"
                       onClick={() => setMobileFiltersOpen(false)}
                     >
                       <span className="sr-only">Close menu</span>
@@ -343,7 +343,7 @@ export default function ShopByCategory() {
                   </div>
 
                   {/* Filters */}
-                  <form className="block lg:hidden px-5 py-3 text-black">
+                  <form className="block lg:hidden px-5 py-3 text-ink">
                     <h3 className="sr-only">Categories</h3>
                     <Disclosure
                       as="div"
@@ -352,7 +352,7 @@ export default function ShopByCategory() {
                       {({ open }) => (
                         <>
                           <h3 className="-my-3 flow-root">
-                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                               <span className="font-medium text-gray-900 dark:text-white">
                                 Sort By
                               </span>
@@ -418,14 +418,14 @@ export default function ShopByCategory() {
                 onClick={() => {
                   navigate("/");
                 }}
-                className=" cursor-pointer hidden lg:block w-[30px] text-[#f5f5f5] right-[2%]"
+                className=" cursor-pointer hidden lg:block w-[30px] text-ink right-[2%]"
               />
               {activeSlug ? activeSlug.replace(/-/g, " ") : "All products"}
             </h1>
             <div className="flex  items-center">
               <button
                 type="button"
-                className=" text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
+                className=" text-ps-meta hover:text-gray-500 sm:ml-6 lg:hidden"
                 onClick={() => setMobileFiltersOpen(true)}
               >
                 <span className="sr-only">Filters</span>
@@ -474,7 +474,7 @@ export default function ShopByCategory() {
                                 }}
                               >
                                 <option
-                                  className=" bg-transparent text-black border-none "
+                                  className=" bg-transparent text-ink border-none "
                                   value={category.value}
                                 >
                                   {category.name} (All)
@@ -482,7 +482,7 @@ export default function ShopByCategory() {
                                 {category.array.map((e) => {
                                   return (
                                     <option
-                                      className=" bg-transparent text-black border-none "
+                                      className=" bg-transparent text-ink border-none "
                                       key={e.name1}
                                       value={e.value1}
                                     >
@@ -502,7 +502,7 @@ export default function ShopByCategory() {
                   {({ open }) => (
                     <>
                       <h3 className="-my-3 flow-root">
-                        <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                        <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                           <span className="font-medium text-gray-900 dark:text-white">
                             Sort By
                           </span>
@@ -562,7 +562,7 @@ export default function ShopByCategory() {
                         {({ open }) => (
                           <>
                             <h3 className="-my-3 flow-root">
-                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                              <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                                 <span className="font-medium text-gray-900 dark:text-purple-600">
                                   {section.name}
                                 </span>

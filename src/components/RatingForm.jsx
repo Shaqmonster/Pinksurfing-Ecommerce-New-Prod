@@ -109,18 +109,18 @@ export default function RatingForm({ order }) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-[2.5rem] bg-[#0E0F13] border border-white/10 p-10 shadow-2xl transition-all">
+              <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-[2.5rem] bg-ps-bg border border-ink/10 p-10 shadow-2xl transition-all">
                 <div className="flex justify-between items-center mb-8">
                   <Dialog.Title as="h3" className="text-3xl font-black uppercase tracking-tighter">
                     Rate Product
                   </Dialog.Title>
-                  <button onClick={() => setIsRatingFormOpen(false)} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
+                  <button onClick={() => setIsRatingFormOpen(false)} className="w-10 h-10 rounded-full bg-ink/5 border border-ink/10 flex items-center justify-center hover:bg-ink/10 transition-all">
                     <IoCloseOutline className="text-2xl" />
                   </button>
                 </div>
 
                 <form onSubmit={handleReview} className="space-y-8">
-                  <div className="flex justify-between items-center bg-white/5 p-6 rounded-3xl border border-white/5">
+                  <div className="flex justify-between items-center bg-ink/5 p-6 rounded-3xl border border-ink/5">
                     {STYLES.map((style, idx) => {
                       const level = idx + 1;
                       const isActive = starRating >= level;
@@ -130,7 +130,7 @@ export default function RatingForm({ order }) {
                           onClick={() => { setStarRating(level); setReview(prev => ({ ...prev, rating: level })); }}
                           className="flex flex-col items-center gap-2 cursor-pointer group"
                         >
-                          <div className={`transition-all duration-300 ${isActive ? style.color : "text-white/10 group-hover:text-white/30"}`}>
+                          <div className={`transition-all duration-300 ${isActive ? style.color : "text-ink/10 group-hover:text-ink/30"}`}>
                             <IoStar className="text-3xl" />
                           </div>
                           <span className={`text-[8px] font-black uppercase tracking-widest transition-opacity ${starRating === level ? "opacity-100" : "opacity-0"}`}>
@@ -145,7 +145,7 @@ export default function RatingForm({ order }) {
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Headline</label>
                       <input
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-white placeholder-gray-600 font-bold"
+                        className="w-full bg-ink/5 border border-ink/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-ink placeholder-gray-600 font-bold"
                         name="title"
                         type="text"
                         placeholder="Summarize your experience..."
@@ -157,7 +157,7 @@ export default function RatingForm({ order }) {
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Detailed Review</label>
                       <textarea
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-white placeholder-gray-600 leading-relaxed font-medium"
+                        className="w-full bg-ink/5 border border-ink/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-purple-500/50 transition-all text-ink placeholder-gray-600 leading-relaxed font-medium"
                         rows={5}
                         name="body"
                         placeholder="What did you like or dislike? How was the quality?"

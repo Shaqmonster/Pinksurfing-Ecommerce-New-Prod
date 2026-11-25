@@ -142,13 +142,13 @@ export default function AllOrders() {
                 <button
                     type="button"
                     onClick={() => navigate("/")}
-                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-white"
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-ink"
                     aria-label="Back"
                 >
                     <ArrowLeftCircleIcon className="w-5 h-5" />
                 </button>
                 <div>
-                    <h2 className="text-xl font-semibold text-white">My orders</h2>
+                    <h2 className="text-xl font-semibold text-ink">My orders</h2>
                     <p className="text-sm text-[var(--ps-muted)]">
                         {loading ? "Loading…" : `${visibleOrderIds.length} order${visibleOrderIds.length === 1 ? "" : "s"}`}
                     </p>
@@ -183,11 +183,11 @@ export default function AllOrders() {
                                         <p className="text-xs text-[var(--ps-dim)]">
                                             Order #{head.order_number || orderId}
                                         </p>
-                                        <p className="text-sm text-white">
+                                        <p className="text-sm text-ink">
                                             {new Date(head.date_of_order).toLocaleDateString()}
                                         </p>
                                     </div>
-                                    <p className="text-base font-semibold text-white">
+                                    <p className="text-base font-semibold text-ink">
                                         {currency}
                                         {formatMoney(calculateTotalPrice(items))}
                                     </p>
@@ -204,7 +204,7 @@ export default function AllOrders() {
                                             <div className="min-w-0 flex-1 space-y-2">
                                                 <div className="flex flex-wrap items-start justify-between gap-2">
                                                     <div className="min-w-0">
-                                                        <h3 className="text-sm font-medium text-white line-clamp-2">
+                                                        <h3 className="text-sm font-medium text-ink line-clamp-2">
                                                             {order.product.name}
                                                         </h3>
                                                         <p className="text-xs text-[var(--ps-muted)] mt-0.5">
@@ -285,7 +285,7 @@ export default function AllOrders() {
                     {visibleOrderIds.length === 0 && (
                         <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] px-6 py-14 text-center">
                             <ShoppingBagIcon className="w-10 h-10 mx-auto text-[var(--ps-dim)] mb-3" />
-                            <h3 className="text-lg font-semibold text-white mb-1">No orders yet</h3>
+                            <h3 className="text-lg font-semibold text-ink mb-1">No orders yet</h3>
                             <p className="text-sm text-[var(--ps-muted)] mb-5">
                                 When you place an order, it will show up here.
                             </p>

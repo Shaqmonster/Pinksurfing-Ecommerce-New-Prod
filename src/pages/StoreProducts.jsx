@@ -33,7 +33,7 @@ export default function StoreProducts() {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const { products } = useContext(dataContext);
-  const { currency, isDarkMode } = useContext(authContext);
+  const { currency } = useContext(authContext);
 
   // State Management
   const [filterBy, setFilterBy] = useState("");
@@ -223,7 +223,7 @@ export default function StoreProducts() {
   };
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? "dark bg-[#0A0B0E]" : "bg-gradient-to-br from-slate-50 via-white to-purple-50"}`}>
+    <div className={`min-h-screen bg-ps-bg`}>
       {/* <SearchForm /> */}
       
       {/* Subtle Background Gradient */}
@@ -257,16 +257,16 @@ export default function StoreProducts() {
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-sm flex-col overflow-y-auto bg-gray-900 shadow-2xl border-l border-purple-500/20">
+              <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-sm flex-col overflow-y-auto bg-ps-surface shadow-2xl border-l border-purple-500/20">
                 {/* Mobile Filter Header */}
-                <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-gradient-to-r from-purple-600 to-pink-600">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                  <h2 className="text-xl font-bold text-ink flex items-center gap-2">
                     <FunnelIcon className="w-6 h-6" />
                     Filters
                   </h2>
                   <button
                     onClick={() => setMobileFiltersOpen(false)}
-                    className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all duration-300"
+                    className="p-2 rounded-full bg-ink/20 text-ink hover:bg-ink/30 transition-all duration-300"
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
@@ -274,8 +274,8 @@ export default function StoreProducts() {
 
                 <div className="p-4 space-y-6">
                   {/* Categories */}
-                  <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
-                    <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="bg-ps-surface p-4 rounded-2xl border border-ps-border">
+                    <h3 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
                       Categories
                     </h3>
@@ -290,7 +290,7 @@ export default function StoreProducts() {
                           className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${
                             category === categoryFilter
                               ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                              : "bg-ps-sunken text-ps-fg2 hover:bg-gray-600"
                           }`}
                         >
                           {category}
@@ -300,8 +300,8 @@ export default function StoreProducts() {
                   </div>
 
                   {/* Sort */}
-                  <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
-                    <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="bg-ps-surface p-4 rounded-2xl border border-ps-border">
+                    <h3 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                       Sort By
                     </h3>
@@ -317,7 +317,7 @@ export default function StoreProducts() {
                           className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                             option.value === sortMethod
                               ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                              : "bg-ps-sunken text-ps-fg2 hover:bg-gray-600"
                           }`}
                         >
                           {option.Icon && <option.Icon className="text-base opacity-80" aria-hidden />}
@@ -328,8 +328,8 @@ export default function StoreProducts() {
                   </div>
 
                   {/* Price Range */}
-                  <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
-                    <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <div className="bg-ps-surface p-4 rounded-2xl border border-ps-border">
+                    <h3 className="text-sm font-bold text-ink mb-4 flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                       Price Range
                     </h3>
@@ -343,8 +343,8 @@ export default function StoreProducts() {
                       ruler={false}
                       style={{ border: "none", boxShadow: "none" }}
                       barInnerColor="#8B5CF6"
-                      barRightColor="#374151"
-                      barLeftColor="#374151"
+                      barRightColor="var(--ps-color-border)"
+                      barLeftColor="var(--ps-color-border)"
                       thumbLeftColor="#8B5CF6"
                       thumbRightColor="#EC4899"
                       onChange={handleSliderChange}
@@ -382,8 +382,8 @@ export default function StoreProducts() {
           <div className="glass-card relative p-4 sm:p-5 rounded-2xl overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg sm:text-xl">{slug?.charAt(0).toUpperCase()}</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg text-white">
+                  <span className="text-ink font-bold text-lg sm:text-xl">{slug?.charAt(0).toUpperCase()}</span>
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent capitalize">
@@ -432,9 +432,9 @@ export default function StoreProducts() {
 
                 {/* Sort Dropdown - Desktop */}
                 <Menu as="div" className="relative hidden md:block">
-                  <Menu.Button className="group flex items-center gap-2 px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                  <Menu.Button className="group flex items-center gap-2 px-4 py-2.5 bg-ink/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{sortName}</span>
-                    <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                    <ChevronDownIcon className="w-5 h-5 text-ps-meta group-hover:text-purple-500 transition-colors" />
                   </Menu.Button>
                   <Transition
                     as={Fragment}
@@ -490,8 +490,8 @@ export default function StoreProducts() {
             {/* Categories */}
             <div className="glass-card p-4 rounded-xl sticky top-24">
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white">
+                  <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                   </svg>
                 </div>
@@ -522,8 +522,8 @@ export default function StoreProducts() {
             {/* Price Range */}
             <div className="glass-card p-4 rounded-xl">
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-white">
+                  <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -540,8 +540,8 @@ export default function StoreProducts() {
                   ruler={false}
                   style={{ border: "none", boxShadow: "none" }}
                   barInnerColor="#8B5CF6"
-                  barRightColor="#E5E7EB"
-                  barLeftColor="#E5E7EB"
+                  barRightColor="var(--ps-color-border)"
+                  barLeftColor="var(--ps-color-border)"
                   thumbLeftColor="#8B5CF6"
                   thumbRightColor="#EC4899"
                   onChange={handleSliderChange}
@@ -563,8 +563,8 @@ export default function StoreProducts() {
             {filters.some(f => f.options.length > 0) && (
               <div className="glass-card p-4 rounded-xl">
                 <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center text-white">
+                    <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                     </svg>
                   </div>
@@ -623,7 +623,7 @@ export default function StoreProducts() {
                 <div className="w-16 h-16 rounded-2xl bg-[var(--ps-surf)] border border-[var(--ps-brd)] flex items-center justify-center mb-5 text-[var(--ps-purple-light)]">
                   <IoCubeOutline className="text-3xl" aria-hidden />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">No products found</h3>
+                <h3 className="text-xl font-semibold text-ink mb-2">No products found</h3>
                 <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mb-6">
                   We couldn't find any products matching your criteria. Try adjusting your filters.
                 </p>
@@ -708,7 +708,7 @@ export default function StoreProducts() {
                               }`}
                             >
                               {currentPage === page && (
-                                <span className="absolute inset-0 bg-white/20 animate-pulse"></span>
+                                <span className="absolute inset-0 bg-ink/20 animate-pulse"></span>
                               )}
                               <span className="relative">{page}</span>
                             </button>

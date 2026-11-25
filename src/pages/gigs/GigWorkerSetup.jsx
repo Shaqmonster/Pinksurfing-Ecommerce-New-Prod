@@ -74,7 +74,7 @@ const GigWorkerSetup = () => {
   };
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden py-8 px-4">
+    <div className="bg-ps-bg min-h-screen relative overflow-hidden py-8 px-4">
       {/* Orbs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-pink-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -86,17 +86,17 @@ const GigWorkerSetup = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-4">
+          <div className="inline-flex items-center gap-2 bg-ink/5 border border-ink/10 rounded-full px-4 py-1.5 mb-4">
             <FaBriefcase className="text-pink-400 text-sm" />
-            <span className="text-white/60 text-sm font-medium">Become a Gig Worker</span>
+            <span className="text-ink/60 text-sm font-medium">Become a Gig Worker</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+          <h1 className="text-3xl sm:text-4xl font-bold text-ink mb-3">
             Start selling your{" "}
             <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               skills today
             </span>
           </h1>
-          <p className="text-white/50 text-base max-w-lg mx-auto">
+          <p className="text-ink/50 text-base max-w-lg mx-auto">
             Create your gig worker profile and start offering services to buyers on PinkSurfing.
           </p>
         </motion.div>
@@ -108,12 +108,12 @@ const GigWorkerSetup = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             onSubmit={handleSubmit}
-            className="w-full lg:w-[55%] bg-[#13131a] border border-white/5 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl shadow-purple-500/10"
+            className="w-full lg:w-[55%] bg-ps-surface border border-ink/5 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl shadow-purple-500/10"
           >
             {/* Profile picture */}
             <div className="space-y-2">
-              <label className="text-white/70 text-sm font-medium">
-                Profile Picture <span className="text-white/30 text-xs font-normal">(optional)</span>
+              <label className="text-ink/70 text-sm font-medium">
+                Profile Picture <span className="text-ink/30 text-xs font-normal">(optional)</span>
               </label>
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
@@ -123,18 +123,18 @@ const GigWorkerSetup = () => {
                       <button
                         type="button"
                         onClick={removeImage}
-                        className="absolute top-0.5 right-0.5 bg-black/60 rounded-full"
+                        className="on-media absolute top-0.5 right-0.5 bg-black/60 rounded-full"
                       >
                         <IoCloseCircle className="text-red-400 text-lg" />
                       </button>
                     </>
                   ) : (
-                    <div className="w-full h-full bg-[#1a1a24] border border-white/10 rounded-full flex items-center justify-center">
-                      <IoPersonCircleOutline className="text-white/20 text-4xl" />
+                    <div className="w-full h-full bg-ps-sunken border border-ink/10 rounded-full flex items-center justify-center">
+                      <IoPersonCircleOutline className="text-ink/20 text-4xl" />
                     </div>
                   )}
                 </div>
-                <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-white/10 text-white/50 text-sm cursor-pointer hover:border-purple-500 hover:text-white/80 transition-all">
+                <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-ink/10 text-ink/50 text-sm cursor-pointer hover:border-purple-500 hover:text-ink/80 transition-all">
                   <IoImageOutline className="text-base" />
                   {profilePicPreview ? "Change photo" : "Upload photo"}
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
@@ -144,7 +144,7 @@ const GigWorkerSetup = () => {
 
             {/* Bio */}
             <div className="space-y-1.5">
-              <label className="text-white/70 text-sm font-medium">
+              <label className="text-ink/70 text-sm font-medium">
                 Professional Bio <span className="text-pink-400">*</span>
               </label>
               <textarea
@@ -153,21 +153,21 @@ const GigWorkerSetup = () => {
                 placeholder="Tell buyers about your expertise, experience, and what makes you stand out…"
                 rows={5}
                 maxLength={1000}
-                className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none"
+                className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-4 py-3 text-ink placeholder-ink/30 text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 transition-all resize-none"
               />
-              <p className="text-white/20 text-xs text-right">{bio.length}/1000</p>
+              <p className="text-ink/20 text-xs text-right">{bio.length}/1000</p>
             </div>
 
             {/* What happens next */}
             <div className="bg-purple-600/5 border border-purple-500/20 rounded-xl p-4 space-y-2">
-              <p className="text-white/70 text-xs font-semibold uppercase tracking-wider">What happens next</p>
+              <p className="text-ink/70 text-xs font-semibold uppercase tracking-wider">What happens next</p>
               {[
                 "Your gig worker profile is created",
                 "You can post your first gig immediately",
                 "Buyers can find and purchase your services",
                 "Get paid via Stripe after delivery",
               ].map((step, i) => (
-                <div key={i} className="flex items-center gap-2 text-white/50 text-xs">
+                <div key={i} className="flex items-center gap-2 text-ink/50 text-xs">
                   <IoCheckmarkCircle className="text-purple-400 text-sm flex-shrink-0" />
                   {step}
                 </div>
@@ -184,7 +184,7 @@ const GigWorkerSetup = () => {
             >
               {submitting ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />
                   Creating Profile…
                 </>
               ) : (
@@ -203,41 +203,41 @@ const GigWorkerSetup = () => {
             transition={{ delay: 0.18 }}
             className="w-full lg:w-[45%] lg:sticky lg:top-8 space-y-4"
           >
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-4">Why Sell on PinkSurfing?</p>
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink/30 mb-4">Why Sell on PinkSurfing?</p>
               <div className="space-y-0">
                 {PERKS.map((perk, i) => (
                   <React.Fragment key={i}>
                     <div className="flex items-start gap-3 py-4">
-                      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center">
+                      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-ink/5 flex items-center justify-center">
                         {perk.icon}
                       </div>
                       <div>
-                        <p className="text-white font-semibold text-sm">{perk.title}</p>
-                        <p className="text-white/40 text-xs mt-0.5">{perk.desc}</p>
+                        <p className="text-ink font-semibold text-sm">{perk.title}</p>
+                        <p className="text-ink/40 text-xs mt-0.5">{perk.desc}</p>
                       </div>
                     </div>
-                    {i < PERKS.length - 1 && <div className="border-t border-white/5" />}
+                    {i < PERKS.length - 1 && <div className="border-t border-ink/5" />}
                   </React.Fragment>
                 ))}
               </div>
             </div>
 
-            <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/30 mb-3">Fee Structure</p>
+            <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink/30 mb-3">Fee Structure</p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-white/50 text-sm">You receive</span>
+                  <span className="text-ink/50 text-sm">You receive</span>
                   <span className="text-green-400 font-bold text-lg">95%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-white/50 text-sm">Platform fee</span>
-                  <span className="text-white/40 text-sm">5%</span>
+                  <span className="text-ink/50 text-sm">Platform fee</span>
+                  <span className="text-ink/40 text-sm">5%</span>
                 </div>
-                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-2 bg-ink/5 rounded-full overflow-hidden">
                   <div className="h-full w-[95%] bg-gradient-to-r from-green-500 to-emerald-400 rounded-full" />
                 </div>
-                <p className="text-white/30 text-xs">
+                <p className="text-ink/30 text-xs">
                   We only take a small 5% fee. You keep 95% of every sale.
                 </p>
               </div>

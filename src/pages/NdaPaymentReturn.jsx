@@ -65,11 +65,11 @@ const NdaPaymentReturn = () => {
 
   return (
     <>
-      <div className="min-h-[70vh] flex items-center justify-center px-4" style={{ background: "#0d0d10" }}>
+      <div className="min-h-[70vh] flex items-center justify-center px-4" style={{ background: "var(--ps-color-bg)" }}>
         <div
           style={{
-            background: "#141418",
-            border: "1px solid #2a2a33",
+            background: "var(--ps-color-surface)",
+            border: "1px solid var(--ps-color-border)",
             borderRadius: 16,
             maxWidth: 460,
             width: "100%",
@@ -119,7 +119,7 @@ const NdaPaymentReturn = () => {
             style={{
               fontSize: 22,
               fontWeight: 800,
-              color: "#f0f0f4",
+              color: "var(--ps-color-text)",
               marginBottom: 10,
               letterSpacing: "-0.02em",
             }}
@@ -131,7 +131,7 @@ const NdaPaymentReturn = () => {
           </h1>
 
           {/* Body */}
-          <p style={{ fontSize: 13, color: "#b0b0c0", lineHeight: 1.65, marginBottom: 28 }}>
+          <p style={{ fontSize: 13, color: "var(--ps-color-text-secondary)", lineHeight: 1.65, marginBottom: 28 }}>
             {phase === "accepted" &&
               "Your NDA is signed and your $1 fee is confirmed. Financial documents for this listing are unlocked — view them on the listing or in My Business Financials."}
             {phase === "verifying" &&
@@ -147,8 +147,8 @@ const NdaPaymentReturn = () => {
               style={{
                 width: 32,
                 height: 32,
-                border: "3px solid #2a2a33",
-                borderTop: "3px solid #9747ff",
+                border: "3px solid var(--ps-color-border)",
+                borderTop: "3px solid var(--ps-primary)",
                 borderRadius: "50%",
                 animation: "spin 0.8s linear infinite",
                 margin: "0 auto 28px",
@@ -179,8 +179,8 @@ const NdaPaymentReturn = () => {
                 to="/my-ndas"
                 style={{
                   display: "block",
-                  border: "1px solid #2a2a33",
-                  color: "#aaa",
+                  border: "1px solid var(--ps-color-border)",
+                  color: "var(--ps-color-text-secondary)",
                   padding: "11px 24px",
                   borderRadius: 9,
                   fontWeight: 600,
@@ -198,7 +198,7 @@ const NdaPaymentReturn = () => {
               to={productLink}
               style={{
                 display: "block",
-                background: "#9747ff",
+                background: "var(--ps-primary)",
                 color: "#fff",
                 padding: "13px 24px",
                 borderRadius: 9,

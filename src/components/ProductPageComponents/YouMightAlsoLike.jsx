@@ -37,9 +37,9 @@ const YouMightAlsoLike = ({ relatedProducts, productId, currency }) => {
             <Link
               key={product.id}
               to={`/product/productDetail/${product.slug}?productId=${product.id}`}
-              className="group rounded-[28px] border border-white/20 bg-white/30 dark:bg-white/5 backdrop-blur-2xl shadow-lg shadow-purple-200/40 dark:shadow-black/40 hover:scale-[1.01] hover:shadow-purple-300/60 transition relative overflow-hidden"
+              className="group rounded-[28px] border border-ink/20 bg-ink/30 dark:bg-white/5 backdrop-blur-2xl shadow-lg shadow-purple-200/40 dark:shadow-black/40 hover:scale-[1.01] hover:shadow-purple-300/60 transition relative overflow-hidden"
             >
-              <div className="relative bg-white/40 dark:bg-white/5 flex items-center justify-center">
+              <div className="relative bg-ink/40 dark:bg-white/5 flex items-center justify-center">
                 <img
                   className="h-48 w-full object-contain p-6 transition-transform duration-300 group-hover:scale-105"
                   src={
@@ -66,7 +66,7 @@ const YouMightAlsoLike = ({ relatedProducts, productId, currency }) => {
                   </span>
                   {discountPercentage > 0 && (
                     <>
-                      <span className="text-sm text-gray-400 line-through">
+                      <span className="text-sm text-ps-meta line-through">
                         {currency}{formatMoney(product.mrp)}
                       </span>
                     </>

@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 
 const SearchForm = () => {
   const {
-    isDarkMode,
     search,
     setSearch,
     isMobileCategoryOpen,
@@ -40,34 +39,26 @@ const SearchForm = () => {
 
   return (
     <div
-      className={`relative w-full py-3 flex sm:flex-row gap-2 sm:items-center justify-start px-[2.4%] sm:px-[2%] ${
-        isDarkMode ? "bg-[#0E0F13] text-white" : "bg-white text-black"
-      }`}
+      className={`relative w-full py-3 flex sm:flex-row gap-2 sm:items-center justify-start px-[2.4%] sm:px-[2%] bg-ps-bg text-ink`}
     >
       {/* <div
         onClick={() => {
           setIsMobileCategoryOpen(isMobileCategoryOpen === true ? false : true);
         }}
-        className="bg-[#2d1e5f] w-fit flex items-center gap-2 px-2.5 py-3 rounded-md cursor-pointer"
+        className="bg-ps-action-soft w-fit flex items-center gap-2 px-2.5 py-3 rounded-md cursor-pointer"
       >
-        <IoMenuOutline className="text-white text-[21px] sm:text-[22px] dark:text-white" />
-        <p className="hidden sm:block w-max text-white">Shop By Categories</p>
+        <IoMenuOutline className="text-ink text-[21px] sm:text-[22px] dark:text-white" />
+        <p className="hidden sm:block w-max text-ink">Shop By Categories</p>
       </div> */}
 
       <form
-        className={`flex items-start gap-5 md:w-1/3 rounded-lg ${
-          isDarkMode
-            ? "bg-[#2d1e5f] border border-black/30 text-white p-1"
-            : "bg-white border border-black text-black p-1"
-        }`}
+        className={`flex items-start gap-5 md:w-1/3 rounded-lg bg-ps-action-soft border border-black/30 text-ink p-1`}
         onSubmit={handleSubmit}
       >
         <input
           type="text"
           placeholder="Search products by name, category, subcategory..."
-          className={`border-none outline-none py-1 px-2 rounded-lg w-full ${
-            isDarkMode ? "bg-[#2d1e5f] text-white" : "bg-white text-black"
-          }`}
+          className={`border-none outline-none py-1 px-2 rounded-lg w-full bg-ps-action-soft text-ink`}
           id="search"
           name="search"
           value={search}
@@ -80,9 +71,7 @@ const SearchForm = () => {
 
         <button
           type="submit"
-          className={`px-2 py-1.5 rounded-md ${
-            isDarkMode ? "bg-[#3a2e6e] text-white" : "bg-[#2d1e5f] text-white"
-          }`}
+          className={`px-2 py-1.5 rounded-md bg-ps-action-soft text-ink`}
         >
           Search
         </button>

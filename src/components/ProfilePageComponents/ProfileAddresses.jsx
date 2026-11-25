@@ -90,7 +90,7 @@ export default function ProfileAddresses() {
     <div className="w-full max-w-3xl mx-auto space-y-6 pb-16">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-white tracking-tight">
+          <h2 className="text-2xl font-semibold text-ink tracking-tight">
             Addresses
           </h2>
           <p className="text-sm text-[var(--ps-muted)] mt-1">
@@ -100,7 +100,7 @@ export default function ProfileAddresses() {
         <button
           type="button"
           onClick={openAddAddress}
-          className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-[14px] border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-sm font-medium text-white hover:border-[var(--ps-primary)]/50 transition-colors"
+          className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-[14px] border border-[var(--ps-brd)] bg-[var(--ps-surf)] text-sm font-medium text-ink hover:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] transition-colors"
         >
           <PlusIcon className="h-4 w-4" />
           Add address
@@ -127,7 +127,7 @@ export default function ProfileAddresses() {
                     <MapPinIcon className="h-5 w-5 text-[var(--ps-purple-light)]" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-white truncate">
+                    <p className="font-semibold text-ink truncate">
                       {address.name || `Address ${index + 1}`}
                     </p>
                     {line1 ? (
@@ -155,16 +155,16 @@ export default function ProfileAddresses() {
         <button
           type="button"
           onClick={openAddAddress}
-          className="w-full rounded-2xl border border-dashed border-[var(--ps-brd)] bg-[var(--ps-card)] p-10 flex flex-col items-center justify-center text-center min-h-[200px] hover:border-[var(--ps-primary)]/50 transition-colors"
+          className="w-full rounded-2xl border border-dashed border-[var(--ps-brd)] bg-[var(--ps-card)] p-10 flex flex-col items-center justify-center text-center min-h-[200px] hover:border-[color-mix(in_srgb,var(--ps-primary)_50%,transparent)] transition-colors"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--ps-brd)] bg-[var(--ps-surf)] mb-4">
             <MapPinIcon className="h-6 w-6 text-[var(--ps-purple-light)]" />
           </div>
-          <p className="text-base font-medium text-white">No addresses yet</p>
+          <p className="text-base font-medium text-ink">No addresses yet</p>
           <p className="text-sm text-[var(--ps-muted)] mt-1 max-w-sm">
             Add a shipping address to use at checkout.
           </p>
-          <span className="mt-5 inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-[14px] border border-[var(--ps-brd)] text-sm font-medium text-white">
+          <span className="mt-5 inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-[14px] border border-[var(--ps-brd)] text-sm font-medium text-ink">
             <PlusIcon className="h-4 w-4" />
             Add address
           </span>

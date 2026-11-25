@@ -81,15 +81,15 @@ export default function MobileFilterDrawer({
                         leaveTo="translate-x-full"
                     >
                         <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-sm flex-col overflow-y-auto border-l border-[var(--ps-brd)] bg-[var(--ps-bg)] shadow-2xl">
-                            <div className="sticky top-0 z-10 flex items-center justify-between bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] p-4">
-                                <Dialog.Title className="flex items-center gap-2 text-xl font-bold text-white">
+                            <div className="sticky top-0 z-10 flex items-center justify-between bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] p-4 text-white">
+                                <Dialog.Title className="flex items-center gap-2 text-xl font-bold text-ink">
                                     <FunnelIcon className="h-6 w-6" aria-hidden />
                                     Filters
                                 </Dialog.Title>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
+                                    className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-ink/20 text-ink transition-colors hover:bg-ink/30"
                                     aria-label="Close filters"
                                 >
                                     <XMarkIcon className="h-6 w-6" />
@@ -129,7 +129,7 @@ export default function MobileFilterDrawer({
                                     />
                                 ) : (
                                     <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-4">
-                                        <h3 className="mb-3 text-sm font-bold text-white">Subcategories</h3>
+                                        <h3 className="mb-3 text-sm font-bold text-ink">Subcategories</h3>
                                         <div className="custom-scrollbar max-h-48 space-y-2 overflow-y-auto">
                                             {CategoryOnlyData.filter(
                                                 (cat) => cat && cat !== "null" && cat !== "undefined"
@@ -146,7 +146,7 @@ export default function MobileFilterDrawer({
                                                     className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                                                         subcategory === categoryFilter
                                                             ? "bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white"
-                                                            : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:text-white"
+                                                            : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:text-ink"
                                                     }`}
                                                 >
                                                     {formatSubcategoryLabel(subcategory)}
@@ -157,7 +157,7 @@ export default function MobileFilterDrawer({
                                 )}
 
                                 <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-4">
-                                    <h3 className="mb-3 text-sm font-bold text-white">Sort By</h3>
+                                    <h3 className="mb-3 text-sm font-bold text-ink">Sort By</h3>
                                     <div className="space-y-2">
                                         {SORT_METHODS.map((option) => (
                                             <button
@@ -171,7 +171,7 @@ export default function MobileFilterDrawer({
                                                 className={`flex min-h-[44px] w-full items-center gap-2 rounded-xl px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                                                     option.value === sortMethod
                                                         ? "bg-gradient-to-r from-[var(--ps-primary)] to-[var(--ps-purple-dark)] text-white"
-                                                        : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:text-white"
+                                                        : "bg-[var(--ps-surf)] text-[var(--ps-muted)] hover:text-ink"
                                                 }`}
                                             >
                                                 {option.Icon && (
@@ -199,12 +199,12 @@ export default function MobileFilterDrawer({
                                 {allowedAttributes.length > 0 && (
                                     <div className="rounded-2xl border border-[var(--ps-brd)] bg-[var(--ps-card)] p-4">
                                         <div className="mb-4 flex items-center justify-between">
-                                            <h3 className="text-sm font-bold text-white">Filter by Attributes</h3>
+                                            <h3 className="text-sm font-bold text-ink">Filter by Attributes</h3>
                                             {hasActiveFilters(attributeFilters) && (
                                                 <button
                                                     type="button"
                                                     onClick={clearAttributeFilters}
-                                                    className="min-h-[44px] px-2 text-xs font-medium text-[var(--ps-purple-light)] hover:text-white"
+                                                    className="min-h-[44px] px-2 text-xs font-medium text-[var(--ps-purple-light)] hover:text-ink"
                                                 >
                                                     Clear
                                                 </button>

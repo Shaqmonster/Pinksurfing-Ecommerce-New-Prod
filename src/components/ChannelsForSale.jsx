@@ -25,7 +25,7 @@ const ChannelsForSale = () => {
 
   return (
     <div className="bg-white dark:bg-[#0E0F13] text-black dark:text-white py-8 px-4">
-      <h1 className="text-3xl font-playfair font-bold text-center text-[#B881FF] mb-8">
+      <h1 className="text-3xl font-playfair font-bold text-center text-ps-action-text mb-8">
         Accounts for Sale
       </h1>
       <div className="flex flex-wrap justify-center gap-6">

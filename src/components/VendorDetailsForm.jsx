@@ -13,7 +13,7 @@ import { useAccessToken } from "../hooks/useAccessToken";
 
 export default function VendorDetailsForm() {
   const accessToken = useAccessToken();
-  const { isVendorFormOpen, isDarkMode, user, setUser, setIsVendorFormOpen } =
+  const { isVendorFormOpen, user, setUser, setIsVendorFormOpen } =
     useContext(authContext);
   const [cookies, removeCookie] = useCookies([]);
   const navigate = useNavigate();
@@ -213,7 +213,7 @@ export default function VendorDetailsForm() {
       <Transition appear show={isVendorFormOpen} as={Fragment}>
         <Dialog
           as="div"
-          className={`relative ${isDarkMode && "dark"} z-10`}
+          className={`relative z-10`}
           onClose={closeModal}
         >
           <Transition.Child

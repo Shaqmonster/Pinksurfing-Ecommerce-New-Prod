@@ -50,37 +50,37 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
   const statusLabel = (s) => STATUS_CONFIG[s]?.label || "In Progress";
 
   return (
-    <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4 sm:p-5 mb-6">
-      <h3 className="text-white font-bold text-base sm:text-lg mb-1">Order Center (Simple View)</h3>
-      <p className="text-white/45 text-xs sm:text-sm mb-4">
+    <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4 sm:p-5 mb-6">
+      <h3 className="text-ink font-bold text-base sm:text-lg mb-1">Order Center (Simple View)</h3>
+      <p className="text-ink/45 text-xs sm:text-sm mb-4">
         Quick view of what you bought and what you need to deliver.
       </p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-          <p className="text-white/70 text-sm font-semibold mb-2">As Buyer (orders you placed)</p>
+        <div className="rounded-xl border border-ink/10 bg-ink/[0.02] p-3">
+          <p className="text-ink/70 text-sm font-semibold mb-2">As Buyer (orders you placed)</p>
           {recentBuyer.length === 0 ? (
-            <p className="text-white/40 text-xs">No buyer orders yet.</p>
+            <p className="text-ink/40 text-xs">No buyer orders yet.</p>
           ) : (
             <div className="space-y-2">
               {recentBuyer.map((o) => (
                 <Link
                   key={`simple-b-${o.id}`}
                   to={`/gigs/orders/${o.id}`}
-                  className="flex items-center justify-between rounded-lg border border-white/10 p-2 hover:bg-white/[0.03]"
+                  className="flex items-center justify-between rounded-lg border border-ink/10 p-2 hover:bg-ink/[0.03]"
                 >
                   <div className="min-w-0">
-                    <p className="text-white text-xs font-semibold truncate">
+                    <p className="text-ink text-xs font-semibold truncate">
                       {o.gig?.title || `Order #${o.id}`}
                     </p>
-                    <p className="text-white/45 text-[11px]">
+                    <p className="text-ink/45 text-[11px]">
                       #{o.id} • {statusLabel(o.status)}
                     </p>
                   </div>
                   <div className="text-right ml-3">
-                    <p className="text-white/80 text-xs font-semibold">
+                    <p className="text-ink/80 text-xs font-semibold">
                       ${parseFloat(o.total_price || 0).toFixed(2)}
                     </p>
-                    <p className="text-white/35 text-[11px]">you paid</p>
+                    <p className="text-ink/35 text-[11px]">you paid</p>
                   </div>
                 </Link>
               ))}
@@ -88,10 +88,10 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
           )}
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-          <p className="text-white/70 text-sm font-semibold mb-2">As Seller (orders you fulfill)</p>
+        <div className="rounded-xl border border-ink/10 bg-ink/[0.02] p-3">
+          <p className="text-ink/70 text-sm font-semibold mb-2">As Seller (orders you fulfill)</p>
           {recentSeller.length === 0 ? (
-            <p className="text-white/40 text-xs">
+            <p className="text-ink/40 text-xs">
               No seller orders yet.{" "}
               <Link to="/gighub/seller" className="text-pink-400 hover:underline">
                 Open Seller studio
@@ -103,13 +103,13 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
                 <Link
                   key={`simple-s-${o.id}`}
                   to={`/gigs/orders/${o.id}`}
-                  className="flex items-center justify-between rounded-lg border border-white/10 p-2 hover:bg-white/[0.03]"
+                  className="flex items-center justify-between rounded-lg border border-ink/10 p-2 hover:bg-ink/[0.03]"
                 >
                   <div className="min-w-0">
-                    <p className="text-white text-xs font-semibold truncate">
+                    <p className="text-ink text-xs font-semibold truncate">
                       {o.gig?.title || `Order #${o.id}`}
                     </p>
-                    <p className="text-white/45 text-[11px]">
+                    <p className="text-ink/45 text-[11px]">
                       #{o.id} • {statusLabel(o.status)}
                     </p>
                   </div>
@@ -117,7 +117,7 @@ const SimpleOrderCenter = ({ buyerOrders, sellerOrders }) => {
                     <p className="text-emerald-300 text-xs font-semibold">
                       ${parseFloat(o.seller_net_earnings || 0).toFixed(2)}
                     </p>
-                    <p className="text-white/35 text-[11px]">you receive</p>
+                    <p className="text-ink/35 text-[11px]">you receive</p>
                   </div>
                 </Link>
               ))}
@@ -192,25 +192,25 @@ const BuyerDashboardContent = ({ orders, loading }) => {
         ].map((m, i) => (
           <div
             key={i}
-            className="rounded-3xl p-6 bg-[#13131a]/70 border border-pink-500/[0.09] backdrop-blur-md"
+            className="rounded-3xl p-6 bg-ps-surface/70 border border-pink-500/[0.09] backdrop-blur-md"
           >
-            <p className="text-white/50 text-[13px] font-medium">{m.label}</p>
-            <p className="text-white text-[32px] leading-none font-semibold tracking-tight mt-4">{m.value}</p>
-            <p className="text-white/35 text-[12px] mt-3 leading-snug">{m.sub}</p>
+            <p className="text-ink/50 text-[13px] font-medium">{m.label}</p>
+            <p className="text-ink text-[32px] leading-none font-semibold tracking-tight mt-4">{m.value}</p>
+            <p className="text-ink/35 text-[12px] mt-3 leading-snug">{m.sub}</p>
           </div>
         ))}
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div>
-          <h2 className="text-white text-[26px] font-semibold tracking-tight">Your orders</h2>
-          <p className="text-white/45 text-[15px] mt-2 max-w-lg leading-relaxed">
+          <h2 className="text-ink text-[26px] font-semibold tracking-tight">Your orders</h2>
+          <p className="text-ink/45 text-[15px] mt-2 max-w-lg leading-relaxed">
             Status reflects where the gig is in delivery. Open an order for full details and chat.
           </p>
         </div>
 
         {orders.length > 0 && (
-          <div className="inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-[#13131a]/90 border border-white/[0.08]">
+          <div className="inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-ps-surface/90 border border-ink/[0.08]">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -219,7 +219,7 @@ const BuyerDashboardContent = ({ orders, loading }) => {
                 className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
                   filter === f.key
                     ? "text-white bg-gradient-to-r from-violet-600 to-pink-500 shadow-md shadow-pink-500/15"
-                    : "text-white/50 hover:text-white/80"
+                    : "text-ink/50 hover:text-ink/80"
                 }`}
               >
                 {f.label}
@@ -234,7 +234,7 @@ const BuyerDashboardContent = ({ orders, loading }) => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-3xl h-[100px] bg-[#13131a]/50 animate-pulse border border-white/[0.04]"
+              className="rounded-3xl h-[100px] bg-ps-surface/50 animate-pulse border border-ink/[0.04]"
             />
           ))}
         </div>
@@ -243,10 +243,10 @@ const BuyerDashboardContent = ({ orders, loading }) => {
           <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
             <FaBriefcase className="text-pink-400/70 text-xl" />
           </div>
-          <p className="text-white text-[17px] font-semibold tracking-tight">
+          <p className="text-ink text-[17px] font-semibold tracking-tight">
             {orders.length === 0 ? "No orders yet" : "No matches"}
           </p>
-          <p className="text-white/40 text-sm mt-2 mb-8 max-w-sm mx-auto leading-relaxed">
+          <p className="text-ink/40 text-sm mt-2 mb-8 max-w-sm mx-auto leading-relaxed">
             {orders.length === 0
               ? "Browse GigHub and book a service you need."
               : "Pick another filter to see more orders."}
@@ -268,36 +268,36 @@ const BuyerDashboardContent = ({ orders, loading }) => {
               <li key={order.id}>
                 <Link
                   to={`/gigs/orders/${order.id}`}
-                  className="block rounded-3xl p-5 sm:p-6 bg-[#13131a]/75 border border-white/[0.06] hover:border-pink-500/25 hover:bg-[#16161f]/90 transition-all duration-200"
+                  className="block rounded-3xl p-5 sm:p-6 bg-ps-surface/75 border border-ink/[0.06] hover:border-pink-500/25 hover:bg-ps-surface/90 transition-all duration-200"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-5">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`w-2 h-2 rounded-full shrink-0 ${statusCfg.dot}`} aria-hidden />
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/45">
                           {statusCfg.label}
                         </span>
                       </div>
-                      <p className="text-white font-semibold text-[17px] tracking-tight line-clamp-2">
+                      <p className="text-ink font-semibold text-[17px] tracking-tight line-clamp-2">
                         {order.gig?.title || `Order #${order.id}`}
                       </p>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-white/38 text-[13px] mt-3">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-ink/38 text-[13px] mt-3">
                         <span className="tabular-nums">#{order.id}</span>
                         {order.package && (
                           <>
-                            <span className="text-white/15">·</span>
+                            <span className="text-ink/15">·</span>
                             <span className="capitalize">{order.package.tier} package</span>
                           </>
                         )}
-                        <span className="text-white/15">·</span>
+                        <span className="text-ink/15">·</span>
                         <span>{formatDate(order.created_at)}</span>
                       </div>
                     </div>
-                    <div className="sm:text-right shrink-0 pt-2 sm:pt-0 border-t border-white/[0.06] sm:border-0 sm:pl-6">
-                      <p className="text-white/40 text-[11px] font-medium uppercase tracking-wider mb-1">
+                    <div className="sm:text-right shrink-0 pt-2 sm:pt-0 border-t border-ink/[0.06] sm:border-0 sm:pl-6">
+                      <p className="text-ink/40 text-[11px] font-medium uppercase tracking-wider mb-1">
                         Order total
                       </p>
-                      <p className="text-white text-[22px] font-semibold tracking-tight tabular-nums">
+                      <p className="text-ink text-[22px] font-semibold tracking-tight tabular-nums">
                         ${parseFloat(order.total_price || 0).toFixed(2)}
                       </p>
                     </div>
@@ -348,7 +348,7 @@ const GigHubDashboard = () => {
   const sellerOrders = allOrders.filter((o) => o.is_seller === true);
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
+    <div className="bg-ps-bg min-h-screen relative overflow-hidden">
       <div className="absolute -top-40 right-0 w-[680px] h-[680px] bg-pink-500/[0.07] rounded-full blur-[160px] pointer-events-none" />
       <div className="absolute top-1/3 -left-32 w-[420px] h-[420px] bg-violet-600/[0.06] rounded-full blur-[120px] pointer-events-none" />
 
@@ -363,10 +363,10 @@ const GigHubDashboard = () => {
             <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-pink-400/85 mb-4">
               GigHub · Buyer
             </p>
-            <h1 className="text-white text-[36px] sm:text-[42px] leading-[1.06] font-semibold tracking-[-0.025em]">
+            <h1 className="text-ink text-[36px] sm:text-[42px] leading-[1.06] font-semibold tracking-[-0.025em]">
               {user?.first_name ? `Welcome back, ${user.first_name}.` : "Welcome back."}
             </h1>
-            <p className="text-white/45 text-[15px] mt-4 leading-relaxed">
+            <p className="text-ink/45 text-[15px] mt-4 leading-relaxed">
               Orders you&apos;ve placed on GigHub. Selling has its own space — switch anytime without mixing the two.
             </p>
           </div>
@@ -374,14 +374,14 @@ const GigHubDashboard = () => {
           <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 shrink-0">
             <Link
               to="/gigs"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold bg-[#13131a]/90 border border-white/[0.08] text-white/80 hover:border-pink-500/30 hover:text-white transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold bg-ps-surface/90 border border-ink/[0.08] text-ink/80 hover:border-pink-500/30 hover:text-ink transition-colors"
             >
               <IoEyeOutline className="text-base text-pink-400/90" /> Browse
             </Link>
             <button
               type="button"
               onClick={openChatInbox}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold bg-[#13131a]/90 border border-white/[0.08] text-white/80 hover:border-pink-500/30 hover:text-white transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold bg-ps-surface/90 border border-ink/[0.08] text-ink/80 hover:border-pink-500/30 hover:text-ink transition-colors"
             >
               <IoChatbubbleOutline className="text-base text-pink-400/90" /> Messages
             </button>

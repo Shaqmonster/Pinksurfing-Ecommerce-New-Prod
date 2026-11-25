@@ -20,9 +20,9 @@ const STATUS_TEXT = {
 
 function Fact({ label, value }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-      <p className="text-white/40 text-xs">{label}</p>
-      <p className="text-white font-semibold text-sm mt-0.5 break-words">{value}</p>
+    <div className="bg-ink/5 border border-ink/10 rounded-xl p-3">
+      <p className="text-ink/40 text-xs">{label}</p>
+      <p className="text-ink font-semibold text-sm mt-0.5 break-words">{value}</p>
     </div>
   );
 }
@@ -58,16 +58,16 @@ export default function RequestDetailPage() {
 
   if (state === "loading") {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex justify-center pt-24">
-        <span className="w-8 h-8 border-2 border-white/20 border-t-pink-400 rounded-full animate-spin" />
+      <div className="min-h-screen bg-ps-bg flex justify-center pt-24">
+        <span className="w-8 h-8 border-2 border-ink/20 border-t-pink-400 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (state !== "ready" || !req) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] px-4 pt-24 text-center">
-        <p className="text-white/60">
+      <div className="min-h-screen bg-ps-bg px-4 pt-24 text-center">
+        <p className="text-ink/60">
           {state === "missing"
             ? "This request doesn't exist or isn't yours."
             : "Couldn't load this request."}
@@ -96,22 +96,22 @@ export default function RequestDetailPage() {
   const open = ["OPEN", "EVALUATING"].includes(req.status);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-ps-bg">
       <div className="max-w-3xl mx-auto px-4 py-8">
         <Link
           to="/my-bids"
-          className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white"
+          className="inline-flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink"
         >
           <IoArrowBack /> My Bids
         </Link>
 
-        <div className="mt-4 bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6">
+        <div className="mt-4 bg-ink/5 border border-ink/10 rounded-2xl p-5 sm:p-6">
           <p className="text-xs font-semibold text-pink-300">
             {STATUS_TEXT[req.status] || req.status}
           </p>
-          <h1 className="text-white text-xl sm:text-2xl font-bold mt-1 break-words">{req.title}</h1>
+          <h1 className="text-ink text-xl sm:text-2xl font-bold mt-1 break-words">{req.title}</h1>
           {req.description && (
-            <p className="text-white/60 text-sm mt-2 whitespace-pre-line">{req.description}</p>
+            <p className="text-ink/60 text-sm mt-2 whitespace-pre-line">{req.description}</p>
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
@@ -135,31 +135,31 @@ export default function RequestDetailPage() {
                   key={i}
                   src={img}
                   alt={`Photo ${i + 1}`}
-                  className="w-20 h-20 rounded-lg object-cover border border-white/10 shrink-0"
+                  className="w-20 h-20 rounded-lg object-cover border border-ink/10 shrink-0"
                 />
               ))}
             </div>
           )}
         </div>
 
-        <h2 className="mt-6 text-white font-semibold">
+        <h2 className="mt-6 text-ink font-semibold">
           {sorted.length === 0
             ? "Offers"
             : `${sorted.length} offer${sorted.length === 1 ? "" : "s"}, cheapest first`}
         </h2>
 
         {sorted.length === 0 ? (
-          <div className="mt-3 text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-            <FaGavel className="text-4xl text-white/10 mx-auto mb-3" />
-            <p className="text-white/60 text-sm">No offers yet.</p>
-            <p className="text-white/40 text-xs mt-1 inline-flex items-center gap-1">
+          <div className="mt-3 text-center py-12 bg-ink/5 border border-ink/10 rounded-2xl">
+            <FaGavel className="text-4xl text-ink/10 mx-auto mb-3" />
+            <p className="text-ink/60 text-sm">No offers yet.</p>
+            <p className="text-ink/40 text-xs mt-1 inline-flex items-center gap-1">
               <IoTimeOutline /> Vendors can see your request now. Their offers will show up here.
             </p>
           </div>
         ) : (
           <div className="mt-3 space-y-3">
             {open && sorted.length > 1 && (
-              <p className="text-white/50 text-xs">
+              <p className="text-ink/50 text-xs">
                 Totals include shipping{quantity > 1 ? ` for all ${quantity} items` : ""}. Accepting an
                 offer adds it to your cart.
               </p>

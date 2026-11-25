@@ -4,6 +4,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        // White in dark mode, near-black in light. Use with alpha: text-ink/50, border-ink/10, bg-ink/5.
+        ink: "rgb(var(--ps-ink) / calc(<alpha-value> * var(--ps-ink-k)))",
         ps: {
           bg: "var(--ps-bg)",
           surf: "var(--ps-surf)",
@@ -22,6 +24,25 @@ export default {
           dim: "var(--ps-dim)",
           brd: "var(--ps-brd)",
           brd2: "var(--ps-brd2)",
+          // Semantic, theme-aware names — prefer these in new code.
+          fg: "var(--ps-color-text)",
+          fg2: "var(--ps-color-text-secondary)",
+          meta: "var(--ps-color-text-meta)",
+          surface: "var(--ps-color-surface)",
+          raised: "var(--ps-color-surface-raised)",
+          sunken: "var(--ps-color-surface-sunken)",
+          border: "var(--ps-color-border)",
+          "border-strong": "var(--ps-color-border-strong)",
+          action: "var(--ps-color-action)",
+          "action-text": "var(--ps-color-action-text)",
+          "on-action": "var(--ps-color-on-action)",
+          focus: "var(--ps-color-focus)",
+          success: "var(--ps-color-success)",
+          warning: "var(--ps-color-warning)",
+          danger: "var(--ps-color-danger)",
+          overlay: "var(--ps-color-overlay)",
+          hover: "var(--ps-hover)",
+          "action-soft": "var(--ps-action-soft)",
         },
       },
       fontFamily: {

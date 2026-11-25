@@ -8,7 +8,7 @@ const IdentityVerify = () => {
   const returnUrl = searchParams.get("returnUrl") || "/";
 
   return (
-    <div className="min-h-[60vh] bg-[#0a0a0f]">
+    <div className="min-h-[60vh] bg-ps-bg">
       <DiditVerificationGate
         onVerified={() => navigate(returnUrl, { replace: true })}
         title="Identity verification"

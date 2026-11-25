@@ -109,44 +109,44 @@ const JobProposals = ({ req, accessToken, onHired }) => {
   if (proposals === null) {
     return (
       <div className="flex justify-center py-6">
-        <span className="w-6 h-6 border-2 border-white/20 border-t-pink-400 rounded-full animate-spin" />
+        <span className="w-6 h-6 border-2 border-ink/20 border-t-pink-400 rounded-full animate-spin" />
       </div>
     );
   }
   if (proposals.length === 0) {
-    return <p className="text-white/40 text-sm">No proposals yet.</p>;
+    return <p className="text-ink/40 text-sm">No proposals yet.</p>;
   }
   const canHire = ["OPEN", "EVALUATING"].includes(req.status);
   return proposals.map((p) => (
-    <div key={p.id} className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 space-y-3">
+    <div key={p.id} className="bg-ink/5 border border-ink/10 rounded-xl p-3 sm:p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-white font-medium text-sm truncate">{p.worker_name}</p>
+          <p className="text-ink font-medium text-sm truncate">{p.worker_name}</p>
           {Number(p.worker_rating) > 0 && (
-            <p className="text-white/40 text-xs">Rating {Number(p.worker_rating).toFixed(1)}</p>
+            <p className="text-ink/40 text-xs">Rating {Number(p.worker_rating).toFixed(1)}</p>
           )}
         </div>
         <span
           className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-            PROPOSAL_STATUS_COLORS[p.status] || "bg-gray-500/20 text-gray-400"
+            PROPOSAL_STATUS_COLORS[p.status] || "bg-gray-500/20 text-ps-meta"
           }`}
         >
           {p.status}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        <div className="bg-white/5 rounded-lg p-2.5">
-          <p className="text-white/40 text-xs">Price</p>
+        <div className="bg-ink/5 rounded-lg p-2.5">
+          <p className="text-ink/40 text-xs">Price</p>
           <p className="text-emerald-400 font-bold text-sm sm:text-base">${formatMoney(p.amount)}</p>
         </div>
-        <div className="bg-white/5 rounded-lg p-2.5">
-          <p className="text-white/40 text-xs">Delivery</p>
-          <p className="text-white font-semibold text-sm">{p.delivery_days} days</p>
+        <div className="bg-ink/5 rounded-lg p-2.5">
+          <p className="text-ink/40 text-xs">Delivery</p>
+          <p className="text-ink font-semibold text-sm">{p.delivery_days} days</p>
         </div>
       </div>
-      <div className="bg-white/5 rounded-lg p-3">
-        <p className="text-white/40 text-xs mb-1">Proposal</p>
-        <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{p.cover_letter}</p>
+      <div className="bg-ink/5 rounded-lg p-3">
+        <p className="text-ink/40 text-xs mb-1">Proposal</p>
+        <p className="text-ink/80 text-sm leading-relaxed whitespace-pre-line">{p.cover_letter}</p>
       </div>
       {canHire && p.status === "PENDING" && (
         <button
@@ -176,7 +176,7 @@ const STATUS_COLORS = {
   OPEN: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   EVALUATING: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   AWARDED: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  CLOSED: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  CLOSED: "bg-gray-500/20 text-ps-meta border-gray-500/30",
   CANCELLED: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
@@ -202,7 +202,7 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden"
+      className="bg-ink/5 backdrop-blur-md border border-ink/10 rounded-2xl overflow-hidden"
     >
       {/* Card Header */}
       <div className="p-4 sm:p-6">
@@ -215,29 +215,29 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
                 {req.status}
               </span>
               {(type === "job" ? jobLabel : req.category_name) && (
-                <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs text-ink/40 bg-ink/10 px-2.5 py-0.5 rounded-full">
                   {type === "job" ? jobLabel : req.category_name}
                 </span>
               )}
               {type === "product" && (
                 <>
-                  <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                  <span className="text-xs text-ink/40 bg-ink/10 px-2.5 py-0.5 rounded-full">
                     Qty {req.quantity || 1}
                   </span>
                   {req.condition && (
-                    <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                    <span className="text-xs text-ink/40 bg-ink/10 px-2.5 py-0.5 rounded-full">
                       {conditionLabel(req.condition)}
                     </span>
                   )}
                   {req.ship_to_zip && (
-                    <span className="text-xs text-white/40 bg-white/10 px-2.5 py-0.5 rounded-full">
+                    <span className="text-xs text-ink/40 bg-ink/10 px-2.5 py-0.5 rounded-full">
                       Ships to {req.ship_to_zip}
                     </span>
                   )}
                 </>
               )}
             </div>
-            <h3 className="text-white font-semibold text-base sm:text-lg truncate">
+            <h3 className="text-ink font-semibold text-base sm:text-lg truncate">
               <Link
                 to={type === "product" ? `/my-bids/${req.id}` : `/gigs/jobs/${req.id}`}
                 className="hover:text-pink-300 transition-colors"
@@ -245,11 +245,11 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
                 {req.title}
               </Link>
             </h3>
-            <p className="text-white/50 text-sm mt-1 line-clamp-2">{req.description}</p>
+            <p className="text-ink/50 text-sm mt-1 line-clamp-2">{req.description}</p>
           </div>
           <button
             onClick={() => onDelete(req.id)}
-            className="shrink-0 p-2 rounded-lg hover:bg-red-500/20 text-white/30 hover:text-red-400 transition-colors"
+            className="shrink-0 p-2 rounded-lg hover:bg-red-500/20 text-ink/30 hover:text-red-400 transition-colors"
             title="Delete"
           >
             <IoTrashOutline className="text-lg" />
@@ -258,21 +258,21 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
 
         {/* Meta row */}
         <div className="flex flex-wrap gap-3 sm:gap-4 mt-4 text-sm">
-          <div className="flex items-center gap-1.5 text-white/60">
+          <div className="flex items-center gap-1.5 text-ink/60">
             <span className="text-emerald-400 font-semibold">
               {type === "job" ? jobBudgetLabel(req.budget) : `$${formatMoney(req.budget)}`}
             </span>
-            <span className="text-white/30">budget</span>
+            <span className="text-ink/30">budget</span>
           </div>
           {req.deadline && (
-            <div className="flex items-center gap-1.5 text-white/60">
+            <div className="flex items-center gap-1.5 text-ink/60">
               <IoTimeOutline className="shrink-0" />
               <span>
                 {formatDay(req.deadline, { month: "short", day: "numeric", year: "numeric" })}
               </span>
             </div>
           )}
-          <div className="flex items-center gap-1.5 text-white/60">
+          <div className="flex items-center gap-1.5 text-ink/60">
             <FaGavel className="text-pink-400 text-xs shrink-0" />
             <span>
               {count} {word}
@@ -288,7 +288,7 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
                 key={i}
                 src={img}
                 alt={`img-${i}`}
-                className="w-12 h-12 rounded-lg object-cover border border-white/10 shrink-0"
+                className="w-12 h-12 rounded-lg object-cover border border-ink/10 shrink-0"
               />
             ))}
           </div>
@@ -297,7 +297,7 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
         {type === "product" && (
           <Link
             to={`/my-bids/${req.id}`}
-            className="mt-4 mr-4 inline-flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white"
+            className="mt-4 mr-4 inline-flex items-center gap-1 text-sm font-medium text-ink/70 hover:text-ink"
           >
             Open request →
           </Link>
@@ -323,10 +323,10 @@ const RequestCard = ({ req, type, accessToken, onAcceptBid, onDelete, onChanged,
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="border-t border-white/10 overflow-hidden"
+            className="border-t border-ink/10 overflow-hidden"
           >
             <div className="p-4 sm:p-6 space-y-4">
-              <p className="text-white/40 text-xs uppercase tracking-wider font-semibold">
+              <p className="text-ink/40 text-xs uppercase tracking-wider font-semibold">
                 {type === "job" ? "Proposals" : "Vendor Offers"}
               </p>
               {type === "job" ? (
@@ -414,7 +414,7 @@ const MyBidsPage = ({ type = "product" }) => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-ps-bg">
       {type === "job" && <BidsNavBar />}
 
       {/* Background glow */}
@@ -435,9 +435,9 @@ const MyBidsPage = ({ type = "product" }) => {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <IoReceiptOutline className="text-pink-400 text-xl" />
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">{copy.title}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-ink">{copy.title}</h1>
                 </div>
-                <p className="text-white/50 text-sm">
+                <p className="text-ink/50 text-sm">
                   {copy.subtitle}
                 </p>
               </div>
@@ -457,14 +457,14 @@ const MyBidsPage = ({ type = "product" }) => {
           {!loading && requests.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {[
-                { label: "Total Requests", value: requests.length, color: "text-white" },
+                { label: "Total Requests", value: requests.length, color: "text-ink" },
                 { label: "Open", value: counts["OPEN"] || 0, color: "text-emerald-400" },
                 { label: copy.statLabel, value: requests.reduce((sum, r) => sum + responseCount(r, type), 0), color: "text-pink-400" },
                 { label: "Awarded", value: counts["AWARDED"] || 0, color: "text-purple-400" },
               ].map(({ label, value, color }) => (
-                <div key={label} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 text-center">
+                <div key={label} className="bg-ink/5 backdrop-blur-md border border-ink/10 rounded-xl p-4 text-center">
                   <p className={`text-xl font-bold ${color}`}>{value}</p>
-                  <p className="text-xs text-white/40 mt-1">{label}</p>
+                  <p className="text-xs text-ink/40 mt-1">{label}</p>
                 </div>
               ))}
             </div>
@@ -482,14 +482,14 @@ const MyBidsPage = ({ type = "product" }) => {
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
                     active
                       ? "bg-gradient-to-r from-purple-600/20 to-pink-500/20 text-pink-400 border border-pink-500/30"
-                      : "text-white/50 hover:text-white hover:bg-white/5 border border-white/10"
+                      : "text-ink/50 hover:text-ink hover:bg-ink/5 border border-ink/10"
                   }`}
                 >
                   {label}
                   {count > 0 && (
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                        active ? "bg-pink-500/30 text-pink-300" : "bg-white/10 text-white/40"
+                        active ? "bg-pink-500/30 text-pink-300" : "bg-ink/10 text-ink/40"
                       }`}
                     >
                       {count}
@@ -503,16 +503,16 @@ const MyBidsPage = ({ type = "product" }) => {
           {/* Content */}
           {loading ? (
             <div className="flex justify-center py-20">
-              <span className="w-8 h-8 border-2 border-white/20 border-t-pink-400 rounded-full animate-spin" />
+              <span className="w-8 h-8 border-2 border-ink/20 border-t-pink-400 rounded-full animate-spin" />
             </div>
           ) : filtered.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl"
+              className="text-center py-20 bg-ink/5 border border-ink/10 rounded-2xl"
             >
-              <FaGavel className="text-5xl text-white/10 mx-auto mb-4" />
-              <p className="text-white/40 text-base">
+              <FaGavel className="text-5xl text-ink/10 mx-auto mb-4" />
+              <p className="text-ink/40 text-base">
                 {filter === "all" ? copy.empty : `No ${filter.toLowerCase()} ${type === "job" ? "jobs" : "requests"}.`}
               </p>
               <button

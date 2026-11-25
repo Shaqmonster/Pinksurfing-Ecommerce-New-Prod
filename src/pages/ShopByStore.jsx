@@ -14,7 +14,6 @@ import SearchForm from "../components/Search";
 export default function ShopByStore() {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
-  const { isDarkMode } = useContext(authContext);
 
   // useState========================================================================
   const [stores, setStores] = useState([]);
@@ -67,7 +66,7 @@ export default function ShopByStore() {
   }, [cookies, navigate, removeCookie]);
 
   return (
-    <div className={`bg-white ${isDarkMode && "dark"} dark:bg-black`}>
+    <div className="bg-ps-bg">
 
       {/* <SearchForm /> */}
       <div>
@@ -87,7 +86,7 @@ export default function ShopByStore() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
+              <div className="fixed inset-0 bg-ps-bg bg-opacity-25" />
             </Transition.Child>
 
             <div className="fixed inset-0 z-40 flex">
@@ -107,7 +106,7 @@ export default function ShopByStore() {
                     </h2>
                     <button
                       type="button"
-                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-gray-400"
+                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white dark:bg-black p-2 text-ps-meta"
                       onClick={() => setMobileFiltersOpen(false)}
                     >
                       <span className="sr-only">Close menu</span>
@@ -116,7 +115,7 @@ export default function ShopByStore() {
                   </div>
 
                   {/* Filters */}
-                  <form className="block lg:hidden px-5 py-3 text-black">
+                  <form className="block lg:hidden px-5 py-3 text-ink">
                     <Disclosure
                       as="div"
                       className="border-b border-gray-200 py-6"
@@ -124,7 +123,7 @@ export default function ShopByStore() {
                       {({ open }) => (
                         <>
                           <h3 className="-my-3 flow-root">
-                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                            <Disclosure.Button className="flex w-full items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                               <span className="font-medium text-gray-900 dark:text-purple-600">
                                 Sort By
                               </span>
@@ -195,7 +194,7 @@ export default function ShopByStore() {
               {({ open }) => (
                 <>
                   <h3 className="-my-3 flow-root">
-                    <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-black py-3 text-sm text-gray-400 hover:text-gray-500">
+                    <Disclosure.Button className="flex items-center justify-between bg-white dark:bg-black py-3 text-sm text-ps-meta hover:text-gray-500">
                       <span className="font-medium text-gray-900 dark:text-white">
                         Sort By: {sortName}
                       </span>
@@ -244,7 +243,7 @@ export default function ShopByStore() {
 
             <button
               type="button"
-              className="lg:hidden text-gray-400 hover:text-gray-500"
+              className="lg:hidden text-ps-meta hover:text-gray-500"
               onClick={() => setMobileFiltersOpen(true)}
             >
               <FunnelIcon className="h-5 w-5" aria-hidden="true" />

@@ -4,44 +4,44 @@ import { fetchMyUnlocks, formatMoney } from "../api/offMarketDeals";
 import { useAccessToken } from "../hooks/useAccessToken";
 
 const PAGE_CSS = `
-.mu-page{min-height:100vh;background:#0d0d10;color:#f0f0f4;font-family:'DM Sans',sans-serif;padding:24px 32px 80px;}
+.mu-page{min-height:100vh;background:var(--ps-color-bg);color:var(--ps-color-text);font-family:'DM Sans',sans-serif;padding:24px 32px 80px;}
 .mu-inner{max-width:960px;margin:0 auto;}
 .mu-nav{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
-.mu-nav a{font-size:13px;font-weight:600;color:#b0b0c0;text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid #2a2a33;}
-.mu-nav a.active,.mu-nav a:hover{color:#9747ff;border-color:rgba(151, 71, 255,.35);}
+.mu-nav a{font-size:13px;font-weight:600;color:var(--ps-color-text-secondary);text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid var(--ps-color-border);}
+.mu-nav a.active,.mu-nav a:hover{color:var(--ps-color-action-text);border-color:rgba(151, 71, 255,.35);}
 .mu-hero{margin-bottom:28px;}
 .mu-hero h1{font-size:28px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px;}
-.mu-hero h1 span{color:#9747ff;}
-.mu-hero p{color:#66667a;font-size:14px;line-height:1.55;}
+.mu-hero h1 span{color:var(--ps-color-action-text);}
+.mu-hero p{color:var(--ps-color-text-meta);font-size:14px;line-height:1.55;}
 .mu-section{margin-bottom:32px;}
-.mu-section h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#66667a;margin-bottom:14px;}
-.mu-card{display:flex;gap:16px;background:#141418;border:1.5px solid #2a2a33;border-radius:10px;padding:16px;margin-bottom:12px;transition:border-color .15s;}
+.mu-section h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ps-color-text-meta);margin-bottom:14px;}
+.mu-card{display:flex;gap:16px;background:var(--ps-color-surface);border:1.5px solid var(--ps-color-border);border-radius:10px;padding:16px;margin-bottom:12px;transition:border-color .15s;}
 .mu-card:hover{border-color:rgba(151, 71, 255,.35);}
-.mu-img{width:120px;height:88px;border-radius:8px;object-fit:cover;background:#1c1c22;flex-shrink:0;}
+.mu-img{width:120px;height:88px;border-radius:8px;object-fit:cover;background:var(--ps-color-surface-sunken);flex-shrink:0;}
 .mu-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
-.mu-title{font-size:16px;font-weight:700;color:#f0f0f4;margin:0;}
-.mu-meta{font-size:13px;color:#b0b0c0;}
-.mu-metrics{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#66667a;}
-.mu-metrics strong{color:#f0f0f4;font-weight:700;}
-.mu-metrics .green{color:#34d399;}
+.mu-title{font-size:16px;font-weight:700;color:var(--ps-color-text);margin:0;}
+.mu-meta{font-size:13px;color:var(--ps-color-text-secondary);}
+.mu-metrics{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ps-color-text-meta);}
+.mu-metrics strong{color:var(--ps-color-text);font-weight:700;}
+.mu-metrics .green{color:var(--ps-color-success);}
 .mu-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:auto;padding-top:4px;}
 .mu-pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
-.mu-pill.unlocked{background:rgba(52,211,153,.15);color:#34d399;}
-.mu-pill.in_deal_room{background:rgba(151, 71, 255,.12);color:#9747ff;}
-.mu-pill.closed{background:rgba(148,163,184,.15);color:#94a3b8;}
-.mu-pill.pending_payment{background:rgba(251,191,36,.12);color:#fbbf24;}
-.mu-pill.refunded{background:rgba(56,189,248,.14);color:#38bdf8;}
-.mu-pill.cancelled{background:rgba(248,113,113,.14);color:#f87171;}
-.mu-note{font-size:12px;color:#b0b0c0;margin:2px 0 0;}
+.mu-pill.unlocked{background:rgba(52,211,153,.15);color:var(--ps-color-success);}
+.mu-pill.in_deal_room{background:rgba(151, 71, 255,.12);color:var(--ps-color-action-text);}
+.mu-pill.closed{background:rgba(148,163,184,.15);color:var(--ps-color-text-meta);}
+.mu-pill.pending_payment{background:rgba(251,191,36,.12);color:var(--ps-color-warning);}
+.mu-pill.refunded{background:rgba(56,189,248,.14);color:var(--ps-color-info);}
+.mu-pill.cancelled{background:rgba(248,113,113,.14);color:var(--ps-color-danger);}
+.mu-note{font-size:12px;color:var(--ps-color-text-secondary);margin:2px 0 0;}
 .mu-tabs{display:flex;gap:8px;margin:0 0 20px;flex-wrap:wrap;}
-.mu-tab{font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid #2a2a33;background:transparent;color:#b0b0c0;cursor:pointer;}
-.mu-tab[aria-selected="true"]{background:#9747ff;border-color:#9747ff;color:#fff;}
-.mu-cta{font-size:13px;font-weight:700;padding:8px 14px;border-radius:6px;background:#9747ff;color:#fff;text-decoration:none;}
+.mu-tab{font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid var(--ps-color-border);background:transparent;color:var(--ps-color-text-secondary);cursor:pointer;}
+.mu-tab[aria-selected="true"]{background:var(--ps-primary);border-color:var(--ps-primary);color:#fff;}
+.mu-cta{font-size:13px;font-weight:700;padding:8px 14px;border-radius:6px;background:var(--ps-primary);color:#fff;text-decoration:none;}
 .mu-cta:hover{background:#d4246f;color:#fff;}
-.mu-empty{text-align:center;padding:60px 20px;color:#66667a;}
-.mu-empty a{color:#9747ff;font-weight:600;}
-.mu-loading,.mu-error{text-align:center;padding:40px;color:#66667a;}
-.mu-error{color:#f87171;}
+.mu-empty{text-align:center;padding:60px 20px;color:var(--ps-color-text-meta);}
+.mu-empty a{color:var(--ps-color-action-text);font-weight:600;}
+.mu-loading,.mu-error{text-align:center;padding:40px;color:var(--ps-color-text-meta);}
+.mu-error{color:var(--ps-color-danger);}
 @media(max-width:640px){.mu-card{flex-direction:column}.mu-img{width:100%;height:140px}.mu-page{padding:16px}}
 `;
 

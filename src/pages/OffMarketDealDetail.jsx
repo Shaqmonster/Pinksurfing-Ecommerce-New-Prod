@@ -17,27 +17,27 @@ import { useAccessToken } from "../hooks/useAccessToken";
 import { formatDay } from "../utils/formatDate";
 
 const CSS = `
-.deal-detail-page{min-height:100vh;background:#0d0d10;color:#f0f0f4;font-family:'DM Sans',sans-serif;padding:28px 32px 80px;}
+.deal-detail-page{min-height:100vh;background:var(--ps-color-bg);color:var(--ps-color-text);font-family:'DM Sans',sans-serif;padding:28px 32px 80px;}
 .deal-detail-inner{max-width:1200px;margin:0 auto;}
 .deal-detail-grid{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start;}
 @media(max-width:900px){.deal-detail-grid{grid-template-columns:1fr;}}
-.deal-gallery{border-radius:12px;overflow:hidden;border:1px solid #2a2a33;background:#141418;}
-.deal-gallery-main{aspect-ratio:16/9;position:relative;overflow:hidden;background:#1c1c22;}
+.deal-gallery{border-radius:12px;overflow:hidden;border:1px solid var(--ps-color-border);background:var(--ps-color-surface);}
+.deal-gallery-main{aspect-ratio:16/9;position:relative;overflow:hidden;background:var(--ps-color-surface-sunken);}
 .deal-gallery-main img{width:100%;height:100%;object-fit:cover;}
 .deal-gallery-main.blurred img{filter:blur(12px);transform:scale(1.08);}
-.deal-hero{background:#141418;border:1.5px solid #2a2a33;border-radius:8px;padding:22px;margin-top:20px;}
+.deal-hero{background:var(--ps-color-surface);border:1.5px solid var(--ps-color-border);border-radius:8px;padding:22px;margin-top:20px;}
 .deal-hero h1{font-size:24px;font-weight:800;margin-bottom:8px;}
-.deal-metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #2a2a33;border-radius:8px;overflow:hidden;margin-top:16px;}
-.deal-met-cell{padding:14px 16px;border-right:1px solid #2a2a33;background:#1c1c22;}
+.deal-metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--ps-color-border);border-radius:8px;overflow:hidden;margin-top:16px;}
+.deal-met-cell{padding:14px 16px;border-right:1px solid var(--ps-color-border);background:var(--ps-color-surface-sunken);}
 .deal-met-cell:last-child{border-right:none;}
-.deal-side{position:sticky;top:80px;background:#141418;border:1.5px solid #2a2a33;border-radius:8px;padding:20px;}
-.deal-side-cta{width:100%;padding:14px;border-radius:8px;font-weight:700;font-size:15px;background:#9747ff;color:#fff;border:none;cursor:pointer;margin-top:12px;}
+.deal-side{position:sticky;top:80px;background:var(--ps-color-surface);border:1.5px solid var(--ps-color-border);border-radius:8px;padding:20px;}
+.deal-side-cta{width:100%;padding:14px;border-radius:8px;font-weight:700;font-size:15px;background:var(--ps-primary);color:#fff;border:none;cursor:pointer;margin-top:12px;}
 .deal-side-cta:disabled{opacity:.5;cursor:not-allowed;}
-.deal-locked-note{font-size:13px;color:#66667a;line-height:1.5;margin-top:12px;}
+.deal-locked-note{font-size:13px;color:var(--ps-color-text-meta);line-height:1.5;margin-top:12px;}
 .deal-docs{margin-top:20px;}
-.deal-doc-item{padding:10px 12px;border:1px solid #2a2a33;border-radius:6px;margin-bottom:8px;font-size:13px;}
-.deal-back{color:#b0b0c0;text-decoration:none;font-size:13px;display:inline-block;margin-bottom:20px;}
-.deal-back:hover{color:#9747ff;}
+.deal-doc-item{padding:10px 12px;border:1px solid var(--ps-color-border);border-radius:6px;margin-bottom:8px;font-size:13px;}
+.deal-back{color:var(--ps-color-text-secondary);text-decoration:none;font-size:13px;display:inline-block;margin-bottom:20px;}
+.deal-back:hover{color:var(--ps-color-action-text);}
 `;
 
 export default function OffMarketDealDetail() {
@@ -160,41 +160,41 @@ export default function OffMarketDealDetail() {
 
               <div className="deal-hero">
                 <h1>{display.title || "Off-Market Deal"}</h1>
-                <p style={{ color: "#66667a", fontSize: 14 }}>
+                <p style={{ color: "var(--ps-color-text-meta)", fontSize: 14 }}>
                   {isUnlocked && full?.full_address
                     ? full.full_address
                     : `${display.city}, ${display.state}`}
                   {display.beds ? ` · ${display.beds} beds` : ""}
                 </p>
                 {display.teaser_summary && (
-                  <p style={{ marginTop: 12, color: "#b0b0c0", lineHeight: 1.6 }}>
+                  <p style={{ marginTop: 12, color: "var(--ps-color-text-secondary)", lineHeight: 1.6 }}>
                     {display.teaser_summary}
                   </p>
                 )}
                 <div className="deal-metrics-row">
                   <div className="deal-met-cell">
-                    <div style={{ fontSize: 10, color: "#66667a", textTransform: "uppercase" }}>
+                    <div style={{ fontSize: 10, color: "var(--ps-color-text-meta)", textTransform: "uppercase" }}>
                       ARV
                     </div>
                     <div style={{ fontSize: 20, fontWeight: 800 }}>{formatMoney(display.arv)}</div>
-                    <div style={{ fontSize: 10, color: "#66667a" }}>Seller confirmed</div>
+                    <div style={{ fontSize: 10, color: "var(--ps-color-text-meta)" }}>Seller confirmed</div>
                   </div>
                   <div className="deal-met-cell">
-                    <div style={{ fontSize: 10, color: "#66667a", textTransform: "uppercase" }}>
+                    <div style={{ fontSize: 10, color: "var(--ps-color-text-meta)", textTransform: "uppercase" }}>
                       Asking
                     </div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "#9747ff" }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--ps-color-action-text)" }}>
                       {formatMoney(display.asking_price)}
                     </div>
                   </div>
                   <div className="deal-met-cell">
-                    <div style={{ fontSize: 10, color: "#66667a", textTransform: "uppercase" }}>
+                    <div style={{ fontSize: 10, color: "var(--ps-color-text-meta)", textTransform: "uppercase" }}>
                       Spread
                     </div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--ps-color-success)" }}>
                       {formatMoney(display.spread_amount)}
                     </div>
-                    <div style={{ fontSize: 10, color: "#34d399" }}>
+                    <div style={{ fontSize: 10, color: "var(--ps-color-success)" }}>
                       {Number(display.spread_pct).toFixed(0)}% below ARV
                     </div>
                   </div>
@@ -211,7 +211,7 @@ export default function OffMarketDealDetail() {
                       target="_blank"
                       rel="noreferrer"
                       className="deal-doc-item"
-                      style={{ display: "block", color: "#9747ff" }}
+                      style={{ display: "block", color: "var(--ps-color-action-text)" }}
                     >
                       {doc.document_name || doc.document_type}
                     </a>
@@ -222,7 +222,7 @@ export default function OffMarketDealDetail() {
               {isUnlocked && full && !(full.documents?.length > 0) && (
                 <div className="deal-docs">
                   <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Documents</h3>
-                  <p style={{ fontSize: 13, color: "#9a9aae", lineHeight: 1.5 }}>
+                  <p style={{ fontSize: 13, color: "var(--ps-color-text-secondary)", lineHeight: 1.5 }}>
                     The seller hasn&apos;t added documents or comps yet. Ask for them in the deal
                     room{full.gallery?.length ? "" : ", along with photos"}.
                   </p>
@@ -253,7 +253,7 @@ export default function OffMarketDealDetail() {
             </div>
 
             <aside className="deal-side">
-              <div style={{ fontSize: 11, color: "#66667a", textTransform: "uppercase" }}>
+              <div style={{ fontSize: 11, color: "var(--ps-color-text-meta)", textTransform: "uppercase" }}>
                 {display.deadline_type === "offers_due" ? "Offers due by" : "Close of escrow by"}
               </div>
               <div style={{ fontSize: 16, fontWeight: 700, marginTop: 4 }}>
@@ -262,12 +262,12 @@ export default function OffMarketDealDetail() {
                   : "—"}
               </div>
               {display.days_left != null && (
-                <div style={{ fontSize: 13, color: "#fbbf24", marginTop: 4 }}>
+                <div style={{ fontSize: 13, color: "var(--ps-color-warning)", marginTop: 4 }}>
                   {display.days_left} days left
                 </div>
               )}
 
-              <div style={{ marginTop: 16, fontSize: 13, color: "#b0b0c0" }}>
+              <div style={{ marginTop: 16, fontSize: 13, color: "var(--ps-color-text-secondary)" }}>
                 {slotsText(display)}
               </div>
 
@@ -279,11 +279,11 @@ export default function OffMarketDealDetail() {
               ) : !isUnlocked ? (
                 <>
                   {display.my_unlock_status && (
-                    <p className="deal-locked-note" role="status" style={{ color: "#f0f0f4" }}>
+                    <p className="deal-locked-note" role="status" style={{ color: "var(--ps-color-text)" }}>
                       {display.my_unlock_status === "refunded"
                         ? "You unlocked this deal earlier. It was cancelled and your unlock fee was refunded."
                         : "You unlocked this deal earlier, but its deal room was cancelled."}{" "}
-                      <a href="/my-unlocks" style={{ color: "#9747ff" }}>
+                      <a href="/my-unlocks" style={{ color: "var(--ps-color-action-text)" }}>
                         See My Unlocks
                       </a>
                     </p>

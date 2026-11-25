@@ -27,16 +27,16 @@ const OfferCard = ({ bid, requestStatus, requestId, quantity = 1, isLowest = fal
 
   return (
     <div
-      className={`bg-white/5 border rounded-xl p-3 sm:p-4 space-y-3 ${
-        isLowest ? "border-emerald-500/40" : "border-white/10"
+      className={`bg-ink/5 border rounded-xl p-3 sm:p-4 space-y-3 ${
+        isLowest ? "border-emerald-500/40" : "border-ink/10"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <IoStorefrontOutline className="text-purple-400 text-lg shrink-0" />
           <div className="min-w-0">
-            <p className="text-white font-medium text-sm truncate">{bid.vendor_store_name}</p>
-            <p className="text-white/40 text-[11px]">
+            <p className="text-ink font-medium text-sm truncate">{bid.vendor_store_name}</p>
+            <p className="text-ink/40 text-[11px]">
               Total ${formatMoney(offerTotal(bid, quantity))}
               {quantity > 1 ? ` for ${quantity}` : ""} incl. shipping
             </p>
@@ -50,7 +50,7 @@ const OfferCard = ({ bid, requestStatus, requestId, quantity = 1, isLowest = fal
         )}
         <span
           className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-            BID_STATUS_COLORS[bid.status] || "bg-gray-500/20 text-gray-400"
+            BID_STATUS_COLORS[bid.status] || "bg-gray-500/20 text-ps-meta"
           }`}
         >
           {bid.status}
@@ -59,26 +59,26 @@ const OfferCard = ({ bid, requestStatus, requestId, quantity = 1, isLowest = fal
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        <div className="bg-white/5 rounded-lg p-2.5">
-          <p className="text-white/40 text-xs">Price</p>
+        <div className="bg-ink/5 rounded-lg p-2.5">
+          <p className="text-ink/40 text-xs">Price</p>
           <p className="text-emerald-400 font-bold text-sm sm:text-base">${formatMoney(bid.bid_amount)}</p>
-          <p className="text-white/40 text-[11px]">
+          <p className="text-ink/40 text-[11px]">
             {Number(bid.shipping_cost) > 0 ? `+ $${formatMoney(bid.shipping_cost)} shipping` : "Free shipping"}
           </p>
         </div>
-        <div className="bg-white/5 rounded-lg p-2.5">
-          <p className="text-white/40 text-xs">Delivery</p>
-          <p className="text-white font-semibold text-sm">{bid.delivery_time_days} days</p>
-          <p className="text-white/40 text-[11px] capitalize">
+        <div className="bg-ink/5 rounded-lg p-2.5">
+          <p className="text-ink/40 text-xs">Delivery</p>
+          <p className="text-ink font-semibold text-sm">{bid.delivery_time_days} days</p>
+          <p className="text-ink/40 text-[11px] capitalize">
             {bid.condition || "new"}
             {bid.stock_available === false ? " · not in stock yet" : " · in stock"}
           </p>
         </div>
       </div>
 
-      <div className="bg-white/5 rounded-lg p-3">
-        <p className="text-white/40 text-xs mb-1">Vendor note</p>
-        <p className="text-white/80 text-sm leading-relaxed">{bid.proposal}</p>
+      <div className="bg-ink/5 rounded-lg p-3">
+        <p className="text-ink/40 text-xs mb-1">Vendor note</p>
+        <p className="text-ink/80 text-sm leading-relaxed">{bid.proposal}</p>
       </div>
 
       {bidImages?.length > 0 && (
@@ -88,7 +88,7 @@ const OfferCard = ({ bid, requestStatus, requestId, quantity = 1, isLowest = fal
               key={i}
               src={img}
               alt={`bid-img-${i}`}
-              className="w-10 h-10 rounded-lg object-cover border border-white/10 shrink-0"
+              className="w-10 h-10 rounded-lg object-cover border border-ink/10 shrink-0"
             />
           ))}
         </div>
@@ -104,7 +104,7 @@ const OfferCard = ({ bid, requestStatus, requestId, quantity = 1, isLowest = fal
         >
           {accepting ? (
             <>
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />
               Accepting...
             </>
           ) : (

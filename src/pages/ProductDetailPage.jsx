@@ -541,7 +541,7 @@ const ProductDetailPage = () => {
   const RemoveWishlistProduct = async (productId) => {
     const heartElement = document.getElementById(`heart-${productId}`);
     heartElement.classList.remove("text-red-500");
-    heartElement.classList.add("text-gray-400");
+    heartElement.classList.add("text-ps-meta");
 
     try {
       const response = await axios.post(
@@ -561,7 +561,7 @@ const ProductDetailPage = () => {
     } catch (error) {
       console.error(error);
       heartElement.classList.add("text-red-500");
-      heartElement.classList.remove("text-gray-400");
+      heartElement.classList.remove("text-ps-meta");
       toast.error(error.response.data.message ||
         error.response.data.Status ||
         error.response.data.Err ||
@@ -806,7 +806,7 @@ const ProductDetailPage = () => {
     const heartElement = document.getElementById(`heart-${product.id}`);
 
     heartElement.classList.add("text-red-500");
-    heartElement.classList.remove("text-gray-400");
+    heartElement.classList.remove("text-ps-meta");
 
     try {
       if (isInWishlist) {
@@ -817,7 +817,7 @@ const ProductDetailPage = () => {
     } catch (error) {
       // Revert the color if there's an error
       heartElement.classList.remove("text-red-500");
-      heartElement.classList.add("text-gray-400");
+      heartElement.classList.add("text-ps-meta");
       toast.error("An error occurred", {
         position: "top-right",
       });
@@ -861,7 +861,7 @@ const ProductDetailPage = () => {
     return (
       <div className="space-y-6">
         {paragraphs.map((para, idx) => (
-          <p key={idx} className="text-justify text-[15px] sm:text-[16px] leading-[1.8] text-gray-800 dark:text-white dark:[&_*]:!text-white font-medium tracking-wide">
+          <p key={idx} className="text-justify text-[15px] sm:text-[16px] leading-[1.8] text-gray-800 dark:text-white dark:[&_*]:!text-ink font-medium tracking-wide">
             {para}
           </p>
         ))}
@@ -935,13 +935,13 @@ const ProductDetailPage = () => {
         />
         {disputeModalOpen && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75" onClick={() => !disputeBusy && setDisputeModalOpen(false)} role="presentation">
-            <div className="w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 p-6 text-white shadow-2xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="w-full max-w-md rounded-2xl bg-ps-surface border border-ink/10 p-6 text-ink shadow-2xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
               <h3 className="text-lg font-bold mb-2">Raise a dispute</h3>
-              <p className="text-xs text-gray-400 mb-4">Describe the issue. Our team at Pinksurfing will review. Minimum 10 characters.</p>
-              <textarea value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} rows={5} className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm mb-4" placeholder="What happened?" />
+              <p className="text-xs text-ps-meta mb-4">Describe the issue. Our team at Pinksurfing will review. Minimum 10 characters.</p>
+              <textarea value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} rows={5} className="w-full rounded-xl bg-black/40 border border-ink/10 p-3 text-sm mb-4" placeholder="What happened?" />
               <div className="flex gap-2">
-                <button type="button" disabled={disputeBusy} onClick={() => { if (!disputeBusy) { setDisputeModalOpen(false); setDisputeReason(""); } }} className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-semibold">Cancel</button>
-                <button type="button" disabled={disputeBusy || disputeReason.trim().length < 10} onClick={submitDispute} className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold disabled:opacity-40">{disputeBusy ? "Submitting…" : "Submit"}</button>
+                <button type="button" disabled={disputeBusy} onClick={() => { if (!disputeBusy) { setDisputeModalOpen(false); setDisputeReason(""); } }} className="flex-1 py-3 rounded-xl border border-ink/10 text-sm font-semibold">Cancel</button>
+                <button type="button" disabled={disputeBusy || disputeReason.trim().length < 10} onClick={submitDispute} className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold disabled:opacity-40 text-white">{disputeBusy ? "Submitting…" : "Submit"}</button>
               </div>
             </div>
           </div>
@@ -1015,7 +1015,7 @@ const ProductDetailPage = () => {
                         {isBusiness ? "Business For Sale" : (isResidential ? "Residential" : "Commercial")}
                       </span>
                       {daysOnMarket && (
-                        <span className="px-3 py-1 bg-white/10 dark:bg-white/5 border border-white/10 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5">
+                        <span className="px-3 py-1 bg-ink/10 dark:bg-white/5 border border-ink/10 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5">
                           <FaClock className="text-purple-500" /> {daysOnMarket} on market
                         </span>
                       )}
@@ -1049,7 +1049,7 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* Specs Strip */}
-                <div className="grid grid-cols-2 md:flex md:items-center gap-4 md:gap-8 p-6 bg-white/50 dark:bg-white/[0.03] backdrop-blur-3xl rounded-3xl border border-white/20 dark:border-white/5 shadow-xl">
+                <div className="grid grid-cols-2 md:flex md:items-center gap-4 md:gap-8 p-6 bg-ink/50 dark:bg-white/[0.03] backdrop-blur-3xl rounded-3xl border border-ink/20 dark:border-white/5 shadow-xl">
                   {isRealEstate ? (
                     <>
                       {beds && (
@@ -1176,7 +1176,7 @@ const ProductDetailPage = () => {
                           />
                         ) : null}
                         <div
-                          className={`${src ? "hidden" : ""} absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#13131a] text-gray-500`}
+                          className={`${src ? "hidden" : ""} absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ps-surface text-gray-500`}
                           aria-hidden={src ? "true" : "false"}
                         >
                           <FaBriefcase className="text-2xl text-gray-600" />
@@ -1187,29 +1187,29 @@ const ProductDetailPage = () => {
 
                     if (allPhotos.length <= 1) {
                       return (
-                        <div className="aspect-[16/10] relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#13131a]">
+                        <div className="aspect-[16/10] relative group rounded-3xl overflow-hidden shadow-2xl border border-ink/10 bg-ps-surface">
                           <ImgWithFallback
                             src={heroSrc}
                             alt={product.name || "Listing photo"}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          <div className="pointer-events-none on-media absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         </div>
                       );
                     }
 
                     return (
                       <div className="grid grid-cols-4 grid-rows-2 gap-3 aspect-[16/10]">
-                        <div className="col-span-3 row-span-2 relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#13131a]">
+                        <div className="col-span-3 row-span-2 relative group rounded-3xl overflow-hidden shadow-2xl border border-ink/10 bg-ps-surface">
                           <ImgWithFallback
                             src={heroSrc}
                             alt={product.name || "Listing photo"}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          <div className="pointer-events-none on-media absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         </div>
 
-                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-[#13131a]">
+                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-ink/10 bg-ps-surface">
                           <ImgWithFallback
                             src={sideSrcs[0]}
                             alt={`${product.name || "Listing"} — view 2`}
@@ -1218,7 +1218,7 @@ const ProductDetailPage = () => {
                           />
                         </div>
 
-                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-white/10 bg-[#13131a]">
+                        <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg border border-ink/10 bg-ps-surface">
                           <ImgWithFallback
                             src={sideSrcs[1]}
                             alt={`${product.name || "Listing"} — view 3`}
@@ -1229,7 +1229,7 @@ const ProductDetailPage = () => {
                             <button
                               type="button"
                               onClick={() => sideSrcs[2] && setActiveImage(sideSrcs[2])}
-                              className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold uppercase tracking-widest"
+                              className="on-media absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold uppercase tracking-widest"
                             >
                               +{allPhotos.length - 3} more
                             </button>
@@ -1387,7 +1387,7 @@ const ProductDetailPage = () => {
                                   >
                                     <div className={`text-base mt-0.5 ${toneClass(f.tone)}`}>{f.icon}</div>
                                     <div className="min-w-0">
-                                      <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 truncate">
+                                      <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta truncate">
                                         {f.label}
                                       </div>
                                       <div className="text-sm font-bold text-gray-900 dark:text-white truncate">
@@ -1422,19 +1422,19 @@ const ProductDetailPage = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               {staffRoles && (
                                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Staff & roles</div>
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta mb-1.5">Staff & roles</div>
                                   <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{staffRoles}</div>
                                 </div>
                               )}
                               {techStack && (
                                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Tech stack</div>
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta mb-1.5">Tech stack</div>
                                   <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{techStack}</div>
                                 </div>
                               )}
                               {keyVendors && (
                                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                                  <div className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Key vendors</div>
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-ps-meta mb-1.5">Key vendors</div>
                                   <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{keyVendors}</div>
                                 </div>
                               )}
@@ -1521,8 +1521,8 @@ const ProductDetailPage = () => {
                 {isSpecialized ? (
                   /* Specialized Action Panel */
                   <div className="space-y-6">
-                    <div className="p-8 bg-[#111]/90 dark:bg-[#111]/90 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-2xl">
-                      <h3 className="text-lg font-black text-white uppercase tracking-widest mb-6 border-b border-white/5 pb-4 flex items-center gap-3">
+                    <div className="p-8 bg-ps-bg/90 dark:bg-[#111]/90 backdrop-blur-3xl rounded-[2.5rem] border border-ink/10 shadow-2xl">
+                      <h3 className="text-lg font-black text-ink uppercase tracking-widest mb-6 border-b border-ink/5 pb-4 flex items-center gap-3">
                         <FaEnvelope className="text-purple-500" /> Interested?
                       </h3>
                       <div className="space-y-4">
@@ -1530,10 +1530,10 @@ const ProductDetailPage = () => {
                           type="button"
                           onClick={handleContactAgent}
                           disabled={isDealClosed || contactingAgent || isOwner}
-                          className={`w-full py-5 ${isDealClosed || isOwner ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                          className={`w-full py-5 ${isDealClosed || isOwner ? 'bg-ps-surface text-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-progress'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
                           {contactingAgent ? (
-                            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 border-ink/40 border-t-ink rounded-full animate-spin" />
                           ) : (
                             <IoChatbubbleOutline size={16} />
                           )}
@@ -1551,7 +1551,7 @@ const ProductDetailPage = () => {
                             <p className="text-[10px] font-black uppercase tracking-widest text-purple-200">
                               New time proposed
                             </p>
-                            <p className="text-xs text-gray-300">
+                            <p className="text-xs text-ps-fg2">
                               {new Date(activeVisit.pending_reschedule_at).toLocaleString(undefined, {
                                 weekday: "short",
                                 dateStyle: "medium",
@@ -1569,7 +1569,7 @@ const ProductDetailPage = () => {
                               <button
                                 type="button"
                                 onClick={() => respondToVendorReschedule(false)}
-                                className="flex-1 py-3 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-white"
+                                className="flex-1 py-3 rounded-xl border border-ink/20 text-[10px] font-black uppercase tracking-widest text-ink"
                               >
                                 Reject (refund)
                               </button>
@@ -1578,7 +1578,7 @@ const ProductDetailPage = () => {
                         )}
 
                         {activeVisit?.status === "buyer_reschedule_pending" && (
-                          <p className="text-[10px] text-gray-400 px-1">
+                          <p className="text-[10px] text-ps-meta px-1">
                             You proposed a new time. Waiting for the listing agent to confirm.
                           </p>
                         )}
@@ -1599,7 +1599,7 @@ const ProductDetailPage = () => {
                             activeVisit?.status === "buyer_reschedule_pending" ||
                             activeVisit?.status === "vendor_reschedule_pending"
                           }
-                          className={`w-full py-5 ${isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending" ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
+                          className={`w-full py-5 ${isDealClosed || activeVisit?.status === "buyer_reschedule_pending" || activeVisit?.status === "vendor_reschedule_pending" ? 'bg-ps-surface/50 text-gray-500 cursor-not-allowed border border-ps-border' : 'bg-ink/5 hover:bg-ink/10 text-ink border border-ink/10 active:scale-95'} font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all flex items-center justify-center gap-3`}
                         >
                           <FaCalendarAlt /> {isDealClosed ? "Deal Closed" : scheduleButtonLabel}
                         </button>
@@ -1615,12 +1615,12 @@ const ProductDetailPage = () => {
                         )}
                       </div>
                       
-                      <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
+                      <div className="mt-8 pt-8 border-t border-ink/5 space-y-4">
                         <div className="flex items-center justify-between gap-4">
                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                             {isBusiness ? "Listed by" : "Listing Agent"}
                           </span>
-                          <span className="text-xs font-black text-white text-right truncate">
+                          <span className="text-xs font-black text-ink text-right truncate">
                             {product.vendor?.store_name ||
                               [product.vendor?.first_name, product.vendor?.last_name].filter(Boolean).join(" ") ||
                               "Pinksurfing seller"}
@@ -1630,7 +1630,7 @@ const ProductDetailPage = () => {
                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                             {isBusiness ? "Listing ID" : "Property ID"}
                           </span>
-                          <span className="text-xs font-black text-white">#PS-{product.id?.slice(-6).toUpperCase()}</span>
+                          <span className="text-xs font-black text-ink">#PS-{product.id?.slice(-6).toUpperCase()}</span>
                         </div>
                       </div>
                     </div>
@@ -1640,7 +1640,7 @@ const ProductDetailPage = () => {
                         type="button"
                         onClick={handleWishlistClick}
                         aria-pressed={!!wishlistProducts.find((i) => i.id === product.id)}
-                        className="group flex items-center gap-3 p-4 rounded-3xl bg-white/5 border border-white/10 hover:border-pink-500/40 hover:bg-pink-500/[0.06] transition-all"
+                        className="group flex items-center gap-3 p-4 rounded-3xl bg-ink/5 border border-ink/10 hover:border-pink-500/40 hover:bg-pink-500/[0.06] transition-all"
                       >
                         <div className="w-11 h-11 rounded-2xl bg-pink-500/15 flex items-center justify-center group-hover:scale-105 transition-transform">
                           <FaHeart
@@ -1649,12 +1649,12 @@ const ProductDetailPage = () => {
                             className={
                               wishlistProducts.find((i) => i.id === product.id)
                                 ? "text-pink-500"
-                                : "text-gray-400"
+                                : "text-ps-meta"
                             }
                           />
                         </div>
                         <div className="text-left">
-                          <div className="text-[12px] font-black text-white uppercase tracking-widest leading-tight">
+                          <div className="text-[12px] font-black text-ink uppercase tracking-widest leading-tight">
                             {wishlistProducts.find((i) => i.id === product.id)
                               ? "Saved"
                               : "Save listing"}
@@ -1668,13 +1668,13 @@ const ProductDetailPage = () => {
                       <button
                         type="button"
                         onClick={handleShareClick}
-                        className="group flex items-center gap-3 p-4 rounded-3xl bg-white/5 border border-white/10 hover:border-purple-500/40 hover:bg-purple-500/[0.06] transition-all"
+                        className="group flex items-center gap-3 p-4 rounded-3xl bg-ink/5 border border-ink/10 hover:border-purple-500/40 hover:bg-purple-500/[0.06] transition-all"
                       >
                         <div className="w-11 h-11 rounded-2xl bg-purple-500/15 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform">
                           <FaShare size={16} />
                         </div>
                         <div className="text-left">
-                          <div className="text-[12px] font-black text-white uppercase tracking-widest leading-tight">
+                          <div className="text-[12px] font-black text-ink uppercase tracking-widest leading-tight">
                             Share
                           </div>
                           <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
@@ -1794,7 +1794,7 @@ const ProductDetailPage = () => {
                             )}
                           </>
                         ) : (
-                          <div className="flex-1 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
+                          <div className="flex-1 px-8 py-4 bg-ink/5 border border-ink/10 rounded-xl text-ink/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center">
                             Your Product
                           </div>
                         )}
@@ -1810,7 +1810,7 @@ const ProductDetailPage = () => {
                             className={`transition-all duration-300 text-xl group-hover:scale-125 ${
                               wishlistProducts.find((i) => i.id === product.id)
                                 ? "text-red-500 animate-pulse"
-                                : "text-gray-400 group-hover:text-red-400"
+                                : "text-ps-meta group-hover:text-red-400"
                             }`}
                           />
                           <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 group-hover:text-purple-600 transition-colors">
@@ -1876,7 +1876,7 @@ const ProductDetailPage = () => {
                   <div className="animate-fadeIn max-w-4xl mx-auto">
                     {product?.short_description ? (
                       <div className="
-                        text-[16px] text-gray-800 dark:text-white dark:[&_*]:!text-white whitespace-pre-line leading-relaxed
+                        text-[16px] text-gray-800 dark:text-white dark:[&_*]:!text-ink whitespace-pre-line leading-relaxed
                         [&_p]:mb-6
                         [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6
                         [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6
@@ -1914,9 +1914,9 @@ const ProductDetailPage = () => {
                                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider ${
                                     isTrue 
                                       ? "bg-green-500/10 text-green-500 border border-green-500/20" 
-                                      : "bg-gray-100 dark:bg-white/5 text-gray-400"
+                                      : "bg-gray-100 dark:bg-white/5 text-ps-meta"
                                   }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${isTrue ? "bg-green-500" : "bg-gray-400"}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isTrue ? "bg-green-500 text-white" : "bg-gray-400"}`} />
                                     {isTrue ? "Yes" : "No"}
                                   </div>
                                 ) : (
@@ -1979,20 +1979,20 @@ const ProductDetailPage = () => {
           role="presentation"
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 p-6 text-white shadow-2xl"
+            className="w-full max-w-md rounded-2xl bg-ps-surface border border-ink/10 p-6 text-ink shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
           >
             <h3 className="text-lg font-bold mb-2">Raise a dispute</h3>
-            <p className="text-xs text-gray-400 mb-4">
+            <p className="text-xs text-ps-meta mb-4">
               Describe the issue (no-show, fraud, etc.). Our team at Pinksurfing will review. Minimum 10 characters.
             </p>
             <textarea
               value={disputeReason}
               onChange={(e) => setDisputeReason(e.target.value)}
               rows={5}
-              className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm mb-4"
+              className="w-full rounded-xl bg-black/40 border border-ink/10 p-3 text-sm mb-4"
               placeholder="What happened?"
             />
             <div className="flex gap-2">
@@ -2005,7 +2005,7 @@ const ProductDetailPage = () => {
                     setDisputeReason("");
                   }
                 }}
-                className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-semibold"
+                className="flex-1 py-3 rounded-xl border border-ink/10 text-sm font-semibold"
               >
                 Cancel
               </button>
@@ -2013,7 +2013,7 @@ const ProductDetailPage = () => {
                 type="button"
                 disabled={disputeBusy || disputeReason.trim().length < 10}
                 onClick={submitDispute}
-                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold disabled:opacity-40"
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold disabled:opacity-40 text-white"
               >
                 {disputeBusy ? "Submitting…" : "Submit"}
               </button>

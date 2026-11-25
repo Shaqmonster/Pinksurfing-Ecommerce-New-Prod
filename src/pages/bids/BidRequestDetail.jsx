@@ -93,7 +93,7 @@ const Toggle = ({ checked, onChange }) => (
     aria-checked={checked}
     onClick={() => onChange(!checked)}
     className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-      checked ? "bg-pink-500" : "bg-white/20"
+      checked ? "bg-pink-500" : "bg-ink/20"
     }`}
   >
     <span
@@ -108,12 +108,12 @@ const StepProgressBar = ({ currentStep }) => (
   <div className="w-full">
     {/* Mobile */}
     <div className="flex items-center justify-between md:hidden">
-      <span className="text-sm font-medium text-white">
+      <span className="text-sm font-medium text-ink">
         Step {currentStep + 1} of {STEPS.length}
       </span>
-      <span className="text-sm text-white/50">{STEPS[currentStep]?.label}</span>
+      <span className="text-sm text-ink/50">{STEPS[currentStep]?.label}</span>
     </div>
-    <div className="md:hidden mt-2 h-1 rounded-full bg-white/10 overflow-hidden">
+    <div className="md:hidden mt-2 h-1 rounded-full bg-ink/10 overflow-hidden">
       <div
         className="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-500 ease-out"
         style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
@@ -128,7 +128,7 @@ const StepProgressBar = ({ currentStep }) => (
           <div key={i} className="flex items-center flex-1">
             <div
               className={`flex items-center gap-1.5 text-xs font-medium px-1.5 py-1 rounded-md w-full ${
-                done ? "text-pink-400" : active ? "text-white" : "text-white/30"
+                done ? "text-pink-400" : active ? "text-ink" : "text-ink/30"
               }`}
             >
               <div
@@ -137,7 +137,7 @@ const StepProgressBar = ({ currentStep }) => (
                     ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white"
                     : active
                     ? "border-2 border-pink-400 text-pink-400"
-                    : "border border-white/20 text-white/30"
+                    : "border border-ink/20 text-ink/30"
                 }`}
               >
                 {done ? <FaCheck className="text-[7px]" /> : i + 1}
@@ -145,7 +145,7 @@ const StepProgressBar = ({ currentStep }) => (
               <span className="hidden xl:inline truncate text-[11px]">{step.shortLabel}</span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className={`w-3 h-px flex-shrink-0 ${done ? "bg-pink-400/50" : "bg-white/10"}`} />
+              <div className={`w-3 h-px flex-shrink-0 ${done ? "bg-pink-400/50" : "bg-ink/10"}`} />
             )}
           </div>
         );
@@ -155,14 +155,14 @@ const StepProgressBar = ({ currentStep }) => (
 );
 
 const StickyFooter = ({ currentStep, onBack, onNext, isLastStep, isLoading }) => (
-  <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0f]/90 backdrop-blur-md border-t border-white/10 px-4 py-3">
+  <div className="fixed bottom-0 left-0 right-0 z-50 bg-ps-bg/90 backdrop-blur-md border-t border-ink/10 px-4 py-3">
     <div className="max-w-3xl mx-auto flex items-center justify-between">
       <div>
         {currentStep > 0 && (
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 text-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-ink/50 hover:text-ink hover:bg-ink/5 text-sm transition-colors"
           >
             <IoArrowBack />
             <span className="hidden sm:inline">Back</span>
@@ -173,14 +173,14 @@ const StickyFooter = ({ currentStep, onBack, onNext, isLastStep, isLoading }) =>
         type="button"
         onClick={onNext}
         disabled={isLoading}
-        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold text-sm transition-all min-w-[130px] justify-center disabled:opacity-60 disabled:cursor-not-allowed ${
+        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-ink font-semibold text-sm transition-all min-w-[130px] justify-center disabled:opacity-60 disabled:cursor-not-allowed ${
           isLastStep
-            ? "bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg shadow-pink-500/25 hover:opacity-90"
-            : "bg-white/10 hover:bg-white/15"
+            ? "bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg shadow-pink-500/25 hover:opacity-90 text-white"
+            : "bg-ink/10 hover:bg-ink/15"
         }`}
       >
         {isLoading ? (
-          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />
         ) : (
           <>
             {isLastStep ? "Send Proposal" : "Continue"}
@@ -197,7 +197,7 @@ const StickyFooter = ({ currentStep, onBack, onNext, isLastStep, isLoading }) =>
 const JobSidebar = ({ request }) => {
   const images = [request.image1, request.image2, request.image3, request.image4].filter(Boolean);
   return (
-    <div className="sticky top-24 bg-[#13131a] border border-white/10 rounded-2xl p-4 space-y-4">
+    <div className="sticky top-24 bg-ps-surface border border-ink/10 rounded-2xl p-4 space-y-4">
       <p className="text-xs font-mono text-pink-400 font-semibold tracking-wider uppercase">
         Job Request
       </p>
@@ -207,22 +207,22 @@ const JobSidebar = ({ request }) => {
           {request.category_name}
         </span>
       )}
-      <h3 className="text-base font-bold text-white leading-snug">{request.title}</h3>
+      <h3 className="text-base font-bold text-ink leading-snug">{request.title}</h3>
 
       <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="flex items-center gap-1.5 text-white/60">
+        <div className="flex items-center gap-1.5 text-ink/60">
           <FaDollarSign className="text-emerald-500 flex-shrink-0" />
           <span className="font-semibold text-emerald-400 truncate">{jobBudgetLabel(request.budget)}</span>
         </div>
         {request.deadline && (
-          <div className="flex items-center gap-1.5 text-white/60">
+          <div className="flex items-center gap-1.5 text-ink/60">
             <IoCalendarOutline className="text-pink-400 flex-shrink-0" />
             <span className="text-xs truncate">
               {formatDay(request.deadline, { month: "short", day: "numeric" })}
             </span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-white/60 col-span-2">
+        <div className="flex items-center gap-1.5 text-ink/60 col-span-2">
           <FaShieldAlt className="text-pink-400 flex-shrink-0 text-xs" />
           <span className="text-xs">
             {request.customer_first_name} {request.customer_last_name}
@@ -233,17 +233,17 @@ const JobSidebar = ({ request }) => {
       {images.length > 0 && (
         <div className="grid grid-cols-3 gap-1.5">
           {images.map((src, i) => (
-            <div key={i} className="aspect-square rounded-lg overflow-hidden bg-white/5">
+            <div key={i} className="aspect-square rounded-lg overflow-hidden bg-ink/5">
               <img src={src} alt="" className="w-full h-full object-cover" />
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-xs text-white/50 leading-relaxed line-clamp-4">{request.description}</p>
+      <p className="text-xs text-ink/50 leading-relaxed line-clamp-4">{request.description}</p>
 
-      <div className="pt-2 border-t border-white/10">
-        <div className="flex items-center justify-between text-xs text-white/40">
+      <div className="pt-2 border-t border-ink/10">
+        <div className="flex items-center justify-between text-xs text-ink/40">
           <span>{request.proposal_count ?? 0} proposal{(request.proposal_count ?? 0) !== 1 ? "s" : ""} received</span>
           <span>Posted {timeAgo(request.created_at)}</span>
         </div>
@@ -259,9 +259,9 @@ const JobOverviewStep = ({ request, onContinue }) => {
   return (
     <div className="space-y-6">
       {/* Mobile-only job card */}
-      <div className="md:hidden bg-[#13131a] border border-white/10 rounded-2xl p-4 space-y-4">
+      <div className="md:hidden bg-ps-surface border border-ink/10 rounded-2xl p-4 space-y-4">
         <span className="text-xs font-mono text-pink-400 font-semibold tracking-wider uppercase">Job Request</span>
-        <h2 className="text-xl font-bold text-white">{request.title}</h2>
+        <h2 className="text-xl font-bold text-ink">{request.title}</h2>
         <div className="grid grid-cols-2 gap-3">
           {[
             { Icon: FaTag, text: request.category_name || "General" },
@@ -270,7 +270,7 @@ const JobOverviewStep = ({ request, onContinue }) => {
               ? [{ Icon: IoCalendarOutline, text: `Due ${formatDay(request.deadline, { month: "short", day: "numeric" })}` }]
               : []),
           ].map(({ Icon, text, cls }) => (
-            <div key={text} className="flex items-center gap-2 text-sm text-white/60">
+            <div key={text} className="flex items-center gap-2 text-sm text-ink/60">
               <Icon className="text-pink-400 flex-shrink-0" />
               <span className={cls}>{text}</span>
             </div>
@@ -279,30 +279,30 @@ const JobOverviewStep = ({ request, onContinue }) => {
         {reqImages.length > 0 && (
           <div className="grid grid-cols-3 gap-2">
             {reqImages.map((src, i) => (
-              <div key={i} className="aspect-square rounded-lg overflow-hidden bg-white/5">
+              <div key={i} className="aspect-square rounded-lg overflow-hidden bg-ink/5">
                 <img src={src} alt="" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
         )}
-        <p className="text-sm text-white/60 leading-relaxed">{request.description}</p>
+        <p className="text-sm text-ink/60 leading-relaxed">{request.description}</p>
       </div>
 
       {/* Desktop prompt */}
       <div className="hidden md:block space-y-2">
-        <h2 className="text-2xl font-bold text-white">Ready to Send a Proposal?</h2>
-        <p className="text-white/50">
+        <h2 className="text-2xl font-bold text-ink">Ready to Send a Proposal?</h2>
+        <p className="text-ink/50">
           Review the job details on the left, then write your proposal in a few steps.
         </p>
       </div>
 
       {/* Pay-to-bid notice */}
-      <div className="bg-[#13131a] border border-pink-500/20 rounded-xl p-4">
+      <div className="bg-ps-surface border border-pink-500/20 rounded-xl p-4">
         <div className="flex items-start gap-3">
           <IoAlertCircle className="text-pink-400 text-lg flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-white">Free to send</p>
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-sm font-medium text-ink">Free to send</p>
+            <p className="text-xs text-ink/50 mt-0.5">
               Sending a proposal is free. You&apos;re paid through the order once you&apos;re hired.
             </p>
           </div>
@@ -314,9 +314,9 @@ const JobOverviewStep = ({ request, onContinue }) => {
         {[
           { Icon: FaCheckCircle, label: "Secure Payment" },
         ].map(({ Icon, label }) => (
-          <div key={label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+          <div key={label} className="bg-ink/5 border border-ink/10 rounded-xl p-3 text-center">
             <Icon className="text-pink-400 text-base mx-auto mb-1.5" />
-            <p className="text-[10px] font-medium text-white/60">{label}</p>
+            <p className="text-[10px] font-medium text-ink/60">{label}</p>
           </div>
         ))}
       </div>
@@ -333,8 +333,8 @@ const JobOverviewStep = ({ request, onContinue }) => {
   );
 };
 
-const fieldClass = "w-full px-4 py-2.5 rounded-xl border border-white/10 bg-[#1a1a24] text-white text-sm outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/20 transition-all placeholder-white/30";
-const labelClass = "text-xs font-medium text-white/60";
+const fieldClass = "w-full px-4 py-2.5 rounded-xl border border-ink/10 bg-ps-sunken text-ink text-sm outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/20 transition-all placeholder-ink/30";
+const labelClass = "text-xs font-medium text-ink/60";
 const textareaClass = `${fieldClass} resize-none`;
 
 const OfferBasicsStep = ({ data, onChange }) => {
@@ -347,8 +347,8 @@ const OfferBasicsStep = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Proposal Basics</h2>
-        <p className="text-sm text-white/50 mt-1">Start with the essentials</p>
+        <h2 className="text-xl font-bold text-ink">Proposal Basics</h2>
+        <p className="text-sm text-ink/50 mt-1">Start with the essentials</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-1.5">
@@ -371,11 +371,11 @@ const OfferBasicsStep = ({ data, onChange }) => {
                 className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-xs transition-all ${
                   data.offerType === t.value
                     ? "border-pink-500/50 bg-pink-500/10 text-white"
-                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white/80"
+                    : "border-ink/10 bg-ink/5 text-ink/50 hover:border-ink/20 hover:text-ink/80"
                 }`}
               >
                 <span className="font-semibold">{t.label}</span>
-                <span className="text-[10px] text-white/40">{t.desc}</span>
+                <span className="text-[10px] text-ink/40">{t.desc}</span>
               </button>
             ))}
           </div>
@@ -402,14 +402,14 @@ const PricePaymentStep = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Price &amp; Payment</h2>
-        <p className="text-sm text-white/50 mt-1">Set your pricing and payment terms</p>
+        <h2 className="text-xl font-bold text-ink">Price &amp; Payment</h2>
+        <p className="text-sm text-ink/50 mt-1">Set your pricing and payment terms</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-1.5">
           <label className={labelClass}>Your Price (USD)</label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-sm">$</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/50 text-sm">$</span>
             <input
               type="number"
               min="1"
@@ -423,8 +423,8 @@ const PricePaymentStep = ({ data, onChange }) => {
 
         {/* Price summary */}
         {total > 0 && (
-          <div className="bg-[#1a1a24] border border-white/10 rounded-xl p-4 space-y-2 text-sm">
-            <div className="flex justify-between text-white/60">
+          <div className="bg-ps-sunken border border-ink/10 rounded-xl p-4 space-y-2 text-sm">
+            <div className="flex justify-between text-ink/60">
               <span>Base price</span><span>${total.toLocaleString()}</span>
             </div>
             {data.depositRequired && (
@@ -432,13 +432,13 @@ const PricePaymentStep = ({ data, onChange }) => {
                 <span>Deposit (25%)</span><span>${deposit}</span>
               </div>
             )}
-            <div className="flex justify-between font-bold text-white border-t border-white/10 pt-2">
+            <div className="flex justify-between font-bold text-ink border-t border-ink/10 pt-2">
               <span>Total</span><span>${total.toLocaleString()}</span>
             </div>
           </div>
         )}
 
-        <div className="bg-[#13131a] border border-white/10 rounded-xl p-4 space-y-4">
+        <div className="bg-ps-surface border border-ink/10 rounded-xl p-4 space-y-4">
           {[
             { key: "depositRequired", label: "Deposit Required", sub: "25% upfront before work begins" },
             { key: "taxesIncluded", label: "Taxes Included", sub: "Price includes applicable taxes" },
@@ -446,8 +446,8 @@ const PricePaymentStep = ({ data, onChange }) => {
           ].map(({ key, label, sub }) => (
             <div key={key} className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-white">{label}</p>
-                <p className="text-xs text-white/40">{sub}</p>
+                <p className="text-sm font-medium text-ink">{label}</p>
+                <p className="text-xs text-ink/40">{sub}</p>
               </div>
               <Toggle checked={data[key]} onChange={(v) => onChange(key, v)} />
             </div>
@@ -465,7 +465,7 @@ const PricePaymentStep = ({ data, onChange }) => {
                 className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all ${
                   data.paymentSchedule === s
                     ? "border-pink-500/50 bg-pink-500/10 text-pink-400"
-                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white/80"
+                    : "border-ink/10 bg-ink/5 text-ink/50 hover:border-ink/20 hover:text-ink/80"
                 }`}
               >
                 {s}
@@ -481,14 +481,14 @@ const PricePaymentStep = ({ data, onChange }) => {
 const TimelineStep = ({ data, onChange }) => (
   <div className="space-y-6">
     <div>
-      <h2 className="text-xl font-bold text-white">Timeline</h2>
-      <p className="text-sm text-white/50 mt-1">When can you start and finish?</p>
+      <h2 className="text-xl font-bold text-ink">Timeline</h2>
+      <p className="text-sm text-ink/50 mt-1">When can you start and finish?</p>
     </div>
     <div className="space-y-4">
       <div className="space-y-1.5">
         <label className={labelClass}>Delivery Time (Days)</label>
         <div className="relative">
-          <IoCalendarOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+          <IoCalendarOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40" />
           <input
             type="number"
             min="1"
@@ -498,13 +498,13 @@ const TimelineStep = ({ data, onChange }) => (
             className={`${fieldClass} pl-10`}
           />
         </div>
-        <p className="text-[11px] text-white/40">How many days from start to project completion?</p>
+        <p className="text-[11px] text-ink/40">How many days from start to project completion?</p>
       </div>
 
       <div className="space-y-1.5">
         <label className={labelClass}>Proposed Start Date</label>
         <div className="relative">
-          <IoCalendarOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+          <IoCalendarOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40" />
           <input
             type="date"
             value={data.startDate}
@@ -535,7 +535,7 @@ const TimelineStep = ({ data, onChange }) => (
               className={`py-2 px-3 rounded-xl border text-xs font-medium capitalize transition-all ${
                 data.availability === v
                   ? "border-pink-500/50 bg-pink-500/10 text-pink-400"
-                  : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white/80"
+                  : "border-ink/10 bg-ink/5 text-ink/50 hover:border-ink/20 hover:text-ink/80"
               }`}
             >
               {v.replace(/-/g, " ")}
@@ -544,10 +544,10 @@ const TimelineStep = ({ data, onChange }) => (
         </div>
       </div>
 
-      <div className="bg-[#13131a] border border-white/10 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-ps-surface border border-ink/10 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-white">Rush Fee Available</p>
-          <p className="text-xs text-white/40">Charge extra for expedited completion</p>
+          <p className="text-sm font-medium text-ink">Rush Fee Available</p>
+          <p className="text-xs text-ink/40">Charge extra for expedited completion</p>
         </div>
         <Toggle checked={data.rushFee} onChange={(v) => onChange("rushFee", v)} />
       </div>
@@ -555,7 +555,7 @@ const TimelineStep = ({ data, onChange }) => (
       <div className="space-y-1.5">
         <label className={labelClass}>Offer Expiration Date</label>
         <div className="relative">
-          <IoTimeOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+          <IoTimeOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40" />
           <input
             type="date"
             value={data.expirationDate}
@@ -563,7 +563,7 @@ const TimelineStep = ({ data, onChange }) => (
             className={`${fieldClass} pl-10`}
           />
         </div>
-        <p className="text-[11px] text-white/40">When does this offer expire?</p>
+        <p className="text-[11px] text-ink/40">When does this offer expire?</p>
       </div>
     </div>
   </div>
@@ -572,8 +572,8 @@ const TimelineStep = ({ data, onChange }) => (
 const ScopeStep = ({ data, onChange }) => (
   <div className="space-y-6">
     <div>
-      <h2 className="text-xl font-bold text-white">Scope &amp; Inclusions</h2>
-      <p className="text-sm text-white/50 mt-1">Define exactly what's included and excluded</p>
+      <h2 className="text-xl font-bold text-ink">Scope &amp; Inclusions</h2>
+      <p className="text-sm text-ink/50 mt-1">Define exactly what's included and excluded</p>
     </div>
     <div className="space-y-4">
       <div className="space-y-1.5">
@@ -627,19 +627,19 @@ const MilestonesStep = ({ milestones, onAdd, onChange, onRemove, totalPrice }) =
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Milestones</h2>
-        <p className="text-sm text-white/50 mt-1">Break the project into phases (optional)</p>
+        <h2 className="text-xl font-bold text-ink">Milestones</h2>
+        <p className="text-sm text-ink/50 mt-1">Break the project into phases (optional)</p>
       </div>
 
       {parseFloat(totalPrice) > 0 && (
-        <div className="bg-[#1a1a24] border border-white/10 rounded-xl p-4 text-sm">
-          <div className="flex justify-between text-white/60 mb-1">
+        <div className="bg-ps-sunken border border-ink/10 rounded-xl p-4 text-sm">
+          <div className="flex justify-between text-ink/60 mb-1">
             <span>Total bid</span><span>${parseFloat(totalPrice).toLocaleString()}</span>
           </div>
-          <div className="flex justify-between text-white/60 mb-1">
+          <div className="flex justify-between text-ink/60 mb-1">
             <span>In milestones</span><span>${milestoneTotal.toLocaleString()}</span>
           </div>
-          <div className={`flex justify-between font-bold border-t border-white/10 pt-2 ${remaining < 0 ? "text-red-400" : "text-white"}`}>
+          <div className={`flex justify-between font-bold border-t border-ink/10 pt-2 ${remaining < 0 ? "text-red-400" : "text-ink"}`}>
             <span>Remaining</span><span>${remaining.toFixed(2)}</span>
           </div>
         </div>
@@ -647,7 +647,7 @@ const MilestonesStep = ({ milestones, onAdd, onChange, onRemove, totalPrice }) =
 
       <div className="space-y-3">
         {milestones.map((m, i) => (
-          <div key={m.id} className="bg-[#13131a] border border-white/10 rounded-xl p-4 space-y-3">
+          <div key={m.id} className="bg-ps-surface border border-ink/10 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-pink-400 uppercase tracking-wider">
                 Milestone {i + 1}
@@ -655,7 +655,7 @@ const MilestonesStep = ({ milestones, onAdd, onChange, onRemove, totalPrice }) =
               <button
                 type="button"
                 onClick={() => onRemove(m.id)}
-                className="text-white/30 hover:text-red-400 transition-colors"
+                className="text-ink/30 hover:text-red-400 transition-colors"
               >
                 <IoTrash className="text-sm" />
               </button>
@@ -673,7 +673,7 @@ const MilestonesStep = ({ milestones, onAdd, onChange, onRemove, totalPrice }) =
               <div className="space-y-1">
                 <label className={labelClass}>Amount ($)</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/50 text-sm">$</span>
                   <input
                     type="number"
                     min="0"
@@ -710,14 +710,14 @@ const MilestonesStep = ({ milestones, onAdd, onChange, onRemove, totalPrice }) =
       <button
         type="button"
         onClick={onAdd}
-        className="flex items-center gap-2 w-full py-3 rounded-xl border border-dashed border-white/20 text-white/50 hover:border-pink-500/40 hover:text-pink-400 text-sm font-medium transition-all"
+        className="flex items-center gap-2 w-full py-3 rounded-xl border border-dashed border-ink/20 text-ink/50 hover:border-pink-500/40 hover:text-pink-400 text-sm font-medium transition-all"
       >
         <IoAdd className="text-lg" />
         Add Milestone
       </button>
 
       {milestones.length === 0 && (
-        <p className="text-xs text-center text-white/30">
+        <p className="text-xs text-center text-ink/30">
           No milestones added. You can skip this step or add payment phases.
         </p>
       )}
@@ -766,14 +766,14 @@ const ReviewStep = ({ offerData, milestones, onEdit }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Review &amp; Send</h2>
-        <p className="text-sm text-white/50 mt-1">Review your proposal before sending</p>
+        <h2 className="text-xl font-bold text-ink">Review &amp; Send</h2>
+        <p className="text-sm text-ink/50 mt-1">Review your proposal before sending</p>
       </div>
 
       {sections.map(({ step, title, fields }) => (
-        <div key={step} className="bg-[#13131a] border border-white/10 rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">{title}</p>
+        <div key={step} className="bg-ps-surface border border-ink/10 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-ink/10">
+            <p className="text-xs font-semibold text-ink/70 uppercase tracking-wider">{title}</p>
             <button
               type="button"
               onClick={() => onEdit(step)}
@@ -786,8 +786,8 @@ const ReviewStep = ({ offerData, milestones, onEdit }) => {
           <div className="p-4 space-y-2">
             {fields.map(({ label, value }) => (
               <div key={label} className="flex gap-3">
-                <span className="text-xs text-white/40 w-28 flex-shrink-0">{label}:</span>
-                <span className="text-xs text-white/80 flex-1 line-clamp-2">{value}</span>
+                <span className="text-xs text-ink/40 w-28 flex-shrink-0">{label}:</span>
+                <span className="text-xs text-ink/80 flex-1 line-clamp-2">{value}</span>
               </div>
             ))}
           </div>
@@ -795,9 +795,9 @@ const ReviewStep = ({ offerData, milestones, onEdit }) => {
       ))}
 
       {milestones.filter((m) => m.title).length > 0 && (
-        <div className="bg-[#13131a] border border-white/10 rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">Milestones</p>
+        <div className="bg-ps-surface border border-ink/10 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-ink/10">
+            <p className="text-xs font-semibold text-ink/70 uppercase tracking-wider">Milestones</p>
             <button
               type="button"
               onClick={() => onEdit(5)}
@@ -809,7 +809,7 @@ const ReviewStep = ({ offerData, milestones, onEdit }) => {
           <div className="p-4 space-y-2">
             {milestones.filter((m) => m.title).map((m, i) => (
               <div key={m.id} className="flex items-center justify-between text-xs">
-                <span className="text-white/60">{i + 1}. {m.title}</span>
+                <span className="text-ink/60">{i + 1}. {m.title}</span>
                 {m.amount && <span className="text-emerald-400 font-semibold">${m.amount}</span>}
               </div>
             ))}
@@ -818,12 +818,12 @@ const ReviewStep = ({ offerData, milestones, onEdit }) => {
       )}
 
       {/* Funds notice */}
-      <div className="bg-[#13131a] border border-white/10 rounded-xl p-4">
+      <div className="bg-ps-surface border border-ink/10 rounded-xl p-4">
         <div className="flex items-start gap-3">
           <IoShieldCheckmark className="text-pink-400 text-lg flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-white">Funds are held securely</p>
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-sm font-medium text-ink">Funds are held securely</p>
+            <p className="text-xs text-ink/50 mt-0.5">
               Once accepted, payment will be held in escrow and released to you upon project completion or milestone approval.
             </p>
           </div>
@@ -839,9 +839,9 @@ const ConfirmationStep = ({ onGoBack }) => (
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
       transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-      className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center mx-auto shadow-xl shadow-pink-500/30"
+      className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center mx-auto shadow-xl shadow-pink-500/30 text-white"
     >
-      <IoCheckmarkCircle className="text-4xl text-white" />
+      <IoCheckmarkCircle className="text-4xl text-ink" />
     </motion.div>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -849,8 +849,8 @@ const ConfirmationStep = ({ onGoBack }) => (
       transition={{ delay: 0.3 }}
       className="space-y-3"
     >
-      <h2 className="text-2xl font-bold text-white">Proposal Sent!</h2>
-      <p className="text-white/50 max-w-sm mx-auto text-sm leading-relaxed">
+      <h2 className="text-2xl font-bold text-ink">Proposal Sent!</h2>
+      <p className="text-ink/50 max-w-sm mx-auto text-sm leading-relaxed">
         The job poster will review proposals and message you in chat if they hire you.
       </p>
     </motion.div>
@@ -870,7 +870,7 @@ const ConfirmationStep = ({ onGoBack }) => (
           className={`p-3 rounded-xl border text-xs ${
             active
               ? "bg-pink-500/10 border-pink-500/30 text-pink-400"
-              : "bg-white/5 border-white/10 text-white/40"
+              : "bg-ink/5 border-ink/10 text-ink/40"
           }`}
         >
           {label}
@@ -883,7 +883,7 @@ const ConfirmationStep = ({ onGoBack }) => (
       transition={{ delay: 0.7 }}
       type="button"
       onClick={onGoBack}
-      className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white text-sm font-semibold hover:bg-white/5 transition-all mx-auto"
+      className="flex items-center gap-2 px-6 py-3 rounded-xl border border-ink/20 text-ink text-sm font-semibold hover:bg-ink/5 transition-all mx-auto"
     >
       <IoArrowBack />
       Browse More Jobs
@@ -905,7 +905,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
             </div>
             <div>
               <h3 className="text-base font-bold text-emerald-400">You Were Hired!</h3>
-              <p className="text-sm text-white/60 mt-0.5">
+              <p className="text-sm text-ink/60 mt-0.5">
                 The job poster picked your proposal. They will message you in chat to get started.
               </p>
             </div>
@@ -922,7 +922,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
             </div>
             <div>
               <h3 className="text-base font-bold text-red-400">Proposal Not Selected</h3>
-              <p className="text-sm text-white/60 mt-0.5">
+              <p className="text-sm text-ink/60 mt-0.5">
                 The buyer chose a different vendor for this project.
               </p>
             </div>
@@ -939,7 +939,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
             </div>
             <div>
               <h3 className="text-base font-bold text-blue-400">You've Been Shortlisted!</h3>
-              <p className="text-sm text-white/60 mt-0.5">
+              <p className="text-sm text-ink/60 mt-0.5">
                 The job poster is reviewing your proposal alongside others.
               </p>
             </div>
@@ -948,51 +948,51 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
       )}
 
       {/* Offer details card */}
-      <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-4">
+      <div className="bg-ps-surface border border-ink/10 rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-white">Your Proposal</h3>
-          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${BID_STATUS_COLORS[bid.status] ?? "bg-white/10 text-white/60"}`}>
+          <h3 className="text-base font-bold text-ink">Your Proposal</h3>
+          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${BID_STATUS_COLORS[bid.status] ?? "bg-ink/10 text-ink/60"}`}>
             {bid.status}
           </span>
         </div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white/5 rounded-xl p-3">
-            <p className="text-white/40 text-xs mb-1">Your Price</p>
+          <div className="bg-ink/5 rounded-xl p-3">
+            <p className="text-ink/40 text-xs mb-1">Your Price</p>
             <div className="flex items-center gap-1.5">
               <FaDollarSign className="text-emerald-500 text-sm" />
               <span className="text-lg font-bold text-emerald-400">${bid.bid_amount}</span>
             </div>
           </div>
-          <div className="bg-white/5 rounded-xl p-3">
-            <p className="text-white/40 text-xs mb-1">Delivery Time</p>
+          <div className="bg-ink/5 rounded-xl p-3">
+            <p className="text-ink/40 text-xs mb-1">Delivery Time</p>
             <div className="flex items-center gap-1.5">
               <IoCalendarOutline className="text-pink-400 text-sm" />
-              <span className="text-base font-semibold text-white">{bid.delivery_time_days} day{bid.delivery_time_days !== 1 ? "s" : ""}</span>
+              <span className="text-base font-semibold text-ink">{bid.delivery_time_days} day{bid.delivery_time_days !== 1 ? "s" : ""}</span>
             </div>
           </div>
         </div>
 
         {/* Full proposal */}
         {bid.proposal && (
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <p className="text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Full Proposal</p>
-            <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{bid.proposal}</p>
+          <div className="bg-ink/5 border border-ink/10 rounded-xl p-4">
+            <p className="text-ink/40 text-xs uppercase tracking-wider font-semibold mb-2">Full Proposal</p>
+            <p className="text-ink/80 text-sm leading-relaxed whitespace-pre-line">{bid.proposal}</p>
           </div>
         )}
 
         {/* Attachments */}
         {bidImages.length > 0 && (
           <div>
-            <p className="text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Attachments</p>
+            <p className="text-ink/40 text-xs uppercase tracking-wider font-semibold mb-2">Attachments</p>
             <div className="flex gap-2 flex-wrap">
               {bidImages.map((img, i) => (
                 <img
                   key={i}
                   src={img}
                   alt={`bid-img-${i}`}
-                  className="w-16 h-16 rounded-lg object-cover border border-white/10"
+                  className="w-16 h-16 rounded-lg object-cover border border-ink/10"
                 />
               ))}
             </div>
@@ -1001,7 +1001,7 @@ const ExistingBidView = ({ bid, onWithdraw, deleting }) => {
 
         {/* Submitted time */}
         {bid.created_at && (
-          <p className="text-xs text-white/30">
+          <p className="text-xs text-ink/30">
             Submitted {timeAgo(bid.created_at)}
           </p>
         )}
@@ -1183,7 +1183,7 @@ export default function BidRequestDetail() {
   // ── Loading ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="min-h-screen bg-ps-bg">
         <BidsNavBar />
         <div className="flex items-center justify-center pt-32">
           <div className="w-8 h-8 border-2 border-pink-500/20 border-t-pink-500 rounded-full animate-spin" />
@@ -1194,12 +1194,12 @@ export default function BidRequestDetail() {
 
   if (!request) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="min-h-screen bg-ps-bg">
         <BidsNavBar />
         <div className="flex items-center justify-center px-4 pt-32">
           <div className="text-center">
-            <IoAlertCircle className="text-5xl text-white/20 mx-auto mb-4" />
-            <p className="text-white/60 mb-4">Request not found.</p>
+            <IoAlertCircle className="text-5xl text-ink/20 mx-auto mb-4" />
+            <p className="text-ink/60 mb-4">Request not found.</p>
             <Link to="/gigs/jobs">
               <button className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold hover:opacity-90 transition-all">
                 Back to Marketplace
@@ -1214,7 +1214,7 @@ export default function BidRequestDetail() {
   // ── Confirmed ──
   if (isConfirmed) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="min-h-screen bg-ps-bg">
         <BidsNavBar />
         <div className="flex items-center justify-center px-4 pt-20">
           <div className="max-w-md w-full">
@@ -1228,19 +1228,19 @@ export default function BidRequestDetail() {
   // ── Your own job: no proposal form, point to where proposals arrive ──
   if (request?.is_owner) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="min-h-screen bg-ps-bg">
         <BidsNavBar />
         <div className="flex items-center justify-center px-4 pt-20">
-          <div className="max-w-md w-full text-center bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h2 className="text-white text-lg font-bold">{request.title || "This is your job"}</h2>
-            <p className="text-white/40 text-xs mt-1">
+          <div className="max-w-md w-full text-center bg-ink/5 border border-ink/10 rounded-2xl p-6">
+            <h2 className="text-ink text-lg font-bold">{request.title || "This is your job"}</h2>
+            <p className="text-ink/40 text-xs mt-1">
               Your job{request.status ? ` · ${request.status}` : ""}
               {request.deadline ? ` · Needed by ${formatDay(request.deadline)}` : ""}
             </p>
             {request.description && (
-              <p className="text-white/70 text-sm mt-3 whitespace-pre-line text-left">{request.description}</p>
+              <p className="text-ink/70 text-sm mt-3 whitespace-pre-line text-left">{request.description}</p>
             )}
-            <p className="text-white/50 text-sm mt-3">
+            <p className="text-ink/50 text-sm mt-3">
               You can't send a proposal on your own job. Proposals from freelancers show up in My Jobs.
             </p>
             <Link
@@ -1258,35 +1258,35 @@ export default function BidRequestDetail() {
   // ── Existing bid ──
   if (myBid) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="min-h-screen bg-ps-bg">
         <BidsNavBar />
         <div className="px-4 py-8">
           <div className="max-w-2xl mx-auto space-y-6">
             <Link
               to="/gigs/jobs"
-              className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-pink-400 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-ink/50 hover:text-pink-400 transition-colors"
             >
               <IoArrowBack />
               Back to Marketplace
             </Link>
 
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl p-5 space-y-3">
+            <div className="bg-ps-surface border border-ink/10 rounded-2xl p-5 space-y-3">
               {request.category_name && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-pink-400 bg-pink-500/10 px-2.5 py-0.5 rounded-full">
                   <FaTag className="text-[9px]" />
                   {request.category_name}
                 </span>
               )}
-              <h1 className="text-xl font-bold text-white">{request.title}</h1>
-              <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{request.description}</p>
-              <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/10 text-sm">
+              <h1 className="text-xl font-bold text-ink">{request.title}</h1>
+              <p className="text-sm text-ink/60 leading-relaxed whitespace-pre-line">{request.description}</p>
+              <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-ink/10 text-sm">
                 <div className="flex items-center gap-1.5">
                   <FaDollarSign className="text-emerald-500 text-xs" />
                   <span className="font-semibold text-emerald-400">{jobBudgetLabel(request.budget)}</span>
-                  <span className="text-white/30">budget</span>
+                  <span className="text-ink/30">budget</span>
                 </div>
                 {request.deadline && (
-                  <div className="flex items-center gap-1.5 text-white/60">
+                  <div className="flex items-center gap-1.5 text-ink/60">
                     <IoCalendarOutline className="text-pink-400 text-sm" />
                     <span>{formatDay(request.deadline, { month: "short", day: "numeric", year: "numeric" })}</span>
                   </div>
@@ -1294,7 +1294,7 @@ export default function BidRequestDetail() {
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
                   request.status === "OPEN" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" :
                   request.status === "AWARDED" ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
-                  "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                  "bg-gray-500/20 text-ps-meta border-gray-500/30"
                 }`}>
                   {request.status}
                 </span>
@@ -1340,13 +1340,13 @@ export default function BidRequestDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] pb-28">
+    <div className="min-h-screen bg-ps-bg pb-28">
       <BidsNavBar />
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Back link */}
         <Link
           to="/gigs/jobs"
-          className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-pink-400 transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-sm text-ink/50 hover:text-pink-400 transition-colors mb-6"
         >
           <IoArrowBack />
           Back to Marketplace

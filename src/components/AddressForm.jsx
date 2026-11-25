@@ -120,9 +120,9 @@ export default function AddressForm() {
   };
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#1A1C1E] text-gray-900 dark:text-white px-4 py-3 text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:border-[#9747FF] focus:ring-2 focus:ring-[#9747FF]/20 focus:outline-none transition-all";
+    "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#1A1C1E] text-gray-900 dark:text-white px-4 py-3 text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:border-ps-action focus:ring-2 focus:ring-ps-action/20 focus:outline-none transition-all";
   const selectClass =
-    "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#1A1C1E] text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-[#9747FF] focus:ring-2 focus:ring-[#9747FF]/20 focus:outline-none transition-all appearance-none";
+    "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#1A1C1E] text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-ps-action focus:ring-2 focus:ring-ps-action/20 focus:outline-none transition-all appearance-none";
   const labelClass =
     "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5";
 
@@ -160,8 +160,8 @@ export default function AddressForm() {
               <Dialog.Panel className="w-full max-w-lg transform rounded-2xl bg-white dark:bg-[#0E0F13] shadow-2xl transition-all">
                 <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9747FF]/10">
-                      <MapPinIcon className="h-5 w-5 text-[#9747FF]" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ps-action/10">
+                      <MapPinIcon className="h-5 w-5 text-ps-action-text" />
                     </div>
                     <div>
                       <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -341,7 +341,7 @@ export default function AddressForm() {
                     <button
                       type="submit"
                       disabled={!isFormValid || submitting}
-                      className="flex-1 rounded-lg bg-[#9747FF] px-4 py-3 text-sm font-medium text-white hover:bg-[#8533EE] disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 rounded-lg bg-ps-action px-4 py-3 text-sm font-medium text-white hover:bg-[#8533EE] disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                     >
                       {submitting ? (
                         <>

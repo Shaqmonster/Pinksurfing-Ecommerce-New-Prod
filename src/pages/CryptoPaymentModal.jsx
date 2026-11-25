@@ -203,7 +203,7 @@ const CryptoPaymentModal = ({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-ps-bg bg-opacity-50 z-50">
         <img
           src="/loading.svg"
           alt="loading"
@@ -215,13 +215,13 @@ const CryptoPaymentModal = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-black bg-opacity-40 backdrop-blur-sm flex justify-center items-center p-4 ${
+      className={`fixed inset-0 z-50 bg-ps-bg bg-opacity-40 backdrop-blur-sm flex justify-center items-center p-4 ${
         isOpen ? "" : "hidden"
       }`}
     >
-      <div className="bg-[#2d1e5f] dark:bg-gray-800 w-full max-w-md rounded-lg shadow-xl overflow-hidden p-4">
+      <div className="bg-ps-action-soft dark:bg-gray-800 w-full max-w-md rounded-lg shadow-xl overflow-hidden p-4">
         <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <h2 className="text-lg text-white dark:text-gray-200 font-bold">
+          <h2 className="text-lg text-ink dark:text-gray-200 font-bold">
             Buy with Crypto
           </h2>
           <button
@@ -281,7 +281,7 @@ const CryptoPaymentModal = ({
         <select
           value={selectedCurrency}
           onChange={(e) => setSelectedCurrency(e.target.value)}
-          className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-gray-300 dark:text-gray-400 bg-[#342872] dark:bg-gray-700 mb-4"
+          className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-gray-300 dark:text-gray-400 bg-ps-action-soft dark:bg-gray-700 mb-4"
         >
           <option value="eth">Ethereum (ETH)</option>
           <option value="usdt">Tether (USDT)</option>
@@ -296,7 +296,7 @@ const CryptoPaymentModal = ({
             type="text"
             value={walletAddresses[selectedCurrency.toLowerCase()] || ""}
             readOnly
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-gray-300 dark:text-gray-400 bg-[#342872] dark:bg-gray-700"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-gray-300 dark:text-gray-400 bg-ps-action-soft dark:bg-gray-700"
             placeholder="Your wallet address will appear here"
           />
         </div>
@@ -308,7 +308,7 @@ const CryptoPaymentModal = ({
             type="text"
             value={receiverAddress}
             onChange={(e) => setReceiverAddress(e.target.value)}
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-gray-300 dark:text-gray-400 bg-[#342872] dark:bg-gray-700"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-gray-300 dark:text-gray-400 bg-ps-action-soft dark:bg-gray-700"
             placeholder="Enter receiver's wallet address"
           />
         </div>
@@ -328,7 +328,7 @@ const CryptoPaymentModal = ({
           className="w-full bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white dark:text-white font-medium py-3 px-4 rounded-md mb-4"
           onClick={payWithEscrow}
         >
-          <span className="text-gray-200">Pay with Escrow</span>
+          <span className="text-ps-fg2">Pay with Escrow</span>
         </button>
         <div className="text-sm text-gray-300 dark:text-gray-400 mb-4">
           Gas Fee Estimated:{" "}

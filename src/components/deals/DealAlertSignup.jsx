@@ -16,17 +16,17 @@ const PROPERTY_TYPES = [
 
 const CSS = `
 .deal-alert{margin-top:20px;border:1px solid rgba(151,71,255,.35);background:linear-gradient(135deg,rgba(151,71,255,.10),rgba(236,72,153,.06));border-radius:12px;padding:20px;}
-.deal-alert h2{font-size:16px;font-weight:800;color:#f0f0f4;margin:0 0 4px;}
-.deal-alert p{font-size:13px;color:#b0b0c0;margin:0 0 14px;line-height:1.5;}
+.deal-alert h2{font-size:16px;font-weight:800;color:var(--ps-color-text);margin:0 0 4px;}
+.deal-alert p{font-size:13px;color:var(--ps-color-text-secondary);margin:0 0 14px;line-height:1.5;}
 .deal-alert form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end;}
-.deal-alert label{display:block;font-size:11px;font-weight:600;color:#9a9aae;margin-bottom:4px;}
-.deal-alert input,.deal-alert select{width:100%;height:40px;border-radius:8px;border:1px solid #2a2a33;background:#15161c;color:#f0f0f4;padding:0 10px;font-size:13px;}
-.deal-alert input:focus,.deal-alert select:focus{outline:none;border-color:#9747ff;}
-.deal-alert .btn{height:40px;border:none;border-radius:8px;background:#9747ff;color:#fff;font-weight:700;font-size:13px;cursor:pointer;padding:0 16px;}
+.deal-alert label{display:block;font-size:11px;font-weight:600;color:var(--ps-color-text-secondary);margin-bottom:4px;}
+.deal-alert input,.deal-alert select{width:100%;height:40px;border-radius:8px;border:1px solid var(--ps-color-border);background:var(--ps-color-surface);color:var(--ps-color-text);padding:0 10px;font-size:13px;}
+.deal-alert input:focus,.deal-alert select:focus{outline:none;border-color:var(--ps-primary);}
+.deal-alert .btn{height:40px;border:none;border-radius:8px;background:var(--ps-primary);color:#fff;font-weight:700;font-size:13px;cursor:pointer;padding:0 16px;}
 .deal-alert .btn:disabled{opacity:.6;cursor:default;}
-.deal-alert .link{background:none;border:none;color:#9a9aae;font-size:12px;text-decoration:underline;cursor:pointer;padding:0;margin-top:10px;}
-.deal-alert .on{font-size:12px;color:#34d399;font-weight:600;margin-bottom:10px;}
-.deal-alert a{color:#9747ff;font-weight:700;text-decoration:none;}
+.deal-alert .link{background:none;border:none;color:var(--ps-color-text-secondary);font-size:12px;text-decoration:underline;cursor:pointer;padding:0;margin-top:10px;}
+.deal-alert .on{font-size:12px;color:var(--ps-color-success);font-weight:600;margin-bottom:10px;}
+.deal-alert a{color:var(--ps-color-action-text);font-weight:700;text-decoration:none;}
 `;
 
 /** "Email me new deals" box for the Deals page (UAT P2.14). */
@@ -106,7 +106,7 @@ export default function DealAlertSignup({ token }) {
           {active && <div className="on">✓ Your deal alert is on</div>}
           {email && (
             <p style={{ margin: "0 0 12px" }}>
-              Alerts go to <strong style={{ color: "#f0f0f4" }}>{email}</strong>, the email on your
+              Alerts go to <strong style={{ color: "var(--ps-color-text)" }}>{email}</strong>, the email on your
               account.
             </p>
           )}

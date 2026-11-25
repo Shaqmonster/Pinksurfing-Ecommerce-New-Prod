@@ -86,11 +86,11 @@ function timeAgo(dateStr) {
 const FilterSection = ({ title, defaultOpen = false, children }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-white/10 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0">
+    <div className="border-b border-ink/10 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0">
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center justify-between w-full text-xs font-semibold text-white/80 hover:text-white transition-colors py-1"
+        className="flex items-center justify-between w-full text-xs font-semibold text-ink/80 hover:text-ink transition-colors py-1"
       >
         {title}
         {open ? <IoChevronUp className="text-sm" /> : <IoChevronDown className="text-sm" />}
@@ -112,7 +112,7 @@ const ChipFilter = ({ options, selected, onToggle }) => (
           className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
             active
               ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
-              : "bg-white/5 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/80"
+              : "bg-ink/5 text-ink/50 border border-ink/10 hover:border-ink/20 hover:text-ink/80"
           }`}
         >
           {opt.label}
@@ -171,14 +171,14 @@ const CategoryFilter = ({ selected, onToggle, jobs = [], loading = false }) => {
     return (
       <div className="space-y-1.5 px-1 py-1" aria-busy="true" aria-label="Loading categories">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-6 rounded-md bg-white/5 animate-pulse" />
+          <div key={i} className="h-6 rounded-md bg-ink/5 animate-pulse" />
         ))}
       </div>
     );
   }
 
   if (withJobs.length === 0) {
-    return <p className="text-[11px] text-white/40 px-2 py-1.5">No categories with open jobs yet.</p>;
+    return <p className="text-[11px] text-ink/40 px-2 py-1.5">No categories with open jobs yet.</p>;
   }
 
   const visible = showAll ? withJobs : withJobs.slice(0, TOP_CATEGORIES);
@@ -194,18 +194,18 @@ const CategoryFilter = ({ selected, onToggle, jobs = [], loading = false }) => {
               type="button"
               onClick={() => setExpandedCat(expandedCat === cat ? null : cat)}
               aria-expanded={expandedCat === cat}
-              className="flex items-center justify-between w-full text-[11px] text-white/70 hover:text-white transition-colors py-1.5 px-2 rounded-md hover:bg-white/5"
+              className="flex items-center justify-between w-full text-[11px] text-ink/70 hover:text-ink transition-colors py-1.5 px-2 rounded-md hover:bg-ink/5"
             >
               <span className="font-medium text-left">{cat}</span>
               <span className="flex items-center gap-1 flex-shrink-0 ml-1">
-                <span className="text-white/40">{count}</span>
+                <span className="text-ink/40">{count}</span>
                 <IoChevronDown
                   className={`text-xs transition-transform ${expandedCat === cat ? "rotate-180" : ""}`}
                 />
               </span>
             </button>
             {expandedCat === cat && (
-              <div className="ml-2 pl-2 border-l border-white/10 flex flex-wrap gap-1 py-1.5">
+              <div className="ml-2 pl-2 border-l border-ink/10 flex flex-wrap gap-1 py-1.5">
                 {subList.map((sub) => {
                   const active = selected.includes(sub);
                   return (
@@ -216,7 +216,7 @@ const CategoryFilter = ({ selected, onToggle, jobs = [], loading = false }) => {
                       className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                         active
                           ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
-                          : "bg-white/5 text-white/40 hover:text-white/70"
+                          : "bg-ink/5 text-ink/40 hover:text-ink/70"
                       }`}
                     >
                       {sub}
@@ -256,13 +256,13 @@ const FilterSidebar = ({ filters, onFilterChange, onClearAll, activeCount, jobs,
   return (
     <div className="overflow-y-auto h-[calc(100vh-180px)] pr-2 scrollbar-thin">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-        <h2 className="text-xs font-bold text-white uppercase tracking-widest">Filters</h2>
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-ink/10">
+        <h2 className="text-xs font-bold text-ink uppercase tracking-widest">Filters</h2>
         {activeCount > 0 && (
           <button
             type="button"
             onClick={onClearAll}
-            className="flex items-center gap-1 text-[11px] text-white/40 hover:text-white transition-colors"
+            className="flex items-center gap-1 text-[11px] text-ink/40 hover:text-ink transition-colors"
           >
             <IoClose className="text-sm" />
             Clear ({activeCount})
@@ -317,20 +317,20 @@ const RequestCard = ({ request }) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-pink-500/30 transition-all duration-200 group"
+      className="bg-ink/5 backdrop-blur-md border border-ink/10 rounded-2xl p-5 hover:border-pink-500/30 transition-all duration-200 group"
     >
       <div className="flex flex-col md:flex-row gap-4">
         {/* Photo thumbnail */}
         <div className="flex md:flex-col gap-2 flex-shrink-0">
-          <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+          <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-ink/5 border border-ink/10 flex items-center justify-center overflow-hidden">
             {images[0] ? (
               <img src={images[0]} alt="" className="w-full h-full object-cover" />
             ) : (
-              <IoCamera className="text-2xl text-white/20" />
+              <IoCamera className="text-2xl text-ink/20" />
             )}
           </div>
           {images.length > 1 && (
-            <span className="text-[10px] text-white/40 font-mono self-end">
+            <span className="text-[10px] text-ink/40 font-mono self-end">
               +{images.length - 1} more
             </span>
           )}
@@ -340,27 +340,27 @@ const RequestCard = ({ request }) => {
         <div className="flex-1 min-w-0 space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="font-semibold text-white group-hover:text-pink-400 transition-colors text-base">
+              <h3 className="font-semibold text-ink group-hover:text-pink-400 transition-colors text-base">
                 {request.title}
               </h3>
               <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                 {requestCategoryLabel(request) && (
-                  <span className="flex items-center gap-1 text-xs text-white/50">
+                  <span className="flex items-center gap-1 text-xs text-ink/50">
                     <FaTag className="text-pink-400 text-[10px]" />
                     {requestCategoryLabel(request)}
                   </span>
                 )}
                 {request.deadline && (
-                  <span className="flex items-center gap-1 text-xs text-white/50">
+                  <span className="flex items-center gap-1 text-xs text-ink/50">
                     <IoCalendarOutline className="text-sm" />
                     Due {formatDay(request.deadline, { month: "short", day: "numeric" })}
                   </span>
                 )}
-                <span className="flex items-center gap-1 text-xs text-white/40">
+                <span className="flex items-center gap-1 text-xs text-ink/40">
                   <IoTimeOutline className="text-sm" />
                   {timeAgo(request.created_at)}
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono border border-white/10 text-white/40">
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono border border-ink/10 text-ink/40">
                   {request.customer_first_name} {request.customer_last_name}
                 </span>
               </div>
@@ -374,7 +374,7 @@ const RequestCard = ({ request }) => {
           </div>
 
           {/* Scope snippet */}
-          <p className="text-sm text-white/50 line-clamp-2 leading-relaxed">
+          <p className="text-sm text-ink/50 line-clamp-2 leading-relaxed">
             {request.description || "No description provided."}
           </p>
 
@@ -386,7 +386,7 @@ const RequestCard = ({ request }) => {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-white/40">
+              <span className="text-xs text-ink/40">
                 {bidCount} proposal{bidCount !== 1 ? "s" : ""}
               </span>
               <Link
@@ -422,11 +422,11 @@ const MobileFilterDrawer = ({ isOpen, onClose, children }) => (
           animate={{ x: 0 }}
           exit={{ x: "-100%" }}
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          className="fixed left-0 top-0 bottom-0 w-[300px] bg-[#13131a] border-r border-white/10 z-50 lg:hidden flex flex-col"
+          className="fixed left-0 top-0 bottom-0 w-[300px] bg-ps-surface border-r border-ink/10 z-50 lg:hidden flex flex-col"
         >
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
-            <span className="text-sm font-bold text-white">Filters</span>
-            <button type="button" onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+          <div className="flex items-center justify-between p-4 border-b border-ink/10">
+            <span className="text-sm font-bold text-ink">Filters</span>
+            <button type="button" onClick={onClose} className="text-ink/50 hover:text-ink transition-colors">
               <IoClose className="text-xl" />
             </button>
           </div>
@@ -561,7 +561,7 @@ export default function BidsMarketplace() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-ps-bg">
       <BidsNavBar />
 
       {/* Mobile filter drawer */}
@@ -573,13 +573,13 @@ export default function BidsMarketplace() {
         {/* Page title + publish CTA */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
+            <h1 className="text-2xl md:text-3xl font-bold text-ink">
               Find{" "}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Jobs
               </span>
             </h1>
-            <p className="text-sm text-white/50 mt-1">
+            <p className="text-sm text-ink/50 mt-1">
               Freelance work posted in GigHub. Send a proposal; the poster picks who to hire.
             </p>
             {categorySlug && (
@@ -605,19 +605,19 @@ export default function BidsMarketplace() {
         {/* Search + Sort + Mobile filter */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <IoSearchSharp className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-base" />
+            <IoSearchSharp className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40 text-base" />
             <input
               type="text"
               placeholder="Search proposals..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/30 outline-none focus:border-pink-500/40 transition-all"
+              className="w-full h-10 pl-10 pr-4 bg-ink/5 border border-ink/10 rounded-xl text-sm text-ink placeholder-ink/30 outline-none focus:border-pink-500/40 transition-all"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink transition-colors"
               >
                 <IoClose />
               </button>
@@ -625,17 +625,17 @@ export default function BidsMarketplace() {
           </div>
 
           <div className="relative">
-            <FaSort className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
+            <FaSort className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40 text-sm" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="h-10 pl-8 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-pink-500/40 appearance-none cursor-pointer w-full sm:w-[180px]"
+              className="h-10 pl-8 pr-4 bg-ink/5 border border-ink/10 rounded-xl text-sm text-ink outline-none focus:border-pink-500/40 appearance-none cursor-pointer w-full sm:w-[180px]"
             >
-              <option value="newest" className="bg-[#13131a]">Newest First</option>
-              <option value="budget-high" className="bg-[#13131a]">Highest Budget</option>
-              <option value="budget-low" className="bg-[#13131a]">Lowest Budget</option>
-              <option value="fewest-bids" className="bg-[#13131a]">Fewest Proposals</option>
-              <option value="urgent" className="bg-[#13131a]">Urgent First</option>
+              <option value="newest" className="bg-ps-surface">Newest First</option>
+              <option value="budget-high" className="bg-ps-surface">Highest Budget</option>
+              <option value="budget-low" className="bg-ps-surface">Lowest Budget</option>
+              <option value="fewest-bids" className="bg-ps-surface">Fewest Proposals</option>
+              <option value="urgent" className="bg-ps-surface">Urgent First</option>
             </select>
           </div>
 
@@ -643,7 +643,7 @@ export default function BidsMarketplace() {
           <button
             type="button"
             onClick={() => setMobileFilterOpen(true)}
-            className="lg:hidden flex items-center gap-2 h-10 px-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white hover:bg-white/10 transition-all"
+            className="lg:hidden flex items-center gap-2 h-10 px-4 bg-ink/5 border border-ink/10 rounded-xl text-sm text-ink hover:bg-ink/10 transition-all"
           >
             <IoFilterSharp />
             Filters
@@ -659,7 +659,7 @@ export default function BidsMarketplace() {
         <div className="flex gap-6">
           {/* Desktop sidebar */}
           <aside className="hidden lg:block w-[260px] flex-shrink-0">
-            <div className="sticky top-24 bg-[#13131a] border border-white/10 rounded-2xl p-4">
+            <div className="sticky top-24 bg-ps-surface border border-ink/10 rounded-2xl p-4">
               <FilterSidebar {...filterSidebarProps} />
             </div>
           </aside>
@@ -669,17 +669,17 @@ export default function BidsMarketplace() {
             {loading ? (
               <div className="space-y-4">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 rounded-2xl h-40 animate-pulse" />
+                  <div key={i} className="bg-ink/5 border border-ink/10 rounded-2xl h-40 animate-pulse" />
                 ))}
               </div>
             ) : error ? (
-              <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
-                <IoAlertCircle className="text-5xl text-white/20 mx-auto mb-4" />
-                <p className="text-white/50 mb-4">Failed to load requests.</p>
+              <div className="text-center py-20 bg-ink/5 border border-ink/10 rounded-2xl">
+                <IoAlertCircle className="text-5xl text-ink/20 mx-auto mb-4" />
+                <p className="text-ink/50 mb-4">Failed to load requests.</p>
                 <button
                   type="button"
                   onClick={() => window.location.reload()}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm hover:bg-white/15 transition-all mx-auto"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink/10 text-ink text-sm hover:bg-ink/15 transition-all mx-auto"
                 >
                   <IoRefresh />
                   Try Again
@@ -688,7 +688,7 @@ export default function BidsMarketplace() {
             ) : (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm text-white/50">
+                  <p className="text-sm text-ink/50">
                     {filtered.length} open job request{filtered.length !== 1 ? "s" : ""}
                     {activeFilterCount > 0 && (
                       <span className="ml-2 text-pink-400">({activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} active)</span>
@@ -696,11 +696,11 @@ export default function BidsMarketplace() {
                   </p>
                 </div>
                 {filtered.length === 0 ? (
-                  <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
-                    <FaGavel className="text-5xl text-white/15 mx-auto mb-4" />
+                  <div className="text-center py-20 bg-ink/5 border border-ink/10 rounded-2xl">
+                    <FaGavel className="text-5xl text-ink/15 mx-auto mb-4" />
                     {activeFilterCount > 0 || searchQuery.trim() ? (
                       <>
-                        <p className="text-white/50 mb-2">No job requests match your filters.</p>
+                        <p className="text-ink/50 mb-2">No job requests match your filters.</p>
                         <button
                           type="button"
                           onClick={clearAll}
@@ -711,8 +711,8 @@ export default function BidsMarketplace() {
                       </>
                     ) : (
                       <>
-                        <p className="text-white/70 mb-1">No open jobs{categorySlug ? " in this category" : ""} yet.</p>
-                        <p className="text-white/40 text-sm mb-4">Be the first: post the work you need and get proposals from freelancers.</p>
+                        <p className="text-ink/70 mb-1">No open jobs{categorySlug ? " in this category" : ""} yet.</p>
+                        <p className="text-ink/40 text-sm mb-4">Be the first: post the work you need and get proposals from freelancers.</p>
                         <Link
                           to="/gigs/jobs/post"
                           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold"

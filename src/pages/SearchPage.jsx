@@ -87,14 +87,14 @@ const SearchPage = () => {
   const resultCount = Array.isArray(products) ? products.length : 0;
 
   return (
-    <div className="w-full min-h-screen bg-[var(--ps-bg)] text-white">
+    <div className="w-full min-h-screen bg-[var(--ps-bg)] text-ink">
       <PageSEO title="Search" path="/search" noindex />
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-12 pt-6 pb-16">
         <header className="mb-6 sm:mb-8">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 min-h-[44px] text-sm text-[var(--ps-muted)] hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)] rounded-lg"
+            className="inline-flex items-center gap-2 min-h-[44px] text-sm text-[var(--ps-muted)] hover:text-ink transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ps-cyan)] rounded-lg"
             aria-label="Go back"
           >
             <ArrowLeftIcon className="w-5 h-5" aria-hidden="true" />
@@ -102,7 +102,7 @@ const SearchPage = () => {
           </button>
 
           <div className="mt-4 flex flex-col gap-1">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
               Search
             </h1>
             {query ? (

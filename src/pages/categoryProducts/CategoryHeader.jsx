@@ -57,15 +57,15 @@ export default function CategoryHeader({
             <div className="glass-card relative p-4 sm:p-5 rounded-2xl z-[60]">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <span className="text-white font-bold text-lg sm:text-xl">{title?.charAt(0).toUpperCase()}</span>
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg text-white">
+                            <span className="text-ink font-bold text-lg sm:text-xl">{title?.charAt(0).toUpperCase()}</span>
                         </div>
                         <div>
                             <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent capitalize">
                                 {title}
                             </h1>
                             <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                <span className={`w-2 h-2 ${filteredProducts.length > 0 ? "bg-green-500" : "bg-gray-400"} rounded-full`}></span>
+                                <span className={`w-2 h-2 ${filteredProducts.length > 0 ? "bg-green-500 text-white" : "bg-gray-400"} rounded-full`}></span>
                                 {filteredProducts.length || 0} {(title?.includes('realestate') || title?.includes('business')) ? 'listings' : 'products'}
                             </p>
                         </div>
@@ -108,9 +108,9 @@ export default function CategoryHeader({
 
                         {/* Sort Dropdown — Desktop */}
                         <Menu as="div" className="relative hidden md:block">
-                            <Menu.Button className="group flex items-center gap-2 px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                            <Menu.Button className="group flex items-center gap-2 px-4 py-2.5 bg-ink/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{sortName}</span>
-                                <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                                <ChevronDownIcon className="w-5 h-5 text-ps-meta group-hover:text-purple-500 transition-colors" />
                             </Menu.Button>
                             <Transition
                                 as={Fragment}
@@ -147,10 +147,10 @@ export default function CategoryHeader({
 
                         {/* Attribute Filters Dropdown — Desktop */}
                         <Menu as="div" className="relative hidden md:block" style={{ zIndex: 9999 }}>
-                            <Menu.Button className="group relative flex items-center gap-2 px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                            <Menu.Button className="group relative flex items-center gap-2 px-4 py-2.5 bg-ink/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
                                 <AdjustmentsHorizontalIcon className="w-5 h-5 text-gray-500 group-hover:text-purple-500 transition-colors" />
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters</span>
-                                <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                                <ChevronDownIcon className="w-5 h-5 text-ps-meta group-hover:text-purple-500 transition-colors" />
                                 {activeCount > 0 && (
                                     <span className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                                         {activeCount}

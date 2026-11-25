@@ -82,14 +82,14 @@ const PreviewCard = ({ req }) => {
     <Link to={`/gigs/jobs/${req.id}`}>
       <motion.div
         whileHover={{ y: -2, borderColor: "rgba(236,72,153,0.3)" }}
-        className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden h-full flex flex-col transition-all duration-200 cursor-pointer"
+        className="bg-ink/5 backdrop-blur-md border border-ink/10 rounded-2xl overflow-hidden h-full flex flex-col transition-all duration-200 cursor-pointer"
       >
         {/* Photo */}
-        <div className="w-full h-36 bg-white/5 border-b border-white/5 flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="w-full h-36 bg-ink/5 border-b border-ink/5 flex items-center justify-center overflow-hidden flex-shrink-0">
           {images[0] ? (
             <img src={images[0]} alt="" className="w-full h-full object-cover" />
           ) : (
-            <IoCamera className="text-4xl text-white/15" />
+            <IoCamera className="text-4xl text-ink/15" />
           )}
         </div>
 
@@ -97,7 +97,7 @@ const PreviewCard = ({ req }) => {
         <div className="p-4 flex flex-col gap-2.5 flex-1">
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-pink-400 transition-colors leading-snug">
+              <h3 className="text-sm font-semibold text-ink line-clamp-2 group-hover:text-pink-400 transition-colors leading-snug">
                 {req.title}
               </h3>
             </div>
@@ -115,13 +115,13 @@ const PreviewCard = ({ req }) => {
             </span>
           )}
 
-          <p className="text-xs text-white/50 line-clamp-2 flex-1 leading-relaxed">
+          <p className="text-xs text-ink/50 line-clamp-2 flex-1 leading-relaxed">
             {req.description || "No description provided."}
           </p>
 
-          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+          <div className="flex items-center justify-between pt-2 border-t border-ink/5">
             <span className="text-sm font-bold text-emerald-400">{jobBudgetLabel(req.budget)}</span>
-            <div className="flex items-center gap-2 text-xs text-white/40">
+            <div className="flex items-center gap-2 text-xs text-ink/40">
               <span>{bidCount} proposal{bidCount !== 1 ? "s" : ""}</span>
               <span>·</span>
               <span>{timeAgo(req.created_at)}</span>
@@ -189,7 +189,7 @@ export default function BidsLandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-5"
+            className="text-4xl sm:text-5xl md:text-6xl font-bold text-ink leading-tight mb-5"
           >
             Post a Job. Receive{" "}
             <br className="hidden sm:block" />
@@ -203,7 +203,7 @@ export default function BidsLandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-base md:text-lg text-white/60 max-w-xl mx-auto mb-8 leading-relaxed"
+            className="text-base md:text-lg text-ink/60 max-w-xl mx-auto mb-8 leading-relaxed"
           >
             Describe the work, set a budget, and let GigHub freelancers send you proposals.
           </motion.p>
@@ -222,7 +222,7 @@ export default function BidsLandingPage() {
               </button>
             </Link>
             <Link to="/gigs/jobs">
-              <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-white/20 text-white font-semibold text-base hover:bg-white/5 transition-all w-full sm:w-auto">
+              <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-ink/20 text-ink font-semibold text-base hover:bg-ink/5 transition-all w-full sm:w-auto">
                 Browse Marketplace
                 <IoArrowForward />
               </button>
@@ -239,10 +239,10 @@ export default function BidsLandingPage() {
             {FEATURES.map(({ Icon, label }) => (
               <div
                 key={label}
-                className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 text-center hover:border-pink-500/20 transition-colors"
+                className="bg-ink/5 backdrop-blur-md border border-ink/10 rounded-xl p-4 text-center hover:border-pink-500/20 transition-colors"
               >
                 <Icon className="text-lg text-pink-400 mx-auto mb-2" />
-                <p className="text-xs font-medium text-white/60">{label}</p>
+                <p className="text-xs font-medium text-ink/60">{label}</p>
               </div>
             ))}
           </motion.div>
@@ -257,7 +257,7 @@ export default function BidsLandingPage() {
               <p className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 {value}
               </p>
-              <p className="text-xs text-white/50 mt-1">{label}</p>
+              <p className="text-xs text-ink/50 mt-1">{label}</p>
             </div>
           ))}
         </div>
@@ -268,13 +268,13 @@ export default function BidsLandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-white">
+              <h2 className="text-xl md:text-2xl font-bold text-ink">
                 Latest Open{" "}
                 <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                   Requests
                 </span>
               </h2>
-              <p className="text-sm text-white/50 mt-1">Browse open job requests from verified buyers</p>
+              <p className="text-sm text-ink/50 mt-1">Browse open job requests from verified buyers</p>
             </div>
             <Link
               to="/gigs/jobs"
@@ -290,15 +290,15 @@ export default function BidsLandingPage() {
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="bg-white/5 border border-white/10 rounded-2xl h-64 animate-pulse"
+                  className="bg-ink/5 border border-ink/10 rounded-2xl h-64 animate-pulse"
                 />
               ))}
             </div>
           ) : !accessToken ? (
-            <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
-              <FaGavel className="text-5xl text-white/15 mx-auto mb-4" />
-              <p className="text-white/50 mb-2 text-base font-medium">Sign in to view open job requests</p>
-              <p className="text-white/30 text-sm mb-6">Join thousands of buyers and contractors already on the platform</p>
+            <div className="text-center py-20 bg-ink/5 border border-ink/10 rounded-2xl">
+              <FaGavel className="text-5xl text-ink/15 mx-auto mb-4" />
+              <p className="text-ink/50 mb-2 text-base font-medium">Sign in to view open job requests</p>
+              <p className="text-ink/30 text-sm mb-6">Join thousands of buyers and contractors already on the platform</p>
               <div className="flex gap-3 justify-center">
                 <Link to="/signin">
                   <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm hover:opacity-90 transition-all">
@@ -306,16 +306,16 @@ export default function BidsLandingPage() {
                   </button>
                 </Link>
                 <Link to="/signup">
-                  <button className="px-6 py-2.5 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/5 transition-all">
+                  <button className="px-6 py-2.5 rounded-xl border border-ink/20 text-ink font-semibold text-sm hover:bg-ink/5 transition-all">
                     Create Account
                   </button>
                 </Link>
               </div>
             </div>
           ) : requests.length === 0 ? (
-            <div className="text-center py-16 bg-white/5 border border-white/10 rounded-2xl">
-              <FaGavel className="text-4xl text-white/15 mx-auto mb-4" />
-              <p className="text-white/50 mb-4">No open requests yet.</p>
+            <div className="text-center py-16 bg-ink/5 border border-ink/10 rounded-2xl">
+              <FaGavel className="text-4xl text-ink/15 mx-auto mb-4" />
+              <p className="text-ink/50 mb-4">No open requests yet.</p>
               <Link to="/gigs/jobs/post">
                 <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold text-sm hover:opacity-90 transition-all">
                   Post the First Request
@@ -333,7 +333,7 @@ export default function BidsLandingPage() {
           {requests.length > 0 && (
             <div className="text-center mt-8">
               <Link to="/gigs/jobs">
-                <button className="flex items-center gap-2 px-7 py-3 rounded-xl border border-white/20 text-white font-semibold text-sm hover:bg-white/5 transition-all mx-auto">
+                <button className="flex items-center gap-2 px-7 py-3 rounded-xl border border-ink/20 text-ink font-semibold text-sm hover:bg-ink/5 transition-all mx-auto">
                   View All Requests
                   <IoArrowForward />
                 </button>
@@ -347,13 +347,13 @@ export default function BidsLandingPage() {
       <section className="px-4 pb-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
+            <h2 className="text-xl md:text-2xl font-bold text-ink mb-2">
               How It{" "}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Works
               </span>
             </h2>
-            <p className="text-sm text-white/50">Simple. Fast. Secure.</p>
+            <p className="text-sm text-ink/50">Simple. Fast. Secure.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-5">
@@ -364,15 +364,15 @@ export default function BidsLandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center relative"
+                className="bg-ink/5 border border-ink/10 rounded-2xl p-6 text-center relative"
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white text-sm font-bold mx-auto mb-4 shadow-lg shadow-pink-500/20">
                   {step}
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">{title}</h3>
-                <p className="text-sm text-white/50 leading-relaxed">{desc}</p>
+                <h3 className="text-base font-semibold text-ink mb-2">{title}</h3>
+                <p className="text-sm text-ink/50 leading-relaxed">{desc}</p>
                 {i < HOW_IT_WORKS.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 -translate-y-1/2 text-white/20">
+                  <div className="hidden md:block absolute top-1/2 -right-3 -translate-y-1/2 text-ink/20">
                     <FaArrowRight className="text-lg" />
                   </div>
                 )}
@@ -385,8 +385,8 @@ export default function BidsLandingPage() {
       {/* ── Trust / Benefits ────────────────────────────────────────────────── */}
       <section className="px-4 pb-16">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h3 className="text-lg font-bold text-white mb-6 text-center">Why PinkSurfing Proposals?</h3>
+          <div className="bg-ink/5 border border-ink/10 rounded-2xl p-6 md:p-8">
+            <h3 className="text-lg font-bold text-ink mb-6 text-center">Why PinkSurfing Proposals?</h3>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
                 { icon: IoCheckmarkCircle, text: "Escrow-protected payments — funds released only when you approve" },
@@ -398,7 +398,7 @@ export default function BidsLandingPage() {
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-start gap-3">
                   <Icon className="text-pink-400 text-base flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-white/60">{text}</p>
+                  <p className="text-sm text-ink/60">{text}</p>
                 </div>
               ))}
             </div>
@@ -408,12 +408,12 @@ export default function BidsLandingPage() {
 
       {/* ── CTA Banner ──────────────────────────────────────────────────────── */}
       <section className="px-4 pb-20">
-        <div className="max-w-2xl mx-auto text-center bg-gradient-to-br from-purple-900/40 via-pink-900/20 to-purple-900/40 border border-white/10 rounded-3xl p-10 md:p-14 relative overflow-hidden">
+        <div className="max-w-2xl mx-auto text-center bg-gradient-to-br from-purple-900/40 via-pink-900/20 to-purple-900/40 border border-ink/10 rounded-3xl p-10 md:p-14 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-pink-600/5 pointer-events-none" />
-          <h2 className="relative text-2xl md:text-3xl font-bold text-white mb-3">
+          <h2 className="relative text-2xl md:text-3xl font-bold text-ink mb-3">
             Ready to Get Started?
           </h2>
-          <p className="relative text-white/60 mb-8 text-sm leading-relaxed">
+          <p className="relative text-ink/60 mb-8 text-sm leading-relaxed">
             Post your first job in GigHub. It&apos;s free, and you only hire when a proposal fits.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center relative">
@@ -424,7 +424,7 @@ export default function BidsLandingPage() {
               </button>
             </Link>
             <Link to="/gigs/jobs">
-              <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/5 transition-all w-full sm:w-auto">
+              <button className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-ink/20 text-ink font-semibold hover:bg-ink/5 transition-all w-full sm:w-auto">
                 Browse Marketplace
                 <IoArrowForward />
               </button>

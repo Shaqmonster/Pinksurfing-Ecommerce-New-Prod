@@ -31,7 +31,7 @@ export default function ElectronicsSubcategoryFilter({
                   ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/40"
                   : "bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700/50"
                 : isMobile
-                  ? "bg-gray-700/50 hover:bg-gray-700 border border-transparent"
+                  ? "bg-ps-sunken/50 hover:bg-ps-sunken border border-transparent"
                   : "bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent"
             }`}
           >
@@ -47,7 +47,7 @@ export default function ElectronicsSubcategoryFilter({
                   checked
                     ? "text-purple-700 dark:text-purple-300"
                     : isMobile
-                      ? "text-gray-200"
+                      ? "text-ps-fg2"
                       : "text-gray-800 dark:text-gray-200"
                 }`}
               >
@@ -65,9 +65,9 @@ export default function ElectronicsSubcategoryFilter({
 
   if (isMobile) {
     return (
-      <div className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+      <div className="bg-ps-surface p-4 rounded-2xl border border-ps-border">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-ink flex items-center gap-2">
             <span className="w-2 h-2 bg-purple-500 rounded-full" />
             Subcategories
           </h3>
@@ -75,13 +75,13 @@ export default function ElectronicsSubcategoryFilter({
             <button
               type="button"
               onClick={onClear}
-              className="text-xs text-purple-300 hover:text-white font-medium"
+              className="text-xs text-purple-300 hover:text-ink font-medium"
             >
               Clear
             </button>
           )}
         </div>
-        <p className="text-xs text-gray-400 mb-2">Select one or more — leave empty to show all</p>
+        <p className="text-xs text-ps-meta mb-2">Select one or more — leave empty to show all</p>
         {panel}
       </div>
     );
@@ -95,8 +95,8 @@ export default function ElectronicsSubcategoryFilter({
             <div className="flex items-center justify-between gap-2 mb-1">
               <Disclosure.Button className="flex flex-1 items-center justify-between py-1 text-left">
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white">
+                    <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                     </svg>
                   </div>

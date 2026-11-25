@@ -4,47 +4,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PinkSurfing CORE tokens — mirrored from Ps-web-app packages/ui/src/tokens.css */
+/* PinkSurfing CORE tokens — mirrored from Ps-web-app packages/ui/src/tokens.css.
+   Light values live on :root; dark values on .dark (Tailwind darkMode: "class").
+   Light is designed on its own (violet-tinted neutrals), not an inversion of dark.
+   Contrast (WCAG, checked on bg/surface/sunken in both themes): every text and status
+   token is >= 4.5:1; white on --ps-primary is 4.51:1. */
 :root {
-  --ps-bg: #0e0f13;
-  --ps-surf: #1b1b27;
-  --ps-card: #191924;
-  --ps-card2: #1e1c25;
-  --ps-tile: #1b1a26;
-  --ps-brd: rgba(255, 255, 255, 0.08);
-  --ps-brd2: #5d5d60;
+  color-scheme: light;
+  --ps-bg: #f7f6fa;
+  --ps-surf: #ffffff;
+  --ps-card: #ffffff;
+  --ps-card2: #f1eff6;
+  --ps-tile: #f1eff6;
+  --ps-brd: rgba(23, 16, 40, 0.1);
+  --ps-brd2: #c9c5d6;
   --ps-primary: #9747ff;
   --ps-pink: #9747ff;
   --ps-purple: #9747ff;
-  --ps-purple-light: #b882ff;
+  --ps-purple-light: #6f00ff; /* used as purple text — darker on light surfaces */
   --ps-purple-dark: #6f00ff;
-  --ps-cyan: #00b8ff;
-  --ps-pink-soft: #b882ff;
-  --ps-green: #2ecc71;
-  --ps-gold: #d4a017;
-  --ps-amber: #ef9f27;
-  --ps-red: #e24b4a;
+  --ps-cyan: #0077b3;
+  --ps-pink-soft: #ede3ff;
+  --ps-green: #17733f;
+  --ps-gold: #8a6a00;
+  --ps-amber: #975800;
+  --ps-red: #c23534;
+  --ps-blue: #1d63c7;
   --ps-white: #ffffff;
-  --ps-muted: #b4b4b4;
-  --ps-dim: #8a8a8a;
-  --ps-indicator: #de2fd6;
+  --ps-fg: #16141d;
+  /* "ink": the text/hairline colour as RGB channels, for alpha utilities (text-ink/40, border-ink/10).
+     Light mode boosts alpha 1.3x — faded dark ink on light loses contrast faster than the reverse. */
+  --ps-ink: 22 20 29;
+  --ps-ink-k: 1.3;
+  --ps-muted: #55526a;
+  --ps-dim: #6b6780;
+  --ps-indicator: #c21cba;
   --ps-gradient-border-start: #933fff;
   --ps-gradient-border-end: #b882ff;
-  --ps-blur-orb: #8b33fe;
+  --ps-blur-orb: #c9a6ff;
+  --ps-overlay: rgba(16, 12, 28, 0.45);
+  --ps-hover: rgba(23, 16, 40, 0.05);
+  --ps-action-soft: rgba(151, 71, 255, 0.1);
+  --ps-highlight-top: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --ps-shadow-1: 0 1px 2px rgba(40, 28, 70, 0.08);
+  --ps-shadow-2: 0 6px 18px -6px rgba(40, 28, 70, 0.16);
+  --ps-shadow-3: 0 18px 40px -12px rgba(40, 28, 70, 0.22);
 
-  --ps-color-bg: var(--ps-bg);
-  --ps-color-surface: var(--ps-surf);
-  --ps-color-surface-raised: var(--ps-card);
-  --ps-color-text: var(--ps-white);
-  --ps-color-text-secondary: var(--ps-muted);
-  --ps-color-text-meta: var(--ps-dim);
-  --ps-color-border: var(--ps-brd);
-  --ps-color-action: var(--ps-primary);
-  --ps-color-action-text: var(--ps-purple-light);
-  --ps-color-focus: var(--ps-cyan);
-  --ps-color-success: var(--ps-green);
-  --ps-color-warning: var(--ps-amber);
-  --ps-color-danger: var(--ps-red);
+  --ps-color-on-action: #ffffff;
 
   --ps-font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --ps-font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -81,10 +87,65 @@
   --ps-hit-min: 44px;
 
   /* Legacy aliases → CORE (keeps existing class names working during migration) */
+}
+
+.dark {
+  color-scheme: dark;
+  --ps-bg: #0e0f13;
+  --ps-surf: #1b1b27;
+  --ps-card: #191924;
+  --ps-card2: #1e1c25;
+  --ps-tile: #1b1a26;
+  --ps-brd: rgba(255, 255, 255, 0.08);
+  --ps-brd2: #5d5d60;
+  --ps-purple-light: #b882ff;
+  --ps-cyan: #00b8ff;
+  --ps-pink-soft: #b882ff;
+  --ps-green: #2ecc71;
+  --ps-gold: #d4a017;
+  --ps-amber: #ef9f27;
+  --ps-red: #f05a59; /* was #e24b4a: 4.3:1 on surfaces */
+  --ps-blue: #60a5fa;
+  --ps-fg: #ffffff;
+  --ps-ink: 255 255 255;
+  --ps-ink-k: 1;
+  --ps-muted: #b4b4b4;
+  --ps-dim: #8a8a8a;
+  --ps-indicator: #de2fd6;
+  --ps-blur-orb: #8b33fe;
+  --ps-overlay: rgba(0, 0, 0, 0.6);
+  --ps-hover: rgba(255, 255, 255, 0.05);
+  --ps-action-soft: rgba(151, 71, 255, 0.15);
+  --ps-highlight-top: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --ps-shadow-1: var(--ps-highlight-top), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --ps-shadow-2: var(--ps-highlight-top), 0 6px 18px -6px rgba(0, 0, 0, 0.55);
+  --ps-shadow-3: var(--ps-highlight-top), 0 18px 40px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Aliases re-resolve on any element that sets .dark, not only <html>. */
+:root,
+.dark {
+  --ps-color-bg: var(--ps-bg);
+  --ps-color-surface: var(--ps-surf);
+  --ps-color-surface-raised: var(--ps-card);
+  --ps-color-surface-sunken: var(--ps-card2);
+  --ps-color-text: var(--ps-fg);
+  --ps-color-text-secondary: var(--ps-muted);
+  --ps-color-text-meta: var(--ps-dim);
+  --ps-color-border: var(--ps-brd);
+  --ps-color-border-strong: var(--ps-brd2);
+  --ps-color-action: var(--ps-primary);
+  --ps-color-action-text: var(--ps-purple-light);
+  --ps-color-focus: var(--ps-cyan);
+  --ps-color-success: var(--ps-green);
+  --ps-color-warning: var(--ps-amber);
+  --ps-color-danger: var(--ps-red);
+  --ps-color-info: var(--ps-blue);
+  --ps-color-overlay: var(--ps-overlay);
   --bg-primary: var(--ps-bg);
   --bg-secondary: var(--ps-surf);
   --bg-tertiary: var(--ps-card);
-  --text-primary: var(--ps-white);
+  --text-primary: var(--ps-fg);
   --text-secondary: var(--ps-muted);
   --accent-purple: var(--ps-primary);
   --accent-pink: var(--ps-primary);
@@ -95,11 +156,19 @@
   --gradient-dark: linear-gradient(135deg, var(--ps-card) 0%, var(--ps-surf) 100%);
 }
 
+/* Text and hairlines over photos / dark scrims stay light in both themes. */
+.on-media {
+  --ps-ink: 255 255 255;
+  --ps-ink-k: 1;
+  --ps-fg: #ffffff;
+  --ps-color-text: #ffffff;
+}
+
 html,
 body {
   font-family: var(--ps-font-sans);
-  background: var(--ps-bg);
-  color: var(--ps-white);
+  background: var(--ps-color-bg);
+  color: var(--ps-color-text);
   font-size: 16px;
   line-height: var(--ps-leading-body);
   -webkit-font-smoothing: antialiased;

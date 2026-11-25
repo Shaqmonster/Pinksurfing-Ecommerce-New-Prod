@@ -13,7 +13,6 @@ export default function ProfilePopup() {
   const accessToken = useAccessToken();
   const {
     isProfilePopupOpen,
-    isDarkMode,
     setIsProfilePopupOpen,
     setIsVendorFormOpen,
   } = useContext(authContext);
@@ -162,7 +161,7 @@ export default function ProfilePopup() {
       <Transition appear show={isProfilePopupOpen} as={Fragment}>
         <Dialog
           as="div"
-          className={`relative ${isDarkMode && "dark"} z-100`}
+          className={`relative z-100`}
           onClose={closeModal}
         >
           <Transition.Child

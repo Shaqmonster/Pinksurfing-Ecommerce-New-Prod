@@ -222,12 +222,12 @@ export default function Cart() {
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
                   <div className="flex h-full flex-col bg-[var(--ps-bg)] border-l border-[var(--ps-brd)] shadow-2xl">
                     <div className="flex shrink-0 items-center justify-between border-b border-[var(--ps-brd)] px-5 py-4">
-                      <Dialog.Title className="text-base font-semibold text-white">
+                      <Dialog.Title className="text-base font-semibold text-ink">
                         Cart
                       </Dialog.Title>
                       <button
                         type="button"
-                        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-white hover:bg-[var(--ps-surf)]"
+                        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-[var(--ps-muted)] hover:text-ink hover:bg-[var(--ps-surf)]"
                         onClick={() => setIsCartOpen(false)}
                       >
                         <span className="sr-only">Close panel</span>
@@ -256,7 +256,7 @@ export default function Cart() {
                             src="/cartEmpty.svg"
                             alt=""
                           />
-                          <p className="text-base font-semibold text-white">Your cart is empty</p>
+                          <p className="text-base font-semibold text-ink">Your cart is empty</p>
                           <p className="mt-1 text-sm text-[var(--ps-muted)]">
                             Add items from the shopping mall to check out.
                           </p>
@@ -294,7 +294,7 @@ export default function Cart() {
 
                                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                                   <div className="flex justify-between gap-3">
-                                    <h3 className="text-sm font-medium text-white">
+                                    <h3 className="text-sm font-medium text-ink">
                                       <Link
                                         to={`/product/productDetail/${product.product.slug}?productId=${product.product.id}`}
                                         onClick={() => setIsCartOpen(false)}
@@ -303,7 +303,7 @@ export default function Cart() {
                                         {product.product.name}
                                       </Link>
                                     </h3>
-                                    <p className="shrink-0 text-sm font-semibold text-white">
+                                    <p className="shrink-0 text-sm font-semibold text-ink">
                                       {currency}
                                       {formatMoney(unitPrice)}
                                     </p>
@@ -335,12 +335,12 @@ export default function Cart() {
                                           DecrementQty(product.product.id);
                                         }}
                                         type="button"
-                                        className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-white"
+                                        className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-ink"
                                         aria-label="Decrease quantity"
                                       >
                                         −
                                       </button>
-                                      <span className="min-w-[2rem] text-center text-sm text-white">
+                                      <span className="min-w-[2rem] text-center text-sm text-ink">
                                         {product.quantity}
                                       </span>
                                       <button
@@ -358,7 +358,7 @@ export default function Cart() {
                                         }}
                                         type="button"
                                         disabled={isAtMaxStock}
-                                        className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-white disabled:opacity-30"
+                                        className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-ink disabled:opacity-30"
                                         aria-label="Increase quantity"
                                       >
                                         +
@@ -368,7 +368,7 @@ export default function Cart() {
                                     <button
                                       onClick={() => RemoveCartProduct(product.product.id)}
                                       type="button"
-                                      className="text-xs font-medium text-[var(--ps-purple-light)] hover:text-white"
+                                      className="text-xs font-medium text-[var(--ps-purple-light)] hover:text-ink"
                                     >
                                       Remove
                                     </button>
@@ -382,7 +382,7 @@ export default function Cart() {
                     </div>
 
                     <div className="shrink-0 border-t border-[var(--ps-brd)] px-5 py-5 space-y-3">
-                      <div className="flex justify-between text-sm font-medium text-white">
+                      <div className="flex justify-between text-sm font-medium text-ink">
                         <p>Subtotal</p>
                         <p>
                           {currency}
@@ -416,7 +416,7 @@ export default function Cart() {
                       )}
                       <button
                         type="button"
-                        className="w-full text-center text-sm text-[var(--ps-muted)] hover:text-white"
+                        className="w-full text-center text-sm text-[var(--ps-muted)] hover:text-ink"
                         onClick={handleContinueShopping}
                       >
                         Continue shopping

@@ -41,13 +41,13 @@ const NoImagePlaceholder = ({ product, kind, label, name: nameProp, note = "Phot
       aria-label={name ? `${name} (no photo yet)` : "No photo yet"}
       role="img"
     >
-      <span className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 ring-1 ring-white/15">
-        <Icon className="text-2xl text-white/70" aria-hidden="true" />
+      <span className="flex items-center justify-center w-12 h-12 rounded-full bg-ink/10 ring-1 ring-ink/15">
+        <Icon className="text-2xl text-ink/70" aria-hidden="true" />
       </span>
       {category && (
-        <span className="text-[10px] uppercase tracking-wider text-white/55 line-clamp-1">{category}</span>
+        <span className="text-[10px] uppercase tracking-wider text-ink/55 line-clamp-1">{category}</span>
       )}
-      {note && <span className="text-[10px] text-white/40">{note}</span>}
+      {note && <span className="text-[10px] text-ink/40">{note}</span>}
     </div>
   );
 };

@@ -16,7 +16,7 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 
 export default function ProfileWishlist() {
   const accessToken = useAccessToken();
-    const { isWishlistOpen, isDarkMode, setIsWishlistOpen } =
+    const { isWishlistOpen, setIsWishlistOpen } =
         useContext(authContext);
     const { setCartProducts } = useContext(dataContext);
     const { wishlistProducts, setWishlistProducts } = useContext(dataContext);
@@ -141,15 +141,15 @@ export default function ProfileWishlist() {
 
     return (
         <div className="font-sen min-h-screen">
-            <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-8 lg:p-14 shadow-2xl">
-                <div className="flex items-end justify-between mb-12 border-b border-white/5 pb-8">
+            <div className="bg-ink/[0.02] backdrop-blur-2xl border border-ink/5 rounded-[2.5rem] p-8 lg:p-14 shadow-2xl">
+                <div className="flex items-end justify-between mb-12 border-b border-ink/5 pb-8">
                     <div className="space-y-1">
                         <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em]">Curation</p>
-                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase">
+                        <h2 className="text-4xl font-black text-ink tracking-tighter uppercase">
                             My Wishlist
                         </h2>
                     </div>
-                    <span className="text-xs font-black text-white/30 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl">
+                    <span className="text-xs font-black text-ink/30 uppercase tracking-widest bg-ink/5 px-4 py-2 rounded-xl">
                         {wishlistProducts?.length || 0} {wishlistProducts?.length === 1 ? 'Item' : 'Items'}
                     </span>
                 </div>
@@ -158,10 +158,10 @@ export default function ProfileWishlist() {
                     <ul role="list" className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {wishlistProducts?.map((product) => (
                             <li key={product.id} className="relative group">
-                                <div className="bg-white/[0.03] border border-white/5 rounded-[2rem] p-6 hover:bg-white/[0.06] hover:border-purple-500/30 transition-all duration-500 shadow-xl overflow-hidden">
+                                <div className="bg-ink/[0.03] border border-ink/5 rounded-[2rem] p-6 hover:bg-ink/[0.06] hover:border-purple-500/30 transition-all duration-500 shadow-xl overflow-hidden">
                                     <div className="flex gap-6">
-                                        <div className="h-28 w-28 sm:h-36 sm:w-36 flex-shrink-0 overflow-hidden rounded-2xl border border-white/5 shadow-2xl relative">
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                        <div className="h-28 w-28 sm:h-36 sm:w-36 flex-shrink-0 overflow-hidden rounded-2xl border border-ink/5 shadow-2xl relative">
+                                            <div className="on-media absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                             <img
                                                 className="h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
                                                 src={`${product.image1}`}
@@ -177,19 +177,19 @@ export default function ProfileWishlist() {
                                                         onClick={() => setIsWishlistOpen(false)}
                                                         className="block"
                                                     >
-                                                        <h3 className="text-lg font-black text-white tracking-tighter uppercase hover:text-purple-400 transition-colors">
+                                                        <h3 className="text-lg font-black text-ink tracking-tighter uppercase hover:text-purple-400 transition-colors">
                                                             {product.name}
                                                         </h3>
                                                     </Link>
                                                     <button
                                                         onClick={() => RemoveWishlistProduct(product.id)}
-                                                        className="text-white/20 hover:text-red-500 transition-colors p-1"
+                                                        className="text-ink/20 hover:text-red-500 transition-colors p-1"
                                                     >
                                                         <XMarkIcon className="w-5 h-5" />
                                                     </button>
                                                 </div>
                                                 {cleanBlurb(htmlToText(product.short_description)) && (
-                                                    <p className="mt-2 text-sm text-white/30 line-clamp-2 leading-relaxed">
+                                                    <p className="mt-2 text-sm text-ink/30 line-clamp-2 leading-relaxed">
                                                         {cleanBlurb(htmlToText(product.short_description))}
                                                     </p>
                                                 )}
@@ -219,11 +219,11 @@ export default function ProfileWishlist() {
                     <div className="py-32 flex flex-col items-center justify-center space-y-10">
                         <div className="relative">
                             <div className="absolute inset-0 bg-red-500/10 blur-[100px] rounded-full"></div>
-                            <FaHeartBroken className="relative text-white/10 text-8xl transition-transform duration-700 group-hover:scale-110" />
+                            <FaHeartBroken className="relative text-ink/10 text-8xl transition-transform duration-700 group-hover:scale-110" />
                         </div>
                         <div className="text-center space-y-3">
-                            <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Your wishlist is empty</h3>
-                            <p className="text-white/30 text-sm font-medium max-w-xs mx-auto">
+                            <h3 className="text-3xl font-black text-ink uppercase tracking-tighter">Your wishlist is empty</h3>
+                            <p className="text-ink/30 text-sm font-medium max-w-xs mx-auto">
                                 Save the premium products you love here for future consideration.
                             </p>
                         </div>

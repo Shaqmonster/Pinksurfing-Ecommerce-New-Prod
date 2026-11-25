@@ -115,22 +115,22 @@ const PaymentOptionsModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-[#121214] shadow-2xl overflow-hidden border border-white/5">
+      <div className="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-[#121214] shadow-2xl overflow-hidden border border-ink/5">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-6 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-6 flex items-center justify-between text-white">
           <div>
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Multi-Vendor Checkout</h2>
-            <p className="text-white/70 text-sm font-medium">Items are grouped by vendor for individual payment.</p>
+            <h2 className="text-2xl font-black text-ink uppercase tracking-tight">Multi-Vendor Checkout</h2>
+            <p className="text-ink/70 text-sm font-medium">Items are grouped by vendor for individual payment.</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <XMarkIcon className="h-6 w-6 text-white" />
+          <button onClick={onClose} className="p-2 hover:bg-ink/10 rounded-full transition-colors">
+            <XMarkIcon className="h-6 w-6 text-ink" />
           </button>
         </div>
 
         {/* Body */}
         <div className="p-8 max-h-[70vh] overflow-y-auto space-y-6">
           {Object.entries(groupedCart).map(([vendorId, data]) => (
-            <div key={vendorId} className="bg-white/[0.03] border border-gray-100 dark:border-white/5 rounded-2xl p-6 space-y-4">
+            <div key={vendorId} className="bg-ink/[0.03] border border-gray-100 dark:border-white/5 rounded-2xl p-6 space-y-4">
               <div className="flex justify-between items-center border-b border-gray-100 dark:border-white/5 pb-4">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-purple-500"></span>
@@ -142,7 +142,7 @@ const PaymentOptionsModal = ({
               <ul className="space-y-3">
                 {data.items.map((item, idx) => (
                   <li key={idx} className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                    <span>{item.product?.name || item.name} <span className="text-xs text-gray-400">x{item.quantity}</span></span>
+                    <span>{item.product?.name || item.name} <span className="text-xs text-ps-meta">x{item.quantity}</span></span>
                     <span className="font-medium">${formatMoney((Number(item.product?.unit_price || item.unit_price || 0) + Number(item.additional_price || 0)) * item.quantity)}</span>
                   </li>
                 ))}
@@ -153,8 +153,8 @@ const PaymentOptionsModal = ({
                 onClick={() => handleVendorPayment(vendorId)}
                 className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs transition-all ${
                   loadingVendorId === vendorId
-                    ? "bg-gray-100 text-gray-400 cursor-wait"
-                    : "bg-[#3E3E3E] text-white hover:bg-black shadow-lg"
+                    ? "bg-gray-100 text-ps-meta cursor-wait"
+                    : "bg-ps-sunken text-white hover:bg-ps-bg shadow-lg"
                 }`}
               >
                 {loadingVendorId === vendorId ? (
@@ -171,13 +171,13 @@ const PaymentOptionsModal = ({
 
           {Object.keys(groupedCart).length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-400">No items found in your order.</p>
+              <p className="text-ps-meta">No items found in your order.</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-8 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01] flex items-center justify-center gap-2 text-xs text-gray-400 uppercase font-bold tracking-widest">
+        <div className="p-8 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01] flex items-center justify-center gap-2 text-xs text-ps-meta uppercase font-bold tracking-widest">
           <ShieldCheckIcon className="h-4 w-4 text-emerald-500" />
           <span>Secure Multi-Vendor Transaction System</span>
         </div>

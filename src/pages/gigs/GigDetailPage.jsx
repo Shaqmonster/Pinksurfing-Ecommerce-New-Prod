@@ -121,16 +121,16 @@ const CheckoutFlowModal = ({
         animate={{ y: 0, scale: 1, opacity: 1 }}
         exit={{ y: 16, scale: 0.98, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-[#13131a] border border-white/10 rounded-2xl p-5"
+        className="w-full max-w-lg bg-ps-surface border border-ink/10 rounded-2xl p-5"
       >
-        <h3 className="text-white font-bold text-lg mb-1">GigHub Checkout Setup</h3>
-        <p className="text-white/45 text-sm mb-4">
+        <h3 className="text-ink font-bold text-lg mb-1">GigHub Checkout Setup</h3>
+        <p className="text-ink/45 text-sm mb-4">
           Choose how you want to pay and how escrow should be structured before checkout.
         </p>
 
         <div className="space-y-4">
           <div>
-            <p className="text-white/65 text-xs mb-2 uppercase tracking-wider">Payment method</p>
+            <p className="text-ink/65 text-xs mb-2 uppercase tracking-wider">Payment method</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 {
@@ -151,11 +151,11 @@ const CheckoutFlowModal = ({
                   className={`text-left rounded-xl border p-3 transition-all ${
                     options.paymentMode === x.id
                       ? "border-purple-500/40 bg-purple-500/10"
-                      : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                      : "border-ink/10 bg-ink/[0.02] hover:border-ink/20"
                   }`}
                 >
-                  <p className="text-white text-sm font-semibold">{x.label}</p>
-                  <p className="text-white/45 text-xs mt-1">{x.hint}</p>
+                  <p className="text-ink text-sm font-semibold">{x.label}</p>
+                  <p className="text-ink/45 text-xs mt-1">{x.hint}</p>
                 </button>
               ))}
             </div>
@@ -164,7 +164,7 @@ const CheckoutFlowModal = ({
           {(options.paymentMode === "escrow_wallet_only" || options.paymentMode === "escrow_plus_stripe") && (
             <>
               <div>
-                <p className="text-white/65 text-xs mb-2 uppercase tracking-wider">Milestones</p>
+                <p className="text-ink/65 text-xs mb-2 uppercase tracking-wider">Milestones</p>
                 <div className="flex gap-2">
                   {[2, 4, 6].map((n) => (
                     <button
@@ -174,7 +174,7 @@ const CheckoutFlowModal = ({
                       className={`flex-1 py-2 rounded-lg border text-sm ${
                         options.milestoneCount === n
                           ? "border-purple-500/40 bg-purple-500/10 text-white"
-                          : "border-white/10 text-white/60 hover:border-white/20"
+                          : "border-ink/10 text-ink/60 hover:border-ink/20"
                       }`}
                     >
                       {n} milestones
@@ -184,15 +184,15 @@ const CheckoutFlowModal = ({
               </div>
 
               <div>
-                <p className="text-white/65 text-xs mb-2 uppercase tracking-wider">Escrow amount (ETH)</p>
+                <p className="text-ink/65 text-xs mb-2 uppercase tracking-wider">Escrow amount (ETH)</p>
                 <input
                   value={options.escrowEth}
                   onChange={(e) => setOptions((p) => ({ ...p, escrowEth: e.target.value }))}
                   placeholder="1.0"
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-purple-400"
+                  className="w-full bg-ps-sunken border border-ink/10 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-purple-400"
                 />
                 <div className="flex items-center justify-between mt-1">
-                  <p className="text-white/40 text-[11px]">
+                  <p className="text-ink/40 text-[11px]">
                     {rateLoading
                       ? "Fetching live ETH/USD rate..."
                       : ethUsdRate
@@ -203,7 +203,7 @@ const CheckoutFlowModal = ({
                     type="button"
                     onClick={onRecalculateFromRate}
                     disabled={rateLoading || !ethUsdRate}
-                    className="text-[11px] px-2 py-0.5 rounded border border-white/10 text-white/55 hover:bg-white/5 disabled:opacity-50"
+                    className="text-[11px] px-2 py-0.5 rounded border border-ink/10 text-ink/55 hover:bg-ink/5 disabled:opacity-50"
                   >
                     Recalc
                   </button>
@@ -213,22 +213,22 @@ const CheckoutFlowModal = ({
             </>
           )}
 
-          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm">
-            <div className="flex justify-between text-white/70">
+          <div className="rounded-xl border border-ink/10 bg-ink/[0.02] p-3 text-sm">
+            <div className="flex justify-between text-ink/70">
               <span>Checkout total (USD)</span>
               <span className="font-semibold">${totalUsd}</span>
             </div>
             {(options.paymentMode === "escrow_wallet_only" || options.paymentMode === "escrow_plus_stripe") && (
               <>
-                <div className="flex justify-between text-white/50 mt-1">
+                <div className="flex justify-between text-ink/50 mt-1">
                   <span>Escrow setup</span>
                   <span>{options.milestoneCount} milestones</span>
                 </div>
-                <div className="flex justify-between text-white/50 mt-1">
+                <div className="flex justify-between text-ink/50 mt-1">
                   <span>Escrow amount (exact ETH)</span>
                   <span>{escrowEthExact || "Invalid amount"} ETH</span>
                 </div>
-                <div className="flex justify-between text-white/35 mt-1">
+                <div className="flex justify-between text-ink/35 mt-1">
                   <span>Escrow amount (Wei)</span>
                   <span className="font-mono text-[11px]">{escrowWeiExact || "-"}</span>
                 </div>
@@ -240,7 +240,7 @@ const CheckoutFlowModal = ({
         <div className="flex gap-2 mt-5">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm hover:border-white/20"
+            className="flex-1 py-2.5 rounded-xl border border-ink/10 text-ink/60 text-sm hover:border-ink/20"
           >
             Cancel
           </button>
@@ -480,7 +480,7 @@ const GigDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#0a0a0f] min-h-screen flex items-center justify-center">
+      <div className="bg-ps-bg min-h-screen flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
       </div>
     );
@@ -488,9 +488,9 @@ const GigDetailPage = () => {
 
   if (!gig) {
     return (
-      <div className="bg-[#0a0a0f] min-h-screen flex flex-col items-center justify-center">
-        <FaBriefcase className="text-5xl text-white/10 mb-4" />
-        <p className="text-white/40 text-lg">Gig not found</p>
+      <div className="bg-ps-bg min-h-screen flex flex-col items-center justify-center">
+        <FaBriefcase className="text-5xl text-ink/10 mb-4" />
+        <p className="text-ink/40 text-lg">Gig not found</p>
         <Link to="/gigs" className="mt-4 text-purple-400 hover:text-purple-300 text-sm">
           ← Browse gigs
         </Link>
@@ -504,23 +504,23 @@ const GigDetailPage = () => {
   if (hasAddons) tabs.push("addons");
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen relative overflow-hidden">
+    <div className="bg-ps-bg min-h-screen relative overflow-hidden">
       {/* Orbs */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-600/8 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-600/8 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-white/40 text-sm mb-6 flex-wrap">
-          <Link to="/gighub/dashboard" className="hover:text-white/70 transition-colors">GigHub</Link>
+        <div className="flex items-center gap-2 text-ink/40 text-sm mb-6 flex-wrap">
+          <Link to="/gighub/dashboard" className="hover:text-ink/70 transition-colors">GigHub</Link>
           <span>/</span>
-          <Link to="/gigs" className="hover:text-white/70 transition-colors">Gigs</Link>
+          <Link to="/gigs" className="hover:text-ink/70 transition-colors">Gigs</Link>
           {gig.category_details && (
             <>
               <span>/</span>
               <Link
                 to={`/gigs?category_slug=${gig.category_details.slug}`}
-                className="hover:text-white/70 transition-colors"
+                className="hover:text-ink/70 transition-colors"
               >
                 {gig.category_details.name}
               </Link>
@@ -529,11 +529,11 @@ const GigDetailPage = () => {
           {gig.subcategory_details && (
             <>
               <span>/</span>
-              <span className="text-white/50">{gig.subcategory_details.name}</span>
+              <span className="text-ink/50">{gig.subcategory_details.name}</span>
             </>
           )}
           <span>/</span>
-          <span className="text-white/70 truncate max-w-xs">{gig.title}</span>
+          <span className="text-ink/70 truncate max-w-xs">{gig.title}</span>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -567,7 +567,7 @@ const GigDetailPage = () => {
                     No category: pick one so buyers can find this gig
                   </Link>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-white/50 text-xs font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-ink/5 border border-ink/10 rounded-full text-ink/50 text-xs font-medium">
                     <IoGridOutline className="text-[10px]" />
                     Uncategorized
                   </span>
@@ -586,7 +586,7 @@ const GigDetailPage = () => {
             <motion.h1
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-2xl sm:text-3xl font-bold text-white mb-4 leading-tight"
+              className="text-2xl sm:text-3xl font-bold text-ink mb-4 leading-tight"
             >
               {gig.title}
             </motion.h1>
@@ -601,18 +601,18 @@ const GigDetailPage = () => {
                 </div>
               )}
               <div>
-                <p className="text-white font-semibold text-sm">{workerName}</p>
+                <p className="text-ink font-semibold text-sm">{workerName}</p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <div className="flex items-center gap-1">
                     <IoStarSharp className="text-yellow-400 text-xs" />
-                    <span className="text-white/70 text-xs font-medium">{gig.rating || "0.00"}</span>
+                    <span className="text-ink/70 text-xs font-medium">{gig.rating || "0.00"}</span>
                   </div>
-                  <span className="text-white/20">•</span>
-                  <span className="text-white/40 text-xs">{gig.total_orders_completed || 0} orders completed</span>
+                  <span className="text-ink/20">•</span>
+                  <span className="text-ink/40 text-xs">{gig.total_orders_completed || 0} orders completed</span>
                   {displayPrice && (
                     <>
-                      <span className="text-white/20">•</span>
-                      <span className="text-white/60 text-xs font-semibold flex items-center gap-1">
+                      <span className="text-ink/20">•</span>
+                      <span className="text-ink/60 text-xs font-semibold flex items-center gap-1">
                         <IoPricetagOutline className="text-green-400 text-xs" />
                         Starting at {displayPrice}
                       </span>
@@ -624,7 +624,7 @@ const GigDetailPage = () => {
 
             {/* Image Gallery */}
             {images.length > 0 ? (
-              <div className="relative rounded-2xl overflow-hidden bg-[#13131a] mb-6 aspect-video">
+              <div className="relative rounded-2xl overflow-hidden bg-ps-surface mb-6 aspect-video">
                 <img
                   src={images[activeImageIdx]?.file}
                   alt={gig.title}
@@ -634,13 +634,13 @@ const GigDetailPage = () => {
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-all"
+                      className="on-media absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-all"
                     >
                       <IoChevronBackOutline />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-all"
+                      className="on-media absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-all"
                     >
                       <IoChevronForwardOutline />
                     </button>
@@ -649,7 +649,7 @@ const GigDetailPage = () => {
                         <button
                           key={i}
                           onClick={() => setActiveImageIdx(i)}
-                          className={`w-2 h-2 rounded-full transition-all ${i === activeImageIdx ? "bg-white" : "bg-white/30"}`}
+                          className={`w-2 h-2 rounded-full transition-all ${i === activeImageIdx ? "bg-white" : "bg-ink/30"}`}
                         />
                       ))}
                     </div>
@@ -657,11 +657,11 @@ const GigDetailPage = () => {
                 )}
               </div>
             ) : (
-              <div className="rounded-2xl bg-gradient-to-br from-purple-900/40 via-[#13131a] to-pink-900/30 border border-white/5 aspect-video flex flex-col items-center justify-center mb-6 gap-3 px-6 text-center">
-                <FaBriefcase className="text-5xl text-white/25" />
-                <p className="text-white/70 text-base font-semibold line-clamp-2">{gig.title}</p>
+              <div className="rounded-2xl bg-gradient-to-br from-purple-900/40 via-ps-surface to-pink-900/30 border border-ink/5 aspect-video flex flex-col items-center justify-center mb-6 gap-3 px-6 text-center">
+                <FaBriefcase className="text-5xl text-ink/25" />
+                <p className="text-ink/70 text-base font-semibold line-clamp-2">{gig.title}</p>
                 {gig.category_details?.name && (
-                  <p className="text-white/40 text-xs uppercase tracking-wider">{gig.category_details.name}</p>
+                  <p className="text-ink/40 text-xs uppercase tracking-wider">{gig.category_details.name}</p>
                 )}
               </div>
             )}
@@ -674,7 +674,7 @@ const GigDetailPage = () => {
                     key={i}
                     onClick={() => setActiveImageIdx(i)}
                     className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
-                      i === activeImageIdx ? "border-purple-500" : "border-white/10 hover:border-white/20"
+                      i === activeImageIdx ? "border-purple-500" : "border-ink/10 hover:border-ink/20"
                     }`}
                   >
                     <img src={img.file} alt="" className="w-full h-full object-contain" />
@@ -684,15 +684,15 @@ const GigDetailPage = () => {
             )}
 
             {/* Tabs */}
-            <div className="flex gap-1 border-b border-white/5 mb-5">
+            <div className="flex gap-1 border-b border-ink/5 mb-5">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2.5 text-sm font-medium capitalize transition-all border-b-2 -mb-px ${
                     activeTab === tab
-                      ? "border-purple-500 text-white"
-                      : "border-transparent text-white/40 hover:text-white/60"
+                      ? "border-purple-500 text-ink"
+                      : "border-transparent text-ink/40 hover:text-ink/60"
                   }`}
                 >
                   {tab}
@@ -712,8 +712,8 @@ const GigDetailPage = () => {
                 >
                   {/* Description */}
                   <div>
-                    <h3 className="text-white font-semibold text-sm mb-2">Description</h3>
-                    <p className="text-white/70 text-sm leading-relaxed whitespace-pre-line">
+                    <h3 className="text-ink font-semibold text-sm mb-2">Description</h3>
+                    <p className="text-ink/70 text-sm leading-relaxed whitespace-pre-line">
                       {gig.description || "No description provided."}
                     </p>
                   </div>
@@ -743,20 +743,20 @@ const GigDetailPage = () => {
                         icon: <IoCheckmarkCircle className="text-green-400" />,
                       },
                     ].filter(Boolean).map((item) => (
-                      <div key={item.label} className="bg-[#13131a] border border-white/5 rounded-xl p-3">
+                      <div key={item.label} className="bg-ps-surface border border-ink/5 rounded-xl p-3">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm">{item.icon}</span>
-                          <span className="text-white/40 text-[10px] uppercase tracking-wider font-medium">{item.label}</span>
+                          <span className="text-ink/40 text-[10px] uppercase tracking-wider font-medium">{item.label}</span>
                         </div>
-                        <p className="text-white font-semibold text-sm truncate">{item.value}</p>
+                        <p className="text-ink font-semibold text-sm truncate">{item.value}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Pricing Quick View — always visible */}
                   {hasPackages && (
-                    <div className="bg-[#13131a] border border-white/5 rounded-xl p-4">
-                      <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                    <div className="bg-ps-surface border border-ink/5 rounded-xl p-4">
+                      <h3 className="text-ink font-semibold text-sm mb-3 flex items-center gap-2">
                         <IoPricetagOutline className="text-green-400" />
                         Pricing
                       </h3>
@@ -768,8 +768,8 @@ const GigDetailPage = () => {
                               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${style.badge}`}>
                                 {style.label}
                               </span>
-                              <span className="text-white font-bold text-sm">${parseFloat(pkg.price).toFixed(2)}</span>
-                              <span className="text-white/30 text-xs">/ {pkg.delivery_days}d</span>
+                              <span className="text-ink font-bold text-sm">${parseFloat(pkg.price).toFixed(2)}</span>
+                              <span className="text-ink/30 text-xs">/ {pkg.delivery_days}d</span>
                             </div>
                           );
                         })}
@@ -779,11 +779,11 @@ const GigDetailPage = () => {
 
                   {/* Requirements */}
                   {gig.requirements?.length > 0 && (
-                    <div className="bg-[#13131a] border border-white/5 rounded-xl p-4">
-                      <h3 className="text-white font-semibold text-sm mb-3">Seller Requirements</h3>
+                    <div className="bg-ps-surface border border-ink/5 rounded-xl p-4">
+                      <h3 className="text-ink font-semibold text-sm mb-3">Seller Requirements</h3>
                       <ul className="space-y-2">
                         {gig.requirements.map((req, i) => (
-                          <li key={i} className="flex items-start gap-2 text-white/60 text-sm">
+                          <li key={i} className="flex items-start gap-2 text-ink/60 text-sm">
                             <IoCheckmarkCircle className="text-purple-400 text-base mt-0.5 flex-shrink-0" />
                             <span>{req.question}</span>
                             {req.is_mandatory && (
@@ -796,26 +796,26 @@ const GigDetailPage = () => {
                   )}
 
                   {/* Gig Metadata */}
-                  <div className="bg-[#13131a] border border-white/5 rounded-xl p-4">
-                    <h3 className="text-white font-semibold text-sm mb-3">Gig Details</h3>
+                  <div className="bg-ps-surface border border-ink/5 rounded-xl p-4">
+                    <h3 className="text-ink font-semibold text-sm mb-3">Gig Details</h3>
                     <div className="grid grid-cols-2 gap-y-2 gap-x-6 text-sm">
-                      <div className="flex justify-between text-white/40">
-                        <span>Gig ID</span> <span className="text-white/70">#{gig.id}</span>
+                      <div className="flex justify-between text-ink/40">
+                        <span>Gig ID</span> <span className="text-ink/70">#{gig.id}</span>
                       </div>
-                      <div className="flex justify-between text-white/40">
-                        <span>Status</span> <span className="text-white/70 capitalize">{gig.status}</span>
+                      <div className="flex justify-between text-ink/40">
+                        <span>Status</span> <span className="text-ink/70 capitalize">{gig.status}</span>
                       </div>
-                      <div className="flex justify-between text-white/40">
-                        <span>Listed</span> <span className="text-white/70">{formatDate(gig.created_at)}</span>
+                      <div className="flex justify-between text-ink/40">
+                        <span>Listed</span> <span className="text-ink/70">{formatDate(gig.created_at)}</span>
                       </div>
-                      <div className="flex justify-between text-white/40">
-                        <span>Updated</span> <span className="text-white/70">{formatDate(gig.updated_at)}</span>
+                      <div className="flex justify-between text-ink/40">
+                        <span>Updated</span> <span className="text-ink/70">{formatDate(gig.updated_at)}</span>
                       </div>
-                      <div className="flex justify-between text-white/40">
-                        <span>Packages</span> <span className="text-white/70">{gig.packages?.length || 0}</span>
+                      <div className="flex justify-between text-ink/40">
+                        <span>Packages</span> <span className="text-ink/70">{gig.packages?.length || 0}</span>
                       </div>
-                      <div className="flex justify-between text-white/40">
-                        <span>Add-ons</span> <span className="text-white/70">{gig.addons?.length || 0}</span>
+                      <div className="flex justify-between text-ink/40">
+                        <span>Add-ons</span> <span className="text-ink/70">{gig.addons?.length || 0}</span>
                       </div>
                     </div>
                   </div>
@@ -839,7 +839,7 @@ const GigDetailPage = () => {
                         whileHover={{ scale: 1.02 }}
                         onClick={() => setSelectedPkg(pkg)}
                         className={`relative cursor-pointer bg-gradient-to-b ${style.gradient} border rounded-2xl p-4 transition-all ${
-                          isSelected ? `${style.border} shadow-lg` : "border-white/5 hover:border-white/10"
+                          isSelected ? `${style.border} shadow-lg` : "border-ink/5 hover:border-ink/10"
                         }`}
                       >
                         {style.popular && (
@@ -848,27 +848,27 @@ const GigDetailPage = () => {
                           </span>
                         )}
                         {isSelected && (
-                          <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center">
-                            <FaCheck className="text-white text-[9px]" />
+                          <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center text-white">
+                            <FaCheck className="text-ink text-[9px]" />
                           </div>
                         )}
                         <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full border mb-3 ${style.badge}`}>
                           {style.label}
                         </span>
-                        {pkg.title && <p className="text-white font-semibold text-sm mb-1">{pkg.title}</p>}
-                        <p className="text-white/50 text-xs leading-relaxed mb-3">{pkg.description || "No description"}</p>
+                        {pkg.title && <p className="text-ink font-semibold text-sm mb-1">{pkg.title}</p>}
+                        <p className="text-ink/50 text-xs leading-relaxed mb-3">{pkg.description || "No description"}</p>
                         <div className="space-y-1.5">
-                          <div className="flex items-center gap-1.5 text-white/60 text-xs">
+                          <div className="flex items-center gap-1.5 text-ink/60 text-xs">
                             <IoTimeOutline className="text-sm" />
                             <span>{pkg.delivery_days} day delivery</span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-white/60 text-xs">
+                          <div className="flex items-center gap-1.5 text-ink/60 text-xs">
                             <IoRefreshOutline className="text-sm" />
                             <span>{pkg.revisions} revision{pkg.revisions !== 1 ? "s" : ""}</span>
                           </div>
                         </div>
-                        <p className="text-white font-bold text-xl mt-3">${parseFloat(pkg.price).toFixed(2)}</p>
-                        <p className="text-white/40 text-[11px] mt-0.5">+ 5% service fee at checkout</p>
+                        <p className="text-ink font-bold text-xl mt-3">${parseFloat(pkg.price).toFixed(2)}</p>
+                        <p className="text-ink/40 text-[11px] mt-0.5">+ 5% service fee at checkout</p>
                       </motion.div>
                     );
                   })}
@@ -893,23 +893,23 @@ const GigDetailPage = () => {
                           className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
                             checked
                               ? "bg-purple-600/10 border-purple-500/40"
-                              : "bg-[#13131a] border-white/5 hover:border-white/10"
+                              : "bg-ps-surface border-ink/5 hover:border-ink/10"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                              checked ? "bg-purple-600 border-purple-500" : "border-white/20"
+                              checked ? "bg-purple-600 border-purple-500 text-white" : "border-ink/20"
                             }`}>
-                              {checked && <FaCheck className="text-white text-[9px]" />}
+                              {checked && <FaCheck className="text-ink text-[9px]" />}
                             </div>
                             <div>
-                              <p className="text-white text-sm font-medium">{addon.name}</p>
+                              <p className="text-ink text-sm font-medium">{addon.name}</p>
                               {addon.additional_days > 0 && (
-                                <p className="text-white/40 text-xs">+{addon.additional_days} extra days</p>
+                                <p className="text-ink/40 text-xs">+{addon.additional_days} extra days</p>
                               )}
                             </div>
                           </div>
-                          <span className="text-white font-semibold">+${parseFloat(addon.price).toFixed(2)}</span>
+                          <span className="text-ink font-semibold">+${parseFloat(addon.price).toFixed(2)}</span>
                         </motion.div>
                       );
                     })}
@@ -925,9 +925,9 @@ const GigDetailPage = () => {
 
               {/* Price hero card when no packages */}
               {!hasPackages && (
-                <div className="bg-[#13131a] border border-white/5 rounded-2xl p-5 text-center">
-                  <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Pricing</p>
-                  <p className="text-white/40 text-sm mb-4">No packages listed yet. Contact the seller for a custom quote.</p>
+                <div className="bg-ps-surface border border-ink/5 rounded-2xl p-5 text-center">
+                  <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-2">Pricing</p>
+                  <p className="text-ink/40 text-sm mb-4">No packages listed yet. Contact the seller for a custom quote.</p>
                   {!isOwner ? (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -939,7 +939,7 @@ const GigDetailPage = () => {
                       Request a Quote
                     </motion.button>
                   ) : (
-                    <div className="py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white/40 text-xs italic text-center">
+                    <div className="py-3 px-4 bg-ink/5 border border-ink/10 rounded-xl text-ink/40 text-xs italic text-center">
                       This is your listing.
                     </div>
                   )}
@@ -948,8 +948,8 @@ const GigDetailPage = () => {
 
               {/* Package selector (compact) */}
               {hasPackages && (
-                <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-                  <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">
+                <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
+                  <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">
                     {gig.packages.length === 1 ? "Package" : "Select Package"}
                   </p>
                   {gig.packages.length > 1 && (
@@ -964,7 +964,7 @@ const GigDetailPage = () => {
                             className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${
                               isSelected
                                 ? `bg-gradient-to-r ${style.btn} border-transparent text-white shadow-md`
-                                : "bg-transparent border-white/10 text-white/50 hover:border-white/20"
+                                : "bg-transparent border-ink/10 text-ink/50 hover:border-ink/20"
                             }`}
                           >
                             {style.label}
@@ -986,20 +986,20 @@ const GigDetailPage = () => {
                           {(TIER_STYLES[selectedPkg.tier] || TIER_STYLES.basic).label}
                         </span>
                         <div className="text-right">
-                          <p className="text-white font-bold text-xl">${parseFloat(selectedPkg.price).toFixed(2)}</p>
-                          <p className="text-white/40 text-[11px]">+ 5% service fee</p>
+                          <p className="text-ink font-bold text-xl">${parseFloat(selectedPkg.price).toFixed(2)}</p>
+                          <p className="text-ink/40 text-[11px]">+ 5% service fee</p>
                         </div>
                       </div>
                       {selectedPkg.title && (
-                        <p className="text-white font-semibold text-sm">{selectedPkg.title}</p>
+                        <p className="text-ink font-semibold text-sm">{selectedPkg.title}</p>
                       )}
-                      <p className="text-white/50 text-xs leading-relaxed">{selectedPkg.description || "No description"}</p>
+                      <p className="text-ink/50 text-xs leading-relaxed">{selectedPkg.description || "No description"}</p>
                       <div className="flex gap-4 pt-1">
-                        <div className="flex items-center gap-1 text-white/60 text-xs">
+                        <div className="flex items-center gap-1 text-ink/60 text-xs">
                           <IoTimeOutline />
                           <span>{selectedPkg.delivery_days} day delivery</span>
                         </div>
-                        <div className="flex items-center gap-1 text-white/60 text-xs">
+                        <div className="flex items-center gap-1 text-ink/60 text-xs">
                           <IoRefreshOutline />
                           <span>{selectedPkg.revisions} revisions</span>
                         </div>
@@ -1011,20 +1011,20 @@ const GigDetailPage = () => {
 
               {/* Order summary */}
               {hasPackages && selectedPkg && (
-                <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-                  <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Order Summary</p>
+                <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
+                  <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">Order Summary</p>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between text-white/60">
+                    <div className="flex justify-between text-ink/60">
                       <span>Package ({(TIER_STYLES[selectedPkg?.tier] || TIER_STYLES.basic).label})</span>
                       <span>${parseFloat(selectedPkg?.price || 0).toFixed(2)}</span>
                     </div>
                     {selectedAddons.map((a) => (
-                      <div key={a.id} className="flex justify-between text-white/60">
+                      <div key={a.id} className="flex justify-between text-ink/60">
                         <span>{a.name}</span>
                         <span>+${parseFloat(a.price).toFixed(2)}</span>
                       </div>
                     ))}
-                    <div className="flex justify-between text-white/40 text-xs">
+                    <div className="flex justify-between text-ink/40 text-xs">
                       <span>Service fee (5%)</span>
                       <span>
                         ${(
@@ -1034,7 +1034,7 @@ const GigDetailPage = () => {
                         ).toFixed(2)}
                       </span>
                     </div>
-                    <div className="border-t border-white/5 pt-2 flex justify-between text-white font-bold text-base">
+                    <div className="border-t border-ink/5 pt-2 flex justify-between text-ink font-bold text-base">
                       <span>Total</span>
                       <span>${totalPrice()}</span>
                     </div>
@@ -1050,7 +1050,7 @@ const GigDetailPage = () => {
                     >
                       {purchasing ? (
                         <>
-                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span className="w-4 h-4 border-2 border-ink/30 border-t-ink rounded-full animate-spin" />
                           Processing…
                         </>
                       ) : (
@@ -1058,13 +1058,13 @@ const GigDetailPage = () => {
                       )}
                     </motion.button>
                   ) : (
-                    <div className="mt-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white/30 text-xs italic text-center">
+                    <div className="mt-4 py-3.5 rounded-xl bg-ink/5 border border-ink/10 text-ink/30 text-xs italic text-center">
                       Listing Owner: Self-checkout disabled
                     </div>
                   )}
 
                   {!user && (
-                    <p className="text-center text-white/30 text-xs mt-2">
+                    <p className="text-center text-ink/30 text-xs mt-2">
                       <Link to="/signin" className="text-purple-400 hover:text-purple-300">Sign in</Link> to purchase
                     </p>
                   )}
@@ -1077,7 +1077,7 @@ const GigDetailPage = () => {
                       // Matches what exists: buyers can open a dispute; PinkSurfing can refund via Square.
                       { icon: <IoCheckmarkCircle className="text-purple-400" />, text: "Open a dispute if the work isn't delivered" },
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 text-white/40 text-xs">
+                      <div key={i} className="flex items-center gap-2 text-ink/40 text-xs">
                         {item.icon}
                         <span>{item.text}</span>
                       </div>
@@ -1087,8 +1087,8 @@ const GigDetailPage = () => {
               )}
 
               {/* Worker card */}
-              <div className="bg-[#13131a] border border-white/5 rounded-2xl p-4">
-                <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">About the Seller</p>
+              <div className="bg-ps-surface border border-ink/5 rounded-2xl p-4">
+                <p className="text-ink/50 text-xs font-semibold uppercase tracking-wider mb-3">About the Seller</p>
                 <div className="flex items-center gap-3">
                   {gig.worker?.profile_picture ? (
                     <img src={gig.worker.profile_picture} alt={workerName} className="w-12 h-12 rounded-full object-cover ring-2 ring-purple-500/20" />
@@ -1098,25 +1098,25 @@ const GigDetailPage = () => {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate">{workerName}</p>
+                    <p className="text-ink font-semibold text-sm truncate">{workerName}</p>
                   </div>
                 </div>
 
                 {gig.worker?.bio && (
-                  <p className="text-white/40 text-xs mt-3 leading-relaxed">{gig.worker.bio}</p>
+                  <p className="text-ink/40 text-xs mt-3 leading-relaxed">{gig.worker.bio}</p>
                 )}
 
                 <div className="mt-3 space-y-1.5">
-                  <div className="flex items-center gap-2 text-white/40 text-xs">
+                  <div className="flex items-center gap-2 text-ink/40 text-xs">
                     <IoStarSharp className="text-yellow-400 text-sm flex-shrink-0" />
                     <span>{gig.worker?.rating || "0.00"} rating</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/40 text-xs">
+                  <div className="flex items-center gap-2 text-ink/40 text-xs">
                     <IoCheckmarkCircle className="text-green-400 text-sm flex-shrink-0" />
                     <span>{gig.worker?.total_orders_completed || 0} orders completed</span>
                   </div>
                   {gig.worker?.created_at && (
-                    <div className="flex items-center gap-2 text-white/40 text-xs">
+                    <div className="flex items-center gap-2 text-ink/40 text-xs">
                       <IoCalendarOutline className="text-blue-400 text-sm flex-shrink-0" />
                       <span>Member since {formatDate(gig.worker.created_at)}</span>
                     </div>
@@ -1139,7 +1139,7 @@ const GigDetailPage = () => {
                     Message Seller
                   </motion.button>
                 ) : (
-                  <div className="mt-4 py-2.5 text-center text-white/20 text-xs italic bg-white/[0.02] rounded-xl border border-white/5">
+                  <div className="mt-4 py-2.5 text-center text-ink/20 text-xs italic bg-ink/[0.02] rounded-xl border border-ink/5">
                     Viewing your own gig
                   </div>
                 )}

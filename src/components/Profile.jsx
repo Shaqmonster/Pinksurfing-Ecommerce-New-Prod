@@ -18,7 +18,6 @@ const Profile = ({ user }) => {
     setIsVendorFormOpen,
     setIsProfilePopupOpen,
     setUser,
-    isDarkMode,
     setIsProfileOpen,
     Logout,
   } = useContext(authContext);
@@ -40,9 +39,7 @@ const Profile = ({ user }) => {
   return (
     <>
       <div
-        className={`flex items-center ${
-          isDarkMode && "dark"
-        } justify-center w-max  min-h-fit shadow-md shadow-black/40 rounded-sm `}
+        className={`flex items-center justify-center w-max  min-h-fit shadow-md shadow-black/40 rounded-sm `}
       >
         {user ? (
           <div className="w-full max-w-sm rounded-lg bg-white  dark:bg-[#0E0F13] dark:border dark:border-white p-3 drop-shadow-xl divide-y divide-gray-200">
@@ -161,7 +158,7 @@ const Profile = ({ user }) => {
                 onClick={() => {
                   setIsVendorFormOpen(false);
                 }}
-                className=" bg-[#2d1e5f] px-5 py-2 rounded-md "
+                className=" bg-ps-action-soft px-5 py-2 rounded-md "
               >
                 Login
               </button>
