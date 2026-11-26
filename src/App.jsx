@@ -70,6 +70,7 @@ import OffMarketDealDetail from "./pages/OffMarketDealDetail";
 import DealUnlockReturn from "./pages/DealUnlockReturn";
 import MyUnlocks from "./pages/MyUnlocks";
 import DealSupplySubmit from "./pages/DealSupplySubmit";
+import DealsErrorBoundary from "./components/deals/DealsErrorBoundary";
 
 // /bids/requests/:id moved to /gigs/jobs/:id.
 function LegacyJobRedirect() {
@@ -146,10 +147,38 @@ function App() {
         <Route path="/visit-payment-return" element={<VisitPaymentReturn />} />
         <Route path="/nda-payment-return" element={<NdaPaymentReturn />} />
         <Route path="/deal-unlock-return" element={<DealUnlockReturn />} />
-        <Route path="/deals" element={<DealsHomePage />} />
-        <Route path="/deals/submit/:token" element={<DealSupplySubmit />} />
-        <Route path="/deals/:slug" element={<OffMarketDealDetail />} />
-        <Route path="/my-unlocks" element={<MyUnlocks />} />
+        <Route
+          path="/deals"
+          element={
+            <DealsErrorBoundary>
+              <DealsHomePage />
+            </DealsErrorBoundary>
+          }
+        />
+        <Route
+          path="/deals/submit/:token"
+          element={
+            <DealsErrorBoundary>
+              <DealSupplySubmit />
+            </DealsErrorBoundary>
+          }
+        />
+        <Route
+          path="/deals/:slug"
+          element={
+            <DealsErrorBoundary>
+              <OffMarketDealDetail />
+            </DealsErrorBoundary>
+          }
+        />
+        <Route
+          path="/my-unlocks"
+          element={
+            <DealsErrorBoundary>
+              <MyUnlocks />
+            </DealsErrorBoundary>
+          }
+        />
         <Route path="/my-ndas" element={<MyNdas />} />
         <Route path="/success" element={<OrderConfirm />} />
         <Route path="/payment_failed" element={<OrderFailed />} />
