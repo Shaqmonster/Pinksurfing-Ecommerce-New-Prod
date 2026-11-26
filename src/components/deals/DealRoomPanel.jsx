@@ -113,7 +113,9 @@ export default function DealRoomPanel({ room, token, onUpdate }) {
             </button>
           )}
         </div>
-        <span className="deal-state">{room.state.replace(/_/g, " ")}</span>
+        <span className="deal-state">
+          {(room.state || "open").replace(/_/g, " ")}
+        </span>
 
         {transitions.length > 0 && (
           <div className="deal-room-actions">

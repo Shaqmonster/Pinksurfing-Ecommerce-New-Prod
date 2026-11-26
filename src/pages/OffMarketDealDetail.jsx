@@ -51,21 +51,26 @@ export default function OffMarketDealDetail() {
   const [showUnlock, setShowUnlock] = useState(false);
   const [unlockLoading, setUnlockLoading] = useState(false);
 
-  const isUnlocked = full?.is_unlocked || deal?.is_unlocked || searchParams.get("deal_unlocked") === "1";
+  const dealUnlockedParam = searchParams.get("deal_unlocked");
+  const isUnlocked =
+    full?.is_unlocked || deal?.is_unlocked || dealUnlockedParam === "1";
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal) => {
     setLoading(true);
     try {
       const teaser = await fetchDealDetail(slug, token);
+      if (signal?.aborted) return;
       setDeal(teaser);
       // Show the deal as soon as the basics arrive; the unlocked details and the deal room fill in after.
       setLoading(false);
-      if (teaser.is_unlocked || searchParams.get("deal_unlocked") === "1") {
+      if (teaser.is_unlocked || dealUnlockedParam === "1") {
         if (token) {
           const unlocked = await fetchDealFull(slug, token);
+          if (signal?.aborted) return;
           setFull(unlocked);
           if (unlocked.deal_room_id) {
             const r = await fetchDealRoom(unlocked.deal_room_id, token);
+            if (signal?.aborted) return;
             setRoom(r);
           }
         }
@@ -74,14 +79,17 @@ export default function OffMarketDealDetail() {
         setRoom(null);
       }
     } catch (e) {
+      if (signal?.aborted) return;
       notify.error("Could not load deal");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }, [slug, token, searchParams]);
+  }, [slug, token, dealUnlockedParam]);
 
   useEffect(() => {
-    load();
+    const ac = new AbortController();
+    load(ac.signal);
+    return () => ac.abort();
   }, [load]);
 
   const handleUnlock = async () => {
